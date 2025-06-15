@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RewardRush | Get Paid to Sell Crypto Products</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Roboto:wght@400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            overflow-x: hidden;
+            perspective: 1000px;
+        }
+
+        /* Cinematic Scroll Effect */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Particle Background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(57, 255, 20, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Money Pulse Animation */
+        @keyframes moneyPulse {
+            0% { transform: scale(1); text-shadow: 0 0 10px rgba(0, 255, 0, 0); }
+            50% { transform: scale(1.05); text-shadow: 0 0 20px #39ff14, 0 0 40px #39ff14; }
+            100% { transform: scale(1); text-shadow: 0 0 10px rgba(0, 255, 0, 0); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotateY(0deg); }
+            50% { transform: translateY(-20px) rotateY(5deg); }
+            100% { transform: translateY(0px) rotateY(0deg); }
+        }
+
+        @keyframes neonGlow {
+            0% { box-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(57, 255, 20, 0.8), 0 0 30px rgba(57, 255, 20, 0.4); }
+            100% { box-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+
+        @keyframes slideInFromBottom {
+            0% { transform: translateY(100px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideInFromLeft {
+            0% { transform: translateX(-100px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideInFromRight {
+            0% { transform: translateX(100px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Navigation */
+        nav {
+            background: rgba(10, 10, 21, 0.95);
+            padding: 1.5rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #39ff14;
+            backdrop-filter: blur(10px);
+            animation: slideInFromTop 0.8s ease-out;
+        }
+
+        @keyframes slideInFromTop {
+            0% { transform: translateY(-100%); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, #39ff14, #00b7ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-decoration: none;
+            text-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+            transition: all 0.3s;
+        }
+
+        .logo:hover {
+            text-shadow: 0 0 20px rgba(57, 255, 20, 0.6);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 1.1rem;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: linear-gradient(90deg, #39ff14, #00b7ff);
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #39ff14;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .cta-button {
+            background: linear-gradient(45deg, #8b00ff, #00b7ff);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 0;
+            font-weight: 900;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            box-shadow: 0 0 15px rgba(139, 0, 255, 0.3);
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #00b7ff, #8b00ff);
+            transition: all 0.4s;
+            z-index: -1;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(139, 0, 255, 0.5);
+        }
+
+        .cta-button:hover::before {
+            left: 0;
+        }
+
+        .hamburger {
+            display: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #00b7ff;
+            transition: all 0.3s;
+        }
+
+        .hamburger:hover {
+            color: #39ff14;
+            transform: rotate(90deg);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 15% 5% 5%;
+            position: relative;
+            background: radial-gradient(circle at 70% 30%, rgba(139, 0, 255, 0.3) 0%, transparent 50%);
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path fill="none" stroke="rgba(57, 255, 20, 0.05)" stroke-width="0.5" d="M0,0 L100,100 M100,0 L0,100" /></svg>');
+            background-size: 50px 50px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .hero-content {
+            max-width: 700px;
+            z-index: 2;
+            animation: slideInFromLeft 1s ease-out;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero h1 span {
+            background: linear-gradient(90deg, #00b7ff, #39ff14);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: moneyPulse 3s infinite;
+            position: relative;
+        }
+
+        .hero h1 span::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #00b7ff, #39ff14);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s;
+        }
+
+        .hero h1:hover span::after {
+            transform: scaleX(1);
+        }
+
+        .hero p {
+            font-family: 'Roboto', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 2.5rem;
+            color: #b0b0b0;
+            max-width: 600px;
+            line-height: 1.6;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-item {
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-item::before {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 5px;
+            height: 20px;
+            width: 3px;
+            background: #39ff14;
+            box-shadow: 0 0 10px #39ff14;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, #39ff14, #00b7ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            transition: all 0.3s;
+        }
+
+        .stat-item:hover .stat-number {
+            text-shadow: 0 0 15px rgba(57, 255, 20, 0.5);
+        }
+
+        .stat-label {
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+            color: #b0b0b0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .secondary-button {
+            background: transparent;
+            color: #39ff14;
+            padding: 0.8rem 2rem;
+            border: 2px solid #39ff14;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .secondary-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(57, 255, 20, 0.1);
+            transition: all 0.4s;
+            z-index: -1;
+        }
+
+        .secondary-button:hover {
+            background: rgba(57, 255, 20, 0.1);
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .secondary-button:hover::before {
+            left: 0;
+        }
+
+        .hero-image {
+            position: absolute;
+            right: 5%;
+            bottom: 10%;
+            width: 40%;
+            max-width: 600px;
+            z-index: 1;
+            animation: float 6s ease-in-out infinite, flicker 5s infinite alternate;
+            filter: drop-shadow(0 0 20px rgba(57, 255, 20, 0.3));
+            transition: all 0.5s;
+        }
+
+        .hero-image:hover {
+            filter: drop-shadow(0 0 30px rgba(57, 255, 20, 0.6));
+            animation: float 4s ease-in-out infinite, flicker 3s infinite alternate;
+        }
+
+        /* Earnings Calculator */
+        .calculator {
+            padding: 8rem 5%;
+            background: #121225;
+            border-top: 1px solid #39ff14;
+            border-bottom: 1px solid #39ff14;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .calculator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path fill="none" stroke="rgba(57, 255, 20, 0.05)" stroke-width="0.5" d="M0,0 L100,100 M100,0 L0,100" /></svg>');
+            background-size: 50px 50px;
+            opacity: 0.2;
+            z-index: 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #39ff14, #00b7ff);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s;
+        }
+
+        .section-title:hover::after {
+            transform: scaleX(1);
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-family: 'Roboto', sans-serif;
+            color: #b0b0b0;
+            margin-bottom: 4rem;
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        .calculator-container {
+            background: rgba(10, 10, 21, 0.8);
+            border: 1px solid #39ff14;
+            padding: 3rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 30px rgba(57, 255, 20, 0.1);
+            transition: all 0.3s;
+        }
+
+        .calculator-container:hover {
+            box-shadow: 0 0 50px rgba(57, 255, 20, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .calculator-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+            color: #b0b0b0;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group select, .form-group input {
+            background: rgba(18, 18, 37, 0.8);
+            border: 1px solid #39ff14;
+            padding: 1rem;
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .form-group select:focus, .form-group input:focus {
+            outline: none;
+            border-color: #00b7ff;
+            box-shadow: 0 0 10px rgba(0, 183, 255, 0.3);
+        }
+
+        .calculator-results {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(57, 255, 20, 0.05);
+            border: 1px dashed #39ff14;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .calculator-results:hover {
+            background: rgba(57, 255, 20, 0.1);
+            border: 1px solid #39ff14;
+        }
+
+        .result-title {
+            font-family: 'Roboto', sans-serif;
+            color: #b0b0b0;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .result-amount {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, #39ff14, #00b7ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .result-note {
+            font-family: 'Roboto', sans-serif;
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            text-align: center;
+            max-width: 300px;
+            line-height: 1.5;
+        }
+
+        /* Money Steps */
+        .money-steps {
+            padding: 8rem 5%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .money-steps::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path fill="none" stroke="rgba(57, 255, 20, 0.05)" stroke-width="0.5" d="M0,0 L100,100 M100,0 L0,100" /></svg>');
+            background-size: 50px 50px;
+            opacity: 0.2;
+            z-index: 0;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-card {
+            background: rgba(10, 10, 21, 0.8);
+            border: 1px solid #39ff14;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        .step-card.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .step-card:nth-child(1) { transition-delay: 0.1s; }
+        .step-card:nth-child(2) { transition-delay: 0.3s; }
+        .step-card:nth-child(3) { transition-delay: 0.5s; }
+
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(57, 255, 20, 0.05) 0%, transparent 100%);
+            z-index: -1;
+        }
+
+        .step-card:hover {
+            transform: translateY(-10px) !important;
+            box-shadow: 0 15px 40px rgba(57, 255, 20, 0.2);
+            border-color: #00b7ff;
+        }
+
+        .step-number {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 5rem;
+            font-weight: 900;
+            color: rgba(57, 255, 20, 0.1);
+            z-index: 1;
+            transition: all 0.3s;
+        }
+
+        .step-card:hover .step-number {
+            color: rgba(57, 255, 20, 0.2);
+            transform: scale(1.1);
+        }
+
+        .step-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #39ff14;
+            transition: all 0.3s;
+        }
+
+        .step-card:hover h3 {
+            color: #00b7ff;
+        }
+
+        .step-card p {
+            font-family: 'Roboto', sans-serif;
+            color: #b0b0b0;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .step-earnings {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .step-card:hover .step-earnings {
+            transform: scale(1.05);
+        }
+
+        .step-earnings span {
+            color: #39ff14;
+            transition: all 0.3s;
+        }
+
+        .step-card:hover .step-earnings span {
+            color: #00b7ff;
+        }
+
+        /* Brands Section */
+        .brands {
+            padding: 5rem 5%;
+            background: #121225;
+            border-top: 1px solid #39ff14;
+            border-bottom: 1px solid #39ff14;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brands::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path fill="none" stroke="rgba(57, 255, 20, 0.05)" stroke-width="0.5" d="M0,0 L100,100 M100,0 L0,100" /></svg>');
+            background-size: 50px 50px;
+            opacity: 0.2;
+            z-index: 0;
+        }
+
+        .brands-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 3rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-item {
+            filter: grayscale(100%) brightness(0.8);
+            opacity: 0.7;
+            transition: all 0.5s;
+            transform: scale(1);
+        }
+
+        .brand-item:hover {
+            filter: grayscale(0%) brightness(1.2);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 8rem 5%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .testimonials::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path fill="none" stroke="rgba(57, 255, 20, 0.05)" stroke-width="0.5" d="M0,0 L100,100 M100,0 L0,100" /></svg>');
+            background-size: 50px 50px;
+            opacity: 0.2;
+            z-index: 0;
+        }
+
+        .testimonial-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .testimonial-card {
+            background: rgba(10, 10, 21, 0.8);
+            border: 1px solid #39ff14;
+            padding: 2rem;
+            position: relative;
+            transition: all 0.5s;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        .testimonial-card.animate {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .testimonial-card:nth-child(1) { transition-delay: 0.1s; }
+        .testimonial-card:nth-child(2) { transition-delay: 0.3s; }
+        .testimonial-card:nth-child(3) { transition-delay: 0.5s; }
+
+        .testimonial-card:hover {
+            transform: translateY(-10px) scale(1.02) !important;
+            box-shadow: 0 15px 40px rgba(57, 255, 20, 0.2);
+            border-color: #00b7ff;
+        }
+
+        .testimonial-earnings {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background: linear-gradient(45deg, #39ff14, #00b7ff);
+            color: #0a0a15;
+            padding: 0.5rem 1rem;
+            font-weight: 900;
+            font-size: 1.2rem;
+            box-shadow: 0 5px 15px rgba(57, 255, 20, 0.3);
+            transition: all 0.3s;
+        }
+
+        .testimonial-card:hover .testimonial-earnings {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(57, 255, 20, 0.5);
+        }
+
+        .testimonial-text {
+            font-family: 'Roboto', sans-serif;
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            color: #e0e0e0;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .testimonial-text::before {
+            content: '"';
+            position: absolute;
+            top: -20px;
+            left: -10px;
+            font-size: 4rem;
+            color: rgba(57, 255, 20, 0.1);
+            font-family: serif;
+            line-height: 1;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.3s;
+        }
+
+        .testimonial-card:hover .testimonial-author {
+            transform: translateX(5px);
+        }
+
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #39ff14;
+            transition: all 0.3s;
+        }
+
+        .testimonial-card:hover .author-avatar {
+            border-color: #00b7ff;
+            transform: scale(1.1);
+        }
+
+        .author-info h4 {
+            color: #39ff14;
+            margin-bottom: 0.2rem;
+            transition: all 0.3s;
+        }
+
+        .testimonial-card:hover .author-info h4 {
+            color: #00b7ff;
+        }
+
+        .author-info p {
+            font-family: 'Roboto', sans-serif;
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 8rem 5%;
+            text-align: center;
+            background: linear-gradient(135deg, #0a0a15 0%, #121225 100%);
+            border-top: 1px solid #39ff14;
+            border-bottom: 1px solid #39ff14;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path fill="none" stroke="rgba(57, 255, 20, 0.05)" stroke-width="0.5" d="M0,0 L100,100 M100,0 L0,100" /></svg>');
+            background-size: 50px 50px;
+            opacity: 0.2;
+            z-index: 0;
+        }
+
+        .cta-container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            animation: pulse 2s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.02); }
+        }
+
+        .cta-section h2 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .cta-section h2 span {
+            background: linear-gradient(90deg, #39ff14, #00b7ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+        }
+
+        .cta-section h2 span::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #39ff14, #00b7ff);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s;
+        }
+
+        .cta-section h2:hover span::after {
+            transform: scaleX(1);
+        }
+
+        .cta-section p {
+            font-family: 'Roboto', sans-serif;
+            font-size: 1.2rem;
+            color: #b0b0b0;
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(10, 10, 21, 0.95);
+            padding: 4rem 5% 2rem;
+            border-top: 1px solid #39ff14;
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-logo {
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(90deg, #39ff14, #00b7ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .footer-logo:hover {
+            text-shadow: 0 0 15px rgba(57, 255, 20, 0.5);
+        }
+
+        .footer-about p {
+            font-family: 'Roboto', sans-serif;
+            color: #b0b0b0;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(18, 18, 37, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #39ff14;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: 1px solid #39ff14;
+            backdrop-filter: blur(5px);
+        }
+
+        .social-link:hover {
+            background: linear-gradient(45deg, #39ff14, #00b7ff);
+            color: #0a0a15;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(57, 255, 20, 0.3);
+        }
+
+        .footer-links h3 {
+            color: #39ff14;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .footer-links:hover h3 {
+            color: #00b7ff;
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .footer-links li:hover {
+            transform: translateX(5px);
+        }
+
+        .footer-links a {
+            color: #b0b0b0;
+            text-decoration: none;
+            font-family: 'Roboto', sans-serif;
+            transition: color 0.3s;
+            display: inline-block;
+        }
+
+        .footer-links a:hover {
+            color: #39ff14;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(57, 255, 20, 0.1);
+            font-family: 'Roboto', sans-serif;
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Floating Coins Animation */
+        .floating-coins {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .coin {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%2339ff14"><circle cx="12" cy="12" r="10" stroke="%2300b7ff" stroke-width="1"/><text x="12" y="16" font-size="10" text-anchor="middle" fill="%2300b7ff">$</text></svg>');
+            background-size: contain;
+            opacity: 0.6;
+            animation: floatCoin linear infinite;
+        }
+
+        @keyframes floatCoin {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(20px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+            
+            .calculator-container {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-image {
+                width: 50%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: rgba(10, 10, 21, 0.95);
+                flex-direction: column;
+                padding: 2rem;
+                gap: 1.5rem;
+                border-bottom: 1px solid #39ff14;
+                backdrop-filter: blur(10px);
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .hamburger {
+                display: block;
+            }
+            
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding-top: 15rem;
+            }
+            
+            .hero-content {
+                max-width: 100%;
+            }
+            
+            .hero-buttons {
+                justify-content: center;
+            }
+            
+            .hero-image {
+                position: relative;
+                right: auto;
+                bottom: auto;
+                width: 100%;
+                margin-top: 3rem;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-stats {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .cta-section h2 {
+                font-size: 2.5rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+
+            .calculator-container {
+                padding: 2rem 1.5rem;
+            }
+
+            .result-amount {
+                font-size: 2.5rem;
+            }
+
+            .step-card, .testimonial-card {
+                padding: 1.5rem;
+            }
+
+            .step-earnings, .testimonial-earnings {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle Background -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Floating Coins -->
+    <div class="floating-coins" id="floatingCoins"></div>
+
+    <!-- Navigation -->
+    <nav>
+       <div class="logo"> <a href="#" class="logo">REWARDRUSH</a></div>
+        
+        <div class="nav-links" id="navLinks">
+            <a href="#calculator">Earnings</a>
+            <a href="#steps">How To Earn</a>
+            <a href="#brands">Partners</a>
+            <a href="#testimonials">Success Stories</a>
+            <a href="auth.html" class="cta-button">Start Earning</a>
+        </div>
+        
+        <div class="hamburger" id="hamburger">☰</div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Turn Crypto Knowledge Into <span>Real Money</span></h1>
+            <p>Get paid for every sign-up, trade, and engagement you generate for top crypto brands. No experience needed - just your ability to connect people with great products.</p>
+            
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">$250K+</div>
+                    <div class="stat-label">Paid to Users</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">15K+</div>
+                    <div class="stat-label">Active Earners</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Partner Brands</div>
+                </div>
+            </div>
+            
+            <div class="hero-buttons">
+                <a href="auth.html" class="cta-button">Start Earning Now</a>
+                <a href="#calculator" class="secondary-button">Calculate Earnings</a>
+            </div>
+        </div>
+        
+        <img src="/logos/cryptocurrency-wallet.png" alt="Crypto Earnings" class="hero-image">
+    </section>
+
+    <!-- Earnings Calculator -->
+    <section class="calculator" id="calculator">
+        <h2 class="section-title">How Much Can You Earn?</h2>
+        <p class="section-subtitle">Find out exactly how much money you can make with our platform</p>
+        
+        <div class="calculator-container">
+            <div class="calculator-form">
+                <div class="form-group">
+                    <label for="activity">Select Activity</label>
+                    <select id="activity">
+                        <option value="signup">User Sign-Up</option>
+                        <option value="trade">Trading Volume</option>
+                        <option value="video">Video Creation</option>
+                        <option value="social">Social Post</option>
+                        <option value="content">Content Creation</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="quantity">Quantity</label>
+                    <input type="number" id="quantity" min="1" value="10">
+                </div>
+                
+                <div class="form-group">
+                    <label for="timeframe">Timeframe</label>
+                    <select id="timeframe">
+                        <option value="day">Per Day</option>
+                        <option value="week">Per Week</option>
+                        <option value="month" selected>Per Month</option>
+                        <option value="year">Per Year</option>
+                    </select>
+                </div>
+                
+                <button class="cta-button" onclick="calculateEarnings()">Calculate Earnings</button>
+            </div>
+            
+            <div class="calculator-results">
+                <p class="result-title">Your Estimated Earnings</p>
+                <p class="result-amount" id="earnings-result">$1,250</p>
+                <p class="result-note">Based on average performance metrics from similar users</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Money Steps -->
+    <section class="money-steps" id="steps">
+        <h2 class="section-title">Earn Money in 3 Simple Steps</h2>
+        <p class="section-subtitle">We've removed all the barriers between you and your crypto earnings</p>
+        
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Choose High-Paying Offers</h3>
+                    <p>Browse our marketplace of vetted crypto brands paying for sign-ups, trades, and content.</p>
+                    <p class="step-earnings">Earn: <span>$5-$500 per action</span></p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Share & Convert</h3>
+                    <p>Use your unique links or create content to drive actions from your network.</p>
+                    <p class="step-earnings">Earn: <span>Recurring commissions on trades</span></p>
+                </div>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Get Paid Instantly</h3>
+                    <p>Receive crypto payments directly to your wallet as soon as actions are verified.</p>
+                    <p class="step-earnings">Earn: <span>Up to $10,000/month</span></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Brands Section -->
+    <section class="brands" id="brands">
+        <h2 class="section-title">Earn From Top Crypto Brands</h2>
+        <p class="section-subtitle">We partner with the most reputable names in crypto</p>
+        
+        <div class="brands-grid">
+            <img src="/logos/binance.png" alt="Binance" class="brand-item" style="height: 40px;">
+            <img src="/logos/kucoin.png" alt="KuCoin" class="brand-item" style="height: 40px;">
+            <img src="/logos/coinbase.png" alt="Ethereum" class="brand-item" style="height: 40px;">
+            <img src="/logos/kraken.png" alt="Solana" class="brand-item" style="height: 40px;">
+            <img src="/logos/binance.png" alt="Avalanche" class="brand-item" style="height: 40px;">
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials" id="testimonials">
+        <h2 class="section-title">Real People, Real Earnings</h2>
+        <p class="section-subtitle">Hear from users who turned their networks into income streams</p>
+        
+        <div class="testimonial-cards">
+            <div class="testimonial-card">
+                <div class="testimonial-earnings">$8,450</div>
+                <p class="testimonial-text">"I made $8,450 in my first 3 months just by sharing Binance referral links with my Twitter followers. RewardRush handles all the tracking and payments automatically."</p>
+                <div class="testimonial-author">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Sarah K." class="author-avatar">
+                    <div class="author-info">
+                        <h4>Sarah K.</h4>
+                        <p>Crypto Influencer</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <div class="testimonial-earnings">$3,200</div>
+                <p class="testimonial-text">"As a student, earning $3,200/month from trading volume referrals has been life-changing. I focus on my studies while RewardRush handles my crypto income."</p>
+                <div class="testimonial-author">
+                    <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="James L." class="author-avatar">
+                    <div class="author-info">
+                        <h4>James L.</h4>
+                        <p>University Student</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="testimonial-card">
+                <div class="testimonial-earnings">$12,700</div>
+                <p class="testimonial-text">"My YouTube channel about crypto now generates $12,700/month from RewardRush affiliate links alone. The platform makes it effortless to monetize my content."</p>
+                <div class="testimonial-author">
+                    <img src="https://randomuser.me/api/portraits/men/65.jpg" alt="Miguel R." class="author-avatar">
+                    <div class="author-info">
+                        <h4>Miguel R.</h4>
+                        <p>Content Creator</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-container">
+            <h2>Start Earning <span>Today</span></h2>
+            <p>Join thousands of users who are getting paid daily for promoting crypto products they already love.</p>
+            <a href="auth.html" class="cta-button">Get Started - It's Free</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-about">
+                <a href="#" class="footer-logo">REWARDRUSH</a>
+                <p>The most lucrative platform for earning crypto by promoting top blockchain products.</p>
+                <div class="social-links">
+                    <a href="#" class="social-link"><img src="/logos/X_icon.svg.png" alt="X" class="brand-item" style="height: 40px;"></a>
+                    <a href="#" class="social-link"><img src="/logos/facebook.png" alt="facebook" class="brand-item" style="height: 40px;"></a>
+                    <a href="#" class="social-link"><img src="/logos/instagram.png" alt="instagram" class="brand-item" style="height: 40px;"></a>
+                    <a href="#" class="social-link"><img src="/logos/linkedin.png" alt="linkedin" class="brand-item" style="height: 40px;"></a>
+                </div>
+            </div>
+            
+            <div class="footer-links">
+                <h3>Earning</h3>
+                <ul>
+                    <li><a href="affilaite.html">Affiliate Programs</a></li>
+                    <li><a href="#">Referral System</a></li>
+                    <li><a href="#">Content Rewards</a></li>
+                    <li><a href="#">Leaderboard</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-links">
+                <h3>Resources</h3>
+                <ul>
+                    <li><a href="#">Earning Guides</a></li>
+                    <li><a href="#">Marketing Tools</a></li>
+                    <li><a href="#">API</a></li>
+                    <li><a href="#">Help Center</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-links">
+                <h3>Company</h3>
+                <ul>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Brands</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 RewardRush. All rights reserved. | <a href="#">Terms</a> | <a href="#">Privacy</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.getElementById('navLinks');
+        
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            hamburger.textContent = navLinks.classList.contains('active') ? '✕' : '☰';
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    navLinks.classList.remove('active');
+                    hamburger.textContent = '☰';
+                }
+            });
+        });
+        
+        // Earnings Calculator
+        function calculateEarnings() {
+            const activity = document.getElementById('activity').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const timeframe = document.getElementById('timeframe').value;
+            
+            // Base rates per activity
+            const rates = {
+                signup: 25,
+                trade: 0.002,
+                video: 150,
+                social: 50,
+                content: 75
+            };
+            
+            // Timeframe multipliers
+            const multipliers = {
+                day: 1,
+                week: 7,
+                month: 30,
+                year: 365
+            };
+            
+            // Calculate earnings
+            let earnings = rates[activity] * quantity * multipliers[timeframe];
+            
+            // For trading volume, assume $1000 average per trade
+            if (activity === 'trade') {
+                earnings = earnings * 1000 * quantity * multipliers[timeframe];
+            }
+            
+            // Add some random variation to make it feel dynamic
+            earnings = earnings * (0.9 + Math.random() * 0.2);
+            
+            // Display result with animation
+            const resultElement = document.getElementById('earnings-result');
+            resultElement.classList.add('animate__animated', 'animate__pulse');
+            
+            setTimeout(() => {
+                resultElement.textContent = '$' + Math.round(earnings).toLocaleString();
+                setTimeout(() => {
+                    resultElement.classList.remove('animate__animated', 'animate__pulse');
+                }, 1000);
+            }, 300);
+        }
+        
+        // Initialize calculator with default values
+        calculateEarnings();
+        
+        // Create floating particles background
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random size between 1px and 3px
+                const size = Math.random() * 2 + 1;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Random animation
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 10;
+                particle.style.animation = `flicker ${duration}s ${delay}s infinite`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Create floating coins animation
+        function createFloatingCoins() {
+            const coinsContainer = document.getElementById('floatingCoins');
+            const coinCount = 15;
+            
+            for (let i = 0; i < coinCount; i++) {
+                const coin = document.createElement('div');
+                coin.classList.add('coin');
+                
+                // Random position
+                coin.style.left = `${Math.random() * 100}%`;
+                coin.style.bottom = `-20px`;
+                
+                // Random animation duration and delay
+                const duration = Math.random() * 10 + 10;
+                const delay = Math.random() * 5;
+                coin.style.animation = `floatCoin ${duration}s ${delay}s infinite`;
+                
+                // Random size
+                const size = Math.random() * 10 + 10;
+                coin.style.width = `${size}px`;
+                coin.style.height = `${size}px`;
+                
+                coinsContainer.appendChild(coin);
+            }
+        }
+        
+        // Animate elements on scroll
+        const animateOnScroll = () => {
+            const stepCards = document.querySelectorAll('.step-card');
+            const testimonialCards = document.querySelectorAll('.testimonial-card');
+            
+            stepCards.forEach((card, index) => {
+                const cardPosition = card.getBoundingClientRect().top;
+                const screenPosition = window.innerHeight / 1.3;
+                
+                if (cardPosition < screenPosition) {
+                    card.classList.add('animate');
+                }
+            });
+            
+            testimonialCards.forEach((card, index) => {
+                const cardPosition = card.getBoundingClientRect().top;
+                const screenPosition = window.innerHeight / 1.3;
+                
+                if (cardPosition < screenPosition) {
+                    card.classList.add('animate');
+                }
+            });
+        };
+        
+        // Initialize animations
+        window.addEventListener('load', () => {
+            createParticles();
+            createFloatingCoins();
+            animateOnScroll();
+        });
+        
+        window.addEventListener('scroll', animateOnScroll);
+        
+        // Parallax effect for hero image
+        window.addEventListener('scroll', () => {
+            const heroImage = document.querySelector('.hero-image');
+            if (heroImage) {
+                const scrollPosition = window.pageYOffset;
+                heroImage.style.transform = `translateY(${scrollPosition * 0.3}px)`;
+            }
+        });
+        
+        // Add hover effect to all elements with data-hover="glow"
+        document.querySelectorAll('[data-hover="glow"]').forEach(element => {
+            element.addEventListener('mouseenter', () => {
+                element.style.boxShadow = '0 0 20px rgba(57, 255, 20, 0.6)';
+            });
+            
+            element.addEventListener('mouseleave', () => {
+                element.style.boxShadow = 'none';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+{
+  "categories": [
+    {
+      "name": "Graphic Design",
+      "content": [
+        {
+          "id": 1,
+          "title": "Intro to Graphic Design",
+          "type": "Video",
+          "source": "https://www.youtube.com/embed/ZQ6sE2oX8fk",
+          "author": "Unknown",
+          "summary": "A video introducing the basics of graphic design."
+        },
+        {
+          "id": 2,
+          "title": "Graphic Design School",
+          "type": "Article",
+          "source": "https://www.amazon.com/Graphic-Design-School-Fundamentals-Applications/dp/1119342711",
+          "author": "Unknown",
+          "summary": "A comprehensive book on graphic design fundamentals."
+        },
+        {
+          "id": 3,
+          "title": "Learn from Sascha Huber",
+          "type": "Article",
+          "source": "https://www.behance.net/saschahuber",
+          "author": "Sascha Huber",
+          "summary": "Explore the portfolio and insights of designer Sascha Huber."
+        },
+        {
+          "id": 4,
+          "title": "Book a Consultation with an Expert",
+          "type": "Consultation",
+          "source": "consultation://graphic-design",
+          "author": "RewardRush Experts",
+          "summary": "Schedule a personalized consultation with a graphic design expert.",
+          "field": "Graphic Design"
+        }
+      ]
+    },
+    {
+      "name": "Community Management",
+      "content": [
+        {
+          "id": 1,
+          "title": "Community Building",
+          "type": "Video",
+          "source": "https://www.youtube.com/embed/kjF-0xCPoQ0",
+          "author": "Unknown",
+          "summary": "A video on strategies for building online communities."
+        },
+        {
+          "id": 2,
+          "title": "Community Management Handbook",
+          "type": "Article",
+          "source": "https://www.amazon.com/Community-Management-Best-Practices-Handbook/dp/1502412345",
+          "author": "Unknown",
+          "summary": "A handbook outlining best practices for community management."
+        },
+        {
+          "id": 3,
+          "title": "Learn from Julien Codorniou",
+          "type": "Article",
+          "source": "https://twitter.com/julien",
+          "author": "Julien Codorniou",
+          "summary": "Insights from community management expert Julien Codorniou."
+        },
+        {
+          "id": 4,
+          "title": "Book a Consultation with an Expert",
+          "type": "Consultation",
+          "source": "consultation://community-management",
+          "author": "RewardRush Experts",
+          "summary": "Schedule a personalized consultation with a community management expert.",
+          "field": "Community Management"
+        }
+      ]
+    },
+    {
+      "name": "Social Media Management",
+      "content": [
+        {
+          "id": 1,
+          "title": "Social Media Strategies",
+          "type": "Video",
+          "source": "https://www.youtube.com/embed/9bZkp7q19f0",
+          "author": "Unknown",
+          "summary": "A video on effective social media strategies."
+        },
+        {
+          "id": 2,
+          "title": "Social Media Marketing Workbook",
+          "type": "Article",
+          "source": "https://www.amazon.com/Social-Media-Marketing-Workbook-2023/dp/173622904X",
+          "author": "Unknown",
+          "summary": "A workbook for mastering social media marketing."
+        },
+        {
+          "id": 3,
+          "title": "Learn from Gary Vaynerchuk",
+          "type": "Article",
+          "source": "https://twitter.com/garyvee",
+          "author": "Gary Vaynerchuk",
+          "summary": "Insights from social media expert Gary Vaynerchuk."
+        },
+        {
+          "id": 4,
+          "title": "Book a Consultation with an Expert",
+          "type": "Consultation",
+          "source": "consultation://social-media-management",
+          "author": "RewardRush Experts",
+          "summary": "Schedule a personalized consultation with a social media management expert.",
+          "field": "Social Media Management"
+        }
+      ]
+    },
+    {
+      "name": "Digital Marketing",
+      "content": [
+        {
+          "id": 1,
+          "title": "Digital Campaigns",
+          "type": "Video",
+          "source": "https://www.youtube.com/embed/6mhrXh8Z0kA",
+          "author": "Unknown",
+          "summary": "A video on creating effective digital marketing campaigns."
+        },
+        {
+          "id": 2,
+          "title": "Digital Marketing Strategy",
+          "type": "Article",
+          "source": "https://www.amazon.com/Digital-Marketing-Strategy-Implementation-Distribution/dp/0749474718",
+          "author": "Unknown",
+          "summary": "A book on digital marketing strategies and implementation."
+        },
+        {
+          "id": 3,
+          "title": "Learn from Neil Patel",
+          "type": "Article",
+          "source": "https://twitter.com/neilpatel",
+          "author": "Neil Patel",
+          "summary": "Insights from digital marketing expert Neil Patel."
+        },
+        {
+          "id": 4,
+          "title": "Book a Consultation with an Expert",
+          "type": "Consultation",
+          "source": "consultation://digital-marketing",
+          "author": "RewardRush Experts",
+          "summary": "Schedule a personalized consultation with a digital marketing expert.",
+          "field": "Digital Marketing"
+        }
+      ]
+    },
+    {
+      "name": "Business Development",
+      "content": [
+        {
+          "id": 1,
+          "title": "Business Growth",
+          "type": "Video",
+          "source": "https://www.youtube.com/embed/T5pH2hC2b-4",
+          "author": "Unknown",
+          "summary": "A video on strategies for business growth."
+        },
+        {
+          "id": 2,
+          "title": "Business Development Playbook",
+          "type": "Article",
+          "source": "https://www.amazon.com/Business-Development-Playbook-Strategies-Scaling/dp/1734629619",
+          "author": "Unknown",
+          "summary": "A playbook for business development and scaling strategies."
+        },
+        {
+          "id": 3,
+          "title": "Learn from Mark Cuban",
+          "type": "Article",
+          "source": "https://twitter.com/markcuban",
+          "author": "Mark Cuban",
+          "summary": "Insights from business development expert Mark Cuban."
+        },
+        {
+          "id": 4,
+          "title": "Book a Consultation with an Expert",
+          "type": "Consultation",
+          "source": "consultation://business-development",
+          "author": "RewardRush Experts",
+          "summary": "Schedule a personalized consultation with a business development expert.",
+          "field": "Business Development"
+        }
+      ]
+    },
+    {
+      "name": "Frontend Development",
+      "content": [
+        {
+          "id": 1,
+          "title": "Frontend Basics",
+          "type": "Video",
+          "source": "https://www.youtube.com/embed/FM8f_uH1r5s",
+          "author": "Unknown",
+          "summary": "A video covering the basics of frontend development."
+        },
+        {
+          "id": 2,
+          "title": "Eloquent JavaScript",
+          "type": "Article",
+          "source": "https://www.amazon.com/Eloquent-JavaScript-3rd-Introduction-Programming/dp/1593279507",
+          "author": "Unknown",
+          "summary": "A book on JavaScript programming for frontend developers."
+        },
+        {
+          "id": 3,
+          "title": "Learn from Wes Bos",
+          "type": "Article",
+          "source": "https://twitter.com/wesbos",
+          "author": "Wes Bos",
+          "summary": "Insights from frontend development expert Wes Bos."
+        },
+        {
+          "id": 4,
+          "title": "Book a Consultation with an Expert",
+          "type": "Consultation",
+          "type": "Consultation",
+          "source": "consultation://frontend-development",
+          "author": "RewardRush Experts",
+          "summary": "Schedule a personalized consultation with a frontend development expert.",
+          "field": "Frontend Development"
+        }
+      ]
+    },
+    {
+      "name": "Backend Development",
+      "content": [
+        {
+          "id": 1,
+          "title": "Backend Essentials",
+          "type": "Video",
+          "source": "https://www.youtube.com/embed/2y8x3z5bA5U",
+          "author": "Unknown",
+          "summary": "A video on essential backend development concepts."
+        },
+        {
+          "id": 2,
+          "title": "Node.js Design Patterns",
+          "type": "Article",
+          "source": "https://www.amazon.com/Node-js-Design-Patterns-Real-World/dp/1839214112",
+          "author": "Unknown",
+          "summary": "A book on design patterns for Node.js backend development."
+        },
+        {
+          "id": 3,
+          "title": "Learn from Addy Osmani",
+          "type": "Article",
+          "source": "https://twitter.com/addyosmani",
+          "author": "Addy Osmani",
+          "summary": "Insights from backend development expert Addy Osmani."
+        },
+        {
+          "id": 4,
+          "title": "Book a Consultation with an Expert",
+          "type": "Consultation",
+          "source": "consultation://backend-development",
+          "author": "RewardRush Experts",
+          "summary": "Schedule a personalized consultation with a backend development expert.",
+          "field": "Backend Development"
+        }
+      ]
+    },
+    {
+      "name": "Full Stack Engineer",
+      "content": [
+        {
+          "id": 1,
+          "title": "Full Stack Overview",
+          "type": "Video",
+          "source": "https://www.youtube.com/embed/WK4m2hC2b-4",
+          "author": "Unknown",
+          "summary": "A video providing an overview of full stack development."
+        },
+        {
+          "id": 2,
+          "title": "Full Stack Development with React & Node",
+          "type": "Article",
+          "source": "https://www.amazon.com/Full-Stack-Development-React-Node/dp/180323316X",
+          "author": "Unknown",
+          "summary": "A book on full stack development using React and Node."
+        },
+        {
+          "id": 3,
+          "title": "Learn from Brad Traversy",
+          "type": "Article",
+          "source": "https://twitter.com/bradtraversy",
+          "author": "Brad Traversy",
+          "summary": "Insights from full stack development expert Brad Traversy."
+        },
+        {
+          "id": 4,
+          "title": "Book a Consultation with an Expert",
+          "type": "Consultation",
+          "source": "consultation://full-stack-engineer",
+          "author": "RewardRush Experts",
+          "summary": "Schedule a personalized consultation with a full stack engineering expert.",
+          "field": "Full Stack Engineer"
+        }
+      ]
+    }
+  ]
+}

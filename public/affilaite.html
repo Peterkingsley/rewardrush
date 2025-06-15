@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RewardRush - Affiliate Hub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #6c5ce7;
+            --primary-light: #a29bfe;
+            --secondary: #00cec9;
+            --accent: #fd79a8;
+            --dark: #2d3436;
+            --darker: #1e272e;
+            --light: #f5f6fa;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #d63031;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            min-height: 100vh;
+        }
+        
+        /* Navigation */
+        nav {
+            background: rgba(30, 39, 46, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo i {
+            font-size: 1.5rem;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        
+        .nav-menu a {
+            color: var(--light);
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+        
+        .nav-menu a:hover {
+            color: var(--primary-light);
+            background: rgba(108, 92, 231, 0.1);
+        }
+        
+        .nav-menu a.active {
+            color: var(--primary-light);
+            background: rgba(108, 92, 231, 0.2);
+        }
+        
+        .nav-menu .profile-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-menu .profile-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
+        }
+        
+        .nav-menu .logout-btn {
+            background: var(--danger);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-menu .logout-btn:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+        
+        .hamburger {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary-light);
+            z-index: 101;
+        }
+        
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(45, 52, 54, 0.5);
+            border-radius: 1rem;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(108, 92, 231, 0.2);
+        }
+        
+        .hero-section h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .hero-section p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 700px;
+            margin: 0 auto 1.5rem;
+        }
+        
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+        
+        .hero-stat {
+            background: rgba(108, 92, 231, 0.1);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            border-left: 3px solid var(--primary);
+        }
+        
+        .hero-stat .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-light);
+        }
+        
+        .hero-stat .label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Dashboard Cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .dashboard-card {
+            background: rgba(45, 52, 54, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        .dashboard-card .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .dashboard-card .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(108, 92, 231, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+        
+        .dashboard-card h3 {
+            font-size: 1.1rem;
+            color: var(--light);
+            font-weight: 600;
+        }
+        
+        .dashboard-card p.value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin: 0.5rem 0;
+        }
+        
+        .dashboard-card p.description {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1rem;
+        }
+        
+        .dashboard-card .card-btn {
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            align-self: flex-start;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .dashboard-card .card-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        
+        /* Program Sections */
+        .section-title {
+            font-size: 1.5rem;
+            margin: 2rem 0 1.5rem;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .section-title i {
+            color: var(--primary);
+        }
+        
+        .category-section {
+            margin-bottom: 3rem;
+        }
+        
+        .category-section h3 {
+            font-size: 1.3rem;
+            color: var(--primary-light);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .program-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .program-card {
+            background: rgba(45, 52, 54, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-top: 4px solid var(--primary);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .program-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        .program-card h4 {
+            font-size: 1.25rem;
+            color: var(--primary-light);
+            margin-bottom: 0.25rem;
+        }
+        
+        .program-card .program-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .program-card .program-reward {
+            background: rgba(0, 206, 201, 0.2);
+            color: var(--secondary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .program-card .program-status {
+            background: rgba(253, 121, 168, 0.2);
+            color: var(--accent);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .program-card p {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.5;
+        }
+        
+        .program-card .program-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .program-card .primary-btn {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .program-card .primary-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        
+        /* History Table */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(45, 52, 54, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            margin-bottom: 3rem;
+        }
+        
+        .history-table th {
+            background: rgba(108, 92, 231, 0.2);
+            color: var(--primary-light);
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .history-table td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .history-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .history-table tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-completed {
+            background: rgba(0, 184, 148, 0.2);
+            color: var(--success);
+        }
+        
+        .status-pending {
+            background: rgba(253, 203, 110, 0.2);
+            color: var(--warning);
+        }
+        
+        .status-approved {
+            background: rgba(108, 92, 231, 0.2);
+            color: var(--primary-light);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.open {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background: rgba(45, 52, 54, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+        }
+        
+        .modal.open .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-content h3 {
+            font-size: 1.5rem;
+            color: var(--primary-light);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .modal-section {
+            background: rgba(30, 39, 46, 0.7);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .modal-section h4 {
+            font-size: 1.1rem;
+            color: var(--secondary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .modal-section p {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+        }
+        
+        .modal-section ul {
+            padding-left: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .modal-section ul li {
+            margin-bottom: 0.25rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+        
+        .modal-section .highlight {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(30, 39, 46, 0.8);
+            border: 1px solid rgba(108, 92, 231, 0.5);
+            border-radius: 0.5rem;
+            color: var(--light);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .modal-input:focus {
+            border-color: var(--secondary);
+            outline: none;
+        }
+        
+        .modal-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .modal-btn {
+            padding: 0.75rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .modal-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .modal-btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        
+        .modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .modal-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .modal-btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .modal-btn-danger:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+        
+        /* Code Vault */
+        .code-item {
+            background: rgba(30, 39, 46, 0.7);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .code-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .code-brand {
+            font-weight: 600;
+            color: var(--primary-light);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .code-value {
+            background: rgba(0, 206, 201, 0.1);
+            color: var(--secondary);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            font-size: 1.1rem;
+            margin: 0.5rem 0;
+            word-break: break-all;
+        }
+        
+        .code-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+        
+        .code-available {
+            background: rgba(0, 184, 148, 0.2);
+            color: var(--success);
+        }
+        
+        .code-used {
+            background: rgba(214, 48, 49, 0.2);
+            color: var(--danger);
+        }
+        
+        /* Success Modal */
+        .success-modal-content {
+            text-align: center;
+        }
+        
+        .success-icon {
+            font-size: 3rem;
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-stats {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+            
+            .program-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-menu {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 280px;
+                height: 100vh;
+                background: var(--darker);
+                flex-direction: column;
+                padding: 2rem;
+                gap: 1.5rem;
+                transition: right 0.3s ease;
+                box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+            }
+            
+            .nav-menu.open {
+                right: 0;
+            }
+            
+            .hamburger {
+                display: block;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <i class="fas fa-rocket"></i>
+            <span>RewardRush</span>
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">
+            <i class="fas fa-bars"></i>
+        </div>
+        <div class="nav-menu" id="nav-menu">
+            <a href="groweasy.html"><i class="fas fa-tasks"></i> Quests</a>
+            <a href="affilaite.html" class="active"><i class="fas fa-users"></i> Affiliate</a>
+            <a href="education.html"><i class="fas fa-graduation-cap"></i> Education</a>
+            <a href="founder.html"><i class="fas fa-user-tie"></i> Founder</a>
+            <a href="profile.html" class="profile-btn">
+                <i class="fas fa-user"></i>
+            </a>
+            <button class="logout-btn" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Log Out
+            </button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero-section animate-in">
+            <h1>Affiliate Hub</h1>
+            <p>Earn rewards by promoting top crypto brands and unlock exclusive codes. Maximize your earnings with our affiliate programs.</p>
+            
+            <!-- <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="value">$150.75</div>
+                    <div class="label">Total Earnings</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="value">5</div>
+                    <div class="label">Redeemable Codes</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="value">12</div>
+                    <div class="label">Affiliates Joined</div>
+                </div>
+            </div> -->
+        </div>
+
+        <h2 class="section-title">
+            <i class="fas fa-chart-line"></i>
+            Affiliate Overview
+        </h2>
+        
+        <div class="dashboard-grid">
+            <div class="dashboard-card animate-in">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <h3>Total Earnings</h3>
+                </div>
+                <p class="value">$150.75</p>
+                <p class="description">Total earnings from affiliates</p>
+                <button class="card-btn" onclick="openWithdrawModal()">
+                    <i class="fas fa-wallet"></i>
+                    Withdraw
+                </button>
+            </div>
+            
+            <div class="dashboard-card animate-in delay-1">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-gift"></i>
+                    </div>
+                    <h3>Redeemable Codes</h3>
+                </div>
+                <p class="value">5</p>
+                <p class="description">Available codes to redeem</p>
+                <button class="card-btn" onclick="openRedeemModal()">
+                    <i class="fas fa-eye"></i>
+                    View Codes
+                </button>
+            </div>
+            
+            <div class="dashboard-card animate-in delay-2">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Affiliates Joined</h3>
+                </div>
+                <p class="value">12</p>
+                <p class="description">Total affiliates recruited</p>
+                <button class="card-btn" onclick="showReferrals()">
+                    <i class="fas fa-list"></i>
+                    View All
+                </button>
+            </div>
+        </div>
+        
+        <h2 class="section-title">
+            <i class="fas fa-bullhorn"></i>
+            Affiliate Programs
+        </h2>
+        
+        <div id="program-sections">
+            <!-- Program sections will be populated by JS -->
+        </div>
+        
+        <h2 class="section-title">
+            <i class="fas fa-history"></i>
+            Completed Affiliate History
+        </h2>
+        
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Brand</th>
+                    <th>Program</th>
+                    <th>Reward</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="history-table-body">
+                <!-- History will be populated by JS -->
+            </tbody>
+        </table>
+        
+        <!-- Program Modal -->
+        <div class="modal" id="program-modal">
+            <div class="modal-content">
+                <h3 id="modal-title"></h3>
+                
+                <div class="modal-section">
+                    <h4><i class="fas fa-info-circle"></i> Program Details</h4>
+                    <p id="modal-details"></p>
+                </div>
+                
+                <div class="modal-section">
+                    <h4><i class="fas fa-clipboard-check"></i> Guidelines</h4>
+                    <p id="modal-guidelines"></p>
+                </div>
+                
+                <div class="modal-section">
+                    <h4><i class="fas fa-star"></i> Program Highlights</h4>
+                    <ul id="modal-pros"></ul>
+                    <p><strong>Payout:</strong> <span id="modal-payout" class="highlight"></span></p>
+                </div>
+                
+                <div id="action-container"></div>
+                
+                <div class="modal-actions" id="button-group"></div>
+            </div>
+        </div>
+        
+        <!-- Redeem Modal -->
+        <div class="modal" id="redeem-modal">
+            <div class="modal-content">
+                <h3><i class="fas fa-gift"></i> Redeem Code Vault</h3>
+                <div id="code-list">
+                    <div class="code-item">
+                        <div class="code-brand">
+                            <i class="fab fa-btc"></i>
+                            Binance
+                        </div>
+                        <div class="code-value">AFF123</div>
+                        <span class="code-status code-available">
+                            <i class="fas fa-check-circle"></i>
+                            Available
+                        </span>
+                        <p>Redeem this code on Binance platform to claim your reward.</p>
+                    </div>
+                    
+                    <div class="code-item">
+                        <div class="code-brand">
+                            <i class="fas fa-exchange-alt"></i>
+                            KuCoin
+                        </div>
+                        <div class="code-value">KUC456</div>
+                        <span class="code-status code-available">
+                            <i class="fas fa-check-circle"></i>
+                            Available
+                        </span>
+                        <p>Redeem this code on KuCoin platform for special benefits.</p>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn modal-btn-primary" onclick="closeModal()">
+                        <i class="fas fa-check"></i>
+                        Done
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Success Modal -->
+        <div class="modal" id="success-modal">
+            <div class="modal-content success-modal-content">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="your">Your Reward Request</h3>
+                <p>You'll receive your payment/code within 12 hours. Stay tuned!</p>
+                <div class="modal-actions">
+                    <button class="modal-btn modal-btn-primary" onclick="closeSuccessModal()">
+                        <i class="fas fa-check"></i>
+                        Got It!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const affiliateOverview = {
+            totalEarnings: 150.75,
+            redeemableCodes: 5,
+            affiliatesJoined: 12
+        };
+
+        const completedAffiliates = [
+            { brand: 'Binance', program: 'Sign Up', reward: '$5 USDT', status: 'Completed', date: 'May 01, 2025' },
+            { brand: 'KuCoin', program: 'Sign Up', reward: '10 KCS', status: 'Pending Review', date: 'May 03, 2025' },
+            { brand: 'Coinbase', program: 'Transactions', reward: '$3 USDT', status: 'Approved', date: 'May 05, 2025' }
+        ];
+
+        const redeemCodes = [
+            { brand: 'Binance', code: 'AFF123', status: 'Available', instructions: 'Redeem on Binance platform' },
+            { brand: 'KuCoin', code: 'KUC456', status: 'Available', instructions: 'Redeem on KuCoin platform' }
+        ];
+
+        let programs = [];
+        let userProgress = {
+            1: { accepted: true, signUps: 3, amountEarned: 15 },
+            2: { accepted: false, signUps: 0, amountEarned: 0 },
+            3: { accepted: true, tradingVolume: 5000, amountEarned: 10 },
+            4: { accepted: false, submitted: false },
+            5: { accepted: false, submitted: false }
+        };
+
+        async function fetchPrograms() {
+            try {
+                const response = await fetch('/affiliate-programs');
+                const data = await response.json();
+                programs = data.programs || [];
+                populatePrograms();
+            } catch (err) {
+                console.error('Failed to load programs:', err);
+                showToast('Failed to load programs', 'error');
+            }
+        }
+
+        function generateUniqueLink(baseUrl, id) {
+            return `${baseUrl}/referral/${id}?code=${Math.random().toString(36).substr(2, 9)}`;
+        }
+
+        function populatePrograms() {
+            const sections = document.getElementById('program-sections');
+            const categories = ['Sign Up', 'Trading Volume', 'Transacting Users', 'Pay for a Product', 'Post on Socials', 'Video Creation'];
+
+            sections.innerHTML = categories.map(category => {
+                const categoryPrograms = programs.filter(p => p.category === category);
+                if (categoryPrograms.length === 0) return '';
+                const icon = {
+                    'Sign Up': 'user-plus',
+                    'Trading Volume': 'chart-bar',
+                    'Transacting Users': 'users',
+                    'Pay for a Product': 'credit-card',
+                    'Post on Socials': 'share-alt',
+                    'Video Creation': 'video'
+                }[category] || 'bullhorn';
+
+                return `
+                    <div class="category-section">
+                        <h3><i class="fas fa-${icon}"></i> ${category} Programs</h3>
+                        <div class="program-list">
+                            ${categoryPrograms.map((program, index) => `
+                                <div class="program-card animate-in ${index % 3 === 1 ? 'delay-1' : index % 3 === 2 ? 'delay-2' : ''}">
+                                    <h4>${program.title}</h4>
+                                    <div class="program-meta">
+                                        <span class="program-reward">
+                                            <i class="fas fa-coins"></i> ${program.payout}
+                                        </span>
+                                        <span class="program-status">
+                                            <i class="fas fa-check-circle"></i> Active
+                                        </span>
+                                    </div>
+                                    <p>${program.details}</p>
+                                    <div class="program-actions">
+                                        <button class="primary-btn" onclick="showProgramModal(${program.id})">
+                                            <i class="fas fa-info-circle"></i>
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function populateHistory() {
+            const tbody = document.getElementById('history-table-body');
+            tbody.innerHTML = completedAffiliates.map(affiliate => `
+                <tr>
+                    <td>${affiliate.brand}</td>
+                    <td>${affiliate.program}</td>
+                    <td>${affiliate.reward}</td>
+                    <td><span class="status-badge status-${affiliate.status.toLowerCase().replace(' ', '-')}"
+                    >${affiliate.status}</span></td>
+                    <td>${affiliate.date}</td>
+                </tr>
+            `).join('');
+        }
+
+        function populateRedeemModal() {
+            const codeList = document.getElementById('code-list');
+            codeList.innerHTML = redeemCodes.map(code => `
+                <div class="code-item">
+                    <div class="code-brand">
+                        <i class="${code.brand === 'Binance' ? 'fab fa-btc' : 'fas fa-exchange-alt'}"></i>
+                        ${code.brand}
+                    </div>
+                    <div class="code-value">${code.code}</div>
+                    <span class="code-status code-${code.status.toLowerCase()}">
+                        <i class="fas fa-check-circle"></i>
+                        ${code.status}
+                    </span>
+                    <p>${code.instructions}</p>
+                </div>
+            `).join('');
+        }
+
+        function showProgramModal(id) {
+            const program = programs.find(p => p.id === id);
+            if (!program) return;
+
+            document.getElementById('modal-title').textContent = program.title;
+            document.getElementById('modal-details').textContent = program.details;
+            document.getElementById('modal-guidelines').textContent = program.guidelines;
+            document.getElementById('modal-pros').innerHTML = program.pros.map(pro => `<li>${pro}</li>`).join('');
+            document.getElementById('modal-payout').textContent = program.payout;
+
+            const actionContainer = document.getElementById('action-container');
+            actionContainer.innerHTML = '';
+
+            const buttonGroup = document.getElementById('button-group');
+            buttonGroup.innerHTML = '';
+
+            const progress = userProgress[id] || { accepted: false, signUps: 0, tradingVolume: 0, transactingUsers: 0, paymentAmount: 0, amountEarned: 0, submitted: false };
+
+            if (['Sign Up', 'Trading Volume', 'Transacting Users', 'Pay for a Product'].includes(program.category)) {
+                if (!progress.accepted) {
+                    buttonGroup.innerHTML = `
+                        <button class="modal-btn modal-btn-primary" onclick="acceptProgram(${id})">
+                            <i class="fas fa-check"></i> Accept Offer
+                        </button>
+                        <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
+                            <i class="fas fa-times"></i> Close
+                        </button>
+                    `;
+                } else {
+                    let progressText = '';
+                    if (program.category === 'Sign Up') progressText = `Sign-ups: ${progress.signUps || 0}`;
+                    else if (program.category === 'Trading Volume') progressText = `Trading Volume: $${(progress.tradingVolume || 0).toLocaleString()}`;
+                    else if (program.category === 'Transacting Users') progressText = `Users: ${progress.transactingUsers || 0}`;
+                    else if (program.category === 'Pay for a Product') progressText = `Paid: $${(progress.paymentAmount || 0).toLocaleString()}`;
+
+                    actionContainer.innerHTML = `
+                        <div class="modal-section">
+                            <h4><i class="fas fa-link"></i> Your Referral Link</h4>
+                            <p class="referral-link">${generateUniqueLink('https://rewardrush.com', id)}</p>
+                            <button class="modal-btn modal-btn-secondary" onclick="copyToClipboard('${generateUniqueLink('https://rewardrush.com', id)}')">
+                                <i class="fas fa-copy"></i> Copy Link
+                            </button>
+                        </div>
+                        <div class="modal-section">
+                            <h4><i class="fas fa-chart-line"></i> Your Progress</h4>
+                            <p>${progressText}</p>
+                            <p>Amount Earned: <span class="highlight">$${(progress.amountEarned || 0).toFixed(2)}</span></p>
+                        </div>
+                    `;
+                    buttonGroup.innerHTML = `
+                        <button class="modal-btn modal-btn-primary" onclick="claimReward(${id})">
+                            <i class="fas fa-gift"></i> Claim Reward
+                        </button>
+                        <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
+                            <i class="fas fa-times"></i> Close
+                        </button>
+                    `;
+                }
+            } else if (['Post on Socials', 'Video Creation'].includes(program.category)) {
+                if (!progress.accepted) {
+                    buttonGroup.innerHTML = `
+                        <button class="modal-btn modal-btn-primary" onclick="acceptProgram(${id})">
+                            <i class="fas fa-check"></i> Accept Offer
+                        </button>
+                        <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
+                            <i class="fas fa-times"></i> Close
+                        </button>
+                    `;
+                } else if (!progress.submitted) {
+                    actionContainer.innerHTML = `
+                        <div class="modal-section">
+                            <h4><i class="fas fa-paperclip"></i> Submit Your Work</h4>
+                            <input type="text" class="modal-input" id="submission-link" placeholder="Paste your ${program.category.toLowerCase()} link here">
+                        </div>
+                    `;
+                    buttonGroup.innerHTML = `
+                        <button class="modal-btn modal-btn-primary" onclick="submitContent(${id})">
+                            <i class="fas fa-paper-plane"></i> Submit
+                        </button>
+                        <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
+                            <i class="fas fa-times"></i> Close
+                        </button>
+                    `;
+                } else {
+                    actionContainer.innerHTML = `
+                        <div class="modal-section">
+                            <h4><i class="fas fa-check-circle"></i> Submission Received</h4>
+                            <p>Your submission: <a href="${progress.link}" target="_blank">${progress.link}</a></p>
+                            <p>Status: <span class="highlight">Pending Review</span></p>
+                        </div>
+                    `;
+                    buttonGroup.innerHTML = `
+                        <button class="modal-btn modal-btn-primary" onclick="claimReward(${id})">
+                            <i class="fas fa-gift"></i> Claim Reward
+                        </button>
+                        <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
+                            <i class="fas fa-times"></i> Close
+                        </button>
+                    `;
+                }
+            }
+
+            document.getElementById('program-modal').classList.add('open');
+        }
+
+        function acceptProgram(id) {
+            userProgress[id] = { ...userProgress[id], accepted: true };
+            if (['Post on Socials', 'Video Creation'].includes(programs.find(p => p.id === id).category)) {
+                userProgress[id].submitted = false;
+            }
+            showProgramModal(id);
+        }
+
+        function submitContent(id) {
+            const link = document.getElementById('submission-link').value;
+            if (link) {
+                userProgress[id] = { ...userProgress[id], submitted: true, link: link };
+                showProgramModal(id);
+            } else {
+                showToast('Please provide a valid link.', 'error');
+            }
+        }
+
+        function claimReward(id) {
+            closeModal();
+            document.getElementById('success-modal').classList.add('open');
+        }
+
+        function closeModal() {
+            document.getElementById('program-modal').classList.remove('open');
+            document.getElementById('redeem-modal').classList.remove('open');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('success-modal').classList.remove('open');
+        }
+
+        function openRedeemModal() {
+            populateRedeemModal();
+            document.getElementById('redeem-modal').classList.add('open');
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Link copied to clipboard!', 'success');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                showToast('Failed to copy link', 'error');
+            });
+        }
+
+        function openWithdrawModal() {
+            showToast('Withdraw functionality coming soon!', 'info');
+        }
+
+        function showReferrals() {
+            showToast('Referral list coming soon!', 'info');
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                ${message}
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }, 100);
+        }
+
+        function toggleMenu() {
+            document.getElementById('nav-menu').classList.toggle('open');
+        }
+
+        function logout() {
+            window.location.href = 'auth.html';
+        }
+
+        async function init() {
+            await fetchPrograms();
+            populateHistory();
+            document.querySelectorAll('.dashboard-card, .program-card').forEach((card, index) => {
+                card.classList.add(`delay-${index % 3}`);
+            });
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

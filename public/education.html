@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RewardRush - Education Hub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #6c5ce7;
+            --primary-light: #a29bfe;
+            --primary-dark: #5649d1;
+            --secondary: #00cec9;
+            --accent: #fd79a8;
+            --dark: #2d3436;
+            --darker: #1e272e;
+            --light: #f5f6fa;
+            --lighter: #ffffff;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #d63031;
+            --border-radius: 12px;
+            --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            min-height: 100vh;
+            display: flex;
+        }
+        
+        /* Navigation */
+        nav {
+            background: rgba(30, 39, 46, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo i {
+            font-size: 1.5rem;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+        
+        .nav-menu a {
+            color: var(--light);
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: var(--transition);
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+        }
+        
+        .nav-menu a:hover {
+            color: var(--primary-light);
+            background: rgba(108, 92, 231, 0.1);
+        }
+        
+        .nav-menu a.active {
+            color: var(--primary-light);
+            background: rgba(108, 92, 231, 0.2);
+        }
+        
+        .nav-menu .profile-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .nav-menu .profile-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
+        }
+        
+        .hamburger {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary-light);
+            z-index: 101;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(30, 39, 46, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            position: fixed;
+            top: 80px;
+            bottom: 0;
+            left: 0;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 90;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+        
+        .sidebar-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary-light);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .sidebar-link {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .sidebar-link:hover, .sidebar-link.active {
+            background: rgba(108, 92, 231, 0.15);
+            color: var(--primary-light);
+        }
+        
+        .sidebar-link i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding-top: 80px;
+            transition: margin 0.3s ease;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Education Header */
+        .education-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+        
+        .education-header h2 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .education-header h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+        
+        .education-header p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        /* Section Cards */
+        .section-card {
+            background: rgba(45, 52, 54, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            margin-bottom: 2rem;
+            border-top: 4px solid var(--primary);
+        }
+        
+        .section-header {
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: rgba(30, 39, 46, 0.5);
+        }
+        
+        .section-header h3 {
+            font-size: 1.3rem;
+            color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .section-header .toggle-icon {
+            color: var(--primary-light);
+            transition: transform 0.3s ease;
+        }
+        
+        .section-header.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .section-content.active {
+            max-height: 5000px;
+        }
+        
+        /* Education Grid */
+        .education-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: 0 1.5rem 1.5rem;
+        }
+        
+        .education-item {
+            background: rgba(30, 39, 46, 0.5);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: var(--transition);
+            border-left: 3px solid var(--primary);
+            cursor: pointer;
+        }
+        
+        .education-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(108, 92, 231, 0.1);
+        }
+        
+        .education-item a {
+            display: block;
+            color: var(--light);
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .education-item a:hover {
+            color: var(--secondary);
+        }
+        
+        .education-item h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            color: var(--primary-light);
+        }
+        
+        .education-item p {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+        
+        .content-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .content-type {
+            background: rgba(0, 206, 201, 0.2);
+            color: var(--secondary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        /* See More Button */
+        .see-more {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding: 0 1.5rem 1.5rem;
+        }
+        
+        .see-more-btn {
+            background: rgba(108, 92, 231, 0.1);
+            color: var(--primary-light);
+            border: 1px solid var(--primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .see-more-btn:hover {
+            background: rgba(108, 92, 231, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        /* Expert Booking Section */
+        .expert-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 0 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .filter-select {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(30, 39, 46, 0.8);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            border-radius: 8px;
+            color: var(--light);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+        
+        .filter-select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+        
+        .expert-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            padding: 0 1.5rem;
+        }
+        
+        .expert-card {
+            background: rgba(30, 39, 46, 0.5);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            transition: var(--transition);
+            border-left: 3px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .expert-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow);
+        }
+        
+        .expert-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+        
+        .expert-card:hover::before {
+            opacity: 1;
+        }
+        
+        .expert-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .expert-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+        
+        .expert-name {
+            font-size: 1.2rem;
+            color: var(--primary-light);
+            margin-bottom: 0.25rem;
+        }
+        
+        .expert-title {
+            font-size: 0.85rem;
+            color: var(--secondary);
+        }
+        
+        .expert-bio {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .expert-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .expert-rate {
+            font-weight: 600;
+            color: var(--success);
+        }
+        
+        .expert-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .view-profile-btn, .book-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+        }
+        
+        .view-profile-btn {
+            background: rgba(108, 92, 231, 0.1);
+            color: var(--primary-light);
+        }
+        
+        .view-profile-btn:hover {
+            background: rgba(108, 92, 231, 0.2);
+        }
+        
+        .book-btn {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .book-btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        /* Community Chat Section */
+        .chat-container {
+            background: rgba(45, 52, 54, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+        }
+        
+        .chat-header {
+            padding: 1.5rem;
+            background: rgba(30, 39, 46, 0.5);
+            border-bottom: 1px solid rgba(108, 92, 231, 0.2);
+        }
+        
+        .chat-header h3 {
+            font-size: 1.5rem;
+            color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .chat-messages {
+            height: 350px;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: rgba(30, 39, 46, 0.3);
+        }
+        
+        .message {
+            background: rgba(108, 92, 231, 0.1);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            max-width: 80%;
+            align-self: flex-start;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .message.user {
+            background: rgba(0, 206, 201, 0.2);
+            align-self: flex-end;
+        }
+        
+        .message-text {
+            font-size: 0.95rem;
+            color: var(--light);
+            line-height: 1.4;
+        }
+        
+        .message-time {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 0.25rem;
+            text-align: right;
+        }
+        
+        .chat-input-container {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1.5rem;
+            background: rgba(30, 39, 46, 0.5);
+            border-top: 1px solid rgba(108, 92, 231, 0.2);
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 0.9rem 1rem;
+            background: rgba(30, 39, 46, 0.8);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            border-radius: 8px;
+            color: var(--light);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+        
+        .chat-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+        
+        .send-btn {
+            background: var(--primary);
+            color: white;
+            padding: 0 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .send-btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background: var(--darker);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--light);
+            transition: var(--transition);
+        }
+        
+        .close-modal:hover {
+            color: var(--accent);
+        }
+        
+        /* Profile Modal Specific Styles */
+        .expert-profile-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .expert-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+        }
+        
+        .profile-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(108, 92, 231, 0.2);
+        }
+        
+        .profile-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .profile-section h4 {
+            color: var(--primary-light);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .profile-bio {
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(108, 92, 231, 0.1);
+            border-radius: 8px;
+            color: var(--light);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .social-link:hover {
+            background: rgba(108, 92, 231, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .portfolio-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .portfolio-item {
+            background: rgba(30, 39, 46, 0.5);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid var(--secondary);
+            transition: var(--transition);
+        }
+        
+        .portfolio-item:hover {
+            transform: translateY(-3px);
+        }
+        
+        .portfolio-item h5 {
+            color: var(--light);
+            margin-bottom: 0.25rem;
+        }
+        
+        .portfolio-item p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+        }
+        
+        /* Booking Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--light);
+            font-size: 0.95rem;
+        }
+        
+        .form-group textarea, 
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(30, 39, 46, 0.8);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            border-radius: 8px;
+            color: var(--light);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+        
+        .submit-booking {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: var(--transition);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .submit-booking:hover {
+            background: #00a884;
+            transform: translateY(-2px);
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 99;
+                top: 80px;
+                width: 280px;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .education-grid,
+            .expert-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            .education-header h2 {
+                font-size: 2rem;
+            }
+            
+            .nav-menu {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 280px;
+                height: 100vh;
+                background: var(--darker);
+                flex-direction: column;
+                padding: 2rem;
+                gap: 1.5rem;
+                transition: right 0.3s ease;
+                box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
+            }
+            
+            .nav-menu.open {
+                right: 0;
+            }
+            
+            .hamburger {
+                display: block;
+            }
+            
+            .chat-messages {
+                height: 300px;
+            }
+            
+            .expert-profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .expert-actions {
+                flex-direction: column;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+            }
+            
+            .expert-filters {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .filter-group {
+                min-width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .education-grid,
+            .expert-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .education-header h2 {
+                font-size: 1.8rem;
+            }
+            
+            .education-header p {
+                font-size: 1rem;
+            }
+            
+            .chat-input-container {
+                flex-direction: column;
+            }
+            
+            .send-btn {
+                padding: 0.75rem;
+                justify-content: center;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .animate-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease forwards;
+        }
+        
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--light);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <i class="fas fa-rocket"></i>
+            <span>RewardRush</span>
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">
+            <i class="fas fa-bars"></i>
+        </div>
+        <div class="nav-menu" id="nav-menu">
+            <a href="groweasy.html"><i class="fas fa-tasks"></i> Quests</a>
+            <a href="affilaite.html"><i class="fas fa-users"></i> Affiliate</a>
+            <a href="education.html" class="active"><i class="fas fa-graduation-cap"></i> Education</a>
+            <a href="founder.html"><i class="fas fa-user-tie"></i> Founder</a>
+            <a href="profile.html" class="profile-btn">
+                <i class="fas fa-user"></i>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-section">
+            <h3 class="sidebar-title"><i class="fas fa-graduation-cap"></i> Education Hub</h3>
+            <a href="#education-section" class="sidebar-link active" onclick="scrollToSection('education-section')">
+                <i class="fas fa-book-open"></i> Learning Resources
+            </a>
+            <a href="#expert-section" class="sidebar-link" onclick="scrollToSection('expert-section')">
+                <i class="fas fa-user-tie"></i> Expert Sessions
+            </a>
+            <a href="#community-chat" class="sidebar-link" onclick="scrollToSection('community-chat')">
+                <i class="fas fa-comments"></i> Community Chat
+            </a>
+        </div>
+        
+        <div class="sidebar-section">
+            <h3 class="sidebar-title"><i class="fas fa-bookmark"></i> Quick Links</h3>
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-star"></i> Featured Content
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-fire"></i> Trending Topics
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-history"></i> Recent Activity
+            </a>
+        </div>
+        
+        <div class="sidebar-section">
+            <h3 class="sidebar-title"><i class="fas fa-cog"></i> Settings</h3>
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-bell"></i> Notifications
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-palette"></i> Appearance
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="fas fa-question-circle"></i> Help Center
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="education-header">
+                <h2>Professional Learning Hub</h2>
+                <p>Expand your crypto knowledge with our curated educational resources, community discussions, and expert consultations</p>
+            </div>
+            
+            <!-- Learning Resources Section -->
+            <div class="section-card animate-in" id="education-section">
+                <div class="section-header" onclick="toggleSection('education-content')">
+                    <h3><i class="fas fa-book-open"></i> Learning Resources</h3>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+                <div class="section-content" id="education-content">
+                    <div class="education-grid" id="education-grid">
+                        <!-- Categories will be populated dynamically -->
+                    </div>
+                    <div class="see-more">
+                        <button class="see-more-btn" id="load-more-education" onclick="loadMoreEducation()">
+                            <i class="fas fa-plus"></i> Show More Resources
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Expert Booking Section -->
+            <div class="section-card animate-in delay-1" id="expert-section">
+                <div class="section-header" onclick="toggleSection('expert-content')">
+                    <h3><i class="fas fa-user-tie"></i> Book a Session with Experts</h3>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+                <div class="section-content" id="expert-content">
+                    <div class="expert-filters">
+                        <div class="filter-group">
+                            <label for="expert-category"><i class="fas fa-tag"></i> Category</label>
+                            <select id="expert-category" class="filter-select" onchange="filterExperts()">
+                                <option value="all">All Categories</option>
+                                <option value="blockchain">Blockchain</option>
+                                <option value="trading">Trading</option>
+                                <option value="development">Development</option>
+                                <option value="security">Security</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="expert-rate"><i class="fas fa-dollar-sign"></i> Rate</label>
+                            <select id="expert-rate" class="filter-select" onchange="filterExperts()">
+                                <option value="all">Any Rate</option>
+                                <option value="50">Under $50/hr</option>
+                                <option value="100">$50-$100/hr</option>
+                                <option value="200">$100-$200/hr</option>
+                                <option value="201">Over $200/hr</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="expert-sort"><i class="fas fa-sort"></i> Sort By</label>
+                            <select id="expert-sort" class="filter-select" onchange="filterExperts()">
+                                <option value="rating">Highest Rated</option>
+                                <option value="rate-low">Rate: Low to High</option>
+                                <option value="rate-high">Rate: High to Low</option>
+                                <option value="name">Alphabetical</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="expert-grid" id="expert-grid">
+                        <!-- Experts will be populated dynamically -->
+                    </div>
+                    <div class="see-more">
+                        <button class="see-more-btn" id="load-more-experts" onclick="loadMoreExperts()">
+                            <i class="fas fa-plus"></i> Show More Experts
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Community Chat Section -->
+            <div class="section-card animate-in delay-2" id="community-chat">
+                <div class="section-header" onclick="toggleSection('chat-content')">
+                    <h3><i class="fas fa-comments"></i> Community Discussion</h3>
+                    <i class="fas fa-chevron-down toggle-icon"></i>
+                </div>
+                <div class="section-content" id="chat-content">
+                    <div class="chat-container">
+                        <div class="chat-header">
+                            <h3><i class="fas fa-comments"></i> Community Chat</h3>
+                        </div>
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="message">
+                                <div class="message-text">Welcome to the RewardRush community chat! Ask questions and share knowledge with other members.</div>
+                                <div class="message-time">System • Just now</div>
+                            </div>
+                        </div>
+                        <div class="chat-input-container">
+                            <input type="text" class="chat-input" id="chat-input" placeholder="Type your message...">
+                            <button class="send-btn" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i>
+                                <span class="desktop-text">Send</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal" id="profile-modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeProfileModal()">×</span>
+            <div class="expert-profile-header">
+                <img id="profile-avatar" src="" alt="Expert Avatar" class="expert-avatar-large">
+                <div>
+                    <h3 id="profile-name"></h3>
+                    <p id="profile-title" class="expert-title"></p>
+                    <p id="profile-rate" class="expert-rate"></p>
+                </div>
+            </div>
+            
+            <div class="profile-section">
+                <h4><i class="fas fa-user-tie"></i> About</h4>
+                <p id="profile-bio" class="profile-bio"></p>
+            </div>
+            
+            <div class="profile-section">
+                <h4><i class="fas fa-share-alt"></i> Social Links</h4>
+                <div class="social-links" id="profile-socials"></div>
+            </div>
+            
+            <div class="profile-section">
+                <h4><i class="fas fa-briefcase"></i> Portfolio</h4>
+                <div class="portfolio-items" id="profile-portfolio"></div>
+            </div>
+            
+            <button class="book-btn" onclick="openBookingModalFromProfile()">
+                <i class="fas fa-calendar-check"></i> Book Session
+            </button>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div class="modal" id="booking-modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">×</span>
+            <h3 id="expert-name-modal"></h3>
+            <div class="expert-info-modal">
+                <div class="expert-socials" id="expert-socials"></div>
+                <div class="expert-portfolio" id="expert-portfolio"></div>
+            </div>
+            <form id="booking-form">
+                <input type="hidden" id="expert-id">
+                <div class="form-group">
+                    <label for="booking-reason">Reason for booking</label>
+                    <textarea id="booking-reason" required placeholder="Explain what you hope to gain from this session"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="preferred-date">Preferred date & time</label>
+                    <input type="datetime-local" id="preferred-date" required>
+                </div>
+                <button type="submit" class="submit-booking">
+                    <span id="submit-text">Submit Request</span>
+                    <span id="submit-spinner" class="loading-spinner" style="display: none;"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentExpertId = null;
+        let messages = [
+            { text: 'Welcome to the RewardRush community chat! Ask questions and share knowledge with other members.', 
+              time: 'Just now', 
+              isUser: false }
+        ];
+        
+        // Pagination variables
+        let educationPage = 1;
+        let expertsPage = 1;
+        const itemsPerPage = 6;
+        let allEducationItems = [];
+        let allExperts = [];
+        let filteredExperts = [];
+
+        // Check session
+        async function checkSession() {
+            try {
+                const response = await fetch('/check-session');
+                const result = await response.json();
+                if (!result.loggedIn) {
+                    window.location.href = '/auth.html';
+                } else {
+                    populateEducationContent();
+                    loadExperts();
+                    displayMessages();
+                    setupEventListeners();
+                }
+            } catch (err) {
+                console.error('Error checking session:', err);
+                window.location.href = '/auth.html';
+            }
+        }
+
+        // Navigation
+        function toggleMenu() {
+            document.getElementById('nav-menu').classList.toggle('open');
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth' });
+                // Close mobile menu if open
+                if (window.innerWidth <= 768) {
+                    document.getElementById('nav-menu').classList.remove('open');
+                    document.getElementById('sidebar').classList.remove('open');
+                }
+            }
+        }
+
+        function toggleSection(sectionId) {
+            const sectionContent = document.getElementById(sectionId);
+            const sectionHeader = sectionContent.previousElementSibling;
+            
+            sectionHeader.classList.toggle('active');
+            sectionContent.classList.toggle('active');
+        }
+
+        // Education Content
+        async function populateEducationContent() {
+            try {
+                const response = await fetch('/education-content');
+                if (!response.ok) throw new Error('Failed to fetch education content');
+                
+                const data = await response.json();
+                const categories = data.categories || [];
+                allEducationItems = categories;
+                
+                if (categories.length === 0) {
+                    document.getElementById('education-grid').innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                            <i class="fas fa-book-open" style="font-size: 2rem; color: var(--primary-light); margin-bottom: 1rem;"></i>
+                            <p>No educational content available at the moment. Check back later!</p>
+                        </div>
+                    `;
+                    document.getElementById('load-more-education').style.display = 'none';
+                    return;
+                }
+
+                displayEducationItems();
+            } catch (err) {
+                console.error('Error loading education content:', err);
+                document.getElementById('education-grid').innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--danger);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Failed to load content. Please try again later.</p>
+                    </div>
+                `;
+                document.getElementById('load-more-education').style.display = 'none';
+            }
+        }
+
+        function displayEducationItems() {
+            const educationGrid = document.getElementById('education-grid');
+            const startIndex = (educationPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const itemsToShow = allEducationItems.slice(0, endIndex);
+            
+            if (itemsToShow.length === 0) {
+                educationGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                        <i class="fas fa-book-open" style="font-size: 2rem; color: var(--primary-light); margin-bottom: 1rem;"></i>
+                        <p>No educational content available at the moment. Check back later!</p>
+                    </div>
+                `;
+                document.getElementById('load-more-education').style.display = 'none';
+                return;
+            }
+            
+            educationGrid.innerHTML = itemsToShow.map((category, index) => {
+                const categoryId = category.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                return `
+                    <div class="education-item animate-in delay-${index % 3}">
+                        <h4><i class="fas ${getIconForCategory(category.name)}"></i> ${category.name}</h4>
+                        <div class="content-items">
+                            ${category.content.slice(0, 3).map(item => `
+                                <div class="content-item">
+                                    <a href="${item.source.includes('http') ? item.source : '#'}" target="_blank">
+                                        <i class="fas ${getIconForType(item.type)}"></i>
+                                        ${item.title}
+                                    </a>
+                                    <div class="content-meta">
+                                        <span class="content-type">${item.type}</span>
+                                        <span>• ${item.duration || 'N/A'}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${category.content.length > 3 ? `
+                            <a href="#" class="see-more-link" onclick="expandCategory('${categoryId}')" style="display: block; margin-top: 0.5rem; color: var(--primary-light); font-size: 0.9rem;">
+                                + ${category.content.length - 3} more resources
+                            </a>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            // Hide "Load More" button if all items are shown
+            if (endIndex >= allEducationItems.length) {
+                document.getElementById('load-more-education').style.display = 'none';
+            } else {
+                document.getElementById('load-more-education').style.display = 'inline-flex';
+            }
+        }
+
+        function expandCategory(categoryId) {
+            event.preventDefault();
+            // Implement category expansion logic here
+            alert(`Expanding category ${categoryId} - would show all resources in this category`);
+        }
+
+        function loadMoreEducation() {
+            educationPage++;
+            displayEducationItems();
+            // Smooth scroll to the new items
+            setTimeout(() => {
+                document.getElementById('load-more-education').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'nearest' 
+                });
+            }, 100);
+        }
+
+        function getIconForCategory(categoryName) {
+            const categoryIcons = {
+                'blockchain': 'fa-link',
+                'trading': 'fa-chart-line',
+                'development': 'fa-code',
+                'security': 'fa-shield-alt',
+                'defi': 'fa-coins',
+                'nft': 'fa-image'
+            };
+            
+            const lowerName = categoryName.toLowerCase();
+            for (const [key, icon] of Object.entries(categoryIcons)) {
+                if (lowerName.includes(key)) {
+                    return icon;
+                }
+            }
+            return 'fa-book';
+        }
+
+        function getIconForType(type) {
+            const typeIcons = {
+                'article': 'fa-newspaper',
+                'video': 'fa-video',
+                'course': 'fa-graduation-cap',
+                'tutorial': 'fa-laptop-code',
+                'guide': 'fa-book',
+                'podcast': 'fa-podcast',
+                'whitepaper': 'fa-file-alt',
+                'webinar': 'fa-desktop'
+            };
+            return typeIcons[type.toLowerCase()] || 'fa-link';
+        }
+
+        // Experts Section
+        async function loadExperts() {
+            try {
+                const response = await fetch('/experts');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const experts = await response.json();
+                allExperts = Object.values(experts).filter(expert => !expert.hidden);
+                filteredExperts = [...allExperts];
+                
+                filterExperts(); // Initial display with default filters
+            } catch (err) {
+                console.error('Error loading experts:', err);
+                const errorMessage = err.message || 'Unknown error occurred';
+                
+                document.getElementById('expert-grid').innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--danger);">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>Failed to load experts. Please try again later.</p>
+                        <p>Error: ${errorMessage}</p>
+                    </div>
+                `;
+                document.getElementById('load-more-experts').style.display = 'none';
+            }
+        }
+
+        function filterExperts() {
+            const categoryFilter = document.getElementById('expert-category').value;
+            const rateFilter = document.getElementById('expert-rate').value;
+            const sortFilter = document.getElementById('expert-sort').value;
+            
+            // Reset pagination when filters change
+            expertsPage = 1;
+            
+            // Apply filters
+            filteredExperts = allExperts.filter(expert => {
+                const matchesCategory = categoryFilter === 'all' || 
+                    (expert.categories && expert.categories.includes(categoryFilter));
+                
+                const matchesRate = rateFilter === 'all' || 
+                    (rateFilter === '50' && expert.rate < 50) ||
+                    (rateFilter === '100' && expert.rate >= 50 && expert.rate <= 100) ||
+                    (rateFilter === '200' && expert.rate > 100 && expert.rate <= 200) ||
+                    (rateFilter === '201' && expert.rate > 200);
+                
+                return matchesCategory && matchesRate;
+            });
+            
+            // Apply sorting
+            switch(sortFilter) {
+                case 'rating':
+                    filteredExperts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                    break;
+                case 'rate-low':
+                    filteredExperts.sort((a, b) => a.rate - b.rate);
+                    break;
+                case 'rate-high':
+                    filteredExperts.sort((a, b) => b.rate - a.rate);
+                    break;
+                case 'name':
+                    filteredExperts.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+                default:
+                    // Default sorting (by rating)
+                    filteredExperts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+            }
+            
+            displayExperts();
+        }
+
+        function displayExperts() {
+            const expertGrid = document.getElementById('expert-grid');
+            const startIndex = (expertsPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const expertsToShow = filteredExperts.slice(0, endIndex);
+            
+            if (expertsToShow.length === 0) {
+                expertGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 2rem;">
+                        <i class="fas fa-user-tie" style="font-size: 2rem; color: var(--primary-light); margin-bottom: 1rem;"></i>
+                        <p>No experts match your filters. Try adjusting your search criteria.</p>
+                    </div>
+                `;
+                document.getElementById('load-more-experts').style.display = 'none';
+                return;
+            }
+            
+            expertGrid.innerHTML = expertsToShow.map(expert => `
+                <div class="expert-card">
+                    <div class="expert-header">
+                        <img src="${expert.avatar || 'https://via.placeholder.com/60'}" 
+                             alt="${expert.name}" 
+                             class="expert-avatar">
+                        <div>
+                            <h4 class="expert-name">${expert.name}</h4>
+                            <p class="expert-title">${expert.title}</p>
+                        </div>
+                    </div>
+                    <p class="expert-bio">${expert.bio.substring(0, 100)}${expert.bio.length > 100 ? '...' : ''}</p>
+                    <div class="expert-meta">
+                        <span class="expert-rate">$${expert.rate}/hour</span>
+                        <div class="expert-actions">
+                            <button class="view-profile-btn" onclick="openProfileModal('${expert.id}')">
+                                <i class="fas fa-user-circle"></i> <span class="desktop-text">Profile</span>
+                            </button>
+                            <button class="book-btn" onclick="openBookingModal('${expert.id}')">
+                                <i class="fas fa-calendar-check"></i> <span class="desktop-text">Book</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Hide "Load More" button if all experts are shown
+            if (endIndex >= filteredExperts.length) {
+                document.getElementById('load-more-experts').style.display = 'none';
+            } else {
+                document.getElementById('load-more-experts').style.display = 'inline-flex';
+            }
+        }
+
+        function loadMoreExperts() {
+            expertsPage++;
+            displayExperts();
+            // Smooth scroll to the new experts
+            setTimeout(() => {
+                document.getElementById('load-more-experts').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'nearest' 
+                });
+            }, 100);
+        }
+
+        // Profile Modal
+        async function openProfileModal(expertId) {
+            try {
+                currentExpertId = expertId;
+                
+                const response = await fetch('/experts');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const experts = await response.json();
+                const expert = experts[expertId];
+                if (!expert) throw new Error('Expert not found');
+                
+                // Set basic info
+                document.getElementById('profile-avatar').src = expert.avatar || 'https://via.placeholder.com/100';
+                document.getElementById('profile-name').textContent = expert.name;
+                document.getElementById('profile-title').textContent = expert.title;
+                document.getElementById('profile-rate').textContent = `$${expert.rate}/hour`;
+                document.getElementById('profile-bio').textContent = expert.bio;
+                
+                // Set social links
+                const socialsContainer = document.getElementById('profile-socials');
+                socialsContainer.innerHTML = expert.socials ? expert.socials.map(social => `
+                    <a href="${social.url}" target="_blank" class="social-link">
+                        <i class="fab fa-${social.platform.toLowerCase()}"></i>
+                        ${social.platform}
+                    </a>
+                `).join('') : '<p>No social links provided</p>';
+                
+                // Set portfolio items
+                const portfolioContainer = document.getElementById('profile-portfolio');
+                portfolioContainer.innerHTML = expert.portfolio ? expert.portfolio.map(item => `
+                    <div class="portfolio-item">
+                        <h5>${item.name}</h5>
+                        ${item.description ? `<p>${item.description}</p>` : ''}
+                        ${item.years ? `<small>${item.years}</small>` : ''}
+                        ${item.link ? `<a href="${item.link}" target="_blank" style="color: var(--primary-light); font-size: 0.8rem; display: inline-block; margin-top: 0.5rem;">
+                            View ${item.type === 'project' ? 'Project' : 'Profile'}
+                        </a>` : ''}
+                    </div>
+                `).join('') : '<p>No portfolio items provided</p>';
+                
+                document.getElementById('profile-modal').style.display = 'flex';
+            } catch (err) {
+                console.error('Error in openProfileModal:', err);
+                alert(`Failed to load expert profile: ${err.message}`);
+            }
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profile-modal').style.display = 'none';
+            currentExpertId = null;
+        }
+
+        // Booking Modal
+        async function openBookingModal(expertId) {
+            try {
+                currentExpertId = expertId;
+                const response = await fetch('/experts');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const experts = await response.json();
+                const expert = experts[expertId];
+                if (!expert) throw new Error('Expert not found');
+                
+                document.getElementById('expert-id').value = expert.id;
+                document.getElementById('expert-name-modal').textContent = `${expert.name} - ${expert.title}`;
+                
+                // Populate social links
+                const socialsContainer = document.getElementById('expert-socials');
+                socialsContainer.innerHTML = expert.socials ? `
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        ${expert.socials.map(social => `
+                            <a href="${social.url}" target="_blank" class="social-link">
+                                <i class="fab fa-${social.platform.toLowerCase()}"></i>
+                                ${social.platform}
+                            </a>
+                        `).join('')}
+                    </div>
+                ` : '<p>No social links provided</p>';
+                
+                // Populate portfolio
+                const portfolioContainer = document.getElementById('expert-portfolio');
+                portfolioContainer.innerHTML = expert.portfolio ? `
+                    <h4>Experience</h4>
+                    <div class="portfolio-items">
+                        ${expert.portfolio.slice(0, 3).map(item => `
+                            <div class="portfolio-item">
+                                <h5>${item.name}</h5>
+                                ${item.description ? `<p>${item.description.substring(0, 60)}${item.description.length > 60 ? '...' : ''}</p>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : '<p>No portfolio items provided</p>';
+                
+                document.getElementById('booking-modal').style.display = 'flex';
+            } catch (err) {
+                console.error('Error opening booking modal:', err);
+                alert(`Failed to load expert details: ${err.message}`);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('booking-modal').style.display = 'none';
+            document.getElementById('booking-reason').value = '';
+            document.getElementById('preferred-date').value = '';
+        }
+
+        function openBookingModalFromProfile() {
+            closeProfileModal();
+            if (currentExpertId) {
+                openBookingModal(currentExpertId);
+            }
+        }
+
+        async function handleBookingSubmit(e) {
+            e.preventDefault();
+            
+            const expertId = document.getElementById('expert-id').value;
+            const reason = document.getElementById('booking-reason').value;
+            const preferredDate = document.getElementById('preferred-date').value;
+            
+            if (!reason || !preferredDate) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            try {
+                // Show loading state
+                document.getElementById('submit-text').style.display = 'none';
+                document.getElementById('submit-spinner').style.display = 'inline-block';
+                
+                const response = await fetch('/book-expert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        expertId,
+                        reason,
+                        preferredDate
+                    })
+                });
+                
+                // Reset loading state
+                document.getElementById('submit-text').style.display = 'inline-block';
+                document.getElementById('submit-spinner').style.display = 'none';
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Your booking request has been submitted! Our team will review it and send you payment details shortly.');
+                    closeModal();
+                } else {
+                    alert(data.message || 'Failed to submit booking request. Please try again.');
+                }
+            } catch (err) {
+                console.error('Error submitting booking:', err);
+                // Reset loading state
+                document.getElementById('submit-text').style.display = 'inline-block';
+                document.getElementById('submit-spinner').style.display = 'none';
+                alert('An error occurred. Please try again.');
+            }
+        }
+
+        // Chat Functionality
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (message) {
+                messages.push({ 
+                    text: message, 
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    isUser: true 
+                });
+                input.value = '';
+                displayMessages();
+                
+                // Simulate response
+                setTimeout(() => {
+                    const responses = [
+                        "That's a great question!",
+                        "I'd be happy to help with that.",
+                        "Have you checked our education resources on this topic?",
+                        "Interesting point! What do others think?",
+                        "Let me find someone who can answer that."
+                    ];
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                    
+                    messages.push({ 
+                        text: randomResponse, 
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        isUser: false,
+                        sender: 'Community Helper'
+                    });
+                    displayMessages();
+                }, 1000);
+            }
+        }
+
+        function displayMessages() {
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = messages.map(msg => `
+                <div class="message ${msg.isUser ? 'user' : ''}">
+                    <div class="message-text">${msg.text}</div>
+                    <div class="message-time">${msg.sender || (msg.isUser ? 'You' : 'System')} • ${msg.time}</div>
+                </div>
+            `).join('');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            document.getElementById('booking-form').addEventListener('submit', handleBookingSubmit);
+            document.getElementById('chat-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendMessage();
+            });
+            
+            // Toggle sidebar on mobile
+            document.getElementById('sidebar').addEventListener('click', function(e) {
+                if (e.target === this && window.innerWidth <= 1024) {
+                    this.classList.remove('open');
+                }
+            });
+            
+            // Close modals when clicking outside
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        if (this.id === 'profile-modal') {
+                            closeProfileModal();
+                        } else {
+                            closeModal();
+                        }
+                    }
+                });
+            });
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            checkSession();
+            
+            // Auto-expand first section
+            setTimeout(() => {
+                document.getElementById('education-content').classList.add('active');
+            }, 300);
+        };
+    </script>
+</body>
+</html>

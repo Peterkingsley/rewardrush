@@ -1,0 +1,121 @@
+{
+    "products": [
+        {
+            "id": 1,
+            "name": "Launching an Onramp Brand (e.g., OnRamp)",
+            "tools": "Ramp Instant SDK, Swapple white-label solution",
+            "brands": "Ramp Network, Swapple Onramp (150+ countries, 110+ assets), Onramp.us (B2B onboarding focus)",
+            "regulations": "Secure KYC/AML compliance, fiat-crypto integration, 24/7 support",
+            "competitors": "Swapple, Onramp Funds",
+            "uniqueness": "Focus on seamless B2B onboarding and extensive asset support",
+            "resources": []
+        },
+        {
+            "id": 2,
+            "name": "Building a Mobile Game (e.g., Blacktop Hoops)",
+            "tools": "Unity, Unreal Engine, Chartboost Mediation (ad monetization), GameAnalytics (metrics)",
+            "brands": "Chartboost, GameAnalytics",
+            "regulations": "Engaging gameplay, scalable servers, user acquisition strategy (CPIs)",
+            "competitors": "Cursed Crown, Toy Blast, Dreamdale",
+            "uniqueness": "Focus on immersive sports gameplay with advanced analytics",
+            "resources": [
+                { "name": "Appbrain stats", "url": "https://www.appbrain.com/" },
+                { "name": "Statista iOS reports", "url": "https://www.statista.com/" }
+            ]
+        },
+        {
+            "id": 3,
+            "name": "Setting Up a Crypto Exchange (e.g., Binance)",
+            "tools": "Unicsoft (blockchain/NFT integration), Ramp Network (on/off-ramp)",
+            "brands": "Chainalysis (compliance), Circle (USDC stablecoin)",
+            "regulations": "Regulatory licenses (e.g., NYDFS BitLicense), cold storage, high liquidity",
+            "competitors": "Kraken, Coinbase",
+            "uniqueness": "Integration of blockchain and NFT features with robust compliance",
+            "resources": [
+                { "name": "General market cost research", "url": "#" },
+                { "name": "Apptopia metrics", "url": "https://apptopia.com/" }
+            ]
+        },
+        {
+            "id": 4,
+            "name": "Launching an Onramp Brand (e.g., Swapple)",
+            "tools": "White-label payment solution, Snov.io (lead gen)",
+            "brands": "Swapple Onramp (500M+ users), Ramp Network",
+            "regulations": "One-click payment integration, fraud prevention",
+            "competitors": "OnRamp, Onramp Funds",
+            "uniqueness": "Massive user base with streamlined payment integration",
+            "resources": []
+        },
+        {
+            "id": 5,
+            "name": "Building a Mobile Game (e.g., Cursed Crown)",
+            "tools": "CoreX3D (browser-based), Machinations.io (economy design)",
+            "brands": "Glade (AI worlds)",
+            "regulations": "AI-driven narrative, multiplayer infrastructure",
+            "competitors": "Blacktop Hoops, Toy Blast, Dreamdale",
+            "uniqueness": "AI-driven narrative and multiplayer focus in a browser-based game",
+            "resources": [
+                { "name": "GameDeveloper.com lessons", "url": "https://www.gamedeveloper.com/" }
+            ]
+        },
+        {
+            "id": 6,
+            "name": "Setting Up a Crypto Exchange (e.g., Kraken)",
+            "tools": "Bitfinex API, Unicsoft (exchange infrastructure)",
+            "brands": "Deloitte (auditing), Binance Cloud",
+            "regulations": "2FA security, insurance funds, AML compliance",
+            "competitors": "Binance, Coinbase",
+            "uniqueness": "Emphasis on security and auditing with Deloitte partnership",
+            "resources": [
+                { "name": "Industry benchmarks", "url": "#" },
+                { "name": "Regulatory guides", "url": "#" }
+            ]
+        },
+        {
+            "id": 7,
+            "name": "Launching an Onramp Brand (e.g., Onramp Funds)",
+            "tools": "Insightly CRM, no-code workflows",
+            "brands": "Onramp Funds (eCommerce funding)",
+            "regulations": "Fast funding (24h), revenue-based repayment",
+            "competitors": "OnRamp, Swapple",
+            "uniqueness": "Quick funding solutions tailored for eCommerce",
+            "resources": []
+        },
+        {
+            "id": 8,
+            "name": "Building a Mobile Game (e.g., Toy Blast)",
+            "tools": "AppLovin (ad tools), Unity",
+            "brands": "Peak Games (development), Sensor Tower (analytics)",
+            "regulations": "Viral loop, regular content updates",
+            "competitors": "Blacktop Hoops, Cursed Crown, Dreamdale",
+            "uniqueness": "Viral mechanics with frequent updates to maintain user engagement",
+            "resources": [
+                { "name": "TheGamingEconomy.com insights", "url": "https://www.thegamingeconomy.com/" }
+            ]
+        },
+        {
+            "id": 9,
+            "name": "Setting Up a Crypto Exchange (e.g., Coinbase)",
+            "tools": "Circle API (stablecoins), Unicsoft (smart contracts)",
+            "brands": "Onramp (talent), Chainalysis (monitoring)",
+            "regulations": "FDIC insurance, API security, scalability",
+            "competitors": "Binance, Kraken",
+            "uniqueness": "Focus on regulatory compliance with FDIC insurance",
+            "resources": [
+                { "name": "Regulatory compliance docs", "url": "#" }
+            ]
+        },
+        {
+            "id": 10,
+            "name": "Building a Mobile Game (e.g., Dreamdale)",
+            "tools": "Unity, Machinations.io (flowcharts)",
+            "brands": "Wiserax (economy design), Chartboost",
+            "regulations": "Balanced economy, event-driven content",
+            "competitors": "Blacktop Hoops, Cursed Crown, Toy Blast",
+            "uniqueness": "Balanced economy with event-driven content to enhance player retention",
+            "resources": [
+                { "name": "Medium.com economy handbook", "url": "https://medium.com/" }
+            ]
+        }
+    ]
+}

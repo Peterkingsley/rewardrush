@@ -1,0 +1,24 @@
+{
+  "programs": [
+    {
+      "id": 2,
+      "category": "Sign Up",
+      "title": "Earn with ChatGPT Plus",
+      "guidelines": "ChatGPT Plus is a subscription service by OpenAI offering faster responses, priority access during peak times, and access to the latest models like GPT-4. As an affiliate, you can promote this subscription to tech enthusiasts, professionals, students, and businesses. Every time someone subscribes through your link, you earn a commission. Creative and educational campaigns often perform best.\nRefer users to ChatGPT Plus using your unique affiliate link. Ensure users sign up and complete a payment for the Plus plan. You must not use spam or misleading promotions. Only valid, unique sign-ups from real users will be counted. Monthly payouts are made based on confirmed subscriptions.",
+      "details": "Refer users to ChatGPT Plus using your unique affiliate link.",
+      "pros": [
+        "High-converting product",
+        "Backed by OpenAI",
+        "Monthly recurring potential",
+        "Trusted by millions",
+        "Popular across industries"
+      ],
+      "cons": [
+        "Requires paid subscription for payout",
+        "May not appeal to non-tech users",
+        "Competitive affiliate space"
+      ],
+      "payout": "$15/Subscription"
+    }
+  ]
+}

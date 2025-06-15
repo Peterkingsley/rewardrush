@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RewardRush - Crypto Opportunities Quest</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .quest-container {
+            max-width: 800px;
+            width: 100%;
+            background: #252540;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            border: 1px solid #00b7ff;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #00b7ff;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .question {
+            display: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .question.active {
+            display: block;
+        }
+
+        .question p {
+            font-family: 'Roboto', sans-serif;
+            font-size: 1rem;
+            color: #e0e0e0;
+            margin-bottom: 0.5rem;
+        }
+
+        .question label {
+            display: block;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+            color: #b0b0b0;
+            margin-bottom: 0.3rem;
+            cursor: pointer;
+        }
+
+        .question input[type="radio"] {
+            margin-right: 0.5rem;
+            accent-color: #8b00ff;
+        }
+
+        .question input[type="text"],
+        .question textarea {
+            width: 100%;
+            padding: 0.5rem;
+            background: #2f2f2f;
+            border: 1px solid #8b00ff;
+            border-radius: 0.25rem;
+            color: #e0e0e0;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .question input[type="radio"]:disabled,
+        .question input[type="text"]:disabled,
+        .question textarea:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .timer {
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+            color: #ff4500;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .next-btn {
+            background: linear-gradient(45deg, #00b7ff, #39ff14);
+            color: #1a1a2e;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background 0.3s;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .next-btn:hover {
+            background: linear-gradient(45deg, #39ff14, #00b7ff);
+        }
+
+        .next-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .final-message {
+            display: none;
+            text-align: center;
+        }
+
+        .final-message.active {
+            display: block;
+        }
+
+        .final-message p {
+            font-family: 'Roboto', sans-serif;
+            font-size: 1rem;
+            color: #e0e0e0;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 640px) {
+            .quest-container {
+                padding: 1rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="quest-container">
+        <h2>Discover the Future of Crypto Opportunities</h2>
+
+        <!-- Question 1 -->
+        <div class="question" id="q1">
+            <p>Have you ever heard stories of people who invested early in a new crypto project and saw massive gains?</p>
+            <label><input type="radio" name="q1" value="A" disabled> Yes, and I wish I’d been part of it!</label>
+            <label><input type="radio" name="q1" value="B" disabled> Yes, but I’m skeptical about those stories.</label>
+            <label><input type="radio" name="q1" value="C" disabled> No, I haven’t heard of that.</label>
+            <div class="timer" id="timer-q1">Please wait: 20 seconds</div>
+            <button class="next-btn" id="next-q1" disabled>Next</button>
+        </div>
+
+        <!-- Question 2 -->
+        <div class="question" id="q2">
+            <p>Imagine you missed out on a crypto project that turned a small investment into a life-changing sum—maybe a new token that skyrocketed. How would that make you feel? Type your thoughts.</p>
+            <textarea name="q2" rows="4" disabled></textarea>
+            <div class="timer" id="timer-q2">Please wait: 20 seconds</div>
+            <button class="next-btn" id="next-q2" disabled>Next</button>
+        </div>
+
+        <!-- Question 3 -->
+        <div class="question" id="q3">
+            <p>What if there was a way to get in on the ground floor of the next big crypto project—before it hits the mainstream? How interested would you be?</p>
+            <label><input type="radio" name="q3" value="A" disabled> Extremely interested—I’d jump at the chance!</label>
+            <label><input type="radio" name="q3" value="B" disabled> Somewhat interested—I’d want to learn more.</label>
+            <label><input type="radio" name="q3" value="C" disabled> Not interested—I’d rather wait and see.</label>
+            <div class="timer" id="timer-q3">Please wait: 20 seconds</div>
+            <button class="next-btn" id="next-q3" disabled>Next</button>
+        </div>
+
+        <!-- Question 4 -->
+        <div class="question" id="q4">
+            <p>Some platforms offer exclusive access to new token sales for a select group of users—think of it as a VIP pass to crypto’s future. Would you want to be one of those early adopters?</p>
+            <label><input type="radio" name="q4" value="A" disabled> Absolutely, I’d love to be a VIP!</label>
+            <label><input type="radio" name="q4" value="B" disabled> Maybe, if it’s worth the effort.</label>
+            <label><input type="radio" name="q4" value="C" disabled> No, I’m fine with standard opportunities.</label>
+            <div class="timer" id="timer-q4">Please wait: 20 seconds</div>
+            <button class="next-btn" id="next-q4" disabled>Next</button>
+        </div>
+
+        <!-- Question 5 -->
+        <div class="question" id="q5">
+            <p>Picture yourself getting early access to a token sale that’s about to launch a groundbreaking project. You invest early, and months later, its value soars. What would you do with your gains? Type your dream scenario.</p>
+            <textarea name="q5" rows="4" disabled></textarea>
+            <div class="timer" id="timer-q5">Please wait: 20 seconds</div>
+            <button class="next-btn" id="next-q5" disabled>Next</button>
+        </div>
+
+        <!-- Question 6 -->
+        <div class="question" id="q6">
+            <p>What’s the biggest reason you haven’t jumped into early token sales yet?</p>
+            <label><input type="radio" name="q6" value="A" disabled> I don’t know where to find them.</label>
+            <label><input type="radio" name="q6" value="B" disabled> I’m worried about risks or scams.</label>
+            <label><input type="radio" name="q6" value="C" disabled> I don’t have enough funds to start.</label>
+            <div class="timer" id="timer-q6">Please wait: 20 seconds</div>
+            <button class="next-btn" id="next-q6" disabled>Next</button>
+        </div>
+
+        <!-- Question 7 -->
+        <div class="question" id="q7">
+            <p>Imagine a platform that carefully selects new crypto projects, offering them only to users who are ready to grow their portfolio safely. Would that make you more likely to explore early token sales?</p>
+            <label><input type="radio" name="q7" value="A" disabled> Yes, I’d feel safer trying it out.</label>
+            <label><input type="radio" name="q7" value="B" disabled> Maybe, I’d need more details.</label>
+            <label><input type="radio" name="q7" value="C" disabled> No, I’m still not interested.</label>
+            <div class="timer" id="timer-q7">Please wait: 20 seconds</div>
+            <button class="next-btn" id="next-q7" disabled>Next</button>
+        </div>
+
+        <!-- Question 8 -->
+        <div class="question" id="q8">
+            <p>If you could join a community that gives you first access to the most promising crypto projects—before anyone else—how would that change your crypto journey? Type your thoughts.</p>
+            <textarea name="q8" rows="4" disabled></textarea>
+            <div class="timer" id="timer-q8">Please wait: 20 seconds</div>
+            <button class="next-btn" id="next-q8" disabled>Next</button>
+        </div>
+
+        <!-- Final Message -->
+        <div class="final-message" id="final-message">
+            <p>You’ve just explored the power of early access to new crypto projects—a way to be ahead of the curve, grow your portfolio, and join a select group of innovators. Ready to discover a platform that makes this a reality? Stay tuned for an exclusive opportunity to join a launchpad that’s transforming the crypto space!</p>
+        </div>
+    </div>
+
+    <script>
+        const questions = Array.from(document.querySelectorAll('.question'));
+        let currentQuestionIndex = 0;
+        const WAIT_TIME = 20; // 20 seconds
+
+        function startTimer(questionIndex) {
+            const timerElement = document.getElementById(`timer-q${questionIndex + 1}`);
+            const inputs = questions[questionIndex].querySelectorAll('input, textarea');
+            const nextBtn = document.getElementById(`next-q${questionIndex + 1}`);
+            let timeLeft = WAIT_TIME;
+
+            const timerInterval = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = `Please wait: ${timeLeft} seconds`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerElement.textContent = '';
+                    inputs.forEach(input => input.disabled = false);
+                    nextBtn.disabled = false;
+                }
+            }, 1000);
+        }
+
+        function showQuestion(index) {
+            questions.forEach((q, i) => {
+                q.classList.toggle('active', i === index);
+            });
+
+            if (index === questions.length) {
+                document.getElementById('final-message').classList.add('active');
+            } else {
+                startTimer(index);
+            }
+        }
+
+        function setupNextButton(index) {
+            const nextBtn = document.getElementById(`next-q${index + 1}`);
+            const inputs = questions[index].querySelectorAll('input[type="radio"], textarea');
+
+            inputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    if (input.type === 'radio' && input.checked) {
+                        nextBtn.disabled = false;
+                    }
+                });
+            });
+
+            if (inputs[0].tagName === 'TEXTAREA') {
+                inputs[0].addEventListener('input', () => {
+                    nextBtn.disabled = inputs[0].value.trim() === '';
+                });
+            }
+
+            nextBtn.addEventListener('click', () => {
+                const answered = inputs[0].type === 'radio' ? 
+                    questions[index].querySelector('input[type="radio"]:checked') : 
+                    inputs[0].value.trim() !== '';
+
+                if (answered) {
+                    currentQuestionIndex++;
+                    showQuestion(currentQuestionIndex);
+                }
+            });
+        }
+
+        // Initialize
+        for (let i = 0; i < questions.length; i++) {
+            setupNextButton(i);
+        }
+        showQuestion(0);
+    </script>
+</body>
+</html>
