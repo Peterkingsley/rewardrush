@@ -73,7 +73,7 @@
             overflow: hidden;
         }
         .form-group-container.active {
-            max-height: 500px;
+            max-height: 500px; /* Adjusted to ensure content fits */
             opacity: 1;
         }
         
@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let a = 0; a < particles.length; a++) {
             for (let b = a; b < particles.length; b++) {
                 let distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x)) +
-                               ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
+                                 ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
 
                 if (distance < (canvas.width / 7) * (canvas.height / 7)) {
                     opacityValue = 1 - (distance / 20000);
@@ -312,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  ctx.moveTo(particles[a].x, particles[a].y);
                  ctx.lineTo(center.x, center.y);
                  ctx.stroke();
-            }
+             }
         }
     }
 
@@ -488,7 +488,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        const endpoint = isSignUp ? '/signup' : '/login';
+        // --- CHANGE: Point to your hosted backend on Render ---
+        const API_BASE_URL = 'https://rewardrush2.onrender.com';
+        const endpoint = isSignUp ? `${API_BASE_URL}/signup` : `${API_BASE_URL}/login`;
+        // --- END CHANGE ---
+
         const body = isSignUp ? { fullName, username, email, password } : { username, password };
         
         try {
@@ -500,6 +504,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok) {
+                // On success, redirect to another page
+                // Make sure 'groweasy.html' is the correct page you want to redirect to.
                 window.location.href = 'groweasy.html'; 
             } else {
                 document.getElementById('form-error').textContent = data.error || 'An unexpected error occurred.';
@@ -507,7 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (err) {
             console.error('Auth error:', err);
-            document.getElementById('form-error').textContent = 'Could not connect to the server.';
+            document.getElementById('form-error').textContent = 'Could not connect to the server. Please check your connection or try again later.';
             document.getElementById('form-error').style.display = 'block';
         } finally {
             submitBtnText.style.display = 'inline-block';
@@ -531,4 +537,3 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-welcome

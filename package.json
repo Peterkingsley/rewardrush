@@ -11,6 +11,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "--legacy-peer-deps": "^0.0.1-security.6",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
     "express-session": "^1.18.1"
   }
