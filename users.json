@@ -1,14 +1,12 @@
 {
   "Royalnoble": {
-    "passwordHash": "$2b$10$vtGgUYv1.qgnkUCy8M/DGO1/ZfLD2bXBDV9OCrfsO3POP0Po/jrRa",
+    "passwordHash": "$2b$10$zIIWxMjcIQxOKvT8g65rv.uzAo/eMg66ZbNXlK77Lj/dKaltx/QKi",
     "fullName": "Kingsley Peter ",
     "email": "peterkingslayer098@gmail.com",
     "blocked": false,
+    "totalEarnings": 5000,
     "completedQuests": [
-      1,
-      2,
       2
-    ],
-    "totalEarnings": 110
+    ]
   }
 }

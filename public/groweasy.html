@@ -816,7 +816,7 @@
                     </div>
                     <h3>Total Earnings</h3>
                 </div>
-                <p class="value" id="total-earnings">$45.50</p>
+                <p class="value" id="total-earnings">$0.00</p>
                 <p class="description">Total earnings from completed quests</p>
                 <button class="card-btn">
                     <i class="fas fa-wallet"></i>
@@ -831,9 +831,9 @@
                     </div>
                     <h3>Quests Completed</h3>
                 </div>
-                <p class="value" id="quests-completed">12</p>
+                <p class="value" id="quests-completed">0</p>
                 <p class="description">Total quests you've completed</p>
-                <button class="card-btn">
+                <button class="card-btn" onclick="scrollToHistory()">
                     <i class="fas fa-history"></i>
                     View History
                 </button>
@@ -846,7 +846,7 @@
                     </div>
                     <h3>Redeemable Codes</h3>
                 </div>
-                <p class="value" id="redeemable-codes">3</p>
+                <p class="value" id="redeemable-codes">0</p>
                 <p class="description">Available codes to redeem</p>
                 <button class="card-btn" onclick="openRedeemModal()">
                     <i class="fas fa-eye"></i>
@@ -861,10 +861,9 @@
         </h2>
         
         <div class="quest-list" id="quest-list">
-            <!-- Quests will be dynamically populated -->
-        </div>
+            </div>
         
-        <h2 class="section-title">
+        <h2 class="section-title" id="history-section">
             <i class="fas fa-check-circle"></i>
             Completed Quests
         </h2>
@@ -879,8 +878,7 @@
                 </tr>
             </thead>
             <tbody id="history-table-body">
-                <!-- History will be dynamically populated -->
-            </tbody>
+                </tbody>
         </table>
     </div>
     
@@ -892,8 +890,7 @@
             </h3>
             
             <div id="redeem-codes">
-                <!-- Redeem codes will be dynamically populated -->
-            </div>
+                </div>
             
             <div class="modal-actions">
                 <button class="close-btn" onclick="closeModal('redeem-modal')">
@@ -921,7 +918,7 @@
                     <i class="fas fa-arrow-right"></i>
                     Next
                 </button>
-                <button class="primary-btn" id="submit-btn" style="display: none;" onclick="submitQuiz()">
+                <button class="primary-btn" id="submit-btn" style="display: none;">
                     <i class="fas fa-check"></i>
                     Submit
                 </button>
@@ -951,20 +948,24 @@
         </div>
     </div>
 
+    <div class="modal" id="quest-details-modal">
+        <div class="modal-content">
+            <h3 id="quest-details-title"></h3>
+            <div id="quest-details-content"></div>
+            <div class="modal-actions">
+                <button class="close-btn" onclick="closeModal('quest-details-modal')">
+                    <i class="fas fa-times"></i>
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        let questOverview = { totalEarnings: 45.50, questsCompleted: 12, redeemableCodes: 3 };
-        let completedQuests = [
-            { title: 'Binance Brain Teaser Quiz', reward: '$3 USDT', status: 'Completed', date: 'May 01, 2025' },
-            { title: 'KuCoin Crypto Quiz Challenge', reward: '$5 USDT', status: 'Pending Review', date: 'May 03, 2025' }
-        ];
-        const redeemCodes = [
-            { brand: 'Binance', code: 'QUIZ123', status: 'Available', instructions: 'Redeem on Binance platform' },
-            { brand: 'KuCoin', code: 'KCC456', status: 'Available', instructions: 'Use when signing up on KuCoin' }
-        ];
         let userId = null;
-        let currentQuestId = null;
-        let currentQuestTitle = null;
+        let allQuests = [];
         let completedQuestIds = new Set();
+        let currentQuestId = null;
         let currentQuestionIndex = 0;
         let questions = [];
         let answers = {};
@@ -979,13 +980,6 @@
                     userId = data.userId;
                     return true;
                 } else {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    const retryResponse = await fetch('/check-session');
-                    const retryData = await retryResponse.json();
-                    if (retryData.loggedIn) {
-                        userId = retryData.userId;
-                        return true;
-                    }
                     showToast('Please log in to access this page', 'error');
                     setTimeout(() => window.location.href = 'auth.html', 2000);
                     return false;
@@ -998,419 +992,253 @@
             }
         }
 
-        async function populateQuestOverview() {
+        async function populateDashboard() {
+            if (!userId) return;
             try {
-                const response = await fetch('/quest-overview?userId=' + encodeURIComponent(userId));
+                const response = await fetch(`/quest-overview?userId=${encodeURIComponent(userId)}`);
                 if (!response.ok) throw new Error('Failed to fetch quest overview');
                 const data = await response.json();
-                questOverview = data;
-                document.getElementById('total-earnings').textContent = `$${questOverview.totalEarnings.toFixed(2)}`;
-                document.getElementById('quests-completed').textContent = questOverview.questsCompleted;
-                document.getElementById('redeemable-codes').textContent = questOverview.redeemableCodes;
+                document.getElementById('total-earnings').textContent = `$${Number(data.totalEarnings || 0).toFixed(2)}`;
+                document.getElementById('quests-completed').textContent = data.questsCompleted?.length || 0;
+                document.getElementById('redeemable-codes').textContent = data.redeemableCodes || 0;
+
+                if (Array.isArray(data.questsCompleted)) {
+                    completedQuestIds = new Set(data.questsCompleted);
+                }
             } catch (err) {
                 console.error('Failed to fetch quest overview:', err);
-                showToast('Failed to load quest overview', 'error');
+                showToast('Failed to load dashboard data', 'error');
             }
         }
 
         async function populateQuests() {
-            if (!await checkSession()) return;
             const list = document.getElementById('quest-list');
             list.innerHTML = '<p style="color: var(--warning); text-align: center; padding: 2rem;">Loading quests...</p>';
             try {
-                const [questsResponse, referralsResponse] = await Promise.all([
-                    fetch('/quests'),
-                    fetch('/referrals?userId=' + encodeURIComponent(userId))
-                ]);
-                
-                if (!questsResponse.ok) throw new Error('Failed to fetch quests');
-                if (!referralsResponse.ok) throw new Error('Failed to fetch referrals');
-                
-                const questsData = await questsResponse.json();
-                const referrals = await referralsResponse.json();
-                const quests = questsData.quests || [];
+                const response = await fetch('/quests');
+                if (!response.ok) throw new Error('Failed to fetch quests');
+                const questsData = await response.json();
+                allQuests = questsData.quests || [];
 
-                if (quests.length === 0) {
+                if (allQuests.length === 0) {
                     list.innerHTML = '<p style="color: var(--danger); text-align: center; padding: 2rem;">No quests available at the moment. Check back later!</p>';
                     return;
                 }
 
-                list.innerHTML = await Promise.all(quests.map(async (quest, index) => {
-                    try {
-                        const referralLinkResponse = await fetch(`/generate-referral-link?questId=${quest.id}&userId=${encodeURIComponent(userId)}`);
-                        if (!referralLinkResponse.ok) throw new Error('Failed to fetch referral link');
-                        const { referralLink } = await referralLinkResponse.json();
-                        const start = new Date(quest.startTime);
-                        const now = new Date();
-                        let dynamicStatus = quest.status;
-                        let statusClass = 'quest-status';
-                        let buttonText = 'Start Quiz';
-                        let buttonIcon = 'fa-play';
-                        let buttonDisabled = '';
+                const questHTML = allQuests.map((quest, index) => {
+                    const isCompleted = completedQuestIds.has(quest.id);
+                    const isAvailable = new Date(quest.startTime) <= new Date() && new Date(quest.endTime) > new Date();
+                    
+                    let statusText = quest.status;
+                    let statusClass = '';
+                    let buttonDisabled = '';
+                    let buttonText = 'Start Quiz';
+                    let buttonIcon = 'fa-play';
 
-                        if (quest.completed) { 
-                            dynamicStatus = 'Completed';
-                            statusClass += ' status-completed';
-                            buttonText = 'Completed';
-                            buttonIcon = 'fa-check';
-                            buttonDisabled = 'disabled';
-                        } else if (now < start) {
-                            dynamicStatus = 'Coming Soon';
-                            statusClass += ' status-coming-soon';
-                            buttonText = 'Starts Soon';
-                            buttonIcon = 'fa-clock';
-                            buttonDisabled = 'disabled';
-                        } else {
-                            dynamicStatus = 'Available';
-                            statusClass += ' status-available';
-                        }
-
-                        return `
-                            <div class="quest-card animate-in delay-${index % 3}">
-                                <h3>${quest.title}</h3>
-                                <div class="quest-meta">
-                                    <span class="quest-reward">
-                                        <i class="fas fa-coins"></i> ${quest.reward}
-                                    </span>
-                                    <span class="${statusClass}">
-                                        <i class="fas ${quest.completed ? 'fa-check' : now < start ? 'fa-clock' : 'fa-bolt'}"></i>
-                                        ${dynamicStatus}
-                                    </span>
-                                </div>
-                                <p>${quest.description}</p>
-                                
-                                <div class="quest-actions">
-                                    <button class="primary-btn ${buttonDisabled}" ${buttonDisabled} onclick="${quest.completed || now < start ? '' : `startQuiz(${quest.id}, '${quest.title}', '${quest.reward}')`}">
-                                        <i class="fas ${buttonIcon}"></i>
-                                        ${buttonText}
-                                    </button>
-                                    <button class="secondary-btn">
-                                        <i class="fas fa-info-circle"></i>
-                                        Details
-                                    </button>
-                                </div>
-                                
-                                <div class="referral-section">
-                                    <h4>
-                                        <i class="fas fa-user-plus"></i>
-                                        Referral Program
-                                    </h4>
-                                    <div class="referral-stats">
-                                        <span><i class="fas fa-users"></i> ${referrals[quest.id] || 0} Referrals</span>
-                                        <span><i class="fas fa-coins"></i> $${((referrals[quest.id] || 0) * 0.3).toFixed(2)} Earned</span>
-                                    </div>
-                                    <span class="referral-link">${referralLink}</span>
-                                    <button class="copy-btn" onclick="copyReferralLink('${referralLink}')">
-                                        <i class="fas fa-copy"></i>
-                                        Copy Link
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    } catch (err) {
-                        console.error(`Error processing quest ${quest.id}:`, err);
-                        return '';
+                    if (isCompleted) {
+                        statusText = 'Completed';
+                        statusClass = 'status-completed';
+                        buttonText = 'Completed';
+                        buttonIcon = 'fa-check';
+                        buttonDisabled = 'disabled';
+                    } else if (!isAvailable) {
+                        statusText = 'Expired';
+                        statusClass = 'status-expired';
+                        buttonText = 'Expired';
+                        buttonIcon = 'fa-clock';
+                        buttonDisabled = 'disabled';
                     }
-                })).then(results => results.filter(r => r).join(''));
+
+                    return `
+                        <div class="quest-card animate-in delay-${index % 3}" data-quest-id="${quest.id}">
+                            <h3>${quest.title}</h3>
+                            <div class="quest-meta">
+                                <span class="quest-reward"><i class="fas fa-coins"></i> ${quest.reward}</span>
+                                <span class="quest-status ${statusClass}">${statusText}</span>
+                            </div>
+                            <p>${quest.description}</p>
+                            <div class="quest-actions">
+                                <button class="primary-btn start-quiz-btn ${buttonDisabled}" ${buttonDisabled}>
+                                    <i class="fas ${buttonIcon}"></i> ${buttonText}
+                                </button>
+                                <button class="secondary-btn details-btn">
+                                    <i class="fas fa-info-circle"></i> Details
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                list.innerHTML = questHTML;
             } catch (err) {
                 console.error('Failed to load quests:', err);
-                list.innerHTML = `
-                    <div style="grid-column: span 1/-1; text-align: center; padding: 2rem; color: var(--danger);">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
-                        <p>Failed to load quests. Please try again later.</p>
-                    </div>
-                `;
+                list.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">Failed to load quests.</p>`;
             }
         }
 
-        async function startQuiz(questId, questTitle, questReward) {
+        function populateHistory() {
+            const tbody = document.getElementById('history-table-body');
+            tbody.innerHTML = '';
+            
+            allQuests.forEach(quest => {
+                if (completedQuestIds.has(quest.id)) {
+                    const row = `
+                        <tr>
+                            <td>${quest.title}</td>
+                            <td>${quest.reward}</td>
+                            <td><span class="status-badge status-completed">Completed</span></td>
+                            <td>${new Date(quest.endTime).toLocaleDateString()}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                }
+            });
+        }
+
+        function showQuestDetails(questId) {
+            const quest = allQuests.find(q => q.id == questId);
+            if (!quest) return;
+
+            document.getElementById('quest-details-title').innerText = quest.title;
+            const content = `
+                <p><strong>Reward:</strong> ${quest.reward}</p>
+                <p><strong>Status:</strong> ${quest.status}</p>
+                <p><strong>Ends:</strong> ${new Date(quest.endTime).toLocaleString()}</p>
+                <p><strong>Participants:</strong> ${quest.participants}</p>
+                <p>${quest.description}</p>
+            `;
+            document.getElementById('quest-details-content').innerHTML = content;
+            openModal('quest-details-modal');
+        }
+
+        async function startQuiz(questId) {
+            if (completedQuestIds.has(questId)) {
+                showToast("You have already completed this quest.", "error");
+                return;
+            }
+
             currentQuestId = questId;
-            currentQuestTitle = questTitle;
-            currentQuestionIndex = 0;
-            answers = {};
             try {
                 const response = await fetch(`/quests/${questId}/questions`);
                 if (!response.ok) throw new Error('Failed to fetch questions');
-                const { questions: fetchedQuestions } = await response.json();
-                questions = fetchedQuestions || [];
+                const data = await response.json();
+                questions = data.questions || [];
                 if (questions.length === 0) {
-                    showToast('No questions available for this quest', 'error');
+                    showToast('No questions for this quiz.', 'error');
                     return;
                 }
-                document.getElementById('quiz-title').textContent = questTitle;
+                currentQuestionIndex = 0;
+                answers = {};
+                document.getElementById('quiz-title').innerText = allQuests.find(q => q.id == questId).title;
                 displayQuestion();
-                document.getElementById('quiz-modal').classList.add('open');
-                document.body.style.overflow = 'hidden';
+                openModal('quiz-modal');
                 startTimer();
             } catch (err) {
-                console.error('Failed to load questions:', err);
-                showToast('Failed to load quiz questions', 'error');
+                console.error('Error starting quiz:', err);
+                showToast('Could not start the quiz.', 'error');
             }
         }
 
         function displayQuestion() {
             const quizContainer = document.getElementById('quiz-questions');
-            quizContainer.innerHTML = '';
-            if (currentQuestionIndex >= questions.length) return;
-
             const question = questions[currentQuestionIndex];
+            let optionsHTML = '';
+            if (question.type === 'multiple-choice') {
+                optionsHTML = question.options.map(option => `
+                    <label class="mc-option">
+                        <input type="radio" name="question-${question.id}" value="${option}"> ${option}
+                    </label>
+                `).join('');
+            } else {
+                optionsHTML = `<textarea class="open-ended" name="answer-${question.id}" placeholder="Your answer..."></textarea>`;
+            }
             quizContainer.innerHTML = `
                 <div class="quiz-item active">
                     <h4>${question.text}</h4>
-                    ${question.type === 'multiple-choice' ? `
-                        <div class="mc-options">
-                            ${question.options.map(option => `
-                                <label class="mc-option">
-                                    <input type="radio" name="question-${question.id}" value="${option}" onchange="enableButton()">
-                                    ${option.text}
-                                </label>
-                            `).join('')}
-                        </div>
-                    ` : `
-                        <div class="open-ended">
-                            <textarea name="answer-${question.id}" placeholder="Type your answer here..." oninput="enableButton()"></textarea>
-                        </div>
-                    `}
-                </div>
-            `;
-            const submitBtn = document.getElementById('submit-btn');
-            const nextBtn = document.getElementById('next-btn');
-            nextBtn.disabled = true;
-            if (currentQuestionIndex === questions.length - 1) {
-                submitBtn.style.display = 'inline-block';
-                nextBtn.style.display = 'none';
-            } else {
-                submitBtn.style.display = 'none';
-                nextBtn.style.display = 'inline-block';
+                    <div class="mc-options">${optionsHTML}</div>
+                </div>`;
+            
+            document.getElementById('next-btn').style.display = currentQuestionIndex < questions.length - 1 ? 'inline-flex' : 'none';
+            document.getElementById('submit-btn').style.display = currentQuestionIndex === questions.length - 1 ? 'inline-flex' : 'none';
+            document.getElementById('next-btn').disabled = true;
+            document.getElementById('submit-btn').disabled = true;
+
+            quizContainer.querySelector('input, textarea').addEventListener('input', () => {
+                document.getElementById('next-btn').disabled = false;
+                document.getElementById('submit-btn').disabled = false;
+            });
+        }
+        
+        function saveAnswer() {
+            const question = questions[currentQuestionIndex];
+            const input = document.querySelector(`[name="question-${question.id}"], [name="answer-${question.id}"]`);
+            if (input) {
+                answers[question.id] = input.value;
             }
         }
 
-        function enableButton() {
-            const question = questions[currentQuestionIndex];
-            let hasAnswer = false;
-            if (question.type === 'multiple-choice') {
-                const selected = document.querySelector(`input[name="question-${question.id}"]:checked`);
-                hasAnswer = !!selected;
-            } else {
-                const answer = document.querySelector(`textarea[name="answer-${question.id}"]`).value.trim();
-                hasAnswer = answer.length > 0;
+        function nextQuestion() {
+            saveAnswer();
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+                startTimer();
             }
-            if (currentQuestionIndex === questions.length - 1) {
-                document.getElementById('submit-btn').disabled = !hasAnswer;
-            } else {
-                document.getElementById('next-btn').disabled = !hasAnswer;
+        }
+        
+        async function submitQuiz() {
+            saveAnswer();
+            clearInterval(timerInterval);
+            try {
+                const response = await fetch(`/submit-quiz/${currentQuestId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, answers })
+                });
+                const result = await response.json();
+                if (response.ok) {
+                    closeModal('quiz-modal');
+                    completedQuestIds.add(currentQuestId);
+                    
+                    const referralResponse = await fetch(`/generate-referral-link?questId=${currentQuestId}&userId=${encodeURIComponent(userId)}`);
+                    const referralData = await referralResponse.json();
+                    
+                    document.getElementById('completion-message').innerText = `You've earned ${result.reward}!`;
+                    document.getElementById('referral-link').value = referralData.referralLink;
+                    openModal('completion-modal');
+                    
+                    await populateDashboard();
+                    await populateQuests();
+                    populateHistory();
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (err) {
+                console.error('Quiz submission error:', err);
+                showToast(err.message || 'Failed to submit quiz.', 'error');
             }
         }
 
         function startTimer() {
             let timeLeft = 20;
             const timerDisplay = document.getElementById('quiz-timer');
-            timerDisplay.textContent = `Time left: ${timeLeft}s`;
-            document.getElementById('next-btn').disabled = true;
-            document.getElementById('submit-btn').disabled = true;
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 timeLeft--;
                 timerDisplay.textContent = `Time left: ${timeLeft}s`;
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    const question = questions[currentQuestionIndex];
-                    let hasAnswer = false;
-                    if (question.type === 'multiple-choice') {
-                        const selected = document.querySelector(`input[name="question-${question.id}"]:checked`);
-                        hasAnswer = !!selected;
+                    showToast('Time is up!', 'error');
+                    if (currentQuestionIndex < questions.length - 1) {
+                        nextQuestion();
                     } else {
-                        const answer = document.querySelector(`textarea[name="answer-${question.id}"]`).value.trim();
-                        hasAnswer = answer.length > 0;
-                    }
-                    if (currentQuestionIndex === questions.length - 1) {
-                        document.getElementById('submit-btn').disabled = !hasAnswer;
-                    } else {
-                        document.getElementById('next-btn').disabled = !hasAnswer;
+                        submitQuiz();
                     }
                 }
             }, 1000);
         }
 
-        async function submitQuiz() {
-            console.log('Submit button clicked');
-            if (!currentQuestId || !userId || !currentQuestTitle) {
-                showToast('Invalid session or quest', 'error');
-                return;
-            }
-            saveAnswer();
-            const allAnswered = Object.keys(answers).length === questions.length;
-            if (!allAnswered) {
-                showToast('Please answer all questions', 'error');
-                return;
-            }
-
-            try {
-                const response = await fetch(`/submit-quiz/${currentQuestId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ answers })
-                });
-                const result = await response.json();
-                if (response.ok) {
-                    showToast(result.message, 'success');
-                    closeModal('quiz-modal');
-
-                    // Fetch quest details for reward
-                    const questResponse = await fetch('/quests');
-                    if (!questResponse.ok) throw new Error('Failed to fetch quests');
-                    const questsData = await questResponse.json();
-                    const quest = questsData.quests.find(q => q.id == currentQuestId);
-
-                    // Fetch referral link
-                    const referralResponse = await fetch(`/generate-referral-link?questId=${currentQuestId}&userId=${encodeURIComponent(userId)}`);
-                    if (!referralResponse.ok) throw new Error('Failed to fetch referral link');
-                    const { referralLink } = await referralResponse.json();
-
-                    // Show completion modal
-                    document.getElementById('completion-message').textContent = `You have completed this quest and earned ${quest.reward}!`;
-                    document.getElementById('referral-link').value = referralLink;
-                    document.getElementById('completion-modal').classList.add('open');
-                    document.body.style.overflow = 'hidden';
-
-                    // Update quest status and history
-                    completedQuestIds.add(currentQuestId);
-                    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                    completedQuests.unshift({ title: currentQuestTitle, reward: quest.reward, status: 'Completed', date });
-                    populateHistory();
-
-                    // Update total earnings
-                    let rewardValue = 0;
-                    if (quest.reward.includes('$')) {
-                        rewardValue = parseFloat(quest.reward.replace('$', '')) || 0;
-                    } else if (quest.reward.includes('points')) {
-                        rewardValue = parseFloat(quest.reward.replace('points', '')) * 0.01 || 0;
-                    }
-                    questOverview.totalEarnings += rewardValue;
-                    questOverview.questsCompleted += 1;
-                    document.getElementById('total-earnings').textContent = `$${questOverview.totalEarnings.toFixed(2)}`;
-                    document.getElementById('quests-completed').textContent = questOverview.questsCompleted;
-
-                    // Refresh quest list
-                    populateQuests();
-                } else {
-                    showToast(result.error, 'error');
-                }
-            } catch (err) {
-                console.error('Failed to submit quiz:', err);
-                showToast('Failed to submit quiz', 'error');
-            }
-        }
-
-        function saveAnswer() {
-            const question = questions[currentQuestionIndex];
-            if (!question) return;
-            if (question.type === 'multiple-choice') {
-                const selected = document.querySelector(`input[name="question-${question.id}"]:checked`);
-                if (selected) answers[question.id] = selected.value;
-            } else {
-                const answer = document.querySelector(`textarea[name="answer-${question.id}"]`).value.trim();
-                if (answer) answers[question.id] = answer;
-            }
-        }
-
-        function copyReferralLink(link) {
-            navigator.clipboard.writeText(link).then(() => {
-                showToast('Referral link copied to clipboard!', 'success');
-            }).catch(err => {
-                console.error('Failed to copy link:', err);
-                showToast('Failed to copy link. Please copy it manually.', 'error');
-            });
-        }
-
-        function copyCompletionLink() {
-            const referralInput = document.getElementById('referral-link');
-            referralInput.select();
-            navigator.clipboard.writeText(referralInput.value).then(() => {
-                showToast('Referral link copied to clipboard!', 'success');
-            }).catch(err => {
-                console.error('Failed to copy link:', err);
-                showToast('Failed to copy link. Please copy it manually.', 'error');
-            });
-        }
-
-        function showToast(message, type) {
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.innerHTML = `
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-                ${message}
-            `;
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.add('show');
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                    setTimeout(() => {
-                        document.body.removeChild(toast);
-                    }, 300);
-                }, 3000);
-            }, 100);
-
-            const style = document.createElement('style');
-            style.textContent = `
-                .toast {
-                    position: fixed;
-                    bottom: 20px;
-                    right: 20px;
-                    background: ${type === 'success' ? 'rgba(0, 184, 148, 0.9)' : 'rgba(214, 48, 49, 0.9)'};
-                    color: white;
-                    padding: 1rem 1.5rem;
-                    border-radius: 0.5rem;
-                    display: flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-                    opacity: 0;
-                    transform: translateY(20px);
-                    transition: all 0.3s ease;
-                }
-                .toast.show {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
-        function populateHistory() {
-            const tbody = document.getElementById('history-table-body');
-            tbody.innerHTML = completedQuests.map(quest => `
-                <tr>
-                    <td>${quest.title}</td>
-                    <td>${quest.reward}</td>
-                    <td><span class="status-badge ${quest.status === 'Completed' ? 'status-completed' : 'status-pending'}">${quest.status}</span></td>
-                    <td>${quest.date}</td>
-                </tr>
-            `).join('');
-        }
-
-        function populateRedeemCodes() {
-            const codesContainer = document.getElementById('redeem-codes');
-            codesContainer.innerHTML = redeemCodes.map(code => `
-                <div class="code-item">
-                    <div class="code-brand">
-                        <i class="${code.brand === 'Binance' ? 'fab fa-btc' : 'fas fa-exchange-alt'}"></i>
-                        ${code.brand}
-                    </div>
-                    <div class="code-value">${code.code}</div>
-                    <span class="code-status ${code.status === 'Available' ? 'code-available' : 'code-used'}">
-                        <i class="fas ${code.status === 'Available' ? 'fa-check-circle' : 'fa-times-circle'}"></i>
-                        ${code.status}
-                    </span>
-                    <p>${code.instructions}</p>
-                </div>
-            `).join('');
-        }
-
-        function openRedeemModal() {
-            populateRedeemCodes();
-            document.getElementById('redeem-modal').classList.add('open');
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('open');
             document.body.style.overflow = 'hidden';
         }
 
@@ -1418,67 +1246,61 @@
             document.getElementById(modalId).classList.remove('open');
             document.body.style.overflow = '';
             if (modalId === 'quiz-modal') {
-                currentQuestId = null;
-                currentQuestTitle = null;
-                document.getElementById('quiz-questions').innerHTML = '';
                 clearInterval(timerInterval);
             }
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function copyCompletionLink() {
+            const link = document.getElementById('referral-link').value;
+            navigator.clipboard.writeText(link).then(() => {
+                showToast('Referral link copied!', 'success');
+            });
+        }
+        
+        function scrollToHistory() {
+            document.getElementById('history-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        async function logout() {
+            await fetch('/logout');
+            window.location.href = 'auth.html';
         }
 
         function toggleMenu() {
             document.getElementById('nav-menu').classList.toggle('open');
         }
 
-        async function logout() {
-            try {
-                await fetch('/logout');
-                window.location.href = 'auth.html';
-            } catch (err) {
-                console.error('Logout error:', err);
-                showToast('Error logging out. Please try again.', 'error');
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (await checkSession()) {
+                await populateDashboard();
+                await populateQuests();
+                populateHistory();
+
+                document.getElementById('quest-list').addEventListener('click', e => {
+                    const questCard = e.target.closest('.quest-card');
+                    if (!questCard) return;
+                    const questId = questCard.dataset.questId;
+
+                    if (e.target.closest('.start-quiz-btn')) {
+                        startQuiz(parseInt(questId));
+                    }
+                    if (e.target.closest('.details-btn')) {
+                        showQuestDetails(questId);
+                    }
+                });
+
+                document.getElementById('next-btn').addEventListener('click', nextQuestion);
+                document.getElementById('submit-btn').addEventListener('click', submitQuiz);
             }
-        }
-
-        async function init() {
-            if (!await checkSession()) return;
-            // Set up event listeners
-            try {
-                const nextBtn = document.getElementById('next-btn');
-                if (nextBtn) {
-                    nextBtn.addEventListener('click', () => {
-                        saveAnswer();
-                        currentQuestionIndex++;
-                        if (currentQuestionIndex < questions.length) {
-                            displayQuestion();
-                            startTimer();
-                        }
-                    });
-                    console.log('Next button listener attached');
-                } else {
-                    console.error('Next button not found in DOM');
-                }
-
-                const submitBtn = document.getElementById('submit-btn');
-                if (submitBtn) {
-                    submitBtn.addEventListener('click', () => {
-                        console.log('Submit button listener triggered');
-                        submitQuiz();
-                    });
-                    console.log('Submit button listener attached');
-                } else {
-                    console.error('Submit button not found in DOM');
-                }
-            } catch (err) {
-                console.error('Error setting up event listeners:', err);
-            }
-            await Promise.all([
-                populateQuestOverview(),
-                populateQuests(),
-                populateHistory()
-            ]);
-        }
-
-        window.onload = init;
+        });
     </script>
 </body>
 </html>
