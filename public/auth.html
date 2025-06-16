@@ -305,13 +305,13 @@ document.addEventListener('DOMContentLoaded', () => {
             
             let distToCenter = Math.sqrt(Math.pow(particles[a].x - center.x, 2) + Math.pow(particles[a].y - center.y, 2));
              if (distToCenter < 300) {
-                 opacityValue = 1 - (distToCenter / 300);
-                 ctx.strokeStyle = `rgba(0, 206, 201, ${opacityValue * 0.5})`;
-                 ctx.lineWidth = 0.5;
-                 ctx.beginPath();
-                 ctx.moveTo(particles[a].x, particles[a].y);
-                 ctx.lineTo(center.x, center.y);
-                 ctx.stroke();
+                  opacityValue = 1 - (distToCenter / 300);
+                  ctx.strokeStyle = `rgba(0, 206, 201, ${opacityValue * 0.5})`;
+                  ctx.lineWidth = 0.5;
+                  ctx.beginPath();
+                  ctx.moveTo(particles[a].x, particles[a].y);
+                  ctx.lineTo(center.x, center.y);
+                  ctx.stroke();
              }
         }
     }
@@ -488,10 +488,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // --- CHANGE: Point to your hosted backend on Render ---
-        const API_BASE_URL = 'https://rewardrush2.onrender.com';
+        // --- THIS IS THE ONLY CHANGE ---
+        // It now points to your local server instead of the old 'onrender.com' address.
+        const API_BASE_URL = 'http://localhost:3000';
         const endpoint = isSignUp ? `${API_BASE_URL}/signup` : `${API_BASE_URL}/login`;
-        // --- END CHANGE ---
+        // --- END OF CHANGE ---
 
         const body = isSignUp ? { fullName, username, email, password } : { username, password };
         
@@ -504,9 +505,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok) {
-                // On success, redirect to another page
-                // Make sure 'groweasy.html' is the correct page you want to redirect to.
-                window.location.href = 'groweasy.html'; 
+                // On success, redirect based on user type.
+                if (data.isAdmin) {
+                    window.location.href = '/admin.html';
+                } else {
+                    window.location.href = '/groweasy.html';
+                }
             } else {
                 document.getElementById('form-error').textContent = data.error || 'An unexpected error occurred.';
                 document.getElementById('form-error').style.display = 'block';

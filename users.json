@@ -1,22 +1,8 @@
 {
-  "admin": {
-    "password": "password123",
-    "fullName": "Admin User",
-    "email": "admin@example.com",
-    "blocked": false,
-    "completedQuests": 2,
-    "totalEarnings": 110
-  },
   "Royalnoble": {
-    "password": "password123",
-    "fullName": "Noble Agu",
-    "email": "thecircumfirends@gmail.com",
-    "blocked": false
-  },
-  "Priceless Eshiet": {
-    "password": "Abbaslove1.",
-    "fullName": "Nsongurua Paul Eshiet",
-    "email": "nsonguruaeshiet123@gmail.com",
+    "passwordHash": "$2b$10$vtGgUYv1.qgnkUCy8M/DGO1/ZfLD2bXBDV9OCrfsO3POP0Po/jrRa",
+    "fullName": "Kingsley Peter ",
+    "email": "peterkingslayer098@gmail.com",
     "blocked": false
   }
 }
