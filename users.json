@@ -4,9 +4,10 @@
     "fullName": "Kingsley Peter ",
     "email": "peterkingslayer098@gmail.com",
     "blocked": false,
-    "totalEarnings": 5000,
+    "totalEarnings": 70,
     "completedQuests": [
-      2
+      2,
+      1
     ]
   }
 }
