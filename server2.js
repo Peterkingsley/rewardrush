@@ -1,5 +1,3 @@
-// --- NEW: Require and configure dotenv ---
-// This should be at the very top of your file
 require('dotenv').config();
 
 const express = require('express');
@@ -11,8 +9,6 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --- FIX: Read credentials from environment variables ---
-// Provide sensible defaults in case they aren't set
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'password123';
 
@@ -20,7 +16,6 @@ const saltRounds = 10;
 
 // --- Middleware Setup ---
 app.use(cors());
-// ... (rest of the middleware is the same)
 const requireLogin = (req, res, next) => {
     console.log(`RequireLogin: Path=${req.path}, Session userId=${req.session.userId}, isAdmin=${req.session.isAdmin}`);
     if (!req.session.userId || (!users[req.session.userId] && !req.session.isAdmin) || (users[req.session.userId] && users[req.session.userId].blocked)) {
@@ -39,7 +34,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-default-secret-key', // Also use an env var for the session secret!
+    secret: process.env.SESSION_SECRET || 'your-default-secret-key',
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 20 * 60 * 1000 }
@@ -67,8 +62,6 @@ const authMiddleware = (req, res, next) => {
     next();
 };
 
-
-// ... (The rest of your server.js file remains exactly the same below this line) ...
 // Data management
 let users = {};
 let experts = {};
@@ -224,7 +217,6 @@ async function saveResponses(responsesData) {
     }
 }
 
-
 // Initialize data
 Promise.all([loadUsers(), loadExperts(), loadReferrals(), loadBookings(), loadFounders()]).then(() => {
     console.log('All data loaded');
@@ -265,7 +257,14 @@ app.post('/signup', async (req, res) => {
     try {
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
-        users[username] = { passwordHash, fullName, email, blocked: false };
+        users[username] = {
+            passwordHash,
+            fullName,
+            email,
+            blocked: false,
+            totalEarnings: 0,
+            completedQuests: []
+        };
         await saveUsers();
         
         req.session.userId = username;
@@ -278,7 +277,6 @@ app.post('/signup', async (req, res) => {
         res.status(500).json({error: 'Server error during registration.'});
     }
 });
-
 
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -325,7 +323,6 @@ app.post('/login', async (req, res) => {
         res.status(500).json({error: 'Server error during login.'});
     }
 });
-
 
 app.get('/logout', (req, res) => {
     console.log(`Logout: userId=${req.session.userId}`);
@@ -465,37 +462,45 @@ app.delete('/quests/:questId/questions/:questionId', authMiddleware, async (req,
 });
 
 app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
-    const { questId } = req.params;
-    const { answers } = req.body;
+    const questId = parseInt(req.params.questId);
     const userId = req.session.userId;
+
+    if (!users[userId]) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Initialize completedQuests if it doesn't exist
+    if (!users[userId].completedQuests) {
+        users[userId].completedQuests = [];
+    }
+    // Initialize totalEarnings if it doesn't exist
+    if (users[userId].totalEarnings === undefined) {
+        users[userId].totalEarnings = 0;
+    }
+
+    // Check if the quest has already been completed
+    if (users[userId].completedQuests.includes(questId)) {
+        return res.status(400).json({ error: "You have already completed this quest." });
+    }
+
     try {
         const questsData = await loadQuests();
-        const quest = questsData.quests.find(q => q.id == questId);
-        if (!quest) return res.status(404).json({ error: 'Quest not found' });
+        const quest = questsData.quests.find(q => q.id === questId);
 
-        let score = 0;
-        let totalScoredQuestions = 0;
-        const responsesData = await loadResponses();
-        if (!responsesData[questId]) responsesData[questId] = {};
-        if (!responsesData[questId][userId]) responsesData[questId][userId] = {};
+        if (!quest) {
+            return res.status(404).json({ error: 'Quest not found' });
+        }
 
-        quest.questions.forEach(q => {
-            if (q.type === 'multiple-choice') {
-                totalScoredQuestions++;
-                if (answers[q.id] === q.correctAnswer) score++;
-            }
-            responsesData[questId][userId][q.id] = answers[q.id];
-        });
+        // Add the quest reward to the user's total earnings
+        const rewardValue = parseFloat(quest.reward.replace('$', '').replace('USDT', '')) || 0;
+        users[userId].totalEarnings += rewardValue;
+        
+        // Add the quest ID to the user's list of completed quests
+        users[userId].completedQuests.push(questId);
 
-        await saveResponses(responsesData);
-
-        users[userId] = users[userId] || {};
-        users[userId].completedQuests = (users[userId].completedQuests || 0) + 1;
-        const rewardValue = parseFloat(quest.reward) || 0;
-        users[userId].totalEarnings = (users[userId].totalEarnings || 0) + rewardValue;
         await saveUsers();
 
-        res.json({ score, total: totalScoredQuestions });
+        res.json({ message: "Quest completed successfully!", reward: quest.reward });
     } catch (err) {
         console.error('Error submitting quiz:', err);
         res.status(500).json({ error: 'Failed to submit quiz' });

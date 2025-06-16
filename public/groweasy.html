@@ -639,7 +639,7 @@
             background: rgba(30, 39, 46, 0.8);
             color: var(--light);
             resize: vertical;
-            min-height: 80px;
+            min-height: 100px;
         }
         
         /* New Styles for Single Question Display and Timer */
@@ -676,7 +676,7 @@
         
         .next-btn:disabled {
             background: rgba(108, 92, 231, 0.3);
-            cursor: not-allowed;
+            cursor: not-allowed';
         }
         
         .next-btn:hover:not(:disabled) {
@@ -709,13 +709,13 @@
         
         .completion-modal .copy-btn {
             background: var(--secondary);
-            color: var(--dark);
+            color: white;
             padding: 0.75rem 1.5rem;
             border: none;
             border-radius: 0.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-weight: 600;
+            font-weight: bold;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -727,7 +727,7 @@
             transform: translateY(-2px);
         }
         
-        /* Responsive */
+        /* Responsive Adjustments */
         @media (max-width: 768px) {
             .container {
                 padding: 1.5rem;
@@ -921,7 +921,7 @@
                     <i class="fas fa-arrow-right"></i>
                     Next
                 </button>
-                <button class="primary-btn" id="submit-btn" style="display: none;">
+                <button class="primary-btn" id="submit-btn" style="display: none;" onclick="submitQuiz()">
                     <i class="fas fa-check"></i>
                     Submit
                 </button>
@@ -1048,7 +1048,7 @@
                         let buttonIcon = 'fa-play';
                         let buttonDisabled = '';
 
-                        if (completedQuestIds.has(quest.id)) {
+                        if (quest.completed) { 
                             dynamicStatus = 'Completed';
                             statusClass += ' status-completed';
                             buttonText = 'Completed';
@@ -1073,14 +1073,14 @@
                                         <i class="fas fa-coins"></i> ${quest.reward}
                                     </span>
                                     <span class="${statusClass}">
-                                        <i class="fas ${completedQuestIds.has(quest.id) ? 'fa-check' : now < start ? 'fa-clock' : 'fa-bolt'}"></i>
+                                        <i class="fas ${quest.completed ? 'fa-check' : now < start ? 'fa-clock' : 'fa-bolt'}"></i>
                                         ${dynamicStatus}
                                     </span>
                                 </div>
                                 <p>${quest.description}</p>
                                 
                                 <div class="quest-actions">
-                                    <button class="primary-btn ${buttonDisabled}" ${buttonDisabled} onclick="${completedQuestIds.has(quest.id) || now < start ? '' : `startQuiz(${quest.id}, '${quest.title}', '${quest.reward}')`}">
+                                    <button class="primary-btn ${buttonDisabled}" ${buttonDisabled} onclick="${quest.completed || now < start ? '' : `startQuiz(${quest.id}, '${quest.title}', '${quest.reward}')`}">
                                         <i class="fas ${buttonIcon}"></i>
                                         ${buttonText}
                                     </button>
@@ -1115,7 +1115,7 @@
             } catch (err) {
                 console.error('Failed to load quests:', err);
                 list.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--danger);">
+                    <div style="grid-column: span 1/-1; text-align: center; padding: 2rem; color: var(--danger);">
                         <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
                         <p>Failed to load quests. Please try again later.</p>
                     </div>
@@ -1161,48 +1161,79 @@
                         <div class="mc-options">
                             ${question.options.map(option => `
                                 <label class="mc-option">
-                                    <input type="radio" name="question-${question.id}" value="${option}">
-                                    ${option}
+                                    <input type="radio" name="question-${question.id}" value="${option}" onchange="enableButton()">
+                                    ${option.text}
                                 </label>
                             `).join('')}
                         </div>
                     ` : `
                         <div class="open-ended">
-                            <textarea name="question-${question.id}" placeholder="Type your answer here..."></textarea>
+                            <textarea name="answer-${question.id}" placeholder="Type your answer here..." oninput="enableButton()"></textarea>
                         </div>
                     `}
                 </div>
             `;
-            document.getElementById('next-btn').disabled = true;
-            document.getElementById('submit-btn').style.display = currentQuestionIndex === questions.length - 1 ? 'flex' : 'none';
-            document.getElementById('next-btn').style.display = currentQuestionIndex === questions.length - 1 ? 'none' : 'flex';
+            const submitBtn = document.getElementById('submit-btn');
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.disabled = true;
+            if (currentQuestionIndex === questions.length - 1) {
+                submitBtn.style.display = 'inline-block';
+                nextBtn.style.display = 'none';
+            } else {
+                submitBtn.style.display = 'none';
+                nextBtn.style.display = 'inline-block';
+            }
+        }
+
+        function enableButton() {
+            const question = questions[currentQuestionIndex];
+            let hasAnswer = false;
+            if (question.type === 'multiple-choice') {
+                const selected = document.querySelector(`input[name="question-${question.id}"]:checked`);
+                hasAnswer = !!selected;
+            } else {
+                const answer = document.querySelector(`textarea[name="answer-${question.id}"]`).value.trim();
+                hasAnswer = answer.length > 0;
+            }
+            if (currentQuestionIndex === questions.length - 1) {
+                document.getElementById('submit-btn').disabled = !hasAnswer;
+            } else {
+                document.getElementById('next-btn').disabled = !hasAnswer;
+            }
         }
 
         function startTimer() {
             let timeLeft = 20;
-            document.getElementById('quiz-timer').textContent = `Time left: ${timeLeft}s`;
+            const timerDisplay = document.getElementById('quiz-timer');
+            timerDisplay.textContent = `Time left: ${timeLeft}s`;
             document.getElementById('next-btn').disabled = true;
+            document.getElementById('submit-btn').disabled = true;
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 timeLeft--;
-                document.getElementById('quiz-timer').textContent = `Time left: ${timeLeft}s`;
+                timerDisplay.textContent = `Time left: ${timeLeft}s`;
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    document.getElementById('next-btn').disabled = false;
+                    const question = questions[currentQuestionIndex];
+                    let hasAnswer = false;
+                    if (question.type === 'multiple-choice') {
+                        const selected = document.querySelector(`input[name="question-${question.id}"]:checked`);
+                        hasAnswer = !!selected;
+                    } else {
+                        const answer = document.querySelector(`textarea[name="answer-${question.id}"]`).value.trim();
+                        hasAnswer = answer.length > 0;
+                    }
+                    if (currentQuestionIndex === questions.length - 1) {
+                        document.getElementById('submit-btn').disabled = !hasAnswer;
+                    } else {
+                        document.getElementById('next-btn').disabled = !hasAnswer;
+                    }
                 }
             }, 1000);
         }
 
-        document.getElementById('next-btn').addEventListener('click', () => {
-            saveAnswer();
-            currentQuestionIndex++;
-            if (currentQuestionIndex < questions.length) {
-                displayQuestion();
-                startTimer();
-            }
-        });
-
         async function submitQuiz() {
+            console.log('Submit button clicked');
             if (!currentQuestId || !userId || !currentQuestTitle) {
                 showToast('Invalid session or quest', 'error');
                 return;
@@ -1278,7 +1309,7 @@
                 const selected = document.querySelector(`input[name="question-${question.id}"]:checked`);
                 if (selected) answers[question.id] = selected.value;
             } else {
-                const answer = document.querySelector(`textarea[name="question-${question.id}"]`).value.trim();
+                const answer = document.querySelector(`textarea[name="answer-${question.id}"]`).value.trim();
                 if (answer) answers[question.id] = answer;
             }
         }
@@ -1410,6 +1441,36 @@
 
         async function init() {
             if (!await checkSession()) return;
+            // Set up event listeners
+            try {
+                const nextBtn = document.getElementById('next-btn');
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', () => {
+                        saveAnswer();
+                        currentQuestionIndex++;
+                        if (currentQuestionIndex < questions.length) {
+                            displayQuestion();
+                            startTimer();
+                        }
+                    });
+                    console.log('Next button listener attached');
+                } else {
+                    console.error('Next button not found in DOM');
+                }
+
+                const submitBtn = document.getElementById('submit-btn');
+                if (submitBtn) {
+                    submitBtn.addEventListener('click', () => {
+                        console.log('Submit button listener triggered');
+                        submitQuiz();
+                    });
+                    console.log('Submit button listener attached');
+                } else {
+                    console.error('Submit button not found in DOM');
+                }
+            } catch (err) {
+                console.error('Error setting up event listeners:', err);
+            }
             await Promise.all([
                 populateQuestOverview(),
                 populateQuests(),
