@@ -84,13 +84,18 @@
             margin-top: 0.25rem;
             display: none;
         }
+        .toast-notification {
+            transform: translateX(calc(100% + 1.25rem)); /* Start off-screen */
+        }
+        .toast-notification.show {
+            transform: translateX(0);
+        }
     </style>
 </head>
 <body>
     <div class="auth-container">
         <div class="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 rounded-2xl shadow-2xl overflow-hidden auth-panel">
             
-            <!-- Left Panel: Marketing -->
             <div class="relative p-8 md:p-12 text-white flex flex-col justify-center order-last lg:order-first">
                 <canvas id="reward-canvas"></canvas>
                 <div class="relative z-10 text-center lg:text-left">
@@ -98,8 +103,7 @@
                     <h2 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-secondary leading-tight mb-6">Unlock Your Crypto Potential.</h2>
                     
                     <div id="benefits-carousel" class="relative h-24">
-                        <!-- Benefits will be injected here by JS -->
-                    </div>
+                        </div>
 
                     <div class="mt-12 text-center">
                         <a href="#" class="text-sm text-gray-400 hover:text-secondary transition-colors">
@@ -109,10 +113,8 @@
                 </div>
             </div>
 
-            <!-- Right Panel: Form -->
             <div class="p-8 md:p-12 bg-darker/50">
                 <div class="max-w-md mx-auto">
-                    <!-- Form Toggle -->
                     <div class="form-toggle-bg p-1 rounded-full flex justify-between items-center mb-8 relative">
                         <input type="checkbox" id="form-toggle" class="hidden form-toggle-input">
                         <label for="form-toggle" class="form-toggle-label absolute inset-0 cursor-pointer"></label>
@@ -120,8 +122,8 @@
                         <button id="signup-toggle-btn" class="w-1/2 text-center z-10 py-2 rounded-full font-semibold text-gray-400 transition-colors">Sign Up</button>
                     </div>
 
-                    <h2 id="form-title" class="text-3xl font-bold text-white mb-2">Welcome Back!</h2>
-                    <p id="form-subtitle" class="text-gray-400 mb-6">Log in to access your account.</p>
+                    <h2 id="form-title" class="text-3xl font-bold text-white mb-2 text-center">Welcome Back to RewardRush</h2>
+                    <p id="form-subtitle" class="text-gray-400 mb-8 text-center">Log in to continue your journey.</p>
 
                     <form id="auth-form" class="space-y-4">
                         <div id="fullName-container" class="form-group-container">
@@ -175,11 +177,19 @@
                     </div>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <button class="w-full bg-gray-800 text-white font-semibold py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
-                            <i class="fab fa-google"></i> Google
+                        <button type="button" id="google-login-btn" class="relative overflow-hidden w-full bg-gray-800 text-white font-semibold py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
+                            <div class="absolute -top-1 -right-1 bg-secondary text-white text-xs font-bold px-2 py-0.5 rounded-bl-lg">
+                                SOON
+                            </div>
+                            <i class="fab fa-google"></i>
+                            <span>Google</span>
                         </button>
-                        <button class="w-full bg-gray-800 text-white font-semibold py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
-                            <i class="fab fa-twitter"></i> Twitter
+                        <button type="button" id="twitter-login-btn" class="relative overflow-hidden w-full bg-gray-800 text-white font-semibold py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
+                            <div class="absolute -top-1 -right-1 bg-secondary text-white text-xs font-bold px-2 py-0.5 rounded-bl-lg">
+                                SOON
+                            </div>
+                            <i class="fab fa-twitter"></i>
+                            <span>Twitter</span>
                         </button>
                     </div>
 
@@ -188,10 +198,17 @@
         </div>
     </div>
 
+    <div id="toast-notification" class="fixed top-5 right-5 bg-secondary text-white py-3 px-5 rounded-lg shadow-lg toast-notification transition-transform duration-300 ease-in-out">
+        <p class="font-semibold">Coming Soon!</p>
+        <p class="text-sm -mt-1">This feature is under development.</p>
+    </div>
+
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- Canvas Animation ---
+    // (Canvas animation code remains unchanged...)
     const canvas = document.getElementById('reward-canvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
@@ -207,51 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
         initParticles();
     }
 
-    class Particle {
-        constructor(x, y, radius, color) {
-            this.x = x;
-            this.y = y;
-            this.radius = radius;
-            this.color = color;
-            this.baseX = this.x;
-            this.baseY = this.y;
-            this.density = (Math.random() * 30) + 10;
-        }
-
-        draw() {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-            ctx.fillStyle = this.color;
-            ctx.fill();
-        }
-
-        update(mouse) {
-            let dx = mouse.x - this.x;
-            let dy = mouse.y - this.y;
-            let distance = Math.sqrt(dx * dx + dy * dy);
-            let forceDirectionX = dx / distance;
-            let forceDirectionY = dy / distance;
-            let maxDistance = mouse.radius;
-            let force = (maxDistance - distance) / maxDistance;
-            let directionX = (forceDirectionX * force * this.density);
-            let directionY = (forceDirectionY * force * this.density);
-
-            if (distance < mouse.radius) {
-                this.x -= directionX;
-                this.y -= directionY;
-            } else {
-                if (this.x !== this.baseX) {
-                    let dx = this.x - this.baseX;
-                    this.x -= dx / 10;
-                }
-                if (this.y !== this.baseY) {
-                    let dy = this.y - this.baseY;
-                    this.y -= dy / 10;
-                }
-            }
-        }
-    }
-    
     class Orb {
         constructor() {
             this.x = Math.random() * canvas.width;
@@ -302,33 +274,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     ctx.stroke();
                 }
             }
-            
-            let distToCenter = Math.sqrt(Math.pow(particles[a].x - center.x, 2) + Math.pow(particles[a].y - center.y, 2));
-             if (distToCenter < 300) {
-                  opacityValue = 1 - (distToCenter / 300);
-                  ctx.strokeStyle = `rgba(0, 206, 201, ${opacityValue * 0.5})`;
-                  ctx.lineWidth = 0.5;
-                  ctx.beginPath();
-                  ctx.moveTo(particles[a].x, particles[a].y);
-                  ctx.lineTo(center.x, center.y);
-                  ctx.stroke();
-             }
         }
     }
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Draw central logo
-        ctx.beginPath();
-        ctx.arc(center.x, center.y, center.radius, 0, Math.PI * 2);
-        const gradient = ctx.createRadialGradient(center.x, center.y, 0, center.x, center.y, center.radius * 2);
-        gradient.addColorStop(0, 'rgba(108, 92, 231, 1)');
-        gradient.addColorStop(0.5, 'rgba(108, 92, 231, 0.5)');
-        gradient.addColorStop(1, 'rgba(108, 92, 231, 0)');
-        ctx.fillStyle = gradient;
-        ctx.fill();
-
         for (const particle of particles) {
             particle.update();
             particle.draw();
@@ -344,6 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resizeCanvas();
         animate();
     });
+
 
     // --- Benefits Carousel ---
     const benefits = [
@@ -389,26 +340,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function setFormState(signUp) {
         isSignUp = signUp;
         formToggle.checked = isSignUp;
-
-        // Clear all errors
         document.querySelectorAll('.error-message').forEach(el => {
             el.textContent = '';
             el.style.display = 'none';
         });
         
+        // --- MODIFIED: Updated text content for both states ---
         if (isSignUp) {
             loginBtn.classList.replace('text-white', 'text-gray-400');
             signupBtn.classList.replace('text-gray-400', 'text-white');
-            formTitle.textContent = 'Create an Account';
-            formSubtitle.textContent = 'Join us and start earning!';
+            formTitle.textContent = 'Join RewardRush Today';
+            formSubtitle.textContent = 'Create your account to start earning rewards.';
             fullNameContainer.classList.add('active');
             emailContainer.classList.add('active');
             submitBtnText.textContent = 'Create Account';
         } else {
             loginBtn.classList.replace('text-gray-400', 'text-white');
             signupBtn.classList.replace('text-white', 'text-gray-400');
-            formTitle.textContent = 'Welcome Back!';
-            formSubtitle.textContent = 'Log in to access your account.';
+            formTitle.textContent = 'Welcome Back to RewardRush';
+            formSubtitle.textContent = 'Log in to continue your journey.';
             fullNameContainer.classList.remove('active');
             emailContainer.classList.remove('active');
             submitBtnText.textContent = 'Log In';
@@ -419,7 +369,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loginBtn.addEventListener('click', () => setFormState(false));
     signupBtn.addEventListener('click', () => setFormState(true));
 
-    // Password Toggle
     const passwordInput = document.getElementById('password');
     const passwordToggle = document.getElementById('password-toggle');
     passwordToggle.addEventListener('click', () => {
@@ -429,7 +378,6 @@ document.addEventListener('DOMContentLoaded', () => {
         passwordToggle.querySelector('i').classList.toggle('fa-eye-slash');
     });
 
-    // Form Submission
     authForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -439,7 +387,6 @@ document.addEventListener('DOMContentLoaded', () => {
         spinner.style.display = 'inline-block';
         submitBtn.disabled = true;
 
-        // Reset errors
         document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
 
         const fullName = document.getElementById('fullName').value;
@@ -447,7 +394,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
 
-        // Basic client-side validation
         let hasError = false;
         if (!username) {
              document.getElementById('username-error').textContent = 'Username is required.';
@@ -488,12 +434,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // --- THIS IS THE ONLY CHANGE ---
-        // It now points to your local server instead of the old 'onrender.com' address.
         const API_BASE_URL = 'http://localhost:3000';
         const endpoint = isSignUp ? `${API_BASE_URL}/signup` : `${API_BASE_URL}/login`;
-        // --- END OF CHANGE ---
-
         const body = isSignUp ? { fullName, username, email, password } : { username, password };
         
         try {
@@ -505,25 +447,44 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok) {
-                // On success, redirect based on user type.
-                if (data.isAdmin) {
-                    window.location.href = '/admin.html';
-                } else {
-                    window.location.href = '/groweasy.html';
-                }
+                window.location.href = data.isAdmin ? '/admin.html' : '/groweasy.html';
             } else {
                 document.getElementById('form-error').textContent = data.error || 'An unexpected error occurred.';
                 document.getElementById('form-error').style.display = 'block';
             }
         } catch (err) {
             console.error('Auth error:', err);
-            document.getElementById('form-error').textContent = 'Could not connect to the server. Please check your connection or try again later.';
+            document.getElementById('form-error').textContent = 'Could not connect to the server. Please try again later.';
             document.getElementById('form-error').style.display = 'block';
         } finally {
             submitBtnText.style.display = 'inline-block';
             spinner.style.display = 'none';
             submitBtn.disabled = false;
         }
+    });
+
+    // --- "Coming Soon" Toast Logic ---
+    const googleBtn = document.getElementById('google-login-btn');
+    const twitterBtn = document.getElementById('twitter-login-btn');
+    const toast = document.getElementById('toast-notification');
+    let toastTimeout;
+
+    const showToast = () => {
+        if (toastTimeout) clearTimeout(toastTimeout);
+        toast.classList.add('show');
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    };
+
+    googleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        showToast();
+    });
+
+    twitterBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        showToast();
     });
     
     // Add keyframes for carousel

@@ -256,12 +256,88 @@
         .section-title i {
             color: var(--primary);
         }
+
+        /* Filter & Sort Controls */
+        .quest-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            background: rgba(45, 52, 54, 0.7);
+            padding: 1rem;
+            border-radius: 0.75rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .control-group label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--primary-light);
+        }
+        
+        .control-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            background: rgba(30, 39, 46, 0.8);
+            color: var(--light);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .control-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        /* --- START: CORRECTED SEARCH ICON STYLES --- */
+
+        /* This new wrapper will be the positioning context for the icon */
+        .search-input-wrapper {
+            position: relative;
+        }
+
+        /* Target the input field itself */
+        #quest-search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem; /* Increased left padding for icon */
+            border-radius: 0.5rem;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            background: rgba(30, 39, 46, 0.8);
+            color: var(--light);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        #quest-search-input:focus {
+             outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Position the icon inside the new wrapper */
+        .search-input-wrapper .fa-search {
+            position: absolute;
+            top: 50%; /* This now works correctly */
+            left: 1rem;
+            transform: translateY(-50%);
+            color: var(--primary-light);
+        }
+        /* --- END: CORRECTED SEARCH ICON STYLES --- */
         
         .quest-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 1.5rem;
             margin-bottom: 3rem;
+            min-height: 300px; 
         }
         
         .quest-card {
@@ -327,12 +403,11 @@
         .quest-card .quest-actions {
             display: flex;
             gap: 1rem;
-            margin-top: 1rem;
+            margin-top: auto; 
         }
         
-        .quest-card .primary-btn {
-            background: var(--primary);
-            color: white;
+        .quest-card .primary-btn,
+        .quest-card .secondary-btn {
             padding: 0.75rem 1.5rem;
             border: none;
             border-radius: 0.5rem;
@@ -344,6 +419,11 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+        }
+        
+        .quest-card .primary-btn {
+            background: var(--primary);
+            color: white;
         }
         
         .quest-card .primary-btn:hover {
@@ -354,22 +434,12 @@
         .quest-card .primary-btn.disabled {
             background: rgba(108, 92, 231, 0.3);
             cursor: not-allowed;
+            transform: none;
         }
         
         .quest-card .secondary-btn {
             background: rgba(255, 255, 255, 0.1);
             color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
         }
         
         .quest-card .secondary-btn:hover {
@@ -377,60 +447,96 @@
             transform: translateY(-2px);
         }
         
-        /* Referral Section */
-        .referral-section {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .referral-section h4 {
-            font-size: 1rem;
-            color: var(--light);
-            margin-bottom: 0.5rem;
+        /* Pagination */
+        .pagination {
             display: flex;
+            justify-content: center;
             align-items: center;
             gap: 0.5rem;
+            margin-top: 2rem;
         }
-        
-        .referral-section .referral-stats {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-        }
-        
-        .referral-section .referral-link {
-            background: rgba(0, 206, 201, 0.1);
-            color: var(--secondary);
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            font-size: 0.85rem;
-            word-break: break-all;
-            margin: 0.5rem 0;
-            display: block;
-        }
-        
-        .referral-section .copy-btn {
-            background: var(--secondary);
-            color: var(--dark);
-            width: 100%;
-            padding: 0.75rem;
-            border: none;
+
+        .pagination button {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-weight: 600;
-            display: flex;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .pagination button.active {
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .pagination button:disabled {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.4);
+            cursor: not-allowed;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: none; 
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(45, 52, 54, 0.5);
+            border-radius: 1rem;
+            color: rgba(255, 255, 255, 0.7);
         }
         
-        .referral-section .copy-btn:hover {
-            background: #55efc4;
-            transform: translateY(-2px);
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
         }
         
+        .empty-state h3 {
+            font-size: 1.5rem;
+            color: var(--light);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Skeleton Loader */
+        .skeleton-card {
+            background-color: rgba(45, 52, 54, 0.7);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border-top: 4px solid rgba(108, 92, 231, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .skeleton {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        .skeleton.title { width: 60%; height: 24px; margin-bottom: 0.5rem; }
+        .skeleton.meta { display: flex; justify-content: space-between; }
+        .skeleton.meta-item { width: 30%; height: 20px; }
+        .skeleton.text { width: 100%; height: 16px; }
+        .skeleton.text.short { width: 80%; }
+        .skeleton.button-group { display: flex; gap: 1rem; margin-top: auto; }
+        .skeleton.button { flex: 1; height: 45px; }
+
+        @keyframes pulse {
+            50% { opacity: 0.5; }
+        }
+
         /* History Table */
         .history-table {
             width: 100%;
@@ -477,303 +583,50 @@
             color: var(--success);
         }
         
-        .status-pending {
-            background: rgba(253, 203, 110, 0.2);
-            color: var(--warning);
-        }
+        /* Modal Styles */
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); align-items: center; justify-content: center; z-index: 1000; opacity: 0; transition: opacity 0.3s ease; }
+        .modal.open { display: flex; opacity: 1; }
+        .modal-content { background: rgba(45, 52, 54, 0.95); backdrop-filter: blur(10px); padding: 2rem; border-radius: 1rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); transform: translateY(20px); transition: transform 0.3s ease; border: 1px solid rgba(108, 92, 231, 0.3); }
+        .modal.open .modal-content { transform: translateY(0); }
+        .modal-content h3 { font-size: 1.5rem; color: var(--primary-light); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+        .modal-content .modal-actions { display: flex; justify-content: flex-end; margin-top: 1.5rem; gap: 1rem; }
+        .modal-content .close-btn { background: var(--danger); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.3s ease; font-weight: 500; }
+        .modal-content .close-btn:hover { background: #ff5252; transform: translateY(-2px); }
         
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .modal.open {
-            display: flex;
-            opacity: 1;
-        }
-        
-        .modal-content {
-            background: rgba(45, 52, 54, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 2rem;
-            border-radius: 1rem;
-            width: 90%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-            border: 1px solid rgba(108, 92, 231, 0.3);
-        }
-        
-        .modal.open .modal-content {
-            transform: translateY(0);
-        }
-        
-        .modal-content h3 {
-            font-size: 1.5rem;
-            color: var(--primary-light);
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .modal-content .code-item {
-            background: rgba(30, 39, 46, 0.7);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .modal-content .code-item:last-child {
-            margin-bottom: 0;
-        }
-        
-        .modal-content .code-brand {
-            font-weight: 600;
-            color: var(--primary-light);
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .modal-content .code-value {
-            background: rgba(0, 206, 201, 0.1);
-            color: var(--secondary);
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            font-family: monospace;
-            font-size: 1.1rem;
-            margin: 0.5rem 0;
-            word-break: break-all;
-        }
-        
-        .modal-content .code-status {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            font-size: 0.85rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-        
-        .modal-content .code-available {
-            background: rgba(0, 184, 148, 0.2);
-            color: var(--success);
-        }
-        
-        .modal-content .code-used {
-            background: rgba(214, 48, 49, 0.2);
-            color: var(--danger);
-        }
-        
-        .modal-content .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 1.5rem;
-            gap: 1rem;
-        }
-        
-        .modal-content .close-btn {
-            background: var(--danger);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        
-        .modal-content .close-btn:hover {
-            background: #ff5252;
-            transform: translateY(-2px);
-        }
-        
-        /* Quiz Modal Styles */
-        .quiz-item {
-            background: rgba(30, 39, 46, 0.7);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .quiz-item h4 {
-            color: var(--primary-light);
-            margin-bottom: 0.5rem;
-        }
-        
-        .quiz-item .mc-options {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        
-        .quiz-item .mc-option {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .quiz-item .open-ended textarea {
-            width: 100%;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            border: 1px solid rgba(108, 92, 231, 0.3);
-            background: rgba(30, 39, 46, 0.8);
-            color: var(--light);
-            resize: vertical;
-            min-height: 100px;
-        }
-        
-        /* New Styles for Single Question Display and Timer */
-        .quiz-item.hidden {
-            display: none;
-        }
-        
-        .quiz-item.active {
-            display: block;
-        }
-        
-        .timer {
-            color: var(--warning);
-            font-size: 1rem;
-            margin: 1rem 0;
-            text-align: center;
-            font-weight: 500;
-        }
-        
-        .next-btn {
-            background: var(--primary);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        
-        .next-btn:disabled {
-            background: rgba(108, 92, 231, 0.3);
-            cursor: not-allowed';
-        }
-        
-        .next-btn:hover:not(:disabled) {
-            background: var(--primary-light);
-            transform: translateY(-2px);
-        }
-        
-        /* Completion Modal Styles */
-        .completion-modal .modal-content {
-            text-align: center;
-        }
-        
-        .completion-modal .modal-content p {
-            color: var(--light);
-            font-size: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        .completion-modal .referral-input {
-            background: rgba(0, 206, 201, 0.1);
-            color: var(--secondary);
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            font-size: 0.85rem;
-            word-break: break-all;
-            margin: 0.5rem 0;
-            width: 100%;
-            border: none;
-        }
-        
-        .completion-modal .copy-btn {
-            background: var(--secondary);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        
-        .completion-modal .copy-btn:hover {
-            background: #55efc4;
-            transform: translateY(-2px);
-        }
+        /* Quiz & Completion Modal Styles */
+        .quiz-item { background: rgba(30, 39, 46, 0.7); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
+        .quiz-item h4 { color: var(--primary-light); margin-bottom: 0.5rem; }
+        .quiz-item .mc-options { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
+        .quiz-item .mc-option { display: flex; align-items: center; gap: 0.5rem; }
+        .quiz-item .open-ended textarea { width: 100%; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid rgba(108, 92, 231, 0.3); background: rgba(30, 39, 46, 0.8); color: var(--light); resize: vertical; min-height: 100px; }
+        .timer { color: var(--warning); font-size: 1rem; margin: 1rem 0; text-align: center; font-weight: 500; }
+        .next-btn { background: var(--primary); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .next-btn:disabled { background: rgba(108, 92, 231, 0.3); cursor: not-allowed'; }
+        .next-btn:hover:not(:disabled) { background: var(--primary-light); transform: translateY(-2px); }
+        .completion-modal .modal-content { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+        .completion-modal .modal-content h3 { margin-bottom: 0.5rem; }
+        .completion-modal #completion-message, .completion-modal #completion-subtext { margin: 0; text-align: center; }
+        .completion-modal #completion-message { font-size: 1.2rem; font-weight: 500; color: var(--light); }
+        .completion-modal #completion-subtext { font-size: 1rem; color: rgba(255, 255, 255, 0.8); }
+        .completion-modal .referral-input { background: rgba(0, 206, 201, 0.1); color: var(--secondary); padding: 0.75rem; border-radius: 0.5rem; font-size: 0.9rem; word-break: break-all; width: 100%; border: 1px solid var(--secondary); text-align: center; }
+        .completion-modal .modal-actions { justify-content: center; width: 100%; }
+        .completion-modal .copy-btn { background: var(--secondary); color: var(--darker); padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.3s ease; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .completion-modal .copy-btn:hover { background: #55efc4; transform: translateY(-2px); }
         
         /* Responsive Adjustments */
         @media (max-width: 768px) {
-            .container {
-                padding: 1.5rem;
-            }
-            
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .nav-menu {
-                position: fixed;
-                top: 0;
-                right: -100%;
-                width: 280px;
-                height: 100vh;
-                background: var(--darker);
-                flex-direction: column;
-                padding: 2rem;
-                gap: 1.5rem;
-                transition: right 0.3s ease;
-                box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
-            }
-            
-            .nav-menu.open {
-                right: 0;
-            }
-            
-            .hamburger {
-                display: block;
-            }
-            
-            .quest-list {
-                grid-template-columns: 1fr;
-            }
+            .container { padding: 1.5rem; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .quest-list { grid-template-columns: 1fr; }
+            .quest-controls { flex-direction: column; }
+            .nav-menu { position: fixed; top: 0; right: -100%; width: 280px; height: 100vh; background: var(--darker); flex-direction: column; padding: 2rem; gap: 1.5rem; transition: right 0.3s ease; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2); }
+            .nav-menu.open { right: 0; }
+            .hamburger { display: block; }
         }
         
         /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-in {
-            animation: fadeIn 0.5s ease forwards;
-        }
-        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-in { animation: fadeIn 0.5s ease forwards; }
         .delay-1 { animation-delay: 0.1s; }
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
@@ -810,48 +663,24 @@
         
         <div class="dashboard-grid">
             <div class="dashboard-card animate-in">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-coins"></i>
-                    </div>
-                    <h3>Total Earnings</h3>
-                </div>
+                <div class="card-header"> <div class="card-icon"><i class="fas fa-coins"></i></div> <h3>Total Earnings</h3> </div>
                 <p class="value" id="total-earnings">$0.00</p>
                 <p class="description">Total earnings from completed quests</p>
-                <button class="card-btn">
-                    <i class="fas fa-wallet"></i>
-                    Withdraw
-                </button>
+                <button class="card-btn"><i class="fas fa-wallet"></i> Withdraw</button>
             </div>
             
             <div class="dashboard-card animate-in delay-1">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <h3>Quests Completed</h3>
-                </div>
+                <div class="card-header"> <div class="card-icon"><i class="fas fa-check-circle"></i></div> <h3>Quests Completed</h3> </div>
                 <p class="value" id="quests-completed">0</p>
                 <p class="description">Total quests you've completed</p>
-                <button class="card-btn" onclick="scrollToHistory()">
-                    <i class="fas fa-history"></i>
-                    View History
-                </button>
+                <button class="card-btn" onclick="scrollToHistory()"><i class="fas fa-history"></i> View History</button>
             </div>
             
             <div class="dashboard-card animate-in delay-2">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-gift"></i>
-                    </div>
-                    <h3>Redeemable Codes</h3>
-                </div>
+                <div class="card-header"> <div class="card-icon"><i class="fas fa-gift"></i></div> <h3>Redeemable Codes</h3> </div>
                 <p class="value" id="redeemable-codes">0</p>
                 <p class="description">Available codes to redeem</p>
-                <button class="card-btn" onclick="openRedeemModal()">
-                    <i class="fas fa-eye"></i>
-                    View Codes
-                </button>
+                <button class="card-btn" onclick="openRedeemModal()"><i class="fas fa-eye"></i> View Codes</button>
             </div>
         </div>
         
@@ -860,7 +689,42 @@
             Available Quests
         </h2>
         
+        <div class="quest-controls">
+             <div class="control-group">
+                <label for="quest-search-input">Search Quests</label>
+                <div class="search-input-wrapper">
+                    <i class="fas fa-search"></i>
+                    <input type="search" id="quest-search-input" placeholder="Search by keyword...">
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="filter-status">Filter by Status</label>
+                <select id="filter-status">
+                    <option value="all">All</option>
+                    <option value="available">Available</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="sort-reward">Sort by Reward</label>
+                <select id="sort-reward">
+                    <option value="default">Default</option>
+                    <option value="reward-desc">Highest to Lowest</option>
+                    <option value="reward-asc">Lowest to Highest</option>
+                </select>
+            </div>
+        </div>
+        
         <div class="quest-list" id="quest-list">
+            </div>
+
+        <div class="empty-state" id="empty-state">
+            <i class="fas fa-search-minus"></i>
+            <h3 id="empty-state-title">No Quests Found</h3>
+            <p id="empty-state-message">Try adjusting your search or filters.</p>
+        </div>
+
+        <div class="pagination" id="pagination-container">
             </div>
         
         <h2 class="section-title" id="history-section">
@@ -874,7 +738,7 @@
                     <th>Title</th>
                     <th>Reward</th>
                     <th>Status</th>
-                    <th>Date</th>
+                    <th>Date Completed (UTC)</th>
                 </tr>
             </thead>
             <tbody id="history-table-body">
@@ -882,94 +746,84 @@
         </table>
     </div>
     
-    <div class="modal" id="redeem-modal">
-        <div class="modal-content">
-            <h3>
-                <i class="fas fa-gift"></i>
-                Redeem Code Vault
-            </h3>
-            
-            <div id="redeem-codes">
-                </div>
-            
-            <div class="modal-actions">
-                <button class="close-btn" onclick="closeModal('redeem-modal')">
-                    <i class="fas fa-times"></i>
-                    Close
-                </button>
-            </div>
-        </div>
-    </div>
-
     <div class="modal" id="quiz-modal">
         <div class="modal-content">
-            <h3 id="quiz-title">
-                <i class="fas fa-question-circle"></i>
-                Quiz
-            </h3>
+            <h3 id="quiz-title"><i class="fas fa-question-circle"></i> Quiz</h3>
             <div id="quiz-questions"></div>
-            <div id="quiz-timer" class="timer">Time left: 20s</div>
+            <div id="quiz-timer" class="timer"></div>
             <div class="modal-actions">
-                <button class="close-btn" onclick="closeModal('quiz-modal')">
-                    <i class="fas fa-times"></i>
-                    Cancel
-                </button>
-                <button class="next-btn" id="next-btn" disabled>
-                    <i class="fas fa-arrow-right"></i>
-                    Next
-                </button>
-                <button class="primary-btn" id="submit-btn" style="display: none;">
-                    <i class="fas fa-check"></i>
-                    Submit
-                </button>
+                <button class="close-btn" onclick="closeModal('quiz-modal')"><i class="fas fa-times"></i> Cancel</button>
+                <button class="next-btn" id="next-btn" disabled><i class="fas fa-arrow-right"></i> Next</button>
+                <button class="primary-btn" id="submit-btn" style="display: none;"><i class="fas fa-check"></i> Submit</button>
             </div>
         </div>
     </div>
-
     <div class="modal completion-modal" id="completion-modal">
         <div class="modal-content">
-            <h3>
-                <i class="fas fa-check-circle"></i>
-                Quest Completed!
-            </h3>
+            <h3><i class="fas fa-check-circle"></i> Quest Completed!</h3>
             <p id="completion-message"></p>
-            <p>Invite friends with this link to earn more:</p>
+            <p id="completion-subtext">Invite friends with this link to earn more:</p>
             <input id="referral-link" class="referral-input" type="text" readonly>
             <div class="modal-actions">
-                <button class="copy-btn" onclick="copyCompletionLink()">
-                    <i class="fas fa-copy"></i>
-                    Copy Link
-                </button>
-                <button class="close-btn" onclick="closeModal('completion-modal')">
-                    <i class="fas fa-times"></i>
-                    Close
-                </button>
+                <button class="copy-btn" onclick="copyCompletionLink()"><i class="fas fa-copy"></i> Copy Link</button>
+                <button class="close-btn" onclick="closeModal('completion-modal')"><i class="fas fa-times"></i> Close</button>
             </div>
         </div>
     </div>
-
     <div class="modal" id="quest-details-modal">
         <div class="modal-content">
             <h3 id="quest-details-title"></h3>
             <div id="quest-details-content"></div>
             <div class="modal-actions">
-                <button class="close-btn" onclick="closeModal('quest-details-modal')">
-                    <i class="fas fa-times"></i>
-                    Close
-                </button>
+                <button class="close-btn" onclick="closeModal('quest-details-modal')"><i class="fas fa-times"></i> Close</button>
             </div>
         </div>
     </div>
 
     <script>
+        // --- Global State Variables ---
         let userId = null;
         let allQuests = [];
-        let completedQuestIds = new Set();
+        let completedQuests = [];
+        let completedQuestIdSet = new Set();
+        
+        // --- State for Filtering, Sorting, and Pagination ---
+        let currentPage = 1;
+        const questsPerPage = 20;
+
+        // Quiz State
         let currentQuestId = null;
         let currentQuestionIndex = 0;
         let questions = [];
         let answers = {};
         let timerInterval;
+
+        // --- Functions for Loading Skeletons ---
+        function showSkeletons() {
+            const list = document.getElementById('quest-list');
+            list.innerHTML = ''; // Clear previous content
+            document.getElementById('empty-state').style.display = 'none'; // Hide empty state
+            document.getElementById('pagination-container').style.display = 'none'; // Hide pagination
+
+            for (let i = 0; i < 6; i++) { // Show a few skeletons
+                const skeletonCard = `
+                    <div class="skeleton-card">
+                        <div class="skeleton title"></div>
+                        <div class="skeleton meta">
+                            <div class="skeleton meta-item"></div>
+                            <div class="skeleton meta-item"></div>
+                        </div>
+                        <div class="skeleton text"></div>
+                        <div class="skeleton text short"></div>
+                        <div class="skeleton button-group">
+                            <div class="skeleton button"></div>
+                            <div class="skeleton button"></div>
+                        </div>
+                    </div>
+                `;
+                list.innerHTML += skeletonCard;
+            }
+        }
 
         async function checkSession() {
             try {
@@ -979,212 +833,244 @@
                 if (data.loggedIn) {
                     userId = data.userId;
                     return true;
-                } else {
-                    showToast('Please log in to access this page', 'error');
-                    setTimeout(() => window.location.href = 'auth.html', 2000);
-                    return false;
                 }
+                window.location.href = 'auth.html';
+                return false;
             } catch (err) {
-                console.error('Session check error:', err);
-                showToast('Error checking session. Redirecting to login...', 'error');
-                setTimeout(() => window.location.href = 'auth.html', 2000);
+                window.location.href = 'auth.html';
                 return false;
             }
         }
 
-        async function populateDashboard() {
+        async function fetchDashboardData() {
             if (!userId) return;
             try {
                 const response = await fetch(`/quest-overview?userId=${encodeURIComponent(userId)}`);
-                if (!response.ok) throw new Error('Failed to fetch quest overview');
                 const data = await response.json();
                 document.getElementById('total-earnings').textContent = `$${Number(data.totalEarnings || 0).toFixed(2)}`;
-                document.getElementById('quests-completed').textContent = data.questsCompleted?.length || 0;
                 document.getElementById('redeemable-codes').textContent = data.redeemableCodes || 0;
-
-                if (Array.isArray(data.questsCompleted)) {
-                    completedQuestIds = new Set(data.questsCompleted);
-                }
+                
+                completedQuests = Array.isArray(data.questsCompleted) ? data.questsCompleted : [];
+                completedQuestIdSet = new Set(completedQuests.map(q => q.id));
+                document.getElementById('quests-completed').textContent = completedQuests.length;
             } catch (err) {
-                console.error('Failed to fetch quest overview:', err);
-                showToast('Failed to load dashboard data', 'error');
+                console.error('Failed to fetch dashboard data:', err);
             }
         }
 
-        async function populateQuests() {
-            const list = document.getElementById('quest-list');
-            list.innerHTML = '<p style="color: var(--warning); text-align: center; padding: 2rem;">Loading quests...</p>';
+        async function fetchAllQuests() {
+            showSkeletons(); // Show skeletons before fetching
             try {
                 const response = await fetch('/quests');
-                if (!response.ok) throw new Error('Failed to fetch quests');
-                const questsData = await response.json();
-                allQuests = questsData.quests || [];
-
-                if (allQuests.length === 0) {
-                    list.innerHTML = '<p style="color: var(--danger); text-align: center; padding: 2rem;">No quests available at the moment. Check back later!</p>';
-                    return;
-                }
-
-                const questHTML = allQuests.map((quest, index) => {
-                    const isCompleted = completedQuestIds.has(quest.id);
-                    const isAvailable = new Date(quest.startTime) <= new Date() && new Date(quest.endTime) > new Date();
-                    
-                    let statusText = quest.status;
-                    let statusClass = '';
-                    let buttonDisabled = '';
-                    let buttonText = 'Start Quiz';
-                    let buttonIcon = 'fa-play';
-
-                    if (isCompleted) {
-                        statusText = 'Completed';
-                        statusClass = 'status-completed';
-                        buttonText = 'Completed';
-                        buttonIcon = 'fa-check';
-                        buttonDisabled = 'disabled';
-                    } else if (!isAvailable) {
-                        statusText = 'Expired';
-                        statusClass = 'status-expired';
-                        buttonText = 'Expired';
-                        buttonIcon = 'fa-clock';
-                        buttonDisabled = 'disabled';
-                    }
-
-                    return `
-                        <div class="quest-card animate-in delay-${index % 3}" data-quest-id="${quest.id}">
-                            <h3>${quest.title}</h3>
-                            <div class="quest-meta">
-                                <span class="quest-reward"><i class="fas fa-coins"></i> ${quest.reward}</span>
-                                <span class="quest-status ${statusClass}">${statusText}</span>
-                            </div>
-                            <p>${quest.description}</p>
-                            <div class="quest-actions">
-                                <button class="primary-btn start-quiz-btn ${buttonDisabled}" ${buttonDisabled}>
-                                    <i class="fas ${buttonIcon}"></i> ${buttonText}
-                                </button>
-                                <button class="secondary-btn details-btn">
-                                    <i class="fas fa-info-circle"></i> Details
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-                list.innerHTML = questHTML;
+                allQuests = (await response.json()).quests || [];
             } catch (err) {
                 console.error('Failed to load quests:', err);
-                list.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">Failed to load quests.</p>`;
+                const questList = document.getElementById('quest-list');
+                questList.innerHTML = ''; // Clear skeletons
+                showEmptyState(
+                    "Error Loading Quests", 
+                    "We couldn't fetch the available quests. Please try refreshing the page.",
+                    "fa-exclamation-triangle"
+                );
             }
+        }
+        
+        // --- Central Rendering Function ---
+        function displayQuests() {
+            const list = document.getElementById('quest-list');
+            const paginationContainer = document.getElementById('pagination-container');
+
+            // 1. Get filter and sort values
+            const searchTerm = document.getElementById('quest-search-input').value.toLowerCase();
+            const filterStatus = document.getElementById('filter-status').value;
+            const sortReward = document.getElementById('sort-reward').value;
+
+            let questsToDisplay = [...allQuests];
+
+            // 2. Apply Search
+            if (searchTerm) {
+                questsToDisplay = questsToDisplay.filter(quest =>
+                    quest.title.toLowerCase().includes(searchTerm) ||
+                    quest.description.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // 3. Apply Status Filter
+            if (filterStatus === 'available') {
+                questsToDisplay = questsToDisplay.filter(q => !completedQuestIdSet.has(q.id));
+            } else if (filterStatus === 'completed') {
+                questsToDisplay = questsToDisplay.filter(q => completedQuestIdSet.has(q.id));
+            }
+
+            // 4. Apply Sorting
+            if (sortReward === 'reward-asc') {
+                questsToDisplay.sort((a, b) => parseFloat(a.reward) - parseFloat(b.reward));
+            } else if (sortReward === 'reward-desc') {
+                questsToDisplay.sort((a, b) => parseFloat(b.reward) - parseFloat(a.reward));
+            } else { // Default sort: available first
+                questsToDisplay.sort((a, b) => {
+                    const aCompleted = completedQuestIdSet.has(a.id);
+                    const bCompleted = completedQuestIdSet.has(b.id);
+                    if (aCompleted === bCompleted) return 0;
+                    return aCompleted ? 1 : -1;
+                });
+            }
+
+            // 5. Handle Empty State
+            if (questsToDisplay.length === 0) {
+                list.innerHTML = '';
+                paginationContainer.style.display = 'none';
+                const message = searchTerm 
+                    ? `No quests match your search for "${searchTerm}".` 
+                    : "There are no quests matching your filter criteria.";
+                showEmptyState("No Quests Found", message);
+                return;
+            } else {
+                document.getElementById('empty-state').style.display = 'none';
+            }
+
+            // 6. Apply Pagination
+            const totalPages = Math.ceil(questsToDisplay.length / questsPerPage);
+            const startIndex = (currentPage - 1) * questsPerPage;
+            const endIndex = startIndex + questsPerPage;
+            const paginatedQuests = questsToDisplay.slice(startIndex, endIndex);
+
+            // 7. Render Quest Cards
+            list.innerHTML = paginatedQuests.map((quest, index) => {
+                const isCompleted = completedQuestIdSet.has(quest.id);
+                const isAvailable = new Date(quest.startTime) <= new Date() && quest.status !== 'Expired';
+                let statusText = quest.status, statusClass = '', buttonDisabled = '', buttonText = 'Start Quiz', buttonIcon = 'fa-play';
+
+                if (isCompleted) {
+                    statusText = 'Completed';
+                    statusClass = 'status-completed';
+                    buttonText = 'Completed';
+                    buttonIcon = 'fa-check';
+                    buttonDisabled = 'disabled';
+                } else if (!isAvailable) {
+                    statusText = quest.status;
+                    buttonText = 'Not Available';
+                    buttonIcon = 'fa-clock';
+                    buttonDisabled = 'disabled';
+                }
+
+                return `
+                    <div class="quest-card animate-in delay-${index % 3}" data-quest-id="${quest.id}">
+                        <h3>${quest.title}</h3>
+                        <div class="quest-meta">
+                            <span class="quest-reward"><i class="fas fa-coins"></i> ${quest.reward}</span>
+                            <span class="quest-status ${statusClass}">${statusText}</span>
+                        </div>
+                        <p>${quest.description}</p>
+                        <div class="quest-actions">
+                            <button class="primary-btn start-quiz-btn ${buttonDisabled}" ${buttonDisabled}>
+                                <i class="fas ${buttonIcon}"></i> ${buttonText}
+                            </button>
+                            <button class="secondary-btn details-btn">
+                                <i class="fas fa-info-circle"></i> Details
+                            </button>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            // 8. Render Pagination Controls
+            renderPagination(totalPages);
+        }
+        
+        // --- Pagination Rendering Function ---
+        function renderPagination(totalPages) {
+            const paginationContainer = document.getElementById('pagination-container');
+            if (totalPages <= 1) {
+                paginationContainer.style.display = 'none';
+                return;
+            }
+            paginationContainer.style.display = 'flex';
+            paginationContainer.innerHTML = '';
+
+            // Previous Button
+            const prevButton = document.createElement('button');
+            prevButton.innerHTML = '&laquo; Prev';
+            prevButton.disabled = currentPage === 1;
+            prevButton.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayQuests();
+                }
+            };
+            paginationContainer.appendChild(prevButton);
+
+            // Page Number Buttons
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+                pageButton.onclick = () => {
+                    currentPage = i;
+                    displayQuests();
+                };
+                paginationContainer.appendChild(pageButton);
+            }
+
+            // Next Button
+            const nextButton = document.createElement('button');
+            nextButton.innerHTML = 'Next &raquo;';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    displayQuests();
+                }
+            };
+            paginationContainer.appendChild(nextButton);
+        }
+
+        // --- Empty State Display Function ---
+        function showEmptyState(title, message, iconClass = "fa-search-minus") {
+            const emptyState = document.getElementById('empty-state');
+            document.getElementById('empty-state-title').textContent = title;
+            document.getElementById('empty-state-message').textContent = message;
+            emptyState.querySelector('i').className = `fas ${iconClass}`;
+            emptyState.style.display = 'flex';
         }
 
         function populateHistory() {
             const tbody = document.getElementById('history-table-body');
             tbody.innerHTML = '';
             
-            allQuests.forEach(quest => {
-                if (completedQuestIds.has(quest.id)) {
-                    const row = `
-                        <tr>
-                            <td>${quest.title}</td>
-                            <td>${quest.reward}</td>
-                            <td><span class="status-badge status-completed">Completed</span></td>
-                            <td>${new Date(quest.endTime).toLocaleDateString()}</td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += row;
-                }
-            });
-        }
-
-        function showQuestDetails(questId) {
-            const quest = allQuests.find(q => q.id == questId);
-            if (!quest) return;
-
-            document.getElementById('quest-details-title').innerText = quest.title;
-            const content = `
-                <p><strong>Reward:</strong> ${quest.reward}</p>
-                <p><strong>Status:</strong> ${quest.status}</p>
-                <p><strong>Ends:</strong> ${new Date(quest.endTime).toLocaleString()}</p>
-                <p><strong>Participants:</strong> ${quest.participants}</p>
-                <p>${quest.description}</p>
-            `;
-            document.getElementById('quest-details-content').innerHTML = content;
-            openModal('quest-details-modal');
-        }
-
-        async function startQuiz(questId) {
-            if (completedQuestIds.has(questId)) {
-                showToast("You have already completed this quest.", "error");
+            if (completedQuests.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 2rem;">You haven't completed any quests yet.</td></tr>`;
                 return;
             }
 
-            currentQuestId = questId;
-            try {
-                const response = await fetch(`/quests/${questId}/questions`);
-                if (!response.ok) throw new Error('Failed to fetch questions');
-                const data = await response.json();
-                questions = data.questions || [];
-                if (questions.length === 0) {
-                    showToast('No questions for this quiz.', 'error');
-                    return;
+            const sortedCompleted = [...completedQuests].sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+            sortedCompleted.forEach(cq => {
+                const questDetails = allQuests.find(q => q.id === cq.id);
+                if (questDetails) {
+                    const completionDate = new Date(cq.completedAt).toLocaleDateString('en-GB', {
+                        year: 'numeric', month: 'long', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
+                    });
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${questDetails.title}</td>
+                            <td>${questDetails.reward}</td>
+                            <td><span class="status-badge status-completed">Completed</span></td>
+                            <td>${completionDate}</td>
+                        </tr>`;
                 }
-                currentQuestionIndex = 0;
-                answers = {};
-                document.getElementById('quiz-title').innerText = allQuests.find(q => q.id == questId).title;
-                displayQuestion();
-                openModal('quiz-modal');
-                startTimer();
-            } catch (err) {
-                console.error('Error starting quiz:', err);
-                showToast('Could not start the quiz.', 'error');
-            }
-        }
-
-        function displayQuestion() {
-            const quizContainer = document.getElementById('quiz-questions');
-            const question = questions[currentQuestionIndex];
-            let optionsHTML = '';
-            if (question.type === 'multiple-choice') {
-                optionsHTML = question.options.map(option => `
-                    <label class="mc-option">
-                        <input type="radio" name="question-${question.id}" value="${option}"> ${option}
-                    </label>
-                `).join('');
-            } else {
-                optionsHTML = `<textarea class="open-ended" name="answer-${question.id}" placeholder="Your answer..."></textarea>`;
-            }
-            quizContainer.innerHTML = `
-                <div class="quiz-item active">
-                    <h4>${question.text}</h4>
-                    <div class="mc-options">${optionsHTML}</div>
-                </div>`;
-            
-            document.getElementById('next-btn').style.display = currentQuestionIndex < questions.length - 1 ? 'inline-flex' : 'none';
-            document.getElementById('submit-btn').style.display = currentQuestionIndex === questions.length - 1 ? 'inline-flex' : 'none';
-            document.getElementById('next-btn').disabled = true;
-            document.getElementById('submit-btn').disabled = true;
-
-            quizContainer.querySelector('input, textarea').addEventListener('input', () => {
-                document.getElementById('next-btn').disabled = false;
-                document.getElementById('submit-btn').disabled = false;
             });
         }
-        
-        function saveAnswer() {
-            const question = questions[currentQuestionIndex];
-            const input = document.querySelector(`[name="question-${question.id}"], [name="answer-${question.id}"]`);
-            if (input) {
-                answers[question.id] = input.value;
-            }
+
+        async function refreshAllUI() {
+            await fetchDashboardData();
+            await fetchAllQuests();
+            currentPage = 1; // Reset to first page
+            displayQuests();
+            populateHistory();
         }
 
-        function nextQuestion() {
-            saveAnswer();
-            if (currentQuestionIndex < questions.length - 1) {
-                currentQuestionIndex++;
-                displayQuestion();
-                startTimer();
-            }
-        }
-        
         async function submitQuiz() {
             saveAnswer();
             clearInterval(timerInterval);
@@ -1197,104 +1083,113 @@
                 const result = await response.json();
                 if (response.ok) {
                     closeModal('quiz-modal');
-                    completedQuestIds.add(currentQuestId);
-                    
                     const referralResponse = await fetch(`/generate-referral-link?questId=${currentQuestId}&userId=${encodeURIComponent(userId)}`);
                     const referralData = await referralResponse.json();
-                    
                     document.getElementById('completion-message').innerText = `You've earned ${result.reward}!`;
                     document.getElementById('referral-link').value = referralData.referralLink;
                     openModal('completion-modal');
-                    
-                    await populateDashboard();
-                    await populateQuests();
-                    populateHistory();
-                } else {
-                    throw new Error(result.error);
-                }
+                    await refreshAllUI();
+                } else { throw new Error(result.error); }
             } catch (err) {
-                console.error('Quiz submission error:', err);
                 showToast(err.message || 'Failed to submit quiz.', 'error');
             }
         }
-
+        
+        function showQuestDetails(questId) {
+            const quest = allQuests.find(q => q.id == questId);
+            if (!quest) return;
+            document.getElementById('quest-details-title').innerText = quest.title;
+            document.getElementById('quest-details-content').innerHTML = `
+                <p><strong>Reward:</strong> ${quest.reward}</p><p><strong>Status:</strong> ${quest.status}</p>
+                <p><strong>Ends:</strong> ${new Date(quest.endTime).toLocaleString()}</p><p><strong>Participants:</strong> ${quest.participants}</p>
+                <p>${quest.description}</p>`;
+            openModal('quest-details-modal');
+        }
+        async function startQuiz(questId) {
+            if (completedQuestIdSet.has(questId)) { showToast("You have already completed this quest.", "error"); return; }
+            currentQuestId = questId;
+            try {
+                const response = await fetch(`/quests/${questId}/questions`);
+                questions = (await response.json()).questions || [];
+                if (questions.length === 0) { showToast('No questions for this quiz.', 'error'); return; }
+                currentQuestionIndex = 0;
+                answers = {};
+                document.getElementById('quiz-title').innerText = allQuests.find(q => q.id == questId).title;
+                displayQuestion();
+                openModal('quiz-modal');
+            } catch (err) { showToast('Could not start the quiz.', 'error'); }
+        }
+        function displayQuestion() {
+            const question = questions[currentQuestionIndex];
+            document.getElementById('quiz-questions').innerHTML = `
+                <div class="quiz-item active"><h4>${question.text}</h4><div class="mc-options">
+                ${question.type === 'multiple-choice' ? question.options.map(o => `<label class="mc-option"><input type="radio" name="q-${question.id}" value="${o}"> ${o}</label>`).join('')
+                : `<textarea class="open-ended" name="ans-${q.id}" placeholder="Your answer..."></textarea>`}
+                </div></div>`;
+            document.getElementById('next-btn').style.display = currentQuestionIndex < questions.length - 1 ? 'inline-flex' : 'none';
+            document.getElementById('submit-btn').style.display = currentQuestionIndex === questions.length - 1 ? 'inline-flex' : 'none';
+            document.getElementById('next-btn').disabled = true;
+            document.getElementById('submit-btn').disabled = true;
+            startTimer();
+        }
+        function saveAnswer() {
+            const q = questions[currentQuestionIndex];
+            const input = document.querySelector(`input[name="q-${q.id}"]:checked, textarea[name="ans-${q.id}"]`);
+            if (input) answers[q.id] = input.value;
+        }
+        function nextQuestion() {
+            saveAnswer();
+            if (currentQuestionIndex < questions.length - 1) { currentQuestionIndex++; displayQuestion(); }
+        }
         function startTimer() {
-            let timeLeft = 20;
-            const timerDisplay = document.getElementById('quiz-timer');
+            let timeLeft = 5;
+            const timerDisplay = document.getElementById('quiz-timer'), nextBtn = document.getElementById('next-btn'), submitBtn = document.getElementById('submit-btn');
+            nextBtn.disabled = true; submitBtn.disabled = true;
+            timerDisplay.textContent = `Time left: ${timeLeft}s`;
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 timeLeft--;
                 timerDisplay.textContent = `Time left: ${timeLeft}s`;
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    showToast('Time is up!', 'error');
-                    if (currentQuestionIndex < questions.length - 1) {
-                        nextQuestion();
-                    } else {
-                        submitQuiz();
-                    }
+                    timerDisplay.textContent = 'You may proceed now.';
+                    currentQuestionIndex < questions.length - 1 ? nextBtn.disabled = false : submitBtn.disabled = false;
                 }
             }, 1000);
         }
+        function openModal(modalId) { document.getElementById(modalId).classList.add('open'); document.body.style.overflow = 'hidden'; }
+        function closeModal(modalId) { document.getElementById(modalId).classList.remove('open'); document.body.style.overflow = ''; if (modalId === 'quiz-modal') clearInterval(timerInterval); }
+        function showToast(message, type) { const t = document.createElement('div'); t.className = `toast toast-${type}`; t.textContent = message; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
+        function copyCompletionLink() { const l = document.getElementById('referral-link').value; navigator.clipboard.writeText(l).then(() => showToast('Referral link copied!', 'success')); }
+        function scrollToHistory() { document.getElementById('history-section').scrollIntoView({ behavior: 'smooth' }); }
+        async function logout() { await fetch('/logout'); window.location.href = 'auth.html'; }
+        function toggleMenu() { document.getElementById('nav-menu').classList.toggle('open'); }
 
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('open');
-            document.body.style.overflow = '';
-            if (modalId === 'quiz-modal') {
-                clearInterval(timerInterval);
-            }
-        }
-
-        function showToast(message, type) {
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        function copyCompletionLink() {
-            const link = document.getElementById('referral-link').value;
-            navigator.clipboard.writeText(link).then(() => {
-                showToast('Referral link copied!', 'success');
-            });
-        }
-        
-        function scrollToHistory() {
-            document.getElementById('history-section').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        async function logout() {
-            await fetch('/logout');
-            window.location.href = 'auth.html';
-        }
-
-        function toggleMenu() {
-            document.getElementById('nav-menu').classList.toggle('open');
-        }
-
+        // --- Initial Load & Event Listeners ---
         document.addEventListener('DOMContentLoaded', async () => {
             if (await checkSession()) {
-                await populateDashboard();
-                await populateQuests();
-                populateHistory();
+                await refreshAllUI();
+
+                // --- Event listeners for controls ---
+                document.getElementById('quest-search-input').addEventListener('input', () => {
+                    currentPage = 1; 
+                    displayQuests();
+                });
+                document.getElementById('filter-status').addEventListener('change', () => {
+                    currentPage = 1;
+                    displayQuests();
+                });
+                document.getElementById('sort-reward').addEventListener('change', () => {
+                    currentPage = 1;
+                    displayQuests();
+                });
 
                 document.getElementById('quest-list').addEventListener('click', e => {
-                    const questCard = e.target.closest('.quest-card');
-                    if (!questCard) return;
-                    const questId = questCard.dataset.questId;
-
-                    if (e.target.closest('.start-quiz-btn')) {
-                        startQuiz(parseInt(questId));
-                    }
-                    if (e.target.closest('.details-btn')) {
-                        showQuestDetails(questId);
-                    }
+                    const card = e.target.closest('.quest-card');
+                    if (!card) return;
+                    const questId = parseInt(card.dataset.questId);
+                    if (e.target.closest('.start-quiz-btn:not(.disabled)')) startQuiz(questId);
+                    if (e.target.closest('.details-btn')) showQuestDetails(questId);
                 });
 
                 document.getElementById('next-btn').addEventListener('click', nextQuestion);

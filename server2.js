@@ -68,6 +68,10 @@ let experts = {};
 let referrals = {};
 let bookings = {};
 let founders = {};
+let affiliatePrograms = [];
+let affiliateClicks = [];
+let conversions = [];
+
 
 async function loadUsers() {
     try {
@@ -217,8 +221,62 @@ async function saveResponses(responsesData) {
     }
 }
 
+function parsePayout(payoutString) {
+    if (typeof payoutString !== 'string') return 0;
+    const match = payoutString.match(/\$?(\d+(\.\d+)?)/);
+    if (match && match[1]) {
+        return parseFloat(match[1]);
+    }
+    return 0;
+}
+
+async function loadAffiliatePrograms() {
+    try {
+        const data = await fs.readFile(path.join(__dirname, 'affiliate-programs.json'), 'utf8');
+        const affiliateData = JSON.parse(data);
+        affiliatePrograms = (affiliateData.programs || []).map(p => ({
+            ...p,
+            payoutValue: parsePayout(p.payout)
+        }));
+        console.log('Affiliate programs loaded and processed');
+    } catch (err) {
+        if (err.code === 'ENOENT') {
+            console.log('affiliate-programs.json not found.');
+        } else {
+            console.error('Error loading affiliate-programs.json:', err);
+        }
+        affiliatePrograms = [];
+    }
+}
+
+async function loadConversions() {
+    try {
+        const data = await fs.readFile(path.join(__dirname, 'conversions.json'), 'utf8');
+        conversions = JSON.parse(data);
+        console.log('Conversions loaded');
+    } catch (err) {
+        if (err.code === 'ENOENT') {
+            console.log('conversions.json not found, creating a new file.');
+            await fs.writeFile(path.join(__dirname, 'conversions.json'), JSON.stringify([], null, 2));
+        } else {
+            console.error('Error loading conversions.json:', err);
+        }
+        conversions = [];
+    }
+}
+
+async function saveConversions() {
+    try {
+        await fs.writeFile(path.join(__dirname, 'conversions.json'), JSON.stringify(conversions, null, 2));
+        console.log('Conversions saved');
+    } catch (err) {
+        console.error('Error saving conversions:', err);
+    }
+}
+
+
 // Initialize data
-Promise.all([loadUsers(), loadExperts(), loadReferrals(), loadBookings(), loadFounders()]).then(() => {
+Promise.all([loadUsers(), loadExperts(), loadReferrals(), loadBookings(), loadFounders(), loadAffiliatePrograms(), loadConversions()]).then(() => {
     console.log('All data loaded');
 }).catch(err => {
     console.error('Error initializing data:', err);
@@ -334,14 +392,17 @@ app.get('/logout', (req, res) => {
 app.get('/quest-overview', requireLogin, async (req, res) => {
     const userId = req.query.userId;
     console.log(`Quest-overview: userId=${userId}, session userId=${req.session.userId}`);
-    if (!userId || userId !== req.session.userId) {
+    if (!userId || userId !== req.session.userId || !users[userId]) {
         console.log('Quest-overview: Invalid or missing userId');
         return res.status(400).json({ error: 'Invalid user ID' });
     }
     try {
+        const user = users[userId];
+        const completedQuests = Array.isArray(user.completedQuests) ? user.completedQuests : [];
+        
         const overview = {
-            totalEarnings: users[userId]?.totalEarnings || 45.50,
-            questsCompleted: users[userId]?.completedQuests || 12,
+            totalEarnings: user.totalEarnings || 0,
+            questsCompleted: completedQuests,
             redeemableCodes: 3
         };
         res.json(overview);
@@ -350,6 +411,7 @@ app.get('/quest-overview', requireLogin, async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch quest overview' });
     }
 });
+
 
 app.get('/quests', requireLogin, async (req, res) => {
     try {
@@ -464,22 +526,19 @@ app.delete('/quests/:questId/questions/:questionId', authMiddleware, async (req,
 app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
     const questId = parseInt(req.params.questId);
     const userId = req.session.userId;
+    const user = users[userId];
 
-    if (!users[userId]) {
+    if (!user) {
         return res.status(404).json({ error: 'User not found' });
     }
 
-    // Initialize completedQuests if it doesn't exist
-    if (!users[userId].completedQuests) {
-        users[userId].completedQuests = [];
+    if (!Array.isArray(user.completedQuests)) {
+        user.completedQuests = [];
     }
-    // Initialize totalEarnings if it doesn't exist
-    if (users[userId].totalEarnings === undefined) {
-        users[userId].totalEarnings = 0;
+    if (user.totalEarnings === undefined) {
+        user.totalEarnings = 0;
     }
-
-    // Check if the quest has already been completed
-    if (users[userId].completedQuests.includes(questId)) {
+    if (user.completedQuests.some(q => q.id === questId)) {
         return res.status(400).json({ error: "You have already completed this quest." });
     }
 
@@ -491,12 +550,14 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
             return res.status(404).json({ error: 'Quest not found' });
         }
 
-        // Add the quest reward to the user's total earnings
-        const rewardValue = parseFloat(quest.reward.replace('$', '').replace('USDT', '')) || 0;
-        users[userId].totalEarnings += rewardValue;
+        const rewardValue = parseFloat(quest.reward.replace(/[^0-9.-]+/g, "")) || 0;
+        user.totalEarnings += rewardValue;
         
-        // Add the quest ID to the user's list of completed quests
-        users[userId].completedQuests.push(questId);
+        const completionRecord = {
+            id: questId,
+            completedAt: new Date().toISOString()
+        };
+        user.completedQuests.push(completionRecord);
 
         await saveUsers();
 
@@ -506,6 +567,7 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
         res.status(500).json({ error: 'Failed to submit quiz' });
     }
 });
+
 
 app.get('/quests/:questId/responses', authMiddleware, async (req, res) => {
     const { questId } = req.params;
@@ -654,14 +716,106 @@ app.post('/book-expert', requireLogin, async (req, res) => {
 });
 
 app.get('/affiliate-programs', async (req, res) => {
-    try {
-        const data = await fs.readFile(path.join(__dirname, 'affiliate-programs.json'), 'utf8');
-        res.json(JSON.parse(data));
-    } catch (err) {
-        console.error('Error reading affiliate programs:', err);
-        res.json({ programs: [] });
-    }
+    res.json({ programs: affiliatePrograms });
 });
+
+app.get('/track', (req, res) => {
+    const { programId, affiliate_id } = req.query;
+    if (!programId || !affiliate_id) {
+        return res.status(400).send('<h1>Missing tracking information.</h1>');
+    }
+    const program = affiliatePrograms.find(p => p.id == programId);
+    if (!program || !program.destinationUrl) {
+        return res.status(404).send('<h1>Affiliate Program Not Found</h1>');
+    }
+    const clickData = {
+        type: 'click',
+        programId: parseInt(programId),
+        programTitle: program.title,
+        affiliateId: affiliate_id,
+        timestamp: new Date().toISOString(),
+        ipAddress: req.ip 
+    };
+    affiliateClicks.push(clickData);
+    console.log('Affiliate Click Recorded:', clickData);
+    res.redirect(program.destinationUrl);
+});
+
+app.post('/api/affiliate/conversion', async (req, res) => {
+    const { programId, affiliateId, conversionValue } = req.body;
+    if (!programId || !affiliateId) {
+        return res.status(400).json({ error: 'Missing conversion information.' });
+    }
+
+    const program = affiliatePrograms.find(p => p.id == programId);
+    if (!program) {
+        return res.status(404).json({ error: 'Program not found.' });
+    }
+
+    const conversionData = {
+        type: 'conversion',
+        programId: parseInt(programId),
+        programTitle: program.title,
+        affiliateId,
+        payout: program.payoutValue || 0,
+        value: conversionValue || 0,
+        timestamp: new Date().toISOString(),
+    };
+
+    conversions.push(conversionData);
+    await saveConversions();
+    console.log('Conversion Recorded:', conversionData);
+
+    res.status(201).json({ message: 'Conversion recorded successfully.' });
+});
+
+app.get('/api/affiliate/stats', requireLogin, (req, res) => {
+    const affiliateId = req.session.userId;
+    const { range } = req.query;
+
+    let sinceDate = new Date(0);
+    if (range === '7days') {
+        sinceDate = new Date();
+        sinceDate.setDate(sinceDate.getDate() - 7);
+    } else if (range === '30days') {
+        sinceDate = new Date();
+        sinceDate.setMonth(sinceDate.getMonth() - 1);
+    }
+
+    const userClicks = affiliateClicks.filter(c =>
+        c.affiliateId === affiliateId && new Date(c.timestamp) >= sinceDate
+    );
+
+    const userConversions = conversions.filter(c =>
+        c.affiliateId === affiliateId && new Date(c.timestamp) >= sinceDate
+    );
+
+    const totalEarnings = userConversions.reduce((sum, conv) => sum + (conv.payout || 0), 0);
+
+    res.json({
+        totalClicks: userClicks.length,
+        totalConversions: userConversions.length,
+        totalEarnings: parseFloat(totalEarnings.toFixed(2)),
+    });
+});
+
+app.get('/api/affiliate/history', requireLogin, (req, res) => {
+    const affiliateId = req.session.userId;
+
+    const userClicks = affiliateClicks
+        .filter(c => c.affiliateId === affiliateId)
+        .map(c => ({...c, type: 'Click', reward: 'N/A', status: 'Tracked' }));
+
+    const userConversions = conversions
+        .filter(c => c.affiliateId === affiliateId)
+        .map(c => ({ ...c, type: 'Conversion', reward: `$${(c.payout || 0).toFixed(2)}`, status: 'Completed' }));
+
+    const combinedHistory = [...userClicks, ...userConversions];
+    combinedHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    res.json(combinedHistory);
+});
+
 
 app.get('/education-content', async (req, res) => {
     try {

@@ -34,7 +34,6 @@
             min-height: 100vh;
         }
         
-        /* Navigation */
         nav {
             background: rgba(30, 39, 46, 0.9);
             backdrop-filter: blur(10px);
@@ -141,7 +140,6 @@
             padding: 2rem;
         }
         
-        /* Hero Section */
         .hero-section {
             text-align: center;
             margin-bottom: 3rem;
@@ -168,32 +166,6 @@
             margin: 0 auto 1.5rem;
         }
         
-        .hero-stats {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-top: 1.5rem;
-        }
-        
-        .hero-stat {
-            background: rgba(108, 92, 231, 0.1);
-            padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
-            border-left: 3px solid var(--primary);
-        }
-        
-        .hero-stat .value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-light);
-        }
-        
-        .hero-stat .label {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        /* Dashboard Cards */
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -259,27 +231,6 @@
             margin-bottom: 1rem;
         }
         
-        .dashboard-card .card-btn {
-            background: var(--primary);
-            color: white;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            align-self: flex-start;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .dashboard-card .card-btn:hover {
-            background: var(--primary-light);
-            transform: translateY(-2px);
-        }
-        
-        /* Program Sections */
         .section-title {
             font-size: 1.5rem;
             margin: 2rem 0 1.5rem;
@@ -288,11 +239,28 @@
             align-items: center;
             gap: 1rem;
         }
-        
-        .section-title i {
-            color: var(--primary);
+
+        .date-filter-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
         }
-        
+        .date-filter-btn {
+            background: rgba(108, 92, 231, 0.1);
+            color: var(--primary-light);
+            border: 1px solid var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .date-filter-btn.active, .date-filter-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
         .category-section {
             margin-bottom: 3rem;
         }
@@ -370,7 +338,7 @@
         .program-card .program-actions {
             display: flex;
             gap: 1rem;
-            margin-top: 1rem;
+            margin-top: auto; /* Pushes button to the bottom */
         }
         
         .program-card .primary-btn {
@@ -394,7 +362,6 @@
             transform: translateY(-2px);
         }
         
-        /* History Table */
         .history-table {
             width: 100%;
             border-collapse: collapse;
@@ -420,14 +387,6 @@
             color: rgba(255, 255, 255, 0.9);
         }
         
-        .history-table tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .history-table tr:hover td {
-            background: rgba(255, 255, 255, 0.03);
-        }
-        
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 1rem;
@@ -435,22 +394,9 @@
             font-weight: 500;
         }
         
-        .status-completed {
-            background: rgba(0, 184, 148, 0.2);
-            color: var(--success);
-        }
+        .status-completed { background: rgba(0, 184, 148, 0.2); color: var(--success); }
+        .status-tracked { background: rgba(253, 203, 110, 0.2); color: var(--warning); }
         
-        .status-pending {
-            background: rgba(253, 203, 110, 0.2);
-            color: var(--warning);
-        }
-        
-        .status-approved {
-            background: rgba(108, 92, 231, 0.2);
-            color: var(--primary-light);
-        }
-        
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -474,21 +420,12 @@
         
         .modal-content {
             background: rgba(45, 52, 54, 0.95);
-            backdrop-filter: blur(10px);
             padding: 2rem;
             border-radius: 1rem;
             width: 90%;
             max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-            border: 1px solid rgba(108, 92, 231, 0.3);
-        }
-        
-        .modal.open .modal-content {
-            transform: translateY(0);
         }
         
         .modal-content h3 {
@@ -499,7 +436,7 @@
             align-items: center;
             gap: 0.75rem;
         }
-        
+
         .modal-section {
             background: rgba(30, 39, 46, 0.7);
             padding: 1rem;
@@ -515,19 +452,12 @@
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .modal-section p {
             font-size: 0.95rem;
             color: rgba(255, 255, 255, 0.8);
             line-height: 1.5;
             margin-bottom: 0.5rem;
-        }
-        
-        .modal-section p.referral-link {
-            background: rgba(0,0,0,0.2);
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            word-break: break-all;
         }
 
         .modal-section ul {
@@ -545,32 +475,23 @@
             color: var(--secondary);
             font-weight: 600;
         }
-        
-        .modal-input {
-            width: 100%;
+
+        .modal-section p.referral-link {
+            background: rgba(0,0,0,0.2);
             padding: 0.75rem;
-            background: rgba(30, 39, 46, 0.8);
-            border: 1px solid rgba(108, 92, 231, 0.5);
-            border-radius: 0.5rem;
-            color: var(--light);
-            font-size: 0.95rem;
-            margin-bottom: 1rem;
-            transition: border-color 0.3s;
+            border-radius: 0.25rem;
+            word-break: break-all;
+            font-family: monospace;
         }
-        
-        .modal-input:focus {
-            border-color: var(--secondary);
-            outline: none;
-        }
-        
+
         .modal-actions {
             display: flex;
-            flex-direction: column;
             gap: 1rem;
             margin-top: 1.5rem;
         }
         
         .modal-btn {
+            flex: 1;
             padding: 0.75rem;
             border: none;
             border-radius: 0.5rem;
@@ -583,156 +504,11 @@
             gap: 0.5rem;
         }
         
-        .modal-btn-primary {
-            background: var(--primary);
-            color: white;
-        }
+        .modal-btn-primary { background: var(--primary); color: white; }
+        .modal-btn-primary:hover { background: var(--primary-light); }
+        .modal-btn-secondary { background: rgba(255, 255, 255, 0.1); color: white; }
+        .modal-btn-secondary:hover { background: rgba(255, 255, 255, 0.2); }
         
-        .modal-btn-primary:hover {
-            background: var(--primary-light);
-            transform: translateY(-2px);
-        }
-        
-        .modal-btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        
-        .modal-btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .modal-btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-        
-        .modal-btn-danger:hover {
-            background: #ff5252;
-            transform: translateY(-2px);
-        }
-        
-        /* Code Vault */
-        .code-item {
-            background: rgba(30, 39, 46, 0.7);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .code-item:last-child {
-            margin-bottom: 0;
-        }
-        
-        .code-brand {
-            font-weight: 600;
-            color: var(--primary-light);
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .code-value {
-            background: rgba(0, 206, 201, 0.1);
-            color: var(--secondary);
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            font-family: monospace;
-            font-size: 1.1rem;
-            margin: 0.5rem 0;
-            word-break: break-all;
-        }
-        
-        .code-status {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            font-size: 0.85rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-        
-        .code-available {
-            background: rgba(0, 184, 148, 0.2);
-            color: var(--success);
-        }
-        
-        .code-used {
-            background: rgba(214, 48, 49, 0.2);
-            color: var(--danger);
-        }
-        
-        /* Success Modal */
-        .success-modal-content {
-            text-align: center;
-        }
-        
-        .success-icon {
-            font-size: 3rem;
-            color: var(--success);
-            margin-bottom: 1rem;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 1.5rem;
-            }
-            
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .hero-stats {
-                flex-direction: column;
-                gap: 1rem;
-                align-items: center;
-            }
-            
-            .program-list {
-                grid-template-columns: 1fr;
-            }
-            
-            .nav-menu {
-                position: fixed;
-                top: 0;
-                right: -100%;
-                width: 280px;
-                height: 100vh;
-                background: var(--darker);
-                flex-direction: column;
-                padding: 2rem;
-                gap: 1.5rem;
-                transition: right 0.3s ease;
-                box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2);
-            }
-            
-            .nav-menu.open {
-                right: 0;
-            }
-            
-            .hamburger {
-                display: block;
-            }
-        }
-        
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-in {
-            animation: fadeIn 0.5s ease forwards;
-        }
-        
-        .delay-1 { animation-delay: 0.1s; }
-        .delay-2 { animation-delay: 0.2s; }
-        .delay-3 { animation-delay: 0.3s; }
-
-        /* Toast notifications */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -743,20 +519,13 @@
             padding: 1rem 1.5rem;
             border-radius: 0.5rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
             z-index: 2000;
             opacity: 0;
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            transition: all 0.3s ease;
         }
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
         .toast-success { border-left: 4px solid var(--success); }
         .toast-error { border-left: 4px solid var(--danger); }
-        .toast-info { border-left: 4px solid var(--primary-light); }
     </style>
 </head>
 <body>
@@ -786,201 +555,114 @@
     <div class="container">
         <div class="hero-section animate-in">
             <h1>Affiliate Hub</h1>
-            <p>Earn rewards by promoting top crypto brands and unlock exclusive codes. Maximize your earnings with our affiliate programs.</p>
+            <p>Earn rewards by promoting top crypto brands. Track your clicks, conversions, and earnings in real-time.</p>
         </div>
 
-        <h2 class="section-title">
-            <i class="fas fa-chart-line"></i>
-            Affiliate Overview
-        </h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <h2 class="section-title">
+                <i class="fas fa-chart-line"></i>
+                Your Analytics
+            </h2>
+            <div class="date-filter-container">
+                <button class="date-filter-btn" data-range="7days">7 Days</button>
+                <button class="date-filter-btn" data-range="30days">30 Days</button>
+                <button class="date-filter-btn active" data-range="all">All Time</button>
+            </div>
+        </div>
         
         <div class="dashboard-grid">
             <div class="dashboard-card animate-in">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-coins"></i>
-                    </div>
-                    <h3>Total Earnings</h3>
-                </div>
-                <p class="value">$150.75</p>
-                <p class="description">Total earnings from affiliates</p>
-                <button class="card-btn" onclick="openWithdrawModal()">
-                    <i class="fas fa-wallet"></i>
-                    Withdraw
-                </button>
+                <div class="card-header"><div class="card-icon"><i class="fas fa-coins"></i></div><h3>Total Earnings</h3></div>
+                <p class="value" id="total-earnings">$0.00</p>
+                <p class="description">Earnings from conversions</p>
             </div>
             
             <div class="dashboard-card animate-in delay-1">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-gift"></i>
-                    </div>
-                    <h3>Redeemable Codes</h3>
-                </div>
-                <p class="value">5</p>
-                <p class="description">Available codes to redeem</p>
-                <button class="card-btn" onclick="openRedeemModal()">
-                    <i class="fas fa-eye"></i>
-                    View Codes
-                </button>
+                <div class="card-header"><div class="card-icon"><i class="fas fa-mouse-pointer"></i></div><h3>Total Clicks</h3></div>
+                <p class="value" id="total-clicks">0</p>
+                <p class="description">Clicks on your affiliate links</p>
             </div>
             
             <div class="dashboard-card animate-in delay-2">
-                <div class="card-header">
-                    <div class="card-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3>Affiliates Joined</h3>
-                </div>
-                <p class="value">12</p>
-                <p class="description">Total affiliates recruited</p>
-                <button class="card-btn" onclick="showReferrals()">
-                    <i class="fas fa-list"></i>
-                    View All
-                </button>
+                <div class="card-header"><div class="card-icon"><i class="fas fa-check-double"></i></div><h3>Total Conversions</h3></div>
+                <p class="value" id="total-conversions">0</p>
+                <p class="description">Successful referrals</p>
             </div>
         </div>
         
-        <h2 class="section-title">
-            <i class="fas fa-bullhorn"></i>
-            Affiliate Programs
-        </h2>
+        <h2 class="section-title"><i class="fas fa-bullhorn"></i> Affiliate Programs</h2>
+        <div id="program-sections"></div>
         
-        <div id="program-sections">
-            <!-- Program sections will be populated by JS -->
-        </div>
-        
-        <h2 class="section-title">
-            <i class="fas fa-history"></i>
-            Completed Affiliate History
-        </h2>
-        
+        <h2 class="section-title"><i class="fas fa-history"></i> Activity Feed</h2>
         <table class="history-table">
             <thead>
                 <tr>
-                    <th>Brand</th>
+                    <th>Type</th>
                     <th>Program</th>
                     <th>Reward</th>
                     <th>Status</th>
-                    <th>Date</th>
+                    <th>Date & Time</th>
                 </tr>
             </thead>
-            <tbody id="history-table-body">
-                <!-- History will be populated by JS -->
-            </tbody>
+            <tbody id="history-table-body"></tbody>
         </table>
         
-        <!-- Program Modal -->
         <div class="modal" id="program-modal">
             <div class="modal-content">
                 <h3 id="modal-title"></h3>
-                
-                <div class="modal-section">
-                    <h4><i class="fas fa-info-circle"></i> Program Details</h4>
-                    <p id="modal-details"></p>
-                </div>
-                
-                <div class="modal-section">
-                    <h4><i class="fas fa-clipboard-check"></i> Guidelines</h4>
-                    <p id="modal-guidelines"></p>
-                </div>
-                
-                <div class="modal-section">
-                    <h4><i class="fas fa-star"></i> Program Highlights</h4>
-                    <ul id="modal-pros"></ul>
-                    <p><strong>Payout:</strong> <span id="modal-payout" class="highlight"></span></p>
-                </div>
-                
-                <div id="action-container"></div>
-                
+                <div id="modal-body"></div>
                 <div class="modal-actions" id="button-group"></div>
-            </div>
-        </div>
-        
-        <!-- Redeem Modal -->
-        <div class="modal" id="redeem-modal">
-            <div class="modal-content">
-                <h3><i class="fas fa-gift"></i> Redeem Code Vault</h3>
-                <div id="code-list">
-                    <div class="code-item">
-                        <div class="code-brand">
-                            <i class="fab fa-btc"></i>
-                            Binance
-                        </div>
-                        <div class="code-value">AFF123</div>
-                        <span class="code-status code-available">
-                            <i class="fas fa-check-circle"></i>
-                            Available
-                        </span>
-                        <p>Redeem this code on Binance platform to claim your reward.</p>
-                    </div>
-                    
-                    <div class="code-item">
-                        <div class="code-brand">
-                            <i class="fas fa-exchange-alt"></i>
-                            KuCoin
-                        </div>
-                        <div class="code-value">KUC456</div>
-                        <span class="code-status code-available">
-                            <i class="fas fa-check-circle"></i>
-                            Available
-                        </span>
-                        <p>Redeem this code on KuCoin platform for special benefits.</p>
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button class="modal-btn modal-btn-primary" onclick="closeModal()">
-                        <i class="fas fa-check"></i>
-                        Done
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Success Modal -->
-        <div class="modal" id="success-modal">
-            <div class="modal-content success-modal-content">
-                <div class="success-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <h3>Your Reward Request</h3>
-                <p>You'll receive your payment/code within 12 hours. Stay tuned!</p>
-                <div class="modal-actions">
-                    <button class="modal-btn modal-btn-primary" onclick="closeSuccessModal()">
-                        <i class="fas fa-check"></i>
-                        Got It!
-                    </button>
-                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const affiliateOverview = {
-            totalEarnings: 150.75,
-            redeemableCodes: 5,
-            affiliatesJoined: 12
-        };
-
-        const completedAffiliates = [
-            { brand: 'Binance', program: 'Sign Up', reward: '$5 USDT', status: 'Completed', date: 'May 01, 2025' },
-            { brand: 'KuCoin', program: 'Sign Up', reward: '10 KCS', status: 'Pending Review', date: 'May 03, 2025' },
-            { brand: 'Coinbase', program: 'Transactions', reward: '$3 USDT', status: 'Approved', date: 'May 05, 2025' }
-        ];
-
-        const redeemCodes = [
-            { brand: 'Binance', code: 'AFF123', status: 'Available', instructions: 'Redeem on Binance platform' },
-            { brand: 'KuCoin', code: 'KUC456', status: 'Available', instructions: 'Redeem on KuCoin platform' }
-        ];
-
         let programs = [];
-        let userProgress = {
-            1: { accepted: true, signUps: 3, amountEarned: 15 },
-            2: { accepted: false, signUps: 0, amountEarned: 0 },
-            3: { accepted: true, tradingVolume: 5000, amountEarned: 10 },
-            4: { accepted: false, submitted: false },
-            5: { accepted: false, submitted: false }
-        };
+        let userProgress = {};
+        let currentFilter = 'all';
+
+        async function fetchAffiliateStats(range = 'all') {
+            try {
+                const response = await fetch(`/api/affiliate/stats?range=${range}`);
+                if (!response.ok) throw new Error(`Failed to fetch stats: ${response.statusText}`);
+                const stats = await response.json();
+                document.getElementById('total-earnings').textContent = `$${stats.totalEarnings.toFixed(2)}`;
+                document.getElementById('total-clicks').textContent = stats.totalClicks;
+                document.getElementById('total-conversions').textContent = stats.totalConversions;
+            } catch (err) {
+                console.error('Error fetching affiliate stats:', err);
+                showToast('Could not load your stats.', 'error');
+            }
+        }
+
+        async function fetchActivityHistory() {
+            try {
+                const response = await fetch('/api/affiliate/history');
+                if (!response.ok) throw new Error(`Failed to fetch history: ${response.statusText}`);
+                const history = await response.json();
+                populateHistoryTable(history);
+            } catch (err) {
+                console.error('Error fetching activity history:', err);
+                // This toast is no longer shown because the init() function prevents the error
+            }
+        }
+
+        function populateHistoryTable(history) {
+            const tbody = document.getElementById('history-table-body');
+            if (!history || history.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No activity yet. Share your links!</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = history.map(item => `
+                <tr>
+                    <td>${item.type || 'N/A'}</td>
+                    <td>${item.programTitle || 'N/A'}</td>
+                    <td>${item.reward || 'N/A'}</td>
+                    <td><span class="status-badge status-${(item.status || 'unknown').toLowerCase()}">${item.status || 'Unknown'}</span></td>
+                    <td>${new Date(item.timestamp).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
 
         async function fetchPrograms() {
             try {
@@ -994,280 +676,153 @@
             }
         }
 
-        function generateUniqueLink(baseUrl, id) {
-            return `${baseUrl}/referral/${id}?code=${Math.random().toString(36).substr(2, 9)}`;
-        }
-
         function populatePrograms() {
             const sections = document.getElementById('program-sections');
-            const categories = ['Sign Up', 'Trading Volume', 'Transacting Users', 'Pay for a Product', 'Post on Socials', 'Video Creation'];
-
+            const categories = [...new Set(programs.map(p => p.category))];
             sections.innerHTML = categories.map(category => {
                 const categoryPrograms = programs.filter(p => p.category === category);
                 if (categoryPrograms.length === 0) return '';
-                const icon = {
-                    'Sign Up': 'user-plus',
-                    'Trading Volume': 'chart-bar',
-                    'Transacting Users': 'users',
-                    'Pay for a Product': 'credit-card',
-                    'Post on Socials': 'share-alt',
-                    'Video Creation': 'video'
-                }[category] || 'bullhorn';
-
+                const icon = {'Sign Up': 'user-plus','Trading Volume': 'chart-bar','Video Creation': 'video','Post on Socials': 'share-alt','Transacting Users': 'users','Pay for a Product': 'credit-card'}[category] || 'bullhorn';
                 return `
                     <div class="category-section">
                         <h3><i class="fas fa-${icon}"></i> ${category} Programs</h3>
                         <div class="program-list">
-                            ${categoryPrograms.map((program, index) => `
-                                <div class="program-card animate-in ${index % 3 === 1 ? 'delay-1' : index % 3 === 2 ? 'delay-2' : ''}">
+                            ${categoryPrograms.map(program => `
+                                <div class="program-card">
                                     <h4>${program.title}</h4>
                                     <div class="program-meta">
-                                        <span class="program-reward">
-                                            <i class="fas fa-coins"></i> ${program.payout}
-                                        </span>
-                                        <span class="program-status">
-                                            <i class="fas fa-check-circle"></i> Active
-                                        </span>
+                                        <span class="program-reward"><i class="fas fa-coins"></i> ${program.payout}</span>
                                     </div>
                                     <p>${program.details}</p>
                                     <div class="program-actions">
                                         <button class="primary-btn" onclick="showProgramModal(${program.id})">
-                                            <i class="fas fa-info-circle"></i>
-                                            View Details
+                                            <i class="fas fa-info-circle"></i> View Details
                                         </button>
                                     </div>
                                 </div>
                             `).join('')}
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }).join('');
-        }
-
-        function populateHistory() {
-            const tbody = document.getElementById('history-table-body');
-            tbody.innerHTML = completedAffiliates.map(affiliate => `
-                <tr>
-                    <td>${affiliate.brand}</td>
-                    <td>${affiliate.program}</td>
-                    <td>${affiliate.reward}</td>
-                    <td><span class="status-badge status-${affiliate.status.toLowerCase().replace(' ', '-')}"
-                    >${affiliate.status}</span></td>
-                    <td>${affiliate.date}</td>
-                </tr>
-            `).join('');
-        }
-
-        function populateRedeemModal() {
-            const codeList = document.getElementById('code-list');
-            codeList.innerHTML = redeemCodes.map(code => `
-                <div class="code-item">
-                    <div class="code-brand">
-                        <i class="${code.brand === 'Binance' ? 'fab fa-btc' : 'fas fa-exchange-alt'}"></i>
-                        ${code.brand}
-                    </div>
-                    <div class="code-value">${code.code}</div>
-                    <span class="code-status code-${code.status.toLowerCase()}">
-                        <i class="fas fa-check-circle"></i>
-                        ${code.status}
-                    </span>
-                    <p>${code.instructions}</p>
-                </div>
-            `).join('');
         }
 
         function showProgramModal(id) {
             const program = programs.find(p => p.id === id);
             if (!program) return;
 
-            document.getElementById('modal-title').textContent = program.title;
-            document.getElementById('modal-details').textContent = program.details;
-            document.getElementById('modal-guidelines').textContent = program.guidelines;
-            document.getElementById('modal-pros').innerHTML = program.pros.map(pro => `<li>${pro}</li>`).join('');
-            document.getElementById('modal-payout').textContent = program.payout;
-
-            const actionContainer = document.getElementById('action-container');
-            actionContainer.innerHTML = '';
-
+            document.getElementById('modal-title').innerHTML = `<i class="fas fa-bullhorn"></i> ${program.title}`;
+            const modalBody = document.getElementById('modal-body');
             const buttonGroup = document.getElementById('button-group');
-            buttonGroup.innerHTML = '';
 
-            const progress = userProgress[id] || { accepted: false, signUps: 0, tradingVolume: 0, transactingUsers: 0, paymentAmount: 0, amountEarned: 0, submitted: false };
+            const progress = userProgress[id] || { accepted: false };
 
-            if (['Sign Up', 'Trading Volume', 'Transacting Users', 'Pay for a Product'].includes(program.category)) {
-                if (!progress.accepted) {
-                    buttonGroup.innerHTML = `
-                        <button class="modal-btn modal-btn-primary" onclick="acceptProgram(${id})">
-                            <i class="fas fa-check"></i> Accept Offer
-                        </button>
-                        <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
-                            <i class="fas fa-times"></i> Close
-                        </button>
-                    `;
-                } else {
-                    let progressText = '';
-                    if (program.category === 'Sign Up') progressText = `Sign-ups: ${progress.signUps || 0}`;
-                    else if (program.category === 'Trading Volume') progressText = `Trading Volume: $${(progress.tradingVolume || 0).toLocaleString()}`;
-                    else if (program.category === 'Transacting Users') progressText = `Users: ${progress.transactingUsers || 0}`;
-                    else if (program.category === 'Pay for a Product') progressText = `Paid: $${(progress.paymentAmount || 0).toLocaleString()}`;
-
-                    actionContainer.innerHTML = `
-                        <div class="modal-section">
-                            <h4><i class="fas fa-link"></i> Your Referral Link</h4>
-                            <p class="referral-link">${generateUniqueLink('https://rewardrush.com', id)}</p>
-                            <button class="modal-btn modal-btn-secondary" onclick="copyToClipboard('${generateUniqueLink('https://rewardrush.com', id)}')">
-                                <i class="fas fa-copy"></i> Copy Link
-                            </button>
-                        </div>
-                        <div class="modal-section">
-                            <h4><i class="fas fa-chart-line"></i> Your Progress</h4>
-                            <p>${progressText}</p>
-                            <p>Amount Earned: <span class="highlight">$${(progress.amountEarned || 0).toFixed(2)}</span></p>
-                        </div>
-                    `;
-                    buttonGroup.innerHTML = `
-                        <button class="modal-btn modal-btn-primary" onclick="claimReward(${id})">
-                            <i class="fas fa-gift"></i> Claim Reward
-                        </button>
-                        <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
-                            <i class="fas fa-times"></i> Close
-                        </button>
-                    `;
-                }
-            } else if (['Post on Socials', 'Video Creation'].includes(program.category)) {
-                if (!progress.accepted) {
-                    buttonGroup.innerHTML = `
-                        <button class="modal-btn modal-btn-primary" onclick="acceptProgram(${id})">
-                            <i class="fas fa-check"></i> Accept Offer
-                        </button>
-                        <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
-                            <i class="fas fa-times"></i> Close
-                        </button>
-                    `;
-                } else if (!progress.submitted) {
-                    actionContainer.innerHTML = `
-                        <div class="modal-section">
-                            <h4><i class="fas fa-paperclip"></i> Submit Your Work</h4>
-                            <input type="text" class="modal-input" id="submission-link" placeholder="Paste your ${program.category.toLowerCase()} link here">
-                        </div>
-                    `;
-                    buttonGroup.innerHTML = `
-                        <button class="modal-btn modal-btn-primary" onclick="submitContent(${id})">
-                            <i class="fas fa-paper-plane"></i> Submit
-                        </button>
-                        <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
-                            <i class="fas fa-times"></i> Close
-                        </button>
-                    `;
-                } else {
-                    actionContainer.innerHTML = `
-                        <div class="modal-section">
-                            <h4><i class="fas fa-check-circle"></i> Submission Received</h4>
-                            <p>Your submission: <a href="${progress.link}" target="_blank">${progress.link}</a></p>
-                            <p>Status: <span class="highlight">Pending Review</span></p>
-                        </div>
-                    `;
-                    buttonGroup.innerHTML = `
-                        <button class="modal-btn modal-btn-primary" onclick="claimReward(${id})">
-                            <i class="fas fa-gift"></i> Claim Reward
-                        </button>
-                        <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
-                            <i class="fas fa-times"></i> Close
-                        </button>
-                    `;
-                }
+            if (!progress.accepted) {
+                modalBody.innerHTML = `
+                    <div class="modal-section">
+                        <h4><i class="fas fa-clipboard-check"></i> Guidelines</h4>
+                        <p>${program.guidelines}</p>
+                    </div>
+                    <div class="modal-section">
+                        <h4><i class="fas fa-star"></i> Program Highlights</h4>
+                        <ul>${program.pros.map(pro => `<li>${pro}</li>`).join('')}</ul>
+                        <p><strong>Payout:</strong> <span class="highlight">${program.payout}</span></p>
+                    </div>
+                `;
+                buttonGroup.innerHTML = `
+                    <button class="modal-btn modal-btn-secondary" onclick="closeModal()">Close</button>
+                    <button class="modal-btn modal-btn-primary" onclick="acceptProgram(${id})"><i class="fas fa-check"></i> Accept Offer</button>
+                `;
+            } else {
+                modalBody.innerHTML = `
+                    <div class="modal-section">
+                        <h4><i class="fas fa-link"></i> Your Unique Referral Link</h4>
+                        <p>Share this link to start earning rewards. You can view your performance in the Activity Feed.</p>
+                        <p class="referral-link" id="referral-link-text-${id}">Generating link...</p>
+                    </div>
+                `;
+                buttonGroup.innerHTML = `
+                    <button class="modal-btn modal-btn-secondary" onclick="closeModal()">Close</button>
+                    <button class="modal-btn modal-btn-primary" onclick="copyToClipboard(${id})"><i class="fas fa-copy"></i> Copy Link</button>
+                `;
+                fetch('/check-session').then(res => res.json()).then(session => {
+                    if(session.loggedIn) {
+                        const link = `http://localhost:3000/track?programId=${id}&affiliate_id=${session.userId}`;
+                        document.getElementById(`referral-link-text-${id}`).textContent = link;
+                    } else {
+                        document.getElementById(`referral-link-text-${id}`).textContent = "Error: Please log in.";
+                    }
+                });
             }
-
             document.getElementById('program-modal').classList.add('open');
         }
 
         function acceptProgram(id) {
-            userProgress[id] = { ...userProgress[id], accepted: true };
-            if (['Post on Socials', 'Video Creation'].includes(programs.find(p => p.id === id).category)) {
-                userProgress[id].submitted = false;
-            }
+            userProgress[id] = { accepted: true };
+            showToast('Offer accepted! Your link is ready.', 'success');
             showProgramModal(id);
         }
 
-        function submitContent(id) {
-            const link = document.getElementById('submission-link').value;
-            if (link) {
-                userProgress[id] = { ...userProgress[id], submitted: true, link: link };
-                showProgramModal(id);
-            } else {
-                showToast('Please provide a valid link.', 'error');
-            }
-        }
-
-        function claimReward(id) {
-            closeModal();
-            document.getElementById('success-modal').classList.add('open');
-        }
-
-        function closeModal() {
-            document.getElementById('program-modal').classList.remove('open');
-            document.getElementById('redeem-modal').classList.remove('open');
-        }
-
-        function closeSuccessModal() {
-            document.getElementById('success-modal').classList.remove('open');
-        }
-
-        function openRedeemModal() {
-            populateRedeemModal();
-            document.getElementById('redeem-modal').classList.add('open');
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('Link copied to clipboard!', 'success');
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-                showToast('Failed to copy link', 'error');
+        function copyToClipboard(programId) {
+             fetch('/check-session').then(res => res.json()).then(session => {
+                if (!session.loggedIn) {
+                    showToast('Could not verify user. Please log in again.', 'error');
+                    return;
+                }
+                const userSpecificLink = `http://localhost:3000/track?programId=${programId}&affiliate_id=${session.userId}`;
+                navigator.clipboard.writeText(userSpecificLink).then(() => {
+                    showToast('Link copied to clipboard!', 'success');
+                }).catch(err => {
+                    showToast('Failed to copy link', 'error');
+                });
             });
         }
 
-        function openWithdrawModal() {
-            showToast('Withdraw functionality coming soon!', 'info');
+        function setupDateFilters() {
+            document.querySelectorAll('.date-filter-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.date-filter-btn').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    fetchAffiliateStats(button.dataset.range);
+                });
+            });
         }
 
-        function showReferrals() {
-            showToast('Referral list coming soon!', 'info');
-        }
+        function closeModal() { document.getElementById('program-modal').classList.remove('open'); }
 
         function showToast(message, type) {
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
-            toast.innerHTML = `
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-                ${message}
-            `;
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
             document.body.appendChild(toast);
             setTimeout(() => {
                 toast.classList.add('show');
                 setTimeout(() => {
                     toast.classList.remove('show');
-                    setTimeout(() => {
-                        document.body.removeChild(toast);
-                    }, 300);
+                    setTimeout(() => document.body.removeChild(toast), 300);
                 }, 3000);
             }, 100);
         }
 
-        function toggleMenu() {
-            document.getElementById('nav-menu').classList.toggle('open');
-        }
-
-        function logout() {
-            window.location.href = 'auth.html';
-        }
+        function toggleMenu() { document.getElementById('nav-menu').classList.toggle('open'); }
+        function logout() { fetch('/logout').then(() => window.location.href = 'auth.html'); }
 
         async function init() {
-            await fetchPrograms();
-            populateHistory();
-            document.querySelectorAll('.dashboard-card, .program-card').forEach((card, index) => {
-                card.classList.add(`delay-${index % 3}`);
-            });
+            try {
+                const response = await fetch('/check-session');
+                const session = await response.json();
+
+                if (session.loggedIn) {
+                    await fetchPrograms();
+                    fetchAffiliateStats(currentFilter);
+                    fetchActivityHistory();
+                    setupDateFilters();
+                } else {
+                    window.location.href = 'auth.html';
+                }
+            } catch (err) {
+                console.error("Initialization failed:", err);
+                showToast("Could not initialize the page. Please try again later.", "error");
+            }
         }
 
         window.onload = init;
