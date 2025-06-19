@@ -6,8 +6,13 @@ const path = require('path');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
+const crypto = require('crypto'); // NEW: Add crypto for token generation
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// --- NEW DEPENDENCY: Add multer for file uploads ---
+// Make sure to install it by running: npm install multer
+const multer = require('multer');
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'password123';
@@ -388,6 +393,135 @@ app.get('/logout', (req, res) => {
         res.json({ message: 'Logged out' });
     });
 });
+
+// --- NEW: FORGOT AND RESET PASSWORD ROUTES ---
+app.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    const userEntry = Object.entries(users).find(([username, userData]) => userData.email === email);
+
+    if (userEntry) {
+        const [username, user] = userEntry;
+        const token = crypto.randomBytes(20).toString('hex');
+        
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+
+        await saveUsers();
+
+        const resetLink = `http://localhost:${PORT}/reset-password.html?token=${token}`;
+        console.log(`Password reset link for ${username} (${email}): ${resetLink}`);
+    } else {
+        console.log(`Password reset attempt for non-existent email: ${email}`);
+    }
+    res.json({ message: 'If your email is registered, you will receive a password reset link shortly.' });
+});
+
+app.post('/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+
+    const userEntry = Object.entries(users).find(([username, userData]) => 
+        userData.resetPasswordToken === token && userData.resetPasswordExpires > Date.now()
+    );
+
+    if (!userEntry) {
+        return res.status(400).json({ error: 'Password reset token is invalid or has expired.' });
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+        return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+    }
+
+    const [username, user] = userEntry;
+    const passwordHash = await bcrypt.hash(newPassword, saltRounds);
+    
+    user.passwordHash = passwordHash;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await saveUsers();
+
+    res.json({ message: 'Your password has been updated successfully. You can now log in.' });
+});
+
+
+// ==================================================================
+// === ROUTES ADDED FOR PROFILE PAGE ================================
+// ==================================================================
+
+// Endpoint to get all necessary data for the profile page
+app.get('/api/profile/:userId', requireLogin, (req, res) => {
+    const { userId } = req.params;
+
+    if (userId !== req.session.userId && !req.session.isAdmin) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const user = users[userId];
+    if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    const totalEarnings = user.totalEarnings || 0;
+    const questsCompleted = user.completedQuests ? user.completedQuests.length : 0;
+    
+    const userConversions = conversions.filter(c => c.affiliateId === userId);
+    const referralsCount = userConversions.length;
+    const referralEarnings = userConversions.reduce((sum, conv) => sum + (conv.payout || 0), 0);
+
+    const loginStreak = user.loginStreak || 5; 
+
+    const earningsChartData = Array.from({length: 7}, (_, i) => {
+        const dayEarning = (totalEarnings / (Math.random() * 10 + 7)) * (i + 1);
+        return parseFloat(dayEarning.toFixed(2));
+    });
+
+    const recentActivity = [
+        { icon: 'fa-check-circle', color: 'primary', text: `Completed "Crypto Basics" quest`, detail: `+$${(user.completedQuests && user.completedQuests.length > 0 ? '5.00' : '0.00')} • 2 hours ago` },
+        { icon: 'fa-user-plus', color: 'green-500', text: `A new user joined via your referral!`, detail: `+${referralEarnings.toFixed(2)} • 5 hours ago` },
+        { icon: 'fa-medal', color: 'yellow-500', text: `Level up! You're now Level 5`, detail: `+$2.00 bonus • Yesterday` },
+    ];
+
+    res.json({
+        fullName: user.fullName,
+        username: userId,
+        level: 5,
+        title: "Crypto Apprentice",
+        avatar: user.avatar || 'https://www.gravatar.com/avatar/?d=mp',
+        totalEarnings: totalEarnings.toFixed(2),
+        questsCompleted,
+        referralsCount,
+        referralEarnings: referralEarnings.toFixed(2),
+        loginStreak,
+        earningsChartData,
+        recentActivity
+    });
+});
+
+// Endpoint to handle profile picture upload
+const upload = multer({ dest: 'public/uploads/' });
+
+app.post('/api/user/upload-picture', requireLogin, upload.single('profilePicture'), async (req, res) => {
+    const userId = req.session.userId;
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded.' });
+    }
+
+    const user = users[userId];
+    if (!user) {
+        return res.status(404).json({ error: 'User not found.' });
+    }
+
+    const filePath = `/uploads/${req.file.filename}`;
+    user.avatar = filePath;
+    await saveUsers();
+
+    res.json({ message: 'Profile picture updated successfully.', filePath });
+});
+
+// ==================================================================
+// === END OF NEW ROUTES ============================================
+// ==================================================================
+
 
 app.get('/quest-overview', requireLogin, async (req, res) => {
     const userId = req.query.userId;

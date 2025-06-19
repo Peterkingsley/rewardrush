@@ -14,6 +14,17 @@
         "id": 3,
         "completedAt": "2025-06-16T18:39:19.646Z"
       }
-    ]
+    ],
+    "resetPasswordToken": "61fefbdaf6d72cf6ddc0c1703dd92226a0a0a29d",
+    "resetPasswordExpires": 1750164597399,
+    "avatar": "/uploads/4c283a3ca80260f5b10f9f8bc5b7ec02"
+  },
+  "eshiet": {
+    "passwordHash": "$2b$10$ee/Z7CjS1W9cXIDXDpQO7O1ICdljIEp.OFENlpWqMGQuSTNtwNpyG",
+    "fullName": "Nsongurua Eshiet",
+    "email": "thecircumfriends@gmail.com",
+    "blocked": false,
+    "totalEarnings": 0,
+    "completedQuests": []
   }
 }
