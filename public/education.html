@@ -320,6 +320,11 @@
             font-size: 1.1rem;
             margin-bottom: 0.75rem;
             color: var(--primary-light);
+            cursor: pointer;
+        }
+        
+        .education-item h4:hover {
+            color: var(--secondary);
         }
         
         .education-item p {
@@ -535,111 +540,6 @@
             background: var(--primary-dark);
         }
         
-        /* Community Chat Section */
-        .chat-container {
-            background: rgba(45, 52, 54, 0.7);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(108, 92, 231, 0.3);
-        }
-        
-        .chat-header {
-            padding: 1.5rem;
-            background: rgba(30, 39, 46, 0.5);
-            border-bottom: 1px solid rgba(108, 92, 231, 0.2);
-        }
-        
-        .chat-header h3 {
-            font-size: 1.5rem;
-            color: var(--primary-light);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .chat-messages {
-            height: 350px;
-            overflow-y: auto;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            background: rgba(30, 39, 46, 0.3);
-        }
-        
-        .message {
-            background: rgba(108, 92, 231, 0.1);
-            padding: 0.75rem 1rem;
-            border-radius: 12px;
-            max-width: 80%;
-            align-self: flex-start;
-            position: relative;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .message.user {
-            background: rgba(0, 206, 201, 0.2);
-            align-self: flex-end;
-        }
-        
-        .message-text {
-            font-size: 0.95rem;
-            color: var(--light);
-            line-height: 1.4;
-        }
-        
-        .message-time {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.5);
-            margin-top: 0.25rem;
-            text-align: right;
-        }
-        
-        .chat-input-container {
-            display: flex;
-            gap: 0.75rem;
-            padding: 1.5rem;
-            background: rgba(30, 39, 46, 0.5);
-            border-top: 1px solid rgba(108, 92, 231, 0.2);
-        }
-        
-        .chat-input {
-            flex: 1;
-            padding: 0.9rem 1rem;
-            background: rgba(30, 39, 46, 0.8);
-            border: 1px solid rgba(108, 92, 231, 0.3);
-            border-radius: 8px;
-            color: var(--light);
-            font-size: 0.95rem;
-            transition: var(--transition);
-        }
-        
-        .chat-input:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
-        }
-        
-        .send-btn {
-            background: var(--primary);
-            color: white;
-            padding: 0 1.5rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .send-btn:hover {
-            background: var(--primary-dark);
-        }
-        
         /* Modal Styles */
         .modal {
             display: none;
@@ -660,7 +560,7 @@
             padding: 2rem;
             border-radius: var(--border-radius);
             width: 90%;
-            max-width: 600px;
+            max-width: 800px;
             max-height: 90vh;
             overflow-y: auto;
             position: relative;
@@ -885,10 +785,6 @@
                 display: block;
             }
             
-            .chat-messages {
-                height: 300px;
-            }
-            
             .expert-profile-header {
                 flex-direction: column;
                 text-align: center;
@@ -925,15 +821,6 @@
             
             .education-header p {
                 font-size: 1rem;
-            }
-            
-            .chat-input-container {
-                flex-direction: column;
-            }
-            
-            .send-btn {
-                padding: 0.75rem;
-                justify-content: center;
             }
         }
         
@@ -996,7 +883,6 @@
         </div>
     </nav>
 
-    <!-- Sidebar Navigation -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-section">
             <h3 class="sidebar-title"><i class="fas fa-graduation-cap"></i> Education Hub</h3>
@@ -1005,9 +891,6 @@
             </a>
             <a href="#expert-section" class="sidebar-link" onclick="scrollToSection('expert-section')">
                 <i class="fas fa-user-tie"></i> Expert Sessions
-            </a>
-            <a href="#community-chat" class="sidebar-link" onclick="scrollToSection('community-chat')">
-                <i class="fas fa-comments"></i> Community Chat
             </a>
         </div>
         
@@ -1042,10 +925,9 @@
         <div class="container">
             <div class="education-header">
                 <h2>Professional Learning Hub</h2>
-                <p>Expand your crypto knowledge with our curated educational resources, community discussions, and expert consultations</p>
+                <p>Expand your crypto knowledge with our curated educational resources and expert consultations</p>
             </div>
             
-            <!-- Learning Resources Section -->
             <div class="section-card animate-in" id="education-section">
                 <div class="section-header" onclick="toggleSection('education-content')">
                     <h3><i class="fas fa-book-open"></i> Learning Resources</h3>
@@ -1053,7 +935,6 @@
                 </div>
                 <div class="section-content" id="education-content">
                     <div class="education-grid" id="education-grid">
-                        <!-- Categories will be populated dynamically -->
                     </div>
                     <div class="see-more">
                         <button class="see-more-btn" id="load-more-education" onclick="loadMoreEducation()">
@@ -1063,7 +944,6 @@
                 </div>
             </div>
             
-            <!-- Expert Booking Section -->
             <div class="section-card animate-in delay-1" id="expert-section">
                 <div class="section-header" onclick="toggleSection('expert-content')">
                     <h3><i class="fas fa-user-tie"></i> Book a Session with Experts</h3>
@@ -1101,9 +981,8 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="expert-grid" id="expert-grid">
-                        <!-- Experts will be populated dynamically -->
                     </div>
                     <div class="see-more">
                         <button class="see-more-btn" id="load-more-experts" onclick="loadMoreExperts()">
@@ -1112,38 +991,9 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Community Chat Section -->
-            <div class="section-card animate-in delay-2" id="community-chat">
-                <div class="section-header" onclick="toggleSection('chat-content')">
-                    <h3><i class="fas fa-comments"></i> Community Discussion</h3>
-                    <i class="fas fa-chevron-down toggle-icon"></i>
-                </div>
-                <div class="section-content" id="chat-content">
-                    <div class="chat-container">
-                        <div class="chat-header">
-                            <h3><i class="fas fa-comments"></i> Community Chat</h3>
-                        </div>
-                        <div class="chat-messages" id="chat-messages">
-                            <div class="message">
-                                <div class="message-text">Welcome to the RewardRush community chat! Ask questions and share knowledge with other members.</div>
-                                <div class="message-time">System • Just now</div>
-                            </div>
-                        </div>
-                        <div class="chat-input-container">
-                            <input type="text" class="chat-input" id="chat-input" placeholder="Type your message...">
-                            <button class="send-btn" onclick="sendMessage()">
-                                <i class="fas fa-paper-plane"></i>
-                                <span class="desktop-text">Send</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- Profile Modal -->
     <div class="modal" id="profile-modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeProfileModal()">×</span>
@@ -1177,7 +1027,6 @@
         </div>
     </div>
 
-    <!-- Booking Modal -->
     <div class="modal" id="booking-modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeModal()">×</span>
@@ -1207,18 +1056,12 @@
     <script>
         // Global variables
         let currentExpertId = null;
-        let messages = [
-            { text: 'Welcome to the RewardRush community chat! Ask questions and share knowledge with other members.', 
-              time: 'Just now', 
-              isUser: false }
-        ];
         
         // Pagination variables
         let educationPage = 1;
         let expertsPage = 1;
         const itemsPerPage = 6;
         let allEducationItems = [];
-        let allExperts = [];
         let filteredExperts = [];
 
         // Check session
@@ -1231,7 +1074,6 @@
                 } else {
                     populateEducationContent();
                     loadExperts();
-                    displayMessages();
                     setupEventListeners();
                 }
             } catch (err) {
@@ -1321,7 +1163,9 @@
                 const categoryId = category.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
                 return `
                     <div class="education-item animate-in delay-${index % 3}">
-                        <h4><i class="fas ${getIconForCategory(category.name)}"></i> ${category.name}</h4>
+                        <h4 onclick="navigateToSkillPage('${categoryId}', '${category.name}')">
+                            <i class="fas ${getIconForCategory(category.name)}"></i> ${category.name}
+                        </h4>
                         <div class="content-items">
                             ${category.content.slice(0, 3).map(item => `
                                 <div class="content-item">
@@ -1355,14 +1199,51 @@
 
         function expandCategory(categoryId) {
             event.preventDefault();
-            // Implement category expansion logic here
-            alert(`Expanding category ${categoryId} - would show all resources in this category`);
+            const category = allEducationItems.find(cat => cat.name.toLowerCase().replace(/[^a-z0-9]/g, '-') === categoryId);
+            if (!category) return;
+
+            const educationGrid = document.getElementById('education-grid');
+            educationGrid.innerHTML = `
+                <div class="education-item animate-in" style="grid-column: 1/-1;">
+                    <h4><i class="fas ${getIconForCategory(category.name)}"></i> ${category.name}</h4>
+                    <div class="content-items">
+                        ${category.content.map(item => `
+                            <div class="content-item">
+                                <a href="${item.source.includes('http') ? item.source : '#'}" target="_blank">
+                                    <i class="fas ${getIconForType(item.type)}"></i>
+                                    ${item.title}
+                                </a>
+                                <div class="content-meta">
+                                    <span class="content-type">${item.type}</span>
+                                    <span>• ${item.duration || 'N/A'}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <a href="#" onclick="displayEducationItems(); return false;" style="display: block; margin-top: 1rem; color: var(--primary-light);">
+                        Back to all categories
+                    </a>
+                </div>
+            `;
+            document.getElementById('load-more-education').style.display = 'none';
+        }
+
+        function navigateToSkillPage(categoryId, categoryName) {
+            // Store category data in sessionStorage to pass to the new page
+            const category = allEducationItems.find(cat => cat.name.toLowerCase().replace(/[^a-z0-9]/g, '-') === categoryId);
+            if (category) {
+                sessionStorage.setItem('selectedCategory', JSON.stringify({
+                    id: categoryId,
+                    name: categoryName,
+                    content: category.content
+                }));
+                window.location.href = `skill-progression.html?category=${categoryId}`;
+            }
         }
 
         function loadMoreEducation() {
             educationPage++;
             displayEducationItems();
-            // Smooth scroll to the new items
             setTimeout(() => {
                 document.getElementById('load-more-education').scrollIntoView({ 
                     behavior: 'smooth', 
@@ -1408,25 +1289,19 @@
         async function loadExperts() {
             try {
                 const response = await fetch('/experts');
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
                 const experts = await response.json();
                 allExperts = Object.values(experts).filter(expert => !expert.hidden);
                 filteredExperts = [...allExperts];
                 
-                filterExperts(); // Initial display with default filters
+                filterExperts();
             } catch (err) {
                 console.error('Error loading experts:', err);
-                const errorMessage = err.message || 'Unknown error occurred';
-                
                 document.getElementById('expert-grid').innerHTML = `
                     <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--danger);">
                         <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
                         <p>Failed to load experts. Please try again later.</p>
-                        <p>Error: ${errorMessage}</p>
                     </div>
                 `;
                 document.getElementById('load-more-experts').style.display = 'none';
@@ -1438,10 +1313,8 @@
             const rateFilter = document.getElementById('expert-rate').value;
             const sortFilter = document.getElementById('expert-sort').value;
             
-            // Reset pagination when filters change
             expertsPage = 1;
             
-            // Apply filters
             filteredExperts = allExperts.filter(expert => {
                 const matchesCategory = categoryFilter === 'all' || 
                     (expert.categories && expert.categories.includes(categoryFilter));
@@ -1455,7 +1328,6 @@
                 return matchesCategory && matchesRate;
             });
             
-            // Apply sorting
             switch(sortFilter) {
                 case 'rating':
                     filteredExperts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
@@ -1464,14 +1336,11 @@
                     filteredExperts.sort((a, b) => a.rate - b.rate);
                     break;
                 case 'rate-high':
-                    filteredExperts.sort((a, b) => b.rate - a.rate);
+                    filteredExperts.sort((a, b) => b.rate - b.rate);
                     break;
                 case 'name':
                     filteredExperts.sort((a, b) => a.name.localeCompare(b.name));
                     break;
-                default:
-                    // Default sorting (by rating)
-                    filteredExperts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
             }
             
             displayExperts();
@@ -1520,7 +1389,6 @@
                 </div>
             `).join('');
             
-            // Hide "Load More" button if all experts are shown
             if (endIndex >= filteredExperts.length) {
                 document.getElementById('load-more-experts').style.display = 'none';
             } else {
@@ -1531,7 +1399,6 @@
         function loadMoreExperts() {
             expertsPage++;
             displayExperts();
-            // Smooth scroll to the new experts
             setTimeout(() => {
                 document.getElementById('load-more-experts').scrollIntoView({ 
                     behavior: 'smooth', 
@@ -1546,23 +1413,18 @@
                 currentExpertId = expertId;
                 
                 const response = await fetch('/experts');
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
                 const experts = await response.json();
                 const expert = experts[expertId];
                 if (!expert) throw new Error('Expert not found');
                 
-                // Set basic info
                 document.getElementById('profile-avatar').src = expert.avatar || 'https://via.placeholder.com/100';
                 document.getElementById('profile-name').textContent = expert.name;
                 document.getElementById('profile-title').textContent = expert.title;
                 document.getElementById('profile-rate').textContent = `$${expert.rate}/hour`;
                 document.getElementById('profile-bio').textContent = expert.bio;
                 
-                // Set social links
                 const socialsContainer = document.getElementById('profile-socials');
                 socialsContainer.innerHTML = expert.socials ? expert.socials.map(social => `
                     <a href="${social.url}" target="_blank" class="social-link">
@@ -1571,7 +1433,6 @@
                     </a>
                 `).join('') : '<p>No social links provided</p>';
                 
-                // Set portfolio items
                 const portfolioContainer = document.getElementById('profile-portfolio');
                 portfolioContainer.innerHTML = expert.portfolio ? expert.portfolio.map(item => `
                     <div class="portfolio-item">
@@ -1601,10 +1462,7 @@
             try {
                 currentExpertId = expertId;
                 const response = await fetch('/experts');
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
                 const experts = await response.json();
                 const expert = experts[expertId];
@@ -1613,7 +1471,6 @@
                 document.getElementById('expert-id').value = expert.id;
                 document.getElementById('expert-name-modal').textContent = `${expert.name} - ${expert.title}`;
                 
-                // Populate social links
                 const socialsContainer = document.getElementById('expert-socials');
                 socialsContainer.innerHTML = expert.socials ? `
                     <h4>Connect</h4>
@@ -1627,7 +1484,6 @@
                     </div>
                 ` : '<p>No social links provided</p>';
                 
-                // Populate portfolio
                 const portfolioContainer = document.getElementById('expert-portfolio');
                 portfolioContainer.innerHTML = expert.portfolio ? `
                     <h4>Experience</h4>
@@ -1674,7 +1530,6 @@
             }
             
             try {
-                // Show loading state
                 document.getElementById('submit-text').style.display = 'none';
                 document.getElementById('submit-spinner').style.display = 'inline-block';
                 
@@ -1690,13 +1545,10 @@
                     })
                 });
                 
-                // Reset loading state
                 document.getElementById('submit-text').style.display = 'inline-block';
                 document.getElementById('submit-spinner').style.display = 'none';
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
                 const data = await response.json();
                 
@@ -1708,82 +1560,29 @@
                 }
             } catch (err) {
                 console.error('Error submitting booking:', err);
-                // Reset loading state
                 document.getElementById('submit-text').style.display = 'inline-block';
                 document.getElementById('submit-spinner').style.display = 'none';
                 alert('An error occurred. Please try again.');
             }
         }
 
-        // Chat Functionality
-        function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const message = input.value.trim();
-            
-            if (message) {
-                messages.push({ 
-                    text: message, 
-                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    isUser: true 
-                });
-                input.value = '';
-                displayMessages();
-                
-                // Simulate response
-                setTimeout(() => {
-                    const responses = [
-                        "That's a great question!",
-                        "I'd be happy to help with that.",
-                        "Have you checked our education resources on this topic?",
-                        "Interesting point! What do others think?",
-                        "Let me find someone who can answer that."
-                    ];
-                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                    
-                    messages.push({ 
-                        text: randomResponse, 
-                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                        isUser: false,
-                        sender: 'Community Helper'
-                    });
-                    displayMessages();
-                }, 1000);
-            }
-        }
-
-        function displayMessages() {
-            const chatMessages = document.getElementById('chat-messages');
-            chatMessages.innerHTML = messages.map(msg => `
-                <div class="message ${msg.isUser ? 'user' : ''}">
-                    <div class="message-text">${msg.text}</div>
-                    <div class="message-time">${msg.sender || (msg.isUser ? 'You' : 'System')} • ${msg.time}</div>
-                </div>
-            `).join('');
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
         // Event Listeners
         function setupEventListeners() {
             document.getElementById('booking-form').addEventListener('submit', handleBookingSubmit);
-            document.getElementById('chat-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') sendMessage();
-            });
             
-            // Toggle sidebar on mobile
             document.getElementById('sidebar').addEventListener('click', function(e) {
                 if (e.target === this && window.innerWidth <= 1024) {
                     this.classList.remove('open');
                 }
             });
             
-            // Close modals when clicking outside
             const modals = document.querySelectorAll('.modal');
             modals.forEach(modal => {
                 modal.addEventListener('click', function(e) {
                     if (e.target === this) {
                         if (this.id === 'profile-modal') {
                             closeProfileModal();
-                        } else {
+                        } else if (this.id === 'booking-modal') {
                             closeModal();
                         }
                     }
@@ -1795,9 +1594,11 @@
         window.onload = function() {
             checkSession();
             
-            // Auto-expand first section
             setTimeout(() => {
-                document.getElementById('education-content').classList.add('active');
+                const eduContent = document.getElementById('education-content');
+                if (eduContent) {
+                    eduContent.classList.add('active');
+                }
             }, 300);
         };
     </script>

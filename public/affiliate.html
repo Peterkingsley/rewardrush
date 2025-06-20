@@ -154,8 +154,8 @@
         
         .hero-section {
             text-align: center;
-            margin-bottom: 3rem;
-            padding: 3rem 2rem;
+            /* margin-bottom: 3rem; */
+            padding: 1rem 0.5rem;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 1.5rem;
             backdrop-filter: blur(10px);
@@ -774,6 +774,102 @@
             0%, 100% { transform: translate(0, 0); }
             50% { transform: translate(50px, 50px); }
         }
+
+        /* Social Links Submission Form */
+        .social-links-form {
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        .social-links-form h4 {
+            font-size: 1.1rem;
+            color: var(--neon);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .social-links-form h4 i {
+            color: var(--primary-light);
+        }
+
+        .social-link-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .social-link-input {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .social-link-input i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+            color: var(--primary-light);
+        }
+
+        .social-link-input input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--light);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-link-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(108, 92, 231, 0.3);
+        }
+
+        .social-links-submit-btn {
+            background: linear-gradient(to right, var(--primary), var(--neon-purple));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .social-links-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+        }
+
+        .social-platform-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .social-platform-icon.youtube { color: #FF0000; }
+        .social-platform-icon.twitter { color: #1DA1F2; }
+        .social-platform-icon.facebook { color: #1877F2; }
+        .social-platform-icon.medium { color: #00AB6C; }
+        .social-platform-icon.reddit { color: #FF5700; }
+        .social-platform-icon.telegram { color: #0088CC; }
+        .social-platform-icon.linkedin { color: #0077B5; }
         
         @media (max-width: 768px) {
             .hamburger {
@@ -881,7 +977,6 @@
             <a href="founder.html"><i class="fas fa-user-tie"></i> Founder</a>
             <a href="profile.html" class="profile-btn">
                 <i class="fas fa-user"></i>
-                <span>Profile</span>
             </a>
             <button class="logout-btn" onclick="logout()">
                 <i class="fas fa-sign-out-alt"></i>
@@ -889,13 +984,17 @@
             </button>
         </div>
     </nav>
+        <div class="hero-section">
+            <h1>💰 Affiliate Hub</h1>
+            <p>Earn crypto rewards by promoting top brands.</p>
+        </div>
 
     <div class="container">
         <div class="stats-section-wrapper">
             <div class="stats-container">
                 <h2 class="section-title">
                     <i class="fas fa-chart-pie"></i>
-                    Your Stats
+                    Affiliate Stats
                 </h2>
                 <div class="date-filter-container">
                     <button class="date-filter-btn" data-range="7days">7 Days</button>
@@ -903,6 +1002,7 @@
                     <button class="date-filter-btn active" data-range="all">All Time</button>
                 </div>
             </div>
+
             <div class="dashboard-grid">
                 <div class="dashboard-card">
                     <div class="card-header">
@@ -937,11 +1037,6 @@
                     <p class="description">Clicks to conversions</p>
                 </div>
             </div>
-        </div>
-
-        <div class="hero-section">
-            <h1>💰 Affiliate Hub</h1>
-            <p>Earn crypto rewards by promoting top brands. Track your clicks, conversions, and earnings in real-time. Let's make that bag! 🚀</p>
         </div>
 
         <h2 class="section-title"><i class="fas fa-bullhorn"></i> Featured Programs</h2>
@@ -1131,12 +1226,54 @@
                     </button>
                 `;
             } else {
+                // Check if this is a Video Creation or Post on Socials program
+                const isContentProgram = program.category === 'Video Creation' || program.category === 'Post on Socials';
+                
                 modalBody.innerHTML = `
                     <div class="modal-section">
                         <h4><i class="fas fa-link"></i> Your Magic Link</h4>
                         <p>Share this link anywhere to start earning. Track your performance in the Activity Feed.</p>
                         <p class="referral-link" id="referral-link-text-${id}">Generating your unique link...</p>
                     </div>
+                    ${isContentProgram ? `
+                    <div class="social-links-form" id="social-links-form-${id}">
+                        <h4><i class="fas fa-share-alt"></i> Submit Your Content Links</h4>
+                        <p>Please provide links to where you've shared this content:</p>
+                        <div class="social-link-input-group">
+                            <div class="social-link-input">
+                                <div class="social-platform-icon youtube"><i class="fab fa-youtube"></i></div>
+                                <input type="url" id="youtube-link-${id}" placeholder="YouTube video URL">
+                            </div>
+                            <div class="social-link-input">
+                                <div class="social-platform-icon twitter"><i class="fab fa-twitter"></i></div>
+                                <input type="url" id="twitter-link-${id}" placeholder="Twitter (X) post URL">
+                            </div>
+                            <div class="social-link-input">
+                                <div class="social-platform-icon facebook"><i class="fab fa-facebook"></i></div>
+                                <input type="url" id="facebook-link-${id}" placeholder="Facebook post URL">
+                            </div>
+                            <div class="social-link-input">
+                                <div class="social-platform-icon medium"><i class="fab fa-medium"></i></div>
+                                <input type="url" id="medium-link-${id}" placeholder="Medium article URL">
+                            </div>
+                            <div class="social-link-input">
+                                <div class="social-platform-icon reddit"><i class="fab fa-reddit"></i></div>
+                                <input type="url" id="reddit-link-${id}" placeholder="Reddit post URL">
+                            </div>
+                            <div class="social-link-input">
+                                <div class="social-platform-icon telegram"><i class="fab fa-telegram"></i></div>
+                                <input type="url" id="telegram-link-${id}" placeholder="Telegram post URL">
+                            </div>
+                            <div class="social-link-input">
+                                <div class="social-platform-icon linkedin"><i class="fab fa-linkedin"></i></div>
+                                <input type="url" id="linkedin-link-${id}" placeholder="LinkedIn post URL">
+                            </div>
+                        </div>
+                        <button class="social-links-submit-btn" onclick="submitSocialLinks(${id})">
+                            <i class="fas fa-paper-plane"></i> Submit Links
+                        </button>
+                    </div>
+                    ` : `
                     <div class="modal-section">
                         <h4><i class="fas fa-share-alt"></i> Sharing Tips</h4>
                         <ul>
@@ -1146,7 +1283,9 @@
                             <li>Include in your blog or newsletter</li>
                         </ul>
                     </div>
+                    `}
                 `;
+                
                 buttonGroup.innerHTML = `
                     <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
                         <i class="fas fa-times"></i> Close
@@ -1155,6 +1294,7 @@
                         <i class="fas fa-copy"></i> Copy Link
                     </button>
                 `;
+                
                 fetch('/check-session').then(res => res.json()).then(session => {
                     if(session.loggedIn) {
                         const link = `https://rewardrush.com/track?programId=${id}&affiliate_id=${session.userId}`;
@@ -1165,6 +1305,58 @@
                 });
             }
             document.getElementById('program-modal').classList.add('open');
+        }
+
+        function submitSocialLinks(programId) {
+            const program = programs.find(p => p.id === programId);
+            if (!program) return;
+
+            const youtubeLink = document.getElementById(`youtube-link-${programId}`).value;
+            const twitterLink = document.getElementById(`twitter-link-${programId}`).value;
+            const facebookLink = document.getElementById(`facebook-link-${programId}`).value;
+            const mediumLink = document.getElementById(`medium-link-${programId}`).value;
+            const redditLink = document.getElementById(`reddit-link-${programId}`).value;
+            const telegramLink = document.getElementById(`telegram-link-${programId}`).value;
+            const linkedinLink = document.getElementById(`linkedin-link-${programId}`).value;
+
+            // Validate at least one link is provided
+            if (!youtubeLink && !twitterLink && !facebookLink && !mediumLink && !redditLink && !telegramLink && !linkedinLink) {
+                showToast('Please provide at least one content link', 'error');
+                return;
+            }
+
+            // Prepare the data to send
+            const socialLinks = {
+                programId: programId,
+                programTitle: program.title,
+                youtube: youtubeLink,
+                twitter: twitterLink,
+                facebook: facebookLink,
+                medium: mediumLink,
+                reddit: redditLink,
+                telegram: telegramLink,
+                linkedin: linkedinLink
+            };
+
+            // In a real app, you would send this to your backend
+            console.log('Submitting social links:', socialLinks);
+            
+            // Simulate API call
+            setTimeout(() => {
+                showToast('🎉 Your content links have been submitted for review!', 'success');
+                // Mark as submitted in user progress
+                if (!userProgress[programId]) userProgress[programId] = {};
+                userProgress[programId].linksSubmitted = true;
+                
+                // Update the UI
+                document.getElementById(`social-links-form-${programId}`).innerHTML = `
+                    <div style="text-align: center; padding: 1rem;">
+                        <i class="fas fa-check-circle" style="color: var(--success); font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <h4 style="color: var(--success);">Links Submitted!</h4>
+                        <p>Thank you for submitting your content links. We'll review them and update your status soon.</p>
+                    </div>
+                `;
+            }, 1000);
         }
 
         function acceptProgram(id) {

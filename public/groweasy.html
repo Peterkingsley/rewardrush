@@ -24,8 +24,10 @@
             --success: #00b894;
             --warning: #fdcb6e;
             --danger: #d63031;
+            
             --space-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            --galaxy-texture: url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxleHBsb3JlLWZlZWR8MXx8fGVufDB8fHx8fA%3D%3D&w=1000&q=80');
+            --galaxy-gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            --neon-gradient: linear-gradient(135deg, #6c5ce7 0%, #00cec9 100%);
             --neon-glow: 0 0 10px rgba(108, 92, 231, 0.7), 0 0 20px rgba(108, 92, 231, 0.5);
         }
         
@@ -37,12 +39,23 @@
         }
         
         body {
-            background: var(--space-gradient);
+            background: var(--galaxy-gradient);
             color: var(--light);
             min-height: 100vh;
             overflow-x: hidden;
+            position: relative;
         }
-        
+
+        /* Animated background elements */
+        .bg-particle {
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(108, 92, 231, 0.1);
+            pointer-events: none;
+            z-index: -1;
+            animation: float 15s infinite ease-in-out;
+        }
+
         /* Navigation */
         nav {
             background: rgba(30, 39, 46, 0.9);
@@ -170,15 +183,37 @@
             font-family: 'Montserrat', sans-serif;
             letter-spacing: 1px;
         }
-        
-        /* Dashboard Cards */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3rem;
+
+        /* Balance Toggle */
+        .balance-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            color: var(--primary-light);
+            font-size: 0.9rem;
+        }
+
+        .balance-toggle i {
+            font-size: 1.2rem;
         }
         
+        /* Dashboard Cards - Sliding Carousel */
+        .dashboard-carousel {
+            position: relative;
+            width: 100%;
+            margin-bottom: 3rem;
+            overflow: hidden;
+        }
+
+        .dashboard-track {
+            display: flex;
+            gap: 1.5rem;
+            transition: transform 0.5s ease;
+            padding: 1rem 0;
+            will-change: transform;
+        }
+
         .dashboard-card {
             background: rgba(45, 52, 54, 0.7);
             backdrop-filter: blur(10px);
@@ -192,6 +227,8 @@
             gap: 0.5rem;
             position: relative;
             overflow: hidden;
+            min-width: 280px;
+            flex: 0 0 calc(25% - 1.125rem); /* 4 cards visible at once with gap */
         }
         
         .dashboard-card::before {
@@ -270,6 +307,28 @@
         .dashboard-card .card-btn:hover {
             background: var(--primary-light);
             transform: translateY(-2px);
+        }
+
+        /* Carousel Navigation */
+        .carousel-nav {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .carousel-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-dot.active {
+            background: var(--primary);
+            transform: scale(1.2);
         }
         
         /* Quest List */
@@ -389,7 +448,7 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        
+
         .quest-card:hover::before {
             opacity: 1;
         }
@@ -1011,6 +1070,52 @@
 
         /* --- END: REDESIGNED QUIZ MODAL STYLES --- */
 
+        /* Loading Animation */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .loading-spinner {
+            width: 70px;
+            height: 70px;
+            border: 8px solid rgba(108, 92, 231, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1.5rem;
+        }
+
+        .loading-text {
+            color: var(--light);
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         .completion-modal .modal-content { 
             display: flex; 
             flex-direction: column; 
@@ -1067,7 +1172,6 @@
             color: var(--secondary); 
             padding: 1rem; 
             border-radius: 0.5rem; 
-            font-size: 0.9rem; 
             word-break: break-all; 
             width: 100%; 
             border: 1px solid var(--secondary); 
@@ -1103,6 +1207,18 @@
         }
         
         /* Responsive Adjustments */
+        @media (max-width: 1200px) {
+            .dashboard-card {
+                flex: 0 0 calc(33.333% - 1rem); /* 3 cards */
+            }
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-card {
+                flex: 0 0 calc(50% - 0.75rem); /* 2 cards */
+            }
+        }
+
         @media (max-width: 768px) {
             .container { padding: 1.5rem; }
             .dashboard-grid { grid-template-columns: 1fr; }
@@ -1141,6 +1257,12 @@
                 width: 100%;
             }
         }
+
+        @media (max-width: 600px) {
+            .dashboard-card {
+                flex: 0 0 100%; /* 1 card */
+            }
+        }
         
         /* Animations */
         @keyframes fadeIn { 
@@ -1152,6 +1274,16 @@
             0% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(0); }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); }
+            to { transform: translateX(100%); }
         }
         
         .animate-in { animation: fadeIn 0.5s ease forwards; }
@@ -1165,6 +1297,15 @@
     </style>
 </head>
 <body>
+    <!-- Background particles -->
+    <div id="bg-particles"></div>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Quest...</div>
+    </div>
+
     <nav>
         <div class="logo">
             <i class="fas fa-rocket"></i>
@@ -1191,28 +1332,48 @@
     <div class="container">
         <div class="dashboard-header">
             <h2>Dashboard Overview</h2>
+            <div class="balance-toggle" onclick="toggleBalanceVisibility()">
+                <i class="fas fa-eye-slash" id="balance-toggle-icon"></i>
+                <span>Hide Balance</span>
+            </div>
         </div>
         
-        <div class="dashboard-grid">
-            <div class="dashboard-card animate-in">
-                <div class="card-header"> <div class="card-icon"><i class="fas fa-coins"></i></div> <h3>Total Earnings</h3> </div>
-                <p class="value" id="total-earnings">$0.00</p>
-                <p class="description">Total earnings from completed quests</p>
-                <button class="card-btn withdraw-btn"><i class="fas fa-wallet"></i> Withdraw</button>
+        <!-- Dashboard Cards Carousel -->
+        <div class="dashboard-carousel">
+            <div class="dashboard-track" id="dashboard-track">
+                <div class="dashboard-card animate-in">
+                    <div class="card-header"> <div class="card-icon"><i class="fas fa-coins"></i></div> <h3>Total Earnings</h3> </div>
+                    <p class="value" id="total-earnings">$0.00</p>
+                    <p class="description">Total earnings from quests</p>
+                    <button class="card-btn withdraw-btn"><i class="fas fa-wallet"></i> Withdraw</button>
+                </div>
+                
+                <div class="dashboard-card animate-in delay-1">
+                    <div class="card-header"> <div class="card-icon"><i class="fas fa-check-circle"></i></div> <h3>Quests Completed</h3> </div>
+                    <p class="value" id="quests-completed">0</p>
+                    <p class="description">Total quests you've completed</p>
+                    <button class="card-btn" onclick="scrollToHistory()"><i class="fas fa-history"></i> View History</button>
+                </div>
+                
+                <div class="dashboard-card animate-in delay-2">
+                    <div class="card-header"> <div class="card-icon"><i class="fas fa-gift"></i></div> <h3>Redeemable Codes</h3> </div>
+                    <p class="value" id="redeemable-codes">0</p>
+                    <p class="description">Available codes to redeem</p>
+                    <button class="card-btn" onclick="openRedeemModal()"><i class="fas fa-eye"></i> View Codes</button>
+                </div>
+
+                <div class="dashboard-card animate-in delay-3">
+                    <div class="card-header"> <div class="card-icon"><i class="fas fa-star"></i></div> <h3>Current Streak</h3> </div>
+                    <p class="value" id="current-streak">0 days</p>
+                    <p class="description">Your current daily login streak</p>
+                    <button class="card-btn"><i class="fas fa-calendar-alt"></i> View Calendar</button>
+                </div>
             </div>
-            
-            <div class="dashboard-card animate-in delay-1">
-                <div class="card-header"> <div class="card-icon"><i class="fas fa-check-circle"></i></div> <h3>Quests Completed</h3> </div>
-                <p class="value" id="quests-completed">0</p>
-                <p class="description">Total quests you've completed</p>
-                <button class="card-btn" onclick="scrollToHistory()"><i class="fas fa-history"></i> View History</button>
-            </div>
-            
-            <div class="dashboard-card animate-in delay-2">
-                <div class="card-header"> <div class="card-icon"><i class="fas fa-gift"></i></div> <h3>Redeemable Codes</h3> </div>
-                <p class="value" id="redeemable-codes">0</p>
-                <p class="description">Available codes to redeem</p>
-                <button class="card-btn" onclick="openRedeemModal()"><i class="fas fa-eye"></i> View Codes</button>
+            <div class="carousel-nav" id="carousel-nav">
+                <div class="carousel-dot active" data-index="0"></div>
+                <div class="carousel-dot" data-index="1"></div>
+                <div class="carousel-dot" data-index="2"></div>
+                <div class="carousel-dot" data-index="3"></div>
             </div>
         </div>
         
@@ -1386,6 +1547,7 @@
         let allQuests = []; // Use one consistent variable for the master list of quests
         let completedQuests = [];
         let completedQuestIdSet = new Set();
+        let balanceVisible = true;
         
         // --- State for Filtering, Sorting, and Pagination ---
         let currentPage = 1;
@@ -1398,6 +1560,11 @@
         let answers = {};
         let timerInterval;
         let timeLeft = 150; // 2.5 minutes in seconds
+
+        // --- Carousel State ---
+        let currentSlide = 0;
+        const slideCount = 4; // Number of dashboard cards
+        let isTransitioning = false;
 
         // --- Skeleton Loader ---
         function showSkeletons() {
@@ -1417,6 +1584,125 @@
                     </div>`;
                 list.innerHTML += skeletonCard;
             }
+        }
+
+        // --- Background Animation ---
+        function createBackgroundParticles() {
+            const container = document.getElementById('bg-particles');
+            const particleCount = Math.floor(window.innerWidth / 20);
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('bg-particle');
+                
+                // Random properties
+                const size = Math.random() * 5 + 1;
+                const posX = Math.random() * window.innerWidth;
+                const posY = Math.random() * window.innerHeight;
+                const opacity = Math.random() * 0.2 + 0.05;
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 10;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}px`;
+                particle.style.top = `${posY}px`;
+                particle.style.opacity = opacity;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `-${delay}s`;
+                
+                container.appendChild(particle);
+            }
+        }
+
+        // --- Carousel Functions ---
+        function updateCarousel() {
+            if (isTransitioning) return;
+            
+            const track = document.getElementById('dashboard-track');
+            const dots = document.querySelectorAll('.carousel-dot');
+            const cards = document.querySelectorAll('.dashboard-card');
+            const cardWidth = cards[0].offsetWidth + 24; // width + gap
+            
+            // Clone cards for infinite loop
+            if (currentSlide >= slideCount) {
+                currentSlide = 0;
+            } else if (currentSlide < 0) {
+                currentSlide = slideCount - 1;
+            }
+            
+            track.style.transition = 'transform 0.5s ease';
+            track.style.transform = `translateX(-${currentSlide * cardWidth}px)`;
+            
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+            
+            // Reset position after transition ends for infinite loop
+            track.addEventListener('transitionend', () => {
+                if (currentSlide === 0 || currentSlide === slideCount - 1) {
+                    track.style.transition = 'none';
+                    track.style.transform = `translateX(-${currentSlide * cardWidth}px)`;
+                    // Force reflow
+                    track.offsetHeight;
+                }
+                isTransitioning = false;
+            }, { once: true });
+            
+            isTransitioning = true;
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slideCount;
+            updateCarousel();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + slideCount) % slideCount;
+            updateCarousel();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateCarousel();
+        }
+
+        // --- Balance Visibility Toggle ---
+        function toggleBalanceVisibility() {
+            balanceVisible = !balanceVisible;
+            const toggleIcon = document.getElementById('balance-toggle-icon');
+            const toggleText = document.querySelector('.balance-toggle span');
+            const valueElements = document.querySelectorAll('.value');
+            
+            if (balanceVisible) {
+                toggleIcon.className = 'fas fa-eye-slash';
+                toggleText.textContent = 'Hide Balance';
+                valueElements.forEach(el => {
+                    if (el.dataset.originalValue) {
+                        el.textContent = el.dataset.originalValue;
+                    }
+                });
+            } else {
+                toggleIcon.className = 'fas fa-eye';
+                toggleText.textContent = 'Show Balance';
+                valueElements.forEach(el => {
+                    el.dataset.originalValue = el.textContent;
+                    el.textContent = '****';
+                });
+            }
+        }
+
+        // --- Loading Overlay ---
+        function showLoadingOverlay(message = "Loading...") {
+            const overlay = document.getElementById('loading-overlay');
+            const loadingText = overlay.querySelector('.loading-text');
+            
+            loadingText.textContent = message;
+            overlay.classList.add('active');
+        }
+
+        function hideLoadingOverlay() {
+            document.getElementById('loading-overlay').classList.remove('active');
         }
 
         // --- Authentication ---
@@ -1673,35 +1959,40 @@
 
         // **FIXED** function to find quest by numeric ID and start it
         async function startQuiz(questId) {
-            const quest = allQuests.find(q => Number(q.id) === questId);
-            if (quest) {
-                try {
-                    const response = await fetch(`/quests/${questId}/questions`);
-                    const data = await response.json();
-                    if (!response.ok || !data.questions || data.questions.length === 0) {
-                        throw new Error(data.error || 'No questions found for this quest.');
-                    }
-                    questions = data.questions;
-                    currentQuestId = questId;
-                    currentQuestionIndex = 0;
-                    answers = {};
-                    timeLeft = 150; // Reset timer to 2.5 minutes
-                    
-                    document.getElementById('quiz-title').innerText = quest.title;
-                    document.getElementById('quiz-progress-text').textContent = `Question 1 of ${questions.length}`;
-                    document.getElementById('quiz-progress-bar').style.width = '0%';
-                    
-                    displayQuestion();
-                    startTimer();
-                    openModal('quiz-modal');
-
-                } catch (err) {
-                    console.error('Failed to start quiz:', err);
-                    alert(`Error: ${err.message}`);
+            showLoadingOverlay("An Extra Dollar");
+            
+            try {
+                const quest = allQuests.find(q => Number(q.id) === questId);
+                if (!quest) throw new Error("Quest not found");
+                
+                const response = await fetch(`/quests/${questId}/questions`);
+                const data = await response.json();
+                if (!response.ok || !data.questions || data.questions.length === 0) {
+                    throw new Error(data.error || 'No questions found for this quest.');
                 }
-            } else {
-                console.error('Could not start quiz. Quest not found for quest ID:', questId);
-                alert('Could not start the quiz for this quest.');
+                
+                // Simulate loading for 2 seconds
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                questions = data.questions;
+                currentQuestId = questId;
+                currentQuestionIndex = 0;
+                answers = {};
+                timeLeft = 150; // Reset timer to 2.5 minutes
+                
+                document.getElementById('quiz-title').innerText = quest.title;
+                document.getElementById('quiz-progress-text').textContent = `Question 1 of ${questions.length}`;
+                document.getElementById('quiz-progress-bar').style.width = '0%';
+                
+                displayQuestion();
+                startTimer();
+                openModal('quiz-modal');
+                
+            } catch (err) {
+                console.error('Failed to start quiz:', err);
+                alert(`Error: ${err.message}`);
+            } finally {
+                hideLoadingOverlay();
             }
         }
         
@@ -2015,8 +2306,29 @@
 
         // --- Initial Load & Event Listeners ---
         document.addEventListener('DOMContentLoaded', async () => {
+            // Create background particles
+            createBackgroundParticles();
+            
             if (await checkSession()) {
                 await refreshAllUI();
+
+                // Clone cards for infinite loop
+                const track = document.getElementById('dashboard-track');
+                const cards = document.querySelectorAll('.dashboard-card');
+                cards.forEach(card => {
+                    const clone = card.cloneNode(true);
+                    track.appendChild(clone);
+                });
+
+                // Set up carousel navigation
+                document.querySelectorAll('.carousel-dot').forEach(dot => {
+                    dot.addEventListener('click', () => {
+                        goToSlide(parseInt(dot.dataset.index));
+                    });
+                });
+
+                // Auto-advance carousel
+                setInterval(nextSlide, 5000);
 
                 document.querySelector('.withdraw-btn').addEventListener('click', openWithdrawModal);
                 document.getElementById('confirm-withdrawal-btn').addEventListener('click', withdraw);
