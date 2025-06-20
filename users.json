@@ -25,6 +25,9 @@
     "email": "thecircumfriends@gmail.com",
     "blocked": false,
     "totalEarnings": 0,
-    "completedQuests": []
+    "completedQuests": [],
+    "lastLogin": "2025-06-17T17:38:41.363Z",
+    "loginStreak": 1,
+    "avatar": "/uploads/41a9c5d9c8dcba556ad1e2e9abb1b0dc"
   }
 }

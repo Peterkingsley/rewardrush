@@ -3,22 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RewardRush</title>
+    <title>RewardRush - Quests</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&display=swap');
         
         :root {
             --primary: #6c5ce7;
             --primary-light: #a29bfe;
+            --primary-dark: #5649c0;
             --secondary: #00cec9;
+            --secondary-light: #55efc4;
             --accent: #fd79a8;
+            --accent-light: #ff9ff3;
             --dark: #2d3436;
             --darker: #1e272e;
             --light: #f5f6fa;
+            --light-transparent: rgba(245, 246, 250, 0.9);
             --success: #00b894;
             --warning: #fdcb6e;
             --danger: #d63031;
+            --space-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            --galaxy-texture: url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxleHBsb3JlLWZlZWR8MXx8fGVufDB8fHx8fA%3D%3D&w=1000&q=80');
+            --neon-glow: 0 0 10px rgba(108, 92, 231, 0.7), 0 0 20px rgba(108, 92, 231, 0.5);
         }
         
         * {
@@ -29,9 +37,10 @@
         }
         
         body {
-            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            background: var(--space-gradient);
             color: var(--light);
             min-height: 100vh;
+            overflow-x: hidden;
         }
         
         /* Navigation */
@@ -46,6 +55,7 @@
             top: 0;
             z-index: 100;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(108, 92, 231, 0.2);
         }
         
         .logo {
@@ -58,6 +68,8 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 1px;
         }
         
         .logo i {
@@ -155,6 +167,8 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 1px;
         }
         
         /* Dashboard Cards */
@@ -176,6 +190,20 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(108, 92, 231, 0.1) 0%, transparent 70%);
+            transform: rotate(30deg);
+            pointer-events: none;
         }
         
         .dashboard-card:hover {
@@ -236,6 +264,7 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            z-index: 1;
         }
         
         .dashboard-card .card-btn:hover {
@@ -251,6 +280,15 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, var(--primary), transparent);
+            margin-left: 1rem;
         }
         
         .section-title i {
@@ -266,6 +304,8 @@
             background: rgba(45, 52, 54, 0.7);
             padding: 1rem;
             border-radius: 0.75rem;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(108, 92, 231, 0.2);
         }
 
         .control-group {
@@ -282,7 +322,7 @@
             color: var(--primary-light);
         }
         
-        .control-group select {
+        .control-group select, .control-group input {
             width: 100%;
             padding: 0.75rem;
             border-radius: 0.5rem;
@@ -290,47 +330,30 @@
             background: rgba(30, 39, 46, 0.8);
             color: var(--light);
             font-size: 1rem;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
-        .control-group select:focus {
+        .control-group select:focus, .control-group input:focus {
             outline: none;
             border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.3);
         }
         
-        /* --- START: CORRECTED SEARCH ICON STYLES --- */
-
-        /* This new wrapper will be the positioning context for the icon */
         .search-input-wrapper {
             position: relative;
         }
 
-        /* Target the input field itself */
         #quest-search-input {
-            width: 100%;
-            padding: 0.75rem 1rem 0.75rem 2.5rem; /* Increased left padding for icon */
-            border-radius: 0.5rem;
-            border: 1px solid rgba(108, 92, 231, 0.3);
-            background: rgba(30, 39, 46, 0.8);
-            color: var(--light);
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
+            padding-left: 2.5rem; 
         }
         
-        #quest-search-input:focus {
-             outline: none;
-            border-color: var(--primary);
-        }
-
-        /* Position the icon inside the new wrapper */
         .search-input-wrapper .fa-search {
             position: absolute;
-            top: 50%; /* This now works correctly */
+            top: 50%;
             left: 1rem;
             transform: translateY(-50%);
             color: var(--primary-light);
         }
-        /* --- END: CORRECTED SEARCH ICON STYLES --- */
         
         .quest-list {
             display: grid;
@@ -351,6 +374,24 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quest-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .quest-card:hover::before {
+            opacity: 1;
         }
         
         .quest-card:hover {
@@ -378,6 +419,9 @@
             border-radius: 1rem;
             font-size: 0.9rem;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
         }
         
         .quest-card .quest-status {
@@ -393,11 +437,17 @@
             background: rgba(0, 184, 148, 0.2);
             color: var(--success);
         }
+
+        .quest-card .status-available {
+             background: rgba(0, 184, 148, 0.2);
+            color: var(--success);
+        }
         
         .quest-card p {
             font-size: 0.95rem;
             color: rgba(255, 255, 255, 0.8);
             line-height: 1.5;
+            flex-grow: 1;
         }
         
         .quest-card .quest-actions {
@@ -419,6 +469,25 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quest-card .primary-btn::before,
+        .quest-card .secondary-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .quest-card .primary-btn:hover::before,
+        .quest-card .secondary-btn:hover::before {
+            left: 100%;
         }
         
         .quest-card .primary-btn {
@@ -464,17 +533,23 @@
             border-radius: 0.5rem;
             cursor: pointer;
             transition: all 0.3s ease;
+            min-width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .pagination button:hover:not(:disabled) {
             background: var(--primary);
             border-color: var(--primary);
+            box-shadow: var(--neon-glow);
         }
 
         .pagination button.active {
             background: var(--primary);
             color: white;
             font-weight: bold;
+            box-shadow: var(--neon-glow);
         }
         
         .pagination button:disabled {
@@ -494,6 +569,7 @@
             background: rgba(45, 52, 54, 0.5);
             border-radius: 1rem;
             color: rgba(255, 255, 255, 0.7);
+            border: 1px dashed rgba(108, 92, 231, 0.3);
         }
         
         .empty-state i {
@@ -584,34 +660,447 @@
         }
         
         /* Modal Styles */
-        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); align-items: center; justify-content: center; z-index: 1000; opacity: 0; transition: opacity 0.3s ease; }
-        .modal.open { display: flex; opacity: 1; }
-        .modal-content { background: rgba(45, 52, 54, 0.95); backdrop-filter: blur(10px); padding: 2rem; border-radius: 1rem; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); transform: translateY(20px); transition: transform 0.3s ease; border: 1px solid rgba(108, 92, 231, 0.3); }
-        .modal.open .modal-content { transform: translateY(0); }
-        .modal-content h3 { font-size: 1.5rem; color: var(--primary-light); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
-        .modal-content .modal-actions { display: flex; justify-content: flex-end; margin-top: 1.5rem; gap: 1rem; }
-        .modal-content .close-btn { background: var(--danger); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.3s ease; font-weight: 500; }
-        .modal-content .close-btn:hover { background: #ff5252; transform: translateY(-2px); }
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background: rgba(0, 0, 0, 0.8); 
+            backdrop-filter: blur(5px); 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 1000; 
+            opacity: 0; 
+            transition: opacity 0.3s ease; 
+        }
         
-        /* Quiz & Completion Modal Styles */
-        .quiz-item { background: rgba(30, 39, 46, 0.7); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
-        .quiz-item h4 { color: var(--primary-light); margin-bottom: 0.5rem; }
-        .quiz-item .mc-options { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; }
-        .quiz-item .mc-option { display: flex; align-items: center; gap: 0.5rem; }
-        .quiz-item .open-ended textarea { width: 100%; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid rgba(108, 92, 231, 0.3); background: rgba(30, 39, 46, 0.8); color: var(--light); resize: vertical; min-height: 100px; }
-        .timer { color: var(--warning); font-size: 1rem; margin: 1rem 0; text-align: center; font-weight: 500; }
-        .next-btn { background: var(--primary); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.3s ease; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-        .next-btn:disabled { background: rgba(108, 92, 231, 0.3); cursor: not-allowed'; }
-        .next-btn:hover:not(:disabled) { background: var(--primary-light); transform: translateY(-2px); }
-        .completion-modal .modal-content { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
-        .completion-modal .modal-content h3 { margin-bottom: 0.5rem; }
-        .completion-modal #completion-message, .completion-modal #completion-subtext { margin: 0; text-align: center; }
-        .completion-modal #completion-message { font-size: 1.2rem; font-weight: 500; color: var(--light); }
-        .completion-modal #completion-subtext { font-size: 1rem; color: rgba(255, 255, 255, 0.8); }
-        .completion-modal .referral-input { background: rgba(0, 206, 201, 0.1); color: var(--secondary); padding: 0.75rem; border-radius: 0.5rem; font-size: 0.9rem; word-break: break-all; width: 100%; border: 1px solid var(--secondary); text-align: center; }
-        .completion-modal .modal-actions { justify-content: center; width: 100%; }
-        .completion-modal .copy-btn { background: var(--secondary); color: var(--darker); padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.3s ease; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
-        .completion-modal .copy-btn:hover { background: #55efc4; transform: translateY(-2px); }
+        .modal.open { 
+            display: flex; 
+            opacity: 1; 
+        }
+        
+        .modal-content { 
+            background: rgba(45, 52, 54, 0.95); 
+            backdrop-filter: blur(10px); 
+            padding: 2rem; 
+            border-radius: 1rem; 
+            width: 90%; 
+            max-width: 500px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); 
+            transform: translateY(20px); 
+            transition: transform 0.3s ease; 
+            border: 1px solid rgba(108, 92, 231, 0.3); 
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+        
+        .modal.open .modal-content { 
+            transform: translateY(0); 
+        }
+        
+        .modal-content h3 { 
+            font-size: 1.5rem; 
+            color: var(--primary-light); 
+            margin-bottom: 1rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+        }
+        
+        .modal-content .modal-actions { 
+            display: flex; 
+            justify-content: flex-end; 
+            margin-top: 1.5rem; 
+            gap: 1rem; 
+        }
+        
+        .modal-content .close-btn { 
+            background: var(--danger); 
+            color: white; 
+            padding: 0.75rem 1.5rem; 
+            border: none; 
+            border-radius: 0.5rem; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            font-weight: 500; 
+        }
+        
+        .modal-content .close-btn:hover { 
+            background: #ff5252; 
+            transform: translateY(-2px); 
+        }
+        
+        /* --- START: REDESIGNED QUIZ MODAL STYLES --- */
+        #quiz-modal .modal-content {
+            max-width: 700px;
+            padding: 0;
+            background: var(--space-gradient);
+            border: 1px solid rgba(108, 92, 231, 0.5);
+            box-shadow: 0 0 30px rgba(108, 92, 231, 0.3);
+            display: flex;
+            flex-direction: column;
+        }
+
+        #quiz-header {
+            padding: 1.5rem 2rem;
+            background: rgba(30, 39, 46, 0.7);
+            border-bottom: 1px solid rgba(108, 92, 231, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        #quiz-title {
+            margin: 0;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 1px;
+        }
+
+        #quiz-progress-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #quiz-progress-text {
+            font-size: 0.9rem;
+            color: var(--light);
+            white-space: nowrap;
+        }
+
+        #quiz-progress-bar-container {
+            width: 150px;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        #quiz-progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        #quiz-body {
+            padding: 2rem;
+            flex: 1;
+            overflow-y: auto;
+            min-height: 300px;
+        }
+
+        .quiz-question-container {
+             display: flex;
+            flex-direction: column;
+        }
+
+        .quiz-question {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--light);
+            margin-bottom: 2rem;
+            line-height: 1.4;
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .quiz-question::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            height: calc(100% - 1rem);
+            width: 4px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quiz-option {
+            display: flex;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-option::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+            transform: scaleY(0);
+            transform-origin: top;
+            transition: transform 0.3s ease;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .quiz-option:hover::before {
+            transform: scaleY(1);
+        }
+
+        .quiz-option input[type="radio"] {
+            display: none;
+        }
+
+        .quiz-option .option-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary-light);
+            border-radius: 50%;
+            margin-right: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .quiz-option .option-radio::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: var(--secondary);
+            border-radius: 50%;
+            transform: scale(0);
+            transition: transform 0.3s ease;
+        }
+
+        .quiz-option input[type="radio"]:checked + .option-radio {
+            border-color: var(--secondary);
+        }
+
+        .quiz-option input[type="radio"]:checked + .option-radio::after {
+            transform: scale(1);
+        }
+
+        .quiz-option .option-text {
+            font-size: 1.1rem;
+            color: var(--light);
+        }
+
+        #quiz-timer {
+            color: var(--warning);
+            font-size: 1.1rem;
+            margin: 1rem 0;
+            text-align: center;
+            font-weight: 600;
+            background: rgba(253, 203, 110, 0.1);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(253, 203, 110, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        #quiz-timer i {
+            font-size: 1.2rem;
+        }
+
+        #quiz-footer {
+            padding: 1.5rem 2rem;
+            background: rgba(30, 39, 46, 0.7);
+            border-top: 1px solid rgba(108, 92, 231, 0.3);
+            display: flex;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .quiz-nav-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .quiz-nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #cancel-quiz-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        #cancel-quiz-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        #next-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        #next-btn:hover:not(:disabled) {
+            background: var(--primary-light);
+        }
+
+        #submit-btn {
+            background: var(--success);
+            color: white;
+            display: none;
+        }
+
+        #submit-btn:hover:not(:disabled) {
+            background: var(--secondary-light);
+        }
+
+        /* Quiz completion animation */
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            opacity: 0;
+            animation: confetti 3s ease-out forwards;
+        }
+
+        /* --- END: REDESIGNED QUIZ MODAL STYLES --- */
+
+        .completion-modal .modal-content { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 1.5rem; 
+            text-align: center;
+            background: var(--space-gradient);
+            border: 1px solid var(--success);
+        }
+        
+        .completion-modal .modal-content h3 { 
+            margin-bottom: 0; 
+            font-size: 2rem;
+            background: linear-gradient(to right, var(--success), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .completion-icon {
+            font-size: 4rem;
+            color: var(--success);
+            background: rgba(0, 184, 148, 0.2);
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 3px solid var(--success);
+        }
+        
+        .completion-modal #completion-message, 
+        .completion-modal #completion-subtext { 
+            margin: 0; 
+        }
+        
+        .completion-modal #completion-message { 
+            font-size: 1.5rem; 
+            font-weight: 600; 
+            color: var(--light); 
+        }
+        
+        .completion-modal #completion-subtext { 
+            font-size: 1rem; 
+            color: rgba(255, 255, 255, 0.8); 
+            max-width: 80%;
+            margin: 0 auto;
+        }
+        
+        .completion-modal .referral-input { 
+            background: rgba(0, 206, 201, 0.1); 
+            color: var(--secondary); 
+            padding: 1rem; 
+            border-radius: 0.5rem; 
+            font-size: 0.9rem; 
+            word-break: break-all; 
+            width: 100%; 
+            border: 1px solid var(--secondary); 
+            text-align: center; 
+            font-family: monospace;
+        }
+        
+        .completion-modal .modal-actions { 
+            justify-content: center; 
+            width: 100%; 
+            gap: 1rem;
+        }
+        
+        .completion-modal .copy-btn { 
+            background: var(--secondary); 
+            color: var(--darker); 
+            padding: 0.75rem 1.5rem; 
+            border: none; 
+            border-radius: 0.5rem; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            font-weight: 600; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 0.5rem; 
+        }
+        
+        .completion-modal .copy-btn:hover { 
+            background: #55efc4; 
+            transform: translateY(-2px); 
+            box-shadow: 0 5px 15px rgba(0, 206, 201, 0.3);
+        }
         
         /* Responsive Adjustments */
         @media (max-width: 768px) {
@@ -622,14 +1111,57 @@
             .nav-menu { position: fixed; top: 0; right: -100%; width: 280px; height: 100vh; background: var(--darker); flex-direction: column; padding: 2rem; gap: 1.5rem; transition: right 0.3s ease; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2); }
             .nav-menu.open { right: 0; }
             .hamburger { display: block; }
+            
+            #quiz-modal .modal-content {
+                width: 95%;
+                max-height: 90vh;
+            }
+            
+            #quiz-header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .quiz-question {
+                font-size: 1.2rem;
+                padding-left: 1.5rem;
+            }
+            
+            .quiz-option .option-text {
+                font-size: 1rem;
+            }
+            
+            #quiz-footer {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .quiz-nav-btn {
+                width: 100%;
+            }
         }
         
         /* Animations */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(10px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
         .animate-in { animation: fadeIn 0.5s ease forwards; }
         .delay-1 { animation-delay: 0.1s; }
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
     </style>
 </head>
 <body>
@@ -666,7 +1198,7 @@
                 <div class="card-header"> <div class="card-icon"><i class="fas fa-coins"></i></div> <h3>Total Earnings</h3> </div>
                 <p class="value" id="total-earnings">$0.00</p>
                 <p class="description">Total earnings from completed quests</p>
-                <button class="card-btn"><i class="fas fa-wallet"></i> Withdraw</button>
+                <button class="card-btn withdraw-btn"><i class="fas fa-wallet"></i> Withdraw</button>
             </div>
             
             <div class="dashboard-card animate-in delay-1">
@@ -716,7 +1248,8 @@
         </div>
         
         <div class="quest-list" id="quest-list">
-            </div>
+            <!-- Skeletons will be shown here initially -->
+        </div>
 
         <div class="empty-state" id="empty-state">
             <i class="fas fa-search-minus"></i>
@@ -725,7 +1258,8 @@
         </div>
 
         <div class="pagination" id="pagination-container">
-            </div>
+            <!-- Pagination buttons will be generated here -->
+        </div>
         
         <h2 class="section-title" id="history-section">
             <i class="fas fa-check-circle"></i>
@@ -742,34 +1276,64 @@
                 </tr>
             </thead>
             <tbody id="history-table-body">
-                </tbody>
+                <!-- History rows will be generated here -->
+            </tbody>
         </table>
     </div>
     
+    <!-- Modals -->
     <div class="modal" id="quiz-modal">
         <div class="modal-content">
-            <h3 id="quiz-title"><i class="fas fa-question-circle"></i> Quiz</h3>
-            <div id="quiz-questions"></div>
-            <div id="quiz-timer" class="timer"></div>
-            <div class="modal-actions">
-                <button class="close-btn" onclick="closeModal('quiz-modal')"><i class="fas fa-times"></i> Cancel</button>
-                <button class="next-btn" id="next-btn" disabled><i class="fas fa-arrow-right"></i> Next</button>
-                <button class="primary-btn" id="submit-btn" style="display: none;"><i class="fas fa-check"></i> Submit</button>
+            <div id="quiz-header">
+                <h3 id="quiz-title"><i class="fas fa-question-circle"></i> Quiz</h3>
+                <div id="quiz-progress-container">
+                    <span id="quiz-progress-text">Question 1 of 5</span>
+                    <div id="quiz-progress-bar-container"><div id="quiz-progress-bar"></div></div>
+                </div>
+            </div>
+            
+            <div id="quiz-body">
+                <div class="quiz-question-container">
+                    <div class="quiz-question" id="quiz-question-text"></div>
+                    <div class="quiz-options" id="quiz-options"></div>
+                    <div id="quiz-timer"><i class="fas fa-clock"></i> <span id="timer-text">02:30 remaining</span></div>
+                </div>
+            </div>
+            
+            <div id="quiz-footer">
+                <button class="quiz-nav-btn" id="cancel-quiz-btn" onclick="closeModal('quiz-modal')">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="quiz-nav-btn" id="next-btn" disabled>
+                    <i class="fas fa-arrow-right"></i> Next
+                </button>
+                <button class="quiz-nav-btn" id="submit-btn" style="display: none;">
+                    <i class="fas fa-check"></i> Submit
+                </button>
             </div>
         </div>
     </div>
+    
     <div class="modal completion-modal" id="completion-modal">
         <div class="modal-content">
-            <h3><i class="fas fa-check-circle"></i> Quest Completed!</h3>
-            <p id="completion-message"></p>
-            <p id="completion-subtext">Invite friends with this link to earn more:</p>
+            <div class="completion-icon floating">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <h3>Quest Completed!</h3>
+            <p id="completion-message">You've earned $5.00!</p>
+            <p id="completion-subtext">Invite friends with your unique referral link to earn more rewards:</p>
             <input id="referral-link" class="referral-input" type="text" readonly>
             <div class="modal-actions">
-                <button class="copy-btn" onclick="copyCompletionLink()"><i class="fas fa-copy"></i> Copy Link</button>
-                <button class="close-btn" onclick="closeModal('completion-modal')"><i class="fas fa-times"></i> Close</button>
+                <button class="copy-btn" onclick="copyCompletionLink()">
+                    <i class="fas fa-copy"></i> Copy Link
+                </button>
+                <button class="close-btn" onclick="closeModal('completion-modal')">
+                    <i class="fas fa-times"></i> Close
+                </button>
             </div>
         </div>
     </div>
+    
     <div class="modal" id="quest-details-modal">
         <div class="modal-content">
             <h3 id="quest-details-title"></h3>
@@ -780,51 +1344,82 @@
         </div>
     </div>
 
+    <div class="modal" id="withdrawal-modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-wallet"></i> Withdraw Earnings</h3>
+            <div class="control-group">
+                <label for="withdrawal-amount">Amount to withdraw:</label>
+                <input type="number" id="withdrawal-amount" placeholder="e.g., 10.00">
+            </div>
+            <div class="modal-actions">
+                <button class="close-btn" onclick="closeModal('withdrawal-modal')">Cancel</button>
+                <button id="confirm-withdrawal-btn" class="primary-btn">Withdraw</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="withdrawal-success-modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-check-circle"></i> Withdrawal Successful!</h3>
+            <p>Your redeemable code has been generated:</p>
+            <input id="redeemable-code-input" class="referral-input" type="text" readonly>
+            <div class="modal-actions">
+                <button class="copy-btn" onclick="copyRedeemableCode()"><i class="fas fa-copy"></i> Copy Code</button>
+                <button class="close-btn" onclick="closeModal('withdrawal-success-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="redeem-codes-modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-gift"></i> Your Redeemable Codes</h3>
+            <div id="redeem-codes-list"></div>
+            <div class="modal-actions">
+                <button class="close-btn" onclick="closeModal('redeem-codes-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- Global State Variables ---
         let userId = null;
-        let allQuests = [];
+        let allQuests = []; // Use one consistent variable for the master list of quests
         let completedQuests = [];
         let completedQuestIdSet = new Set();
         
         // --- State for Filtering, Sorting, and Pagination ---
         let currentPage = 1;
-        const questsPerPage = 20;
+        const questsPerPage = 6;
 
-        // Quiz State
+        // --- Quiz State ---
         let currentQuestId = null;
         let currentQuestionIndex = 0;
         let questions = [];
         let answers = {};
         let timerInterval;
+        let timeLeft = 150; // 2.5 minutes in seconds
 
-        // --- Functions for Loading Skeletons ---
+        // --- Skeleton Loader ---
         function showSkeletons() {
             const list = document.getElementById('quest-list');
-            list.innerHTML = ''; // Clear previous content
-            document.getElementById('empty-state').style.display = 'none'; // Hide empty state
-            document.getElementById('pagination-container').style.display = 'none'; // Hide pagination
+            list.innerHTML = '';
+            document.getElementById('empty-state').style.display = 'none';
+            document.getElementById('pagination-container').style.display = 'none';
 
-            for (let i = 0; i < 6; i++) { // Show a few skeletons
+            for (let i = 0; i < questsPerPage; i++) {
                 const skeletonCard = `
                     <div class="skeleton-card">
                         <div class="skeleton title"></div>
-                        <div class="skeleton meta">
-                            <div class="skeleton meta-item"></div>
-                            <div class="skeleton meta-item"></div>
-                        </div>
+                        <div class="skeleton meta"><div class="skeleton meta-item"></div><div class="skeleton meta-item"></div></div>
                         <div class="skeleton text"></div>
                         <div class="skeleton text short"></div>
-                        <div class="skeleton button-group">
-                            <div class="skeleton button"></div>
-                            <div class="skeleton button"></div>
-                        </div>
-                    </div>
-                `;
+                        <div class="skeleton button-group"><div class="skeleton button"></div><div class="skeleton button"></div></div>
+                    </div>`;
                 list.innerHTML += skeletonCard;
             }
         }
 
+        // --- Authentication ---
         async function checkSession() {
             try {
                 const response = await fetch('/check-session');
@@ -837,11 +1432,13 @@
                 window.location.href = 'auth.html';
                 return false;
             } catch (err) {
+                console.error("Session check error:", err);
                 window.location.href = 'auth.html';
                 return false;
             }
         }
 
+        // --- Data Fetching ---
         async function fetchDashboardData() {
             if (!userId) return;
             try {
@@ -851,7 +1448,7 @@
                 document.getElementById('redeemable-codes').textContent = data.redeemableCodes || 0;
                 
                 completedQuests = Array.isArray(data.questsCompleted) ? data.questsCompleted : [];
-                completedQuestIdSet = new Set(completedQuests.map(q => q.id));
+                completedQuestIdSet = new Set(completedQuests.map(q => q.quest_id));
                 document.getElementById('quests-completed').textContent = completedQuests.length;
             } catch (err) {
                 console.error('Failed to fetch dashboard data:', err);
@@ -859,55 +1456,53 @@
         }
 
         async function fetchAllQuests() {
-            showSkeletons(); // Show skeletons before fetching
+            showSkeletons();
             try {
                 const response = await fetch('/quests');
-                allQuests = (await response.json()).quests || [];
+                const data = await response.json();
+                allQuests = data.quests || []; // Assign to the global 'allQuests' array
             } catch (err) {
                 console.error('Failed to load quests:', err);
                 const questList = document.getElementById('quest-list');
-                questList.innerHTML = ''; // Clear skeletons
-                showEmptyState(
-                    "Error Loading Quests", 
-                    "We couldn't fetch the available quests. Please try refreshing the page.",
-                    "fa-exclamation-triangle"
-                );
+                questList.innerHTML = '';
+                showEmptyState("Error Loading Quests", "We couldn't fetch quests. Please refresh.", "fa-exclamation-triangle");
             }
         }
         
-        // --- Central Rendering Function ---
+        // --- Core Rendering and UI Logic ---
         function displayQuests() {
             const list = document.getElementById('quest-list');
             const paginationContainer = document.getElementById('pagination-container');
 
-            // 1. Get filter and sort values
             const searchTerm = document.getElementById('quest-search-input').value.toLowerCase();
             const filterStatus = document.getElementById('filter-status').value;
             const sortReward = document.getElementById('sort-reward').value;
 
             let questsToDisplay = [...allQuests];
 
-            // 2. Apply Search
             if (searchTerm) {
                 questsToDisplay = questsToDisplay.filter(quest =>
-                    quest.title.toLowerCase().includes(searchTerm) ||
-                    quest.description.toLowerCase().includes(searchTerm)
+                    (quest.title || '').toLowerCase().includes(searchTerm) ||
+                    (quest.description || '').toLowerCase().includes(searchTerm)
                 );
             }
 
-            // 3. Apply Status Filter
             if (filterStatus === 'available') {
                 questsToDisplay = questsToDisplay.filter(q => !completedQuestIdSet.has(q.id));
             } else if (filterStatus === 'completed') {
                 questsToDisplay = questsToDisplay.filter(q => completedQuestIdSet.has(q.id));
             }
+            
+            const parseReward = (rewardStr) => {
+                if (typeof rewardStr !== 'string') return 0;
+                return parseFloat(rewardStr.replace(/[^0-9.-]+/g,"")) || 0;
+            };
 
-            // 4. Apply Sorting
             if (sortReward === 'reward-asc') {
-                questsToDisplay.sort((a, b) => parseFloat(a.reward) - parseFloat(b.reward));
+                questsToDisplay.sort((a, b) => parseReward(a.reward) - parseReward(b.reward));
             } else if (sortReward === 'reward-desc') {
-                questsToDisplay.sort((a, b) => parseFloat(b.reward) - parseFloat(a.reward));
-            } else { // Default sort: available first
+                questsToDisplay.sort((a, b) => parseReward(b.reward) - parseReward(a.reward));
+            } else {
                 questsToDisplay.sort((a, b) => {
                     const aCompleted = completedQuestIdSet.has(a.id);
                     const bCompleted = completedQuestIdSet.has(b.id);
@@ -916,39 +1511,44 @@
                 });
             }
 
-            // 5. Handle Empty State
             if (questsToDisplay.length === 0) {
                 list.innerHTML = '';
                 paginationContainer.style.display = 'none';
-                const message = searchTerm 
-                    ? `No quests match your search for "${searchTerm}".` 
-                    : "There are no quests matching your filter criteria.";
+                const message = searchTerm ? `No quests match your search for "${searchTerm}".` : "No quests match your filters.";
                 showEmptyState("No Quests Found", message);
                 return;
             } else {
                 document.getElementById('empty-state').style.display = 'none';
             }
 
-            // 6. Apply Pagination
             const totalPages = Math.ceil(questsToDisplay.length / questsPerPage);
+            currentPage = Math.min(currentPage, totalPages); // Ensure currentPage is valid
             const startIndex = (currentPage - 1) * questsPerPage;
             const endIndex = startIndex + questsPerPage;
             const paginatedQuests = questsToDisplay.slice(startIndex, endIndex);
 
-            // 7. Render Quest Cards
             list.innerHTML = paginatedQuests.map((quest, index) => {
                 const isCompleted = completedQuestIdSet.has(quest.id);
-                const isAvailable = new Date(quest.startTime) <= new Date() && quest.status !== 'Expired';
-                let statusText = quest.status, statusClass = '', buttonDisabled = '', buttonText = 'Start Quiz', buttonIcon = 'fa-play';
+                
+                // **FIXED AVAILABILITY LOGIC**
+                const now = new Date();
+                const startTime = quest.start_time ? new Date(quest.start_time) : null;
+                const endTime = quest.end_time ? new Date(quest.end_time) : null;
+                const isAvailable = quest.status === 'Available' && (!startTime || startTime <= now) && (!endTime || endTime >= now);
 
+                let statusText, statusClass = '', buttonDisabled = '', buttonText = 'Start Quiz', buttonIcon = 'fa-play';
+                
                 if (isCompleted) {
                     statusText = 'Completed';
                     statusClass = 'status-completed';
                     buttonText = 'Completed';
                     buttonIcon = 'fa-check';
                     buttonDisabled = 'disabled';
-                } else if (!isAvailable) {
-                    statusText = quest.status;
+                } else if (isAvailable) {
+                    statusText = 'Available';
+                    statusClass = 'status-available';
+                } else {
+                    statusText = 'Not Available';
                     buttonText = 'Not Available';
                     buttonIcon = 'fa-clock';
                     buttonDisabled = 'disabled';
@@ -961,7 +1561,7 @@
                             <span class="quest-reward"><i class="fas fa-coins"></i> ${quest.reward}</span>
                             <span class="quest-status ${statusClass}">${statusText}</span>
                         </div>
-                        <p>${quest.description}</p>
+                        <p>${quest.description || 'No description available.'}</p>
                         <div class="quest-actions">
                             <button class="primary-btn start-quiz-btn ${buttonDisabled}" ${buttonDisabled}>
                                 <i class="fas ${buttonIcon}"></i> ${buttonText}
@@ -973,11 +1573,9 @@
                     </div>`;
             }).join('');
 
-            // 8. Render Pagination Controls
             renderPagination(totalPages);
         }
         
-        // --- Pagination Rendering Function ---
         function renderPagination(totalPages) {
             const paginationContainer = document.getElementById('pagination-container');
             if (totalPages <= 1) {
@@ -987,46 +1585,51 @@
             paginationContainer.style.display = 'flex';
             paginationContainer.innerHTML = '';
 
-            // Previous Button
             const prevButton = document.createElement('button');
             prevButton.innerHTML = '&laquo; Prev';
             prevButton.disabled = currentPage === 1;
             prevButton.onclick = () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    displayQuests();
-                }
+                if (currentPage > 1) { currentPage--; displayQuests(); }
             };
             paginationContainer.appendChild(prevButton);
 
-            // Page Number Buttons
-            for (let i = 1; i <= totalPages; i++) {
+            // Simple pagination logic for many pages
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.textContent = 1;
+                firstBtn.onclick = () => { currentPage = 1; displayQuests(); };
+                paginationContainer.appendChild(firstBtn);
+                if (startPage > 2) paginationContainer.insertAdjacentHTML('beforeend', `<span>...</span>`);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
                 const pageButton = document.createElement('button');
                 pageButton.textContent = i;
-                if (i === currentPage) {
-                    pageButton.classList.add('active');
-                }
-                pageButton.onclick = () => {
-                    currentPage = i;
-                    displayQuests();
-                };
+                if (i === currentPage) pageButton.classList.add('active');
+                pageButton.onclick = () => { currentPage = i; displayQuests(); };
                 paginationContainer.appendChild(pageButton);
             }
 
-            // Next Button
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) paginationContainer.insertAdjacentHTML('beforeend', `<span>...</span>`);
+                const lastBtn = document.createElement('button');
+                lastBtn.textContent = totalPages;
+                lastBtn.onclick = () => { currentPage = totalPages; displayQuests(); };
+                paginationContainer.appendChild(lastBtn);
+            }
+
             const nextButton = document.createElement('button');
             nextButton.innerHTML = 'Next &raquo;';
             nextButton.disabled = currentPage === totalPages;
             nextButton.onclick = () => {
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    displayQuests();
-                }
+                if (currentPage < totalPages) { currentPage++; displayQuests(); }
             };
             paginationContainer.appendChild(nextButton);
         }
 
-        // --- Empty State Display Function ---
         function showEmptyState(title, message, iconClass = "fa-search-minus") {
             const emptyState = document.getElementById('empty-state');
             document.getElementById('empty-state-title').textContent = title;
@@ -1044,14 +1647,11 @@
                 return;
             }
 
-            const sortedCompleted = [...completedQuests].sort((a, b) => new Date(b.completedAt) - new Date(a.completedAt));
+            const sortedCompleted = [...completedQuests].sort((a, b) => new Date(b.completed_at) - new Date(a.completed_at));
             sortedCompleted.forEach(cq => {
-                const questDetails = allQuests.find(q => q.id === cq.id);
+                const questDetails = allQuests.find(q => q.id === cq.quest_id);
                 if (questDetails) {
-                    const completionDate = new Date(cq.completedAt).toLocaleDateString('en-GB', {
-                        year: 'numeric', month: 'long', day: 'numeric',
-                        hour: '2-digit', minute: '2-digit', timeZone: 'UTC'
-                    });
+                    const completionDate = new Date(cq.completed_at).toLocaleString('en-GB', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
                     tbody.innerHTML += `
                         <tr>
                             <td>${questDetails.title}</td>
@@ -1062,15 +1662,182 @@
                 }
             });
         }
-
+        
         async function refreshAllUI() {
-            await fetchDashboardData();
-            await fetchAllQuests();
-            currentPage = 1; // Reset to first page
+            showSkeletons(); // Show loading state immediately
+            await Promise.all([fetchDashboardData(), fetchAllQuests()]);
+            currentPage = 1;
             displayQuests();
             populateHistory();
         }
 
+        // **FIXED** function to find quest by numeric ID and start it
+        async function startQuiz(questId) {
+            const quest = allQuests.find(q => Number(q.id) === questId);
+            if (quest) {
+                try {
+                    const response = await fetch(`/quests/${questId}/questions`);
+                    const data = await response.json();
+                    if (!response.ok || !data.questions || data.questions.length === 0) {
+                        throw new Error(data.error || 'No questions found for this quest.');
+                    }
+                    questions = data.questions;
+                    currentQuestId = questId;
+                    currentQuestionIndex = 0;
+                    answers = {};
+                    timeLeft = 150; // Reset timer to 2.5 minutes
+                    
+                    document.getElementById('quiz-title').innerText = quest.title;
+                    document.getElementById('quiz-progress-text').textContent = `Question 1 of ${questions.length}`;
+                    document.getElementById('quiz-progress-bar').style.width = '0%';
+                    
+                    displayQuestion();
+                    startTimer();
+                    openModal('quiz-modal');
+
+                } catch (err) {
+                    console.error('Failed to start quiz:', err);
+                    alert(`Error: ${err.message}`);
+                }
+            } else {
+                console.error('Could not start quiz. Quest not found for quest ID:', questId);
+                alert('Could not start the quiz for this quest.');
+            }
+        }
+        
+        // --- Quiz Modal Logic ---
+        function displayQuestion() {
+            const question = questions[currentQuestionIndex];
+            if (!question) return;
+
+            // Update progress
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
+            document.getElementById('quiz-progress-text').textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+
+            // Display question
+            document.getElementById('quiz-question-text').textContent = question.question_text;
+            
+            // Display options
+            let optionsHtml = '';
+            if (question.question_type === 'multiple-choice') {
+                const options = (typeof question.options === 'string') ? JSON.parse(question.options) : question.options;
+                optionsHtml = (options || []).map((option, idx) => {
+                    const optionId = `option-${currentQuestionIndex}-${idx}`;
+                    return `
+                        <label class="quiz-option" for="${optionId}">
+                            <input type="radio" id="${optionId}" name="question-${question.question_id}" value="${option}">
+                            <span class="option-radio"></span>
+                            <span class="option-text">${option}</span>
+                        </label>`;
+                }).join('');
+            } else {
+                optionsHtml = `
+                    <div class="quiz-option" style="padding: 0;">
+                        <textarea id="text-answer" class="control-group" name="ans-${question.question_id}" 
+                                  placeholder="Type your answer here..." style="width: 100%; min-height: 120px; border: none; background: transparent; color: white;"></textarea>
+                    </div>`;
+            }
+
+            document.getElementById('quiz-options').innerHTML = optionsHtml;
+            
+            // Set up event listeners for answer selection
+            const inputs = document.querySelectorAll(`input[name="question-${question.question_id}"], #text-answer`);
+            inputs.forEach(input => {
+                const eventType = input.type === 'radio' ? 'change' : 'input';
+                input.addEventListener(eventType, () => {
+                    document.getElementById('next-btn').disabled = false;
+                    document.getElementById('submit-btn').disabled = false;
+                });
+            });
+
+            // Update navigation buttons
+            document.getElementById('next-btn').style.display = currentQuestionIndex < questions.length - 1 ? 'flex' : 'none';
+            document.getElementById('submit-btn').style.display = currentQuestionIndex === questions.length - 1 ? 'flex' : 'none';
+            document.getElementById('next-btn').disabled = true;
+            document.getElementById('submit-btn').disabled = true;
+        }
+        
+        function startTimer() {
+            clearInterval(timerInterval);
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer-text').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} remaining`;
+                
+            // Change color when time is running low
+            if (timeLeft <= 30) {
+                document.getElementById('quiz-timer').style.color = 'var(--danger)';
+                document.getElementById('quiz-timer').style.borderColor = 'rgba(214, 48, 49, 0.3)';
+                document.getElementById('quiz-timer').style.background = 'rgba(214, 48, 49, 0.1)';
+            } else if (timeLeft <= 60) {
+                document.getElementById('quiz-timer').style.color = 'var(--warning)';
+                document.getElementById('quiz-timer').style.borderColor = 'rgba(253, 203, 110, 0.3)';
+                document.getElementById('quiz-timer').style.background = 'rgba(253, 203, 110, 0.1)';
+            }
+        }
+        
+        function saveAnswer() {
+            const question = questions[currentQuestionIndex];
+            if (!question) return;
+            
+            if (question.question_type === 'multiple-choice') {
+                const selectedOption = document.querySelector(`input[name="question-${question.question_id}"]:checked`);
+                if (selectedOption) {
+                    answers[question.question_id] = selectedOption.value;
+                }
+            } else {
+                const textAnswer = document.getElementById('text-answer');
+                if (textAnswer && textAnswer.value.trim()) {
+                    answers[question.question_id] = textAnswer.value;
+                }
+            }
+        }
+
+        function nextQuestion() {
+            saveAnswer();
+            if (currentQuestionIndex < questions.length - 1) { 
+                currentQuestionIndex++; 
+                displayQuestion(); 
+            }
+        }
+        
+        function createConfetti() {
+            const colors = ['#6c5ce7', '#00cec9', '#fd79a8', '#fdcb6e', '#00b894'];
+            const modalContent = document.querySelector('#completion-modal .modal-content');
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = '100%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = Math.random() * 10 + 5 + 'px';
+                modalContent.appendChild(confetti);
+                
+                // Remove confetti after animation completes
+                setTimeout(() => {
+                    confetti.remove();
+                }, 3000);
+            }
+        }
+        
         async function submitQuiz() {
             saveAnswer();
             clearInterval(timerInterval);
@@ -1078,116 +1845,190 @@
                 const response = await fetch(`/submit-quiz/${currentQuestId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, answers })
+                    body: JSON.stringify({ answers })
                 });
                 const result = await response.json();
-                if (response.ok) {
-                    closeModal('quiz-modal');
-                    const referralResponse = await fetch(`/generate-referral-link?questId=${currentQuestId}&userId=${encodeURIComponent(userId)}`);
-                    const referralData = await referralResponse.json();
-                    document.getElementById('completion-message').innerText = `You've earned ${result.reward}!`;
-                    document.getElementById('referral-link').value = referralData.referralLink;
-                    openModal('completion-modal');
-                    await refreshAllUI();
-                } else { throw new Error(result.error); }
+                if (!response.ok) throw new Error(result.error);
+                
+                closeModal('quiz-modal');
+                const referralResponse = await fetch(`/generate-referral-link?questId=${currentQuestId}`);
+                const referralData = await referralResponse.json();
+                
+                document.getElementById('completion-message').textContent = `You've earned ${result.reward}!`;
+                document.getElementById('referral-link').value = referralData.referralLink || 'No referral link available.';
+                
+                createConfetti();
+                openModal('completion-modal');
+                await refreshAllUI();
             } catch (err) {
-                showToast(err.message || 'Failed to submit quiz.', 'error');
+                alert(err.message || 'Failed to submit quiz.');
             }
         }
         
         function showQuestDetails(questId) {
-            const quest = allQuests.find(q => q.id == questId);
+            const quest = allQuests.find(q => Number(q.id) === questId);
             if (!quest) return;
             document.getElementById('quest-details-title').innerText = quest.title;
-            document.getElementById('quest-details-content').innerHTML = `
-                <p><strong>Reward:</strong> ${quest.reward}</p><p><strong>Status:</strong> ${quest.status}</p>
-                <p><strong>Ends:</strong> ${new Date(quest.endTime).toLocaleString()}</p><p><strong>Participants:</strong> ${quest.participants}</p>
-                <p>${quest.description}</p>`;
+            const content = `
+                <p><strong>Reward:</strong> ${quest.reward || 'N/A'}</p>
+                <p><strong>Status:</strong> ${quest.status || 'N/A'}</p>
+                <p><strong>Starts:</strong> ${quest.start_time ? new Date(quest.start_time).toLocaleString() : 'N/A'}</p>
+                <p><strong>Ends:</strong> ${quest.end_time ? new Date(quest.end_time).toLocaleString() : 'N/A'}</p>
+                <hr style="margin: 1rem 0; border-color: rgba(255,255,255,0.1);">
+                <p>${quest.description || 'No further details available.'}</p>
+            `;
+            document.getElementById('quest-details-content').innerHTML = content;
             openModal('quest-details-modal');
         }
-        async function startQuiz(questId) {
-            if (completedQuestIdSet.has(questId)) { showToast("You have already completed this quest.", "error"); return; }
-            currentQuestId = questId;
+
+        // --- Utility & Modal Functions ---
+        function openModal(modalId) { 
+            document.getElementById(modalId).classList.add('open'); 
+            document.body.style.overflow = 'hidden'; 
+        }
+        
+        function closeModal(modalId) { 
+            document.getElementById(modalId).classList.remove('open'); 
+            document.body.style.overflow = ''; 
+            if (modalId === 'quiz-modal') clearInterval(timerInterval); 
+        }
+        
+        function copyCompletionLink() { 
+            const l = document.getElementById('referral-link'); 
+            l.select(); 
+            document.execCommand('copy'); 
+            
+            // Show feedback
+            const copyBtn = document.querySelector('.completion-modal .copy-btn');
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+            }, 2000);
+        }
+        
+        function scrollToHistory() { 
+            document.getElementById('history-section').scrollIntoView({ behavior: 'smooth' }); 
+        }
+        
+        async function logout() { 
+            await fetch('/logout'); 
+            window.location.href = 'auth.html'; 
+        }
+        
+        function toggleMenu() { 
+            document.getElementById('nav-menu').classList.toggle('open'); 
+        }
+
+        function openWithdrawModal() { openModal('withdrawal-modal'); }
+        
+        async function withdraw() {
+            const amountInput = document.getElementById('withdrawal-amount');
+            const amount = parseFloat(amountInput.value);
+
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount.');
+                return;
+            }
+            
+            const totalEarningsEl = document.getElementById('total-earnings');
+            const currentBalance = parseFloat(totalEarningsEl.textContent.replace('$', ''));
+
+            if (amount > currentBalance) {
+                alert('Withdrawal amount cannot be greater than your total earnings.');
+                return;
+            }
+
             try {
-                const response = await fetch(`/quests/${questId}/questions`);
-                questions = (await response.json()).questions || [];
-                if (questions.length === 0) { showToast('No questions for this quiz.', 'error'); return; }
-                currentQuestionIndex = 0;
-                answers = {};
-                document.getElementById('quiz-title').innerText = allQuests.find(q => q.id == questId).title;
-                displayQuestion();
-                openModal('quiz-modal');
-            } catch (err) { showToast('Could not start the quiz.', 'error'); }
-        }
-        function displayQuestion() {
-            const question = questions[currentQuestionIndex];
-            document.getElementById('quiz-questions').innerHTML = `
-                <div class="quiz-item active"><h4>${question.text}</h4><div class="mc-options">
-                ${question.type === 'multiple-choice' ? question.options.map(o => `<label class="mc-option"><input type="radio" name="q-${question.id}" value="${o}"> ${o}</label>`).join('')
-                : `<textarea class="open-ended" name="ans-${q.id}" placeholder="Your answer..."></textarea>`}
-                </div></div>`;
-            document.getElementById('next-btn').style.display = currentQuestionIndex < questions.length - 1 ? 'inline-flex' : 'none';
-            document.getElementById('submit-btn').style.display = currentQuestionIndex === questions.length - 1 ? 'inline-flex' : 'none';
-            document.getElementById('next-btn').disabled = true;
-            document.getElementById('submit-btn').disabled = true;
-            startTimer();
-        }
-        function saveAnswer() {
-            const q = questions[currentQuestionIndex];
-            const input = document.querySelector(`input[name="q-${q.id}"]:checked, textarea[name="ans-${q.id}"]`);
-            if (input) answers[q.id] = input.value;
-        }
-        function nextQuestion() {
-            saveAnswer();
-            if (currentQuestionIndex < questions.length - 1) { currentQuestionIndex++; displayQuestion(); }
-        }
-        function startTimer() {
-            let timeLeft = 5;
-            const timerDisplay = document.getElementById('quiz-timer'), nextBtn = document.getElementById('next-btn'), submitBtn = document.getElementById('submit-btn');
-            nextBtn.disabled = true; submitBtn.disabled = true;
-            timerDisplay.textContent = `Time left: ${timeLeft}s`;
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                timerDisplay.textContent = `Time left: ${timeLeft}s`;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    timerDisplay.textContent = 'You may proceed now.';
-                    currentQuestionIndex < questions.length - 1 ? nextBtn.disabled = false : submitBtn.disabled = false;
+                const response = await fetch('/withdraw', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: amount, userId: userId }) // Ensure userId is being sent
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Withdrawal failed due to a server error.');
                 }
-            }, 1000);
+
+                // Check if the redeemable code exists in the response
+                if (result.code) {
+                    closeModal('withdrawal-modal');
+                    
+                    // Optimistically update the balance on the client side for immediate feedback
+                    const newBalance = currentBalance - amount;
+                    totalEarningsEl.textContent = `$${newBalance.toFixed(2)}`;
+                    
+                    document.getElementById('redeemable-code-input').value = result.code;
+                    openModal('withdrawal-success-modal');
+                    
+                    // Clear the input field for the next transaction
+                    amountInput.value = '';
+
+                    // Refresh all data from the server to ensure consistency
+                    await refreshAllUI();
+                } else {
+                    // This is the new, more informative error handling
+                    alert('Your withdrawal was processed, but there was an issue generating your redeemable code. Please contact support.');
+                    console.error('Server response was successful but did not contain a redeemable code.', result);
+                }
+            } catch (err) {
+                alert(err.message || 'An unexpected error occurred during withdrawal.');
+                console.error('Withdrawal function error:', err);
+            }
         }
-        function openModal(modalId) { document.getElementById(modalId).classList.add('open'); document.body.style.overflow = 'hidden'; }
-        function closeModal(modalId) { document.getElementById(modalId).classList.remove('open'); document.body.style.overflow = ''; if (modalId === 'quiz-modal') clearInterval(timerInterval); }
-        function showToast(message, type) { const t = document.createElement('div'); t.className = `toast toast-${type}`; t.textContent = message; document.body.appendChild(t); setTimeout(() => t.remove(), 3000); }
-        function copyCompletionLink() { const l = document.getElementById('referral-link').value; navigator.clipboard.writeText(l).then(() => showToast('Referral link copied!', 'success')); }
-        function scrollToHistory() { document.getElementById('history-section').scrollIntoView({ behavior: 'smooth' }); }
-        async function logout() { await fetch('/logout'); window.location.href = 'auth.html'; }
-        function toggleMenu() { document.getElementById('nav-menu').classList.toggle('open'); }
+
+        function copyRedeemableCode() {
+            const codeInput = document.getElementById('redeemable-code-input');
+            codeInput.select();
+            document.execCommand('copy');
+            
+            // Show feedback
+            const copyBtn = document.querySelector('#withdrawal-success-modal .copy-btn');
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+            }, 2000);
+        }
+
+        async function openRedeemModal() {
+            try {
+                const response = await fetch(`/redeemable-codes?userId=${encodeURIComponent(userId)}`);
+                const data = await response.json();
+                const list = document.getElementById('redeem-codes-list');
+                list.innerHTML = '';
+                if (data.codes && data.codes.length > 0) {
+                    data.codes.forEach(code => {
+                        list.innerHTML += `<div class="referral-input">${code.code} - $${Number(code.amount).toFixed(2)}</div>`;
+                    });
+                } else {
+                    list.innerHTML = '<p>No redeemable codes found.</p>';
+                }
+                openModal('redeem-codes-modal');
+            } catch (err) {
+                console.error('Failed to fetch redeemable codes:', err);
+                alert('Could not fetch redeemable codes.');
+            }
+        }
 
         // --- Initial Load & Event Listeners ---
         document.addEventListener('DOMContentLoaded', async () => {
             if (await checkSession()) {
                 await refreshAllUI();
 
-                // --- Event listeners for controls ---
-                document.getElementById('quest-search-input').addEventListener('input', () => {
-                    currentPage = 1; 
-                    displayQuests();
-                });
-                document.getElementById('filter-status').addEventListener('change', () => {
-                    currentPage = 1;
-                    displayQuests();
-                });
-                document.getElementById('sort-reward').addEventListener('change', () => {
-                    currentPage = 1;
-                    displayQuests();
-                });
+                document.querySelector('.withdraw-btn').addEventListener('click', openWithdrawModal);
+                document.getElementById('confirm-withdrawal-btn').addEventListener('click', withdraw);
+
+                document.getElementById('quest-search-input').addEventListener('input', () => { currentPage = 1; displayQuests(); });
+                document.getElementById('filter-status').addEventListener('change', () => { currentPage = 1; displayQuests(); });
+                document.getElementById('sort-reward').addEventListener('change', () => { currentPage = 1; displayQuests(); });
 
                 document.getElementById('quest-list').addEventListener('click', e => {
                     const card = e.target.closest('.quest-card');
                     if (!card) return;
-                    const questId = parseInt(card.dataset.questId);
+                    const questId = parseInt(card.dataset.questId, 10);
                     if (e.target.closest('.start-quiz-btn:not(.disabled)')) startQuiz(questId);
                     if (e.target.closest('.details-btn')) showQuestDetails(questId);
                 });

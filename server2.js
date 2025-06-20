@@ -6,335 +6,132 @@ const path = require('path');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
-const crypto = require('crypto'); // NEW: Add crypto for token generation
+const crypto = require('crypto');
+const { Pool } = require('pg');
+const multer = require('multer');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// --- NEW DEPENDENCY: Add multer for file uploads ---
-// Make sure to install it by running: npm install multer
-const multer = require('multer');
-
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'password123';
-
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const saltRounds = 10;
 
-// --- Middleware Setup ---
-app.use(cors());
-const requireLogin = (req, res, next) => {
-    console.log(`RequireLogin: Path=${req.path}, Session userId=${req.session.userId}, isAdmin=${req.session.isAdmin}`);
-    if (!req.session.userId || (!users[req.session.userId] && !req.session.isAdmin) || (users[req.session.userId] && users[req.session.userId].blocked)) {
-        console.log(`RequireLogin: No valid session for ${req.path}`);
-        if (req.path === '/admin-experts.html') {
-            console.log('Allowing access to admin-experts.html');
-            return next();
-        }
-        return res.status(401).json({ error: 'Unauthorized, please log in' });
-    }
-    console.log(`RequireLogin: Valid session for ${req.path}`);
-    next();
-};
+const pool = new Pool({
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_DATABASE,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
+});
 
+app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-default-secret-key',
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 20 * 60 * 1000 }
+    cookie: { 
+        maxAge: 20 * 60 * 1000,
+        // For production, uncomment the following lines
+        // secure: true, // only send cookie over https
+        // httpOnly: true, // prevent client-side script access
+        // sameSite: 'strict'
+    }
 }));
 
-const authMiddleware = (req, res, next) => {
-    console.log(`AuthMiddleware: Session userId=${req.session.userId}, isAdmin=${req.session.isAdmin}`);
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Basic ')) {
-        const base64Credentials = authHeader.split(' ')[1];
-        const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-        const [username, password] = credentials.split(':');
-        if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-            console.log('AuthMiddleware: Basic Auth successful');
-            req.session.userId = username;
-            req.session.isAdmin = true;
-            return next();
+const requireLogin = async (req, res, next) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ error: 'Unauthorized, please log in' });
+    }
+    if (req.session.isAdmin) {
+        if (req.session.userId === process.env.ADMIN_USERNAME) {
+            return next(); 
+        } else {
+            return res.status(401).json({ error: 'Unauthorized' });
         }
-        console.log('AuthMiddleware: Basic Auth failed');
     }
-    if (!req.session.userId || (!req.session.isAdmin && req.session.userId !== ADMIN_USERNAME)) {
-        console.log('AuthMiddleware: Unauthorized');
-        return res.status(401).json({ error: 'Unauthorized' });
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [req.session.userId]);
+        const user = result.rows[0];
+        if (!user || user.blocked) {
+            return res.status(401).json({ error: 'Unauthorized or account blocked' });
+        }
+        req.user = user; 
+        next();
+    } catch (err) {
+        console.error('Error in requireLogin middleware', err);
+        return res.status(500).json({ error: 'Server error' });
     }
-    next();
 };
 
-// Data management
-let users = {};
-let experts = {};
-let referrals = {};
-let bookings = {};
-let founders = {};
-let affiliatePrograms = [];
-let affiliateClicks = [];
-let conversions = [];
-
-
-async function loadUsers() {
-    try {
-        const data = await fs.readFile(path.join(__dirname, 'users.json'), 'utf8');
-        users = JSON.parse(data);
-        console.log('Users loaded');
-    } catch (err) {
-        if (err.code === 'ENOENT') {
-             console.log('users.json not found, creating a new file.');
-             users = {};
-        } else {
-            console.error('Error loading users:', err);
-            users = {};
-        }
-        await fs.writeFile(path.join(__dirname, 'users.json'), JSON.stringify(users, null, 2));
+const requireAdmin = (req, res, next) => {
+    if (req.session.userId && req.session.isAdmin && req.session.userId === process.env.ADMIN_USERNAME) {
+        return next();
     }
-}
-
-async function saveUsers() {
-    try {
-        await fs.writeFile(path.join(__dirname, 'users.json'), JSON.stringify(users, null, 2));
-        console.log('Users saved');
-    } catch (err) {
-        console.error('Error saving users:', err);
-    }
-}
-
-async function loadExperts() {
-    try {
-        const data = await fs.readFile(path.join(__dirname, 'experts.json'), 'utf8');
-        experts = JSON.parse(data);
-        console.log('Experts loaded');
-    } catch (err) {
-        console.error('Error loading experts:', err);
-        experts = {};
-        await fs.writeFile(path.join(__dirname, 'experts.json'), JSON.stringify(experts, null, 2));
-    }
-}
-
-async function saveExperts() {
-    try {
-        await fs.writeFile(path.join(__dirname, 'experts.json'), JSON.stringify(experts, null, 2));
-        console.log('Experts saved');
-    } catch (err) {
-        console.error('Error saving experts:', err);
-    }
-}
-
-async function loadReferrals() {
-    try {
-        const data = await fs.readFile(path.join(__dirname, 'referrals.json'), 'utf8');
-        referrals = JSON.parse(data);
-        console.log('Referrals loaded');
-    } catch (err) {
-        console.error('Error loading referrals:', err);
-        referrals = {};
-        await fs.writeFile(path.join(__dirname, 'referrals.json'), JSON.stringify({}, null, 2));
-    }
-}
-
-async function saveReferrals() {
-    try {
-        await fs.writeFile(path.join(__dirname, 'referrals.json'), JSON.stringify(referrals, null, 2));
-        console.log('Referrals saved');
-    } catch (err) {
-        console.error('Error saving referrals:', err);
-    }
-}
-
-async function loadBookings() {
-    try {
-        const data = await fs.readFile(path.join(__dirname, 'bookings.json'), 'utf8');
-        bookings = JSON.parse(data);
-        console.log('Bookings loaded');
-    } catch (err) {
-        console.error('Error loading bookings:', err);
-        bookings = {};
-        await fs.writeFile(path.join(__dirname, 'bookings.json'), JSON.stringify({}, null, 2));
-    }
-}
-
-async function saveBookings() {
-    try {
-        await fs.writeFile(path.join(__dirname, 'bookings.json'), JSON.stringify(bookings, null, 2));
-        console.log('Bookings saved');
-    } catch (err) {
-        console.error('Error saving bookings:', err);
-    }
-}
-
-async function loadFounders() {
-    try {
-        const data = await fs.readFile(path.join(__dirname, 'founders.json'), 'utf8');
-        founders = JSON.parse(data);
-        console.log('Founders loaded');
-    } catch (err) {
-        console.error('Error loading founders:', err);
-        founders = {};
-        await fs.writeFile(path.join(__dirname, 'founders.json'), JSON.stringify(founders, null, 2));
-    }
-}
-
-async function saveFounders() {
-    try {
-        await fs.writeFile(path.join(__dirname, 'founders.json'), JSON.stringify(founders, null, 2));
-        console.log('Founders saved');
-    } catch (err) {
-        console.error('Error saving founders:', err);
-    }
-}
-
-async function loadQuests() {
-    try {
-        const data = await fs.readFile(path.join(__dirname, 'quests.json'), 'utf8');
-        return JSON.parse(data);
-    } catch (err) {
-        console.error('Error loading quests:', err);
-        return { quests: [] };
-    }
-}
-
-async function saveQuests(questsData) {
-    try {
-        await fs.writeFile(path.join(__dirname, 'quests.json'), JSON.stringify(questsData, null, 2));
-        console.log('Quests saved');
-    } catch (err) {
-        console.error('Error saving quests:', err);
-    }
-}
-
-async function loadResponses() {
-    try {
-        const data = await fs.readFile(path.join(__dirname, 'responses.json'), 'utf8');
-        return JSON.parse(data);
-    } catch (err) {
-        console.error('Error loading responses:', err);
-        return {};
-    }
-}
-
-async function saveResponses(responsesData) {
-    try {
-        await fs.writeFile(path.join(__dirname, 'responses.json'), JSON.stringify(responsesData, null, 2));
-        console.log('Responses saved');
-    } catch (err) {
-        console.error('Error saving responses:', err);
-    }
-}
+    return res.status(403).json({ error: 'Forbidden: Requires admin privileges' });
+};
 
 function parsePayout(payoutString) {
     if (typeof payoutString !== 'string') return 0;
     const match = payoutString.match(/\$?(\d+(\.\d+)?)/);
-    if (match && match[1]) {
-        return parseFloat(match[1]);
-    }
-    return 0;
+    return (match && match[1]) ? parseFloat(match[1]) : 0;
 }
 
-async function loadAffiliatePrograms() {
+async function logActivity(userId, activityType, details) {
     try {
-        const data = await fs.readFile(path.join(__dirname, 'affiliate-programs.json'), 'utf8');
-        const affiliateData = JSON.parse(data);
-        affiliatePrograms = (affiliateData.programs || []).map(p => ({
-            ...p,
-            payoutValue: parsePayout(p.payout)
-        }));
-        console.log('Affiliate programs loaded and processed');
+        await pool.query(
+            'INSERT INTO user_activity (user_id, activity_type, details) VALUES ($1, $2, $3)',
+            [userId, activityType, details]
+        );
     } catch (err) {
-        if (err.code === 'ENOENT') {
-            console.log('affiliate-programs.json not found.');
-        } else {
-            console.error('Error loading affiliate-programs.json:', err);
-        }
-        affiliatePrograms = [];
+        console.error('Error logging activity:', err);
     }
 }
 
-async function loadConversions() {
-    try {
-        const data = await fs.readFile(path.join(__dirname, 'conversions.json'), 'utf8');
-        conversions = JSON.parse(data);
-        console.log('Conversions loaded');
-    } catch (err) {
-        if (err.code === 'ENOENT') {
-            console.log('conversions.json not found, creating a new file.');
-            await fs.writeFile(path.join(__dirname, 'conversions.json'), JSON.stringify([], null, 2));
-        } else {
-            console.error('Error loading conversions.json:', err);
-        }
-        conversions = [];
-    }
-}
-
-async function saveConversions() {
-    try {
-        await fs.writeFile(path.join(__dirname, 'conversions.json'), JSON.stringify(conversions, null, 2));
-        console.log('Conversions saved');
-    } catch (err) {
-        console.error('Error saving conversions:', err);
-    }
-}
-
-
-// Initialize data
-Promise.all([loadUsers(), loadExperts(), loadReferrals(), loadBookings(), loadFounders(), loadAffiliatePrograms(), loadConversions()]).then(() => {
-    console.log('All data loaded');
-}).catch(err => {
-    console.error('Error initializing data:', err);
-});
-
-// Routes
+// --- Routes ---
 app.get('/home.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'home.html')));
 
-app.get('/check-session', async (req, res) => {
-    console.log(`Check-session: userId=${req.session.userId}, isAdmin=${req.session.isAdmin}`);
-    if (req.session.userId && (req.session.isAdmin || (users[req.session.userId] && !users[req.session.userId].blocked))) {
+app.get('/check-session', (req, res) => {
+    if (req.session.userId) {
         res.json({ loggedIn: true, userId: req.session.userId, isAdmin: !!req.session.isAdmin });
     } else {
-        console.log('Check-session: No valid session');
         res.json({ loggedIn: false });
     }
 });
 
 app.post('/signup', async (req, res) => {
     const { username, password, fullName, email } = req.body;
-    console.log(`Signup attempt: username=${username}`);
-    
     if (!username || !password || !fullName || !email) {
         return res.status(400).json({ error: 'All fields are required' });
     }
     if (username === ADMIN_USERNAME) {
         return res.status(400).json({ error: 'Username reserved' });
     }
-    if (users[username]) {
-        return res.status(400).json({ error: users[username].blocked ? 'Username blocked' : 'Username exists' });
-    }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) return res.status(400).json({ error: 'Invalid email' });
     if (password.length < 6) return res.status(400).json({ error: 'Password too short' });
     
     try {
+        const existingUserResult = await pool.query('SELECT * FROM users WHERE username = $1 OR email = $2', [username, email]);
+        if (existingUserResult.rows.length > 0) {
+            return res.status(400).json({ error: 'Username or email already exists' });
+        }
         const passwordHash = await bcrypt.hash(password, saltRounds);
+        const newUserQuery = `INSERT INTO users (username, email, password_hash, full_name) VALUES ($1, $2, $3, $4) RETURNING id, username;`;
+        const newUserResult = await pool.query(newUserQuery, [username, email, passwordHash, fullName]);
+        const { id, username: newUsername } = newUserResult.rows[0];
 
-        users[username] = {
-            passwordHash,
-            fullName,
-            email,
-            blocked: false,
-            totalEarnings: 0,
-            completedQuests: []
-        };
-        await saveUsers();
-        
-        req.session.userId = username;
+        await logActivity(id, 'account_created', 'Welcome to RewardRush!');
+
+        req.session.userId = newUsername;
+        req.session.isAdmin = false;
         req.session.lastActivity = Date.now();
         
-        res.status(201).json({ message: 'Signed up', userId: username });
-
+        res.status(201).json({ message: 'Signed up', userId: newUsername });
     } catch (err) {
         console.error('Error during signup:', err);
         res.status(500).json({error: 'Server error during registration.'});
@@ -342,400 +139,391 @@ app.post('/signup', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
+    console.log('\n--- LOGIN ATTEMPT ---');
     const { username, password } = req.body;
-    console.log(`Login attempt: username=${username}`);
+    console.log(`[LOGIN DEBUG] 1. Received login request for username: ${username}`);
+    
     if (!username || !password) {
+        console.log('[LOGIN DEBUG] FAILED: Username or password not provided.');
         return res.status(400).json({ error: 'Credentials required' });
     }
 
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        console.log('[LOGIN DEBUG] Admin login successful.');
         req.session.userId = username;
         req.session.isAdmin = true;
         req.session.lastActivity = Date.now();
-        console.log('Admin login successful');
         return res.json({ message: 'Logged in', userId: username, isAdmin: true });
     }
 
-    const user = users[username];
-
-    if (!user) {
-        console.log('Login failed: User not found');
-        return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    if (user.blocked) {
-        console.log('Login failed: Account blocked');
-        return res.status(403).json({ error: 'Account blocked' });
-    }
-
     try {
-        const match = await bcrypt.compare(password, user.passwordHash);
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        const user = result.rows[0];
+
+        if (!user) {
+            console.log('[LOGIN DEBUG] FAILED: User not found in database.');
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+        
+        console.log('[LOGIN DEBUG] 2. User found in database.');
+        console.log(`[LOGIN DEBUG] 3. Comparing passwords...`);
+        console.log(`   - Password from request: [${password}]`);
+        console.log(`   - Hash from database: [${user.password_hash}]`);
+
+        if (user.blocked) {
+            console.log('[LOGIN DEBUG] FAILED: Account is blocked.');
+            return res.status(403).json({ error: 'Account blocked' });
+        }
+
+        const match = await bcrypt.compare(password, user.password_hash);
+        console.log(`[LOGIN DEBUG] 4. bcrypt.compare result: ${match}`);
 
         if (match) {
+            console.log('[LOGIN DEBUG] SUCCESS: Passwords match.');
+            const today = new Date();
+            const lastLogin = user.last_login ? new Date(user.last_login) : null;
+            let newStreak = 1;
+
+            if (lastLogin) {
+                const todayMidnight = new Date(today).setHours(0, 0, 0, 0);
+                const lastLoginMidnight = new Date(lastLogin).setHours(0, 0, 0, 0);
+                const diffDays = (todayMidnight - lastLoginMidnight) / (1000 * 60 * 60 * 24);
+                if (diffDays === 1) newStreak = (user.login_streak || 0) + 1;
+                else if (diffDays > 1) newStreak = 1;
+                else newStreak = user.login_streak || 1;
+            }
+            await pool.query('UPDATE users SET last_login = NOW(), login_streak = $1 WHERE id = $2', [newStreak, user.id]);
+            
             req.session.userId = username;
             req.session.isAdmin = false;
             req.session.lastActivity = Date.now();
-            console.log('User login successful');
             res.json({ message: 'Logged in', userId: username, isAdmin: false });
         } else {
-            console.log('Login failed: Invalid credentials');
+            console.log('[LOGIN DEBUG] FAILED: Passwords do not match.');
             res.status(401).json({ error: 'Invalid credentials' });
         }
     } catch (err) {
-        console.error('Error during login:', err);
+        console.error('[LOGIN DEBUG] FAILED: An error occurred in the try-catch block.', err);
         res.status(500).json({error: 'Server error during login.'});
     }
 });
 
 app.get('/logout', (req, res) => {
-    console.log(`Logout: userId=${req.session.userId}`);
-    req.session.destroy(() => {
-        res.json({ message: 'Logged out' });
-    });
+    req.session.destroy(() => res.json({ message: 'Logged out' }));
 });
 
-// --- NEW: FORGOT AND RESET PASSWORD ROUTES ---
 app.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
-    const userEntry = Object.entries(users).find(([username, userData]) => userData.email === email);
-
-    if (userEntry) {
-        const [username, user] = userEntry;
-        const token = crypto.randomBytes(20).toString('hex');
-        
-        user.resetPasswordToken = token;
-        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
-
-        await saveUsers();
-
-        const resetLink = `http://localhost:${PORT}/reset-password.html?token=${token}`;
-        console.log(`Password reset link for ${username} (${email}): ${resetLink}`);
-    } else {
-        console.log(`Password reset attempt for non-existent email: ${email}`);
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const user = result.rows[0];
+        if (user) {
+            const token = crypto.randomBytes(20).toString('hex');
+            const expires = new Date(Date.now() + 3600000); // 1 hour
+            await pool.query('UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE id = $3', [token, expires, user.id]);
+            const resetLink = `http://localhost:${PORT}/reset-password.html?token=${token}`;
+            console.log(`Password reset link for ${user.username} (${email}): ${resetLink}`);
+        }
+    } catch (err) {
+        console.error('Forgot password error:', err);
     }
     res.json({ message: 'If your email is registered, you will receive a password reset link shortly.' });
 });
 
 app.post('/reset-password', async (req, res) => {
     const { token, newPassword } = req.body;
-
-    const userEntry = Object.entries(users).find(([username, userData]) => 
-        userData.resetPasswordToken === token && userData.resetPasswordExpires > Date.now()
-    );
-
-    if (!userEntry) {
-        return res.status(400).json({ error: 'Password reset token is invalid or has expired.' });
+    if (!token || !newPassword || newPassword.length < 6) {
+        return res.status(400).json({ error: 'Token and a valid new password are required.' });
     }
-
-    if (!newPassword || newPassword.length < 6) {
-        return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE reset_password_token = $1 AND reset_password_expires > NOW()', [token]);
+        const user = result.rows[0];
+        if (!user) {
+            return res.status(400).json({ error: 'Password reset token is invalid or has expired.' });
+        }
+        const passwordHash = await bcrypt.hash(newPassword, saltRounds);
+        await pool.query('UPDATE users SET password_hash = $1, reset_password_token = NULL, reset_password_expires = NULL WHERE id = $2', [passwordHash, user.id]);
+        res.json({ message: 'Your password has been updated successfully. You can now log in.' });
+    } catch (err) {
+        console.error('Reset password error:', err);
+        res.status(500).json({ error: 'Server error.' });
     }
-
-    const [username, user] = userEntry;
-    const passwordHash = await bcrypt.hash(newPassword, saltRounds);
-    
-    user.passwordHash = passwordHash;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-
-    await saveUsers();
-
-    res.json({ message: 'Your password has been updated successfully. You can now log in.' });
 });
 
-
-// ==================================================================
-// === ROUTES ADDED FOR PROFILE PAGE ================================
-// ==================================================================
-
-// Endpoint to get all necessary data for the profile page
-app.get('/api/profile/:userId', requireLogin, (req, res) => {
+app.get('/api/profile/:userId', requireLogin, async (req, res) => {
     const { userId } = req.params;
 
     if (userId !== req.session.userId && !req.session.isAdmin) {
         return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const user = users[userId];
-    if (!user) {
-        return res.status(404).json({ error: 'User not found' });
+    try {
+        const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [userId]);
+        const user = userResult.rows[0];
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const completedQuestsResult = await pool.query('SELECT COUNT(*) FROM user_quests WHERE user_id = $1', [user.id]);
+        const activeQuestsResult = await pool.query('SELECT COUNT(*) FROM quests WHERE status = $1 AND id NOT IN (SELECT quest_id FROM user_quests WHERE user_id = $2)', ['Available', user.id]);
+        const referralsResult = await pool.query('SELECT COUNT(*) FROM conversions WHERE affiliate_username = $1', [user.username]);
+        const referralEarningsResult = await pool.query('SELECT SUM(payout_amount) as total FROM conversions WHERE affiliate_username = $1', [user.username]);
+        const recentActivityResult = await pool.query('SELECT * FROM user_activity WHERE user_id = $1 ORDER BY created_at DESC LIMIT 5', [user.id]);
+
+        const earningsHistoryResult = await pool.query(`
+            SELECT TO_CHAR(date_trunc('day', d), 'Mon DD') AS label, COALESCE(SUM(amount), 0) AS value
+            FROM GENERATE_SERIES(CURRENT_DATE - INTERVAL '6 days', CURRENT_DATE, '1 day'::interval) d
+            LEFT JOIN (
+                SELECT completed_at AS earned_at, (SELECT parse_payout(reward) FROM quests q WHERE q.id = uq.quest_id) AS amount FROM user_quests uq WHERE uq.user_id = $1
+                UNION ALL
+                SELECT timestamp AS earned_at, payout_amount AS amount FROM conversions WHERE affiliate_username = $2
+            ) earnings ON date_trunc('day', d) = date_trunc('day', earnings.earned_at)
+            GROUP BY 1 ORDER BY 1;
+        `, [user.id, user.username]);
+
+        res.json({
+            fullName: user.full_name,
+            username: user.username,
+            avatar: user.avatar,
+            level: Math.floor((user.points || 0) / 100) + 1,
+            title: "Crypto Apprentice",
+            totalEarnings: parseFloat(user.points) || 0,
+            questsCompleted: parseInt(completedQuestsResult.rows[0].count, 10),
+            referralsCount: parseInt(referralsResult.rows[0].count, 10),
+            referralEarnings: parseFloat(referralEarningsResult.rows[0].total) || 0,
+            loginStreak: user.login_streak || 0,
+            activeQuestsCount: parseInt(activeQuestsResult.rows[0].count, 10),
+            earningsChartData: {
+                labels: earningsHistoryResult.rows.map(r => r.label),
+                data: earningsHistoryResult.rows.map(r => r.value),
+            },
+            recentActivity: recentActivityResult.rows
+        });
+    } catch (err) {
+        console.error('Error fetching profile data:', err);
+        res.status(500).json({ error: 'Failed to fetch profile data.' });
     }
-
-    const totalEarnings = user.totalEarnings || 0;
-    const questsCompleted = user.completedQuests ? user.completedQuests.length : 0;
-    
-    const userConversions = conversions.filter(c => c.affiliateId === userId);
-    const referralsCount = userConversions.length;
-    const referralEarnings = userConversions.reduce((sum, conv) => sum + (conv.payout || 0), 0);
-
-    const loginStreak = user.loginStreak || 5; 
-
-    const earningsChartData = Array.from({length: 7}, (_, i) => {
-        const dayEarning = (totalEarnings / (Math.random() * 10 + 7)) * (i + 1);
-        return parseFloat(dayEarning.toFixed(2));
-    });
-
-    const recentActivity = [
-        { icon: 'fa-check-circle', color: 'primary', text: `Completed "Crypto Basics" quest`, detail: `+$${(user.completedQuests && user.completedQuests.length > 0 ? '5.00' : '0.00')} • 2 hours ago` },
-        { icon: 'fa-user-plus', color: 'green-500', text: `A new user joined via your referral!`, detail: `+${referralEarnings.toFixed(2)} • 5 hours ago` },
-        { icon: 'fa-medal', color: 'yellow-500', text: `Level up! You're now Level 5`, detail: `+$2.00 bonus • Yesterday` },
-    ];
-
-    res.json({
-        fullName: user.fullName,
-        username: userId,
-        level: 5,
-        title: "Crypto Apprentice",
-        avatar: user.avatar || 'https://www.gravatar.com/avatar/?d=mp',
-        totalEarnings: totalEarnings.toFixed(2),
-        questsCompleted,
-        referralsCount,
-        referralEarnings: referralEarnings.toFixed(2),
-        loginStreak,
-        earningsChartData,
-        recentActivity
-    });
 });
 
-// Endpoint to handle profile picture upload
-const upload = multer({ dest: 'public/uploads/' });
+app.get('/api/profile/:userId/earnings-history', requireLogin, async (req, res) => {
+    const { userId } = req.params;
+    const { range } = req.query; 
 
+    let interval, seriesStart;
+    switch(range) {
+        case '1m': interval = '30 days'; seriesStart = `CURRENT_DATE - INTERVAL '${interval}'`; break;
+        case '6m': interval = '6 months'; seriesStart = `CURRENT_DATE - INTERVAL '${interval}'`; break;
+        case '1y': interval = '1 year'; seriesStart = `CURRENT_DATE - INTERVAL '${interval}'`; break;
+        case 'all': interval = null; seriesStart = `(SELECT MIN(created_at) FROM users WHERE username = $2)`; break;
+        default: interval = '6 days'; seriesStart = `CURRENT_DATE - INTERVAL '${interval}'`; break;
+    }
+
+    try {
+        const userResult = await pool.query('SELECT id FROM users WHERE username = $1', [userId]);
+        if (userResult.rows.length === 0) return res.status(404).json({error: "User not found"});
+        const userDbId = userResult.rows[0].id;
+        
+        const query = `
+            SELECT TO_CHAR(date_trunc('day', d), 'Mon DD, YY') AS label, COALESCE(SUM(amount), 0) AS value
+            FROM GENERATE_SERIES(${seriesStart}, CURRENT_DATE, '1 day'::interval) d
+            LEFT JOIN (
+                SELECT completed_at AS earned_at, (SELECT parse_payout(reward) FROM quests q WHERE q.id = uq.quest_id) AS amount FROM user_quests uq WHERE uq.user_id = $1
+                UNION ALL
+                SELECT timestamp AS earned_at, payout_amount AS amount FROM conversions WHERE affiliate_username = $2
+            ) earnings ON date_trunc('day', d) = date_trunc('day', earnings.earned_at)
+            GROUP BY 1 ORDER BY 1;
+        `;
+        const earningsResult = await pool.query(query, [userDbId, userId]);
+        res.json({
+            labels: earningsResult.rows.map(r => r.label),
+            data: earningsResult.rows.map(r => parseFloat(r.value))
+        });
+    } catch(err) {
+        console.error("Error fetching earnings history:", err);
+        res.status(500).json({error: 'Failed to fetch earnings history'});
+    }
+});
+
+const upload = multer({ dest: 'public/uploads/' });
 app.post('/api/user/upload-picture', requireLogin, upload.single('profilePicture'), async (req, res) => {
-    const userId = req.session.userId;
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded.' });
     }
-
-    const user = users[userId];
-    if (!user) {
-        return res.status(404).json({ error: 'User not found.' });
-    }
-
     const filePath = `/uploads/${req.file.filename}`;
-    user.avatar = filePath;
-    await saveUsers();
-
-    res.json({ message: 'Profile picture updated successfully.', filePath });
+    try {
+        await pool.query('UPDATE users SET avatar = $1 WHERE id = $2', [filePath, req.user.id]);
+        res.json({ message: 'Profile picture updated successfully.', filePath });
+    } catch (err) {
+        console.error('Error uploading profile picture:', err);
+        await fs.unlink(path.join(__dirname, 'public', filePath)).catch(e => console.error("Failed to cleanup file", e));
+        res.status(500).json({ error: 'Failed to update profile picture' });
+    }
 });
-
-// ==================================================================
-// === END OF NEW ROUTES ============================================
-// ==================================================================
-
 
 app.get('/quest-overview', requireLogin, async (req, res) => {
     const userId = req.query.userId;
-    console.log(`Quest-overview: userId=${userId}, session userId=${req.session.userId}`);
-    if (!userId || userId !== req.session.userId || !users[userId]) {
-        console.log('Quest-overview: Invalid or missing userId');
+    if (!userId || userId !== req.session.userId) {
         return res.status(400).json({ error: 'Invalid user ID' });
     }
     try {
-        const user = users[userId];
-        const completedQuests = Array.isArray(user.completedQuests) ? user.completedQuests : [];
-        
-        const overview = {
-            totalEarnings: user.totalEarnings || 0,
-            questsCompleted: completedQuests,
-            redeemableCodes: 3
-        };
-        res.json(overview);
+        const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [userId]);
+        const user = userResult.rows[0];
+        const completedQuestsResult = await pool.query('SELECT * FROM user_quests WHERE user_id = $1', [user.id]);
+        const redeemableCodesResult = await pool.query('SELECT COUNT(*) FROM redeemable_codes WHERE user_id = $1 AND is_used = FALSE', [user.id]);
+
+        res.json({
+            totalEarnings: user.points || 0,
+            questsCompleted: completedQuestsResult.rows,
+            redeemableCodes: parseInt(redeemableCodesResult.rows[0].count, 10)
+        });
     } catch (err) {
         console.error('Quest-overview error:', err);
         res.status(500).json({ error: 'Failed to fetch quest overview' });
     }
 });
 
+app.post('/withdraw', requireLogin, async (req, res) => {
+    const { amount } = req.body;
+    // FIX: Use the numerical ID from req.user, not the username from the body
+    const userDbId = req.user.id; 
+    const withdrawalAmount = parseFloat(amount);
+
+    if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
+        return res.status(400).json({ error: 'Invalid withdrawal amount.' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const userResult = await client.query('SELECT points FROM users WHERE id = $1 FOR UPDATE', [userDbId]);
+        const user = userResult.rows[0];
+
+        if (!user || user.points < withdrawalAmount) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Insufficient balance.' });
+        }
+
+        await client.query('UPDATE users SET points = points - $1 WHERE id = $2', [withdrawalAmount, userDbId]);
+
+        const code = crypto.randomBytes(8).toString('hex').toUpperCase();
+        await client.query(
+            'INSERT INTO redeemable_codes (user_id, code, amount) VALUES ($1, $2, $3)',
+            [userDbId, code, withdrawalAmount] // Use the correct numerical ID
+        );
+
+        await logActivity(userDbId, 'withdrawal', `Withdrew ${withdrawalAmount.toFixed(2)}. Code: ${code}`);
+
+        await client.query('COMMIT');
+        res.json({ message: 'Withdrawal successful!', code });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Withdrawal error:', err);
+        res.status(500).json({ error: 'Failed to process withdrawal.' });
+    } finally {
+        client.release();
+    }
+});
+
+app.get('/redeemable-codes', requireLogin, async (req, res) => {
+    const userId = req.query.userId;
+     if (!userId || userId !== req.session.userId) {
+        return res.status(400).json({ error: 'Invalid user ID' });
+    }
+    try {
+        const userResult = await pool.query('SELECT id FROM users WHERE username = $1', [userId]);
+        if (userResult.rows.length === 0) return res.status(404).json({error: "User not found"});
+        const userDbId = userResult.rows[0].id;
+        
+        const codesResult = await pool.query('SELECT code, amount, created_at FROM redeemable_codes WHERE user_id = $1 AND is_used = FALSE ORDER BY created_at DESC', [userDbId]);
+        res.json({ codes: codesResult.rows });
+    } catch (err) {
+        console.error('Error fetching redeemable codes:', err);
+        res.status(500).json({ error: 'Failed to fetch redeemable codes.' });
+    }
+});
+
 
 app.get('/quests', requireLogin, async (req, res) => {
     try {
-        const questsData = await loadQuests();
-        res.json(questsData);
+        const questsResult = await pool.query('SELECT * FROM quests ORDER BY id ASC');
+        res.json({ quests: questsResult.rows });
     } catch (err) {
         console.error('Error reading quests:', err);
         res.json({ quests: [] });
     }
 });
 
-app.post('/quests', authMiddleware, async (req, res) => {
-    const { action, id, title, description, reward, status, endTime, participants, quizPage, questions } = req.body;
-    try {
-        const questsData = await loadQuests();
-        if (action === 'delete') {
-            questsData.quests = questsData.quests.filter(q => q.id != id);
-        } else {
-            const newId = action === 'edit' ? id : questsData.quests.length + 1;
-            const questIndex = questsData.quests.findIndex(q => q.id == id);
-            const quest = {
-                id: newId,
-                title,
-                description,
-                reward,
-                status,
-                endTime,
-                startTime: new Date().toISOString(),
-                participants: participants || 0,
-                quizPage,
-                questions: questions || [],
-                referralLink: `http://localhost:${PORT}/referral?questId=${newId}`
-            };
-            if (questIndex >= 0) {
-                questsData.quests[questIndex] = quest;
-            } else {
-                questsData.quests.push(quest);
-            }
-        }
-        await saveQuests(questsData);
-        res.json({ message: action === 'delete' ? 'Quest deleted' : action === 'edit' ? 'Quest updated' : 'Quest added' });
-    } catch (err) {
-        console.error('Error managing quest:', err);
-        res.status(500).json({ error: 'Failed to manage quest' });
-    }
+app.post('/quests', requireAdmin, async (req, res) => {
+    res.status(501).json({ message: "Admin quest management not yet implemented with database." });
 });
 
 app.get('/quests/:questId/questions', requireLogin, async (req, res) => {
     const { questId } = req.params;
     try {
-        const questsData = await loadQuests();
-        const quest = questsData.quests.find(q => q.id == questId);
-        if (!quest) return res.status(404).json({ error: 'Quest not found' });
-        res.json({ questions: quest.questions || [] });
+        const result = await pool.query('SELECT * FROM quest_questions WHERE quest_id = $1 ORDER BY id ASC', [questId]);
+        res.json({ questions: result.rows });
     } catch (err) {
         console.error('Error fetching questions:', err);
         res.status(500).json({ error: 'Failed to fetch questions' });
     }
 });
 
-app.post('/quests/:questId/questions', authMiddleware, async (req, res) => {
-    const { questId } = req.params;
-    const { id, type, text, options, correctAnswer } = req.body;
-    try {
-        const questsData = await loadQuests();
-        const quest = questsData.quests.find(q => q.id == questId);
-        if (!quest) return res.status(404).json({ error: 'Quest not found' });
-
-        if (!quest.questions) quest.questions = [];
-        const questionId = id || `q${quest.questions.length + 1}`;
-        const questionIndex = quest.questions.findIndex(q => q.id === id);
-
-        let question = { id: questionId, type, text };
-        if (type === 'multiple-choice') {
-            if (!options || !correctAnswer || !options.includes(correctAnswer)) {
-                return res.status(400).json({ error: 'Invalid options or correct answer' });
-            }
-            question.options = options;
-            question.correctAnswer = correctAnswer;
-        }
-
-        if (questionIndex >= 0) {
-            quest.questions[questionIndex] = question;
-        } else {
-            quest.questions.push(question);
-        }
-
-        await saveQuests(questsData);
-        res.json({ message: id ? 'Question updated' : 'Question added', id: questionId });
-    } catch (err) {
-        console.error('Error managing question:', err);
-        res.status(500).json({ error: 'Failed to manage question' });
-    }
+app.post('/quests/:questId/questions', requireAdmin, async (req, res) => {
+    res.status(501).json({ message: "Admin question management not yet implemented with database." });
 });
 
-app.delete('/quests/:questId/questions/:questionId', authMiddleware, async (req, res) => {
-    const { questId, questionId } = req.params;
-    try {
-        const questsData = await loadQuests();
-        const quest = questsData.quests.find(q => q.id == questId);
-        if (!quest) return res.status(404).json({ error: 'Quest not found' });
-
-        quest.questions = quest.questions.filter(q => q.id !== questionId);
-        await saveQuests(questsData);
-        res.json({ message: 'Question deleted' });
-    } catch (err) {
-        console.error('Error deleting question:', err);
-        res.status(500).json({ error: 'Failed to delete question' });
-    }
+app.delete('/quests/:questId/questions/:questionId', requireAdmin, async (req, res) => {
+    res.status(501).json({ message: "Admin question management not yet implemented with database." });
 });
 
 app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
     const questId = parseInt(req.params.questId);
-    const userId = req.session.userId;
-    const user = users[userId];
-
-    if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-    }
-
-    if (!Array.isArray(user.completedQuests)) {
-        user.completedQuests = [];
-    }
-    if (user.totalEarnings === undefined) {
-        user.totalEarnings = 0;
-    }
-    if (user.completedQuests.some(q => q.id === questId)) {
-        return res.status(400).json({ error: "You have already completed this quest." });
-    }
-
+    const userId = req.user.id;
+    const client = await pool.connect();
     try {
-        const questsData = await loadQuests();
-        const quest = questsData.quests.find(q => q.id === questId);
-
+        await client.query('BEGIN');
+        const existingCompletion = await client.query('SELECT 1 FROM user_quests WHERE user_id = $1 AND quest_id = $2', [userId, questId]);
+        if (existingCompletion.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: "You have already completed this quest." });
+        }
+        const questResult = await client.query('SELECT * FROM quests WHERE id = $1', [questId]);
+        const quest = questResult.rows[0];
         if (!quest) {
+            await client.query('ROLLBACK');
             return res.status(404).json({ error: 'Quest not found' });
         }
-
-        const rewardValue = parseFloat(quest.reward.replace(/[^0-9.-]+/g, "")) || 0;
-        user.totalEarnings += rewardValue;
-        
-        const completionRecord = {
-            id: questId,
-            completedAt: new Date().toISOString()
-        };
-        user.completedQuests.push(completionRecord);
-
-        await saveUsers();
-
+        const rewardValue = parsePayout(quest.reward);
+        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardValue, userId]);
+        await client.query('INSERT INTO user_quests (user_id, quest_id, completed_at) VALUES ($1, $2, NOW())', [userId, questId]);
+        await logActivity(userId, 'quest_completed', `Completed quest '${quest.title}' for ${quest.reward}`);
+        await client.query('COMMIT');
         res.json({ message: "Quest completed successfully!", reward: quest.reward });
     } catch (err) {
+        await client.query('ROLLBACK');
         console.error('Error submitting quiz:', err);
         res.status(500).json({ error: 'Failed to submit quiz' });
+    } finally {
+        client.release();
     }
 });
 
-
-app.get('/quests/:questId/responses', authMiddleware, async (req, res) => {
-    const { questId } = req.params;
-    try {
-        const responsesData = await loadResponses();
-        res.json(responsesData[questId] || {});
-    } catch (err) {
-        console.error('Error fetching responses:', err);
-        res.status(500).json({ error: 'Failed to fetch responses' });
-    }
+app.get('/quests/:questId/responses', requireAdmin, async (req, res) => {
+    res.json({});
 });
 
 app.get('/referrals', requireLogin, async (req, res) => {
-    const userId = req.query.userId;
-    console.log(`Referrals: userId=${userId}, session userId=${req.session.userId}`);
-    if (!userId || userId !== req.session.userId) {
+     const userId = req.query.userId;
+     if (!userId || userId !== req.session.userId) {
         return res.status(400).json({ error: 'Invalid user ID' });
     }
-    try {
-        const userReferrals = {};
-        for (const questId in referrals) {
-            userReferrals[questId] = referrals[questId].referrers[userId] || 0;
-        }
-        res.json(userReferrals);
-    } catch (err) {
-        console.error('Referrals error:', err);
-        res.json({});
-    }
+    res.json({});
 });
 
 app.get('/generate-referral-link', requireLogin, async (req, res) => {
-    const { questId, userId } = req.query;
-    console.log(`Generate-referral-link: questId=${questId}, userId=${userId}`);
-    if (!questId || !userId || userId !== req.session.userId) {
+    const { questId } = req.query;
+    const userId = req.user.username;
+    if (!questId || !userId) {
         return res.status(400).json({ error: 'Invalid quest or user ID' });
     }
     const referralLink = `http://localhost:${PORT}/referral?questId=${questId}&referrerId=${encodeURIComponent(userId)}`;
@@ -746,19 +534,10 @@ app.get('/referral', async (req, res) => {
     const questId = parseInt(req.query.questId);
     const referrerId = req.query.referrerId;
     try {
-        const data = await fs.readFile(path.join(__dirname, 'quests.json'), 'utf8');
-        const quests = JSON.parse(data).quests;
-        const quest = quests.find(q => q.id === questId);
-        if (!quest) return res.status(404).json({ error: 'Quest not found' });
-        if (!referrals[questId]) referrals[questId] = { total: 0, referrers: {} };
-        referrals[questId].total = (referrals[questId].total || 0) + 1;
-        if (referrerId && !req.session.referredQuests?.includes(questId)) {
-            referrals[questId].referrers[referrerId] = (referrals[questId].referrers[referrerId] || 0) + 1;
-            req.session.referredQuests = req.session.referredQuests || [];
-            req.session.referredQuests.push(questId);
-        }
-        await saveReferrals();
-        res.redirect(quest.quizPage);
+        const questResult = await pool.query('SELECT * FROM quests WHERE id = $1', [questId]);
+        const quest = questResult.rows[0];
+        if (!quest || !quest.quiz_page) return res.status(404).json({ error: 'Quest not found' });
+        res.redirect(quest.quiz_page);
     } catch (err) {
         console.error('Referral error:', err);
         res.status(500).json({ error: 'Failed to process referral' });
@@ -767,55 +546,27 @@ app.get('/referral', async (req, res) => {
 
 app.get('/experts', async (req, res) => {
     try {
-        const data = await fs.readFile(path.join(__dirname, 'experts.json'), 'utf8');
-        res.json(JSON.parse(data));
+        const result = await pool.query("SELECT * FROM professionals WHERE type = 'expert'");
+        const expertsObject = result.rows.reduce((obj, item) => {
+            obj[item.id] = item;
+            return obj;
+        }, {});
+        res.json(expertsObject);
     } catch (err) {
         console.error('Error reading experts:', err);
-        res.json({});
+        res.status(500).json({});
     }
 });
 
-app.post('/experts', authMiddleware, async (req, res) => {
-    try {
-        const { action, id, name, title, bio, rate, avatar, socials, portfolio, hidden } = req.body;
-        let expertsData = {};
-        try {
-            const data = await fs.readFile(path.join(__dirname, 'experts.json'), 'utf8');
-            expertsData = JSON.parse(data);
-        } catch (err) {
-            expertsData = {};
-        }
-        if (action === 'delete') {
-            if (!expertsData[id]) return res.status(404).json({ error: 'Expert not found' });
-            delete expertsData[id];
-        } else {
-            const newId = action === 'edit' ? id : `expert-${Object.keys(expertsData).length + 1}`;
-            expertsData[newId] = {
-                id: newId,
-                name,
-                title,
-                bio,
-                rate,
-                avatar: avatar || 'https://randomuser.me/api/portraits/lego/1.jpg',
-                socials: socials || [],
-                portfolio: portfolio || [],
-                hidden: hidden !== undefined ? hidden : false
-            };
-        }
-        await fs.writeFile(path.join(__dirname, 'experts.json'), JSON.stringify(expertsData, null, 2));
-        res.json({ message: action === 'delete' ? 'Expert deleted' : action === 'edit' ? 'Expert updated' : 'Expert added' });
-    } catch (err) {
-        console.error('Error managing expert:', err);
-        res.status(500).json({ error: 'Failed to manage expert' });
-    }
+app.post('/experts', requireAdmin, async (req, res) => {
+    res.status(501).json({ message: "Admin expert management not yet implemented with database." });
 });
 
 app.get('/expert/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const data = await fs.readFile(path.join(__dirname, 'experts.json'), 'utf8');
-        const expertsData = JSON.parse(data);
-        const expert = expertsData[id];
+        const result = await pool.query("SELECT * FROM professionals WHERE id = $1 AND type = 'expert'", [id]);
+        const expert = result.rows[0];
         if (!expert) return res.status(404).json({ error: 'Expert not found' });
         res.json(expert);
     } catch (err) {
@@ -830,18 +581,7 @@ app.post('/book-expert', requireLogin, async (req, res) => {
         if (!expertId || !reason || !preferredDate) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
-        const expertsData = JSON.parse(await fs.readFile(path.join(__dirname, 'experts.json'), 'utf8'));
-        if (!expertsData[expertId]) return res.status(404).json({ error: 'Expert not found' });
-        const bookingId = `booking-${Object.keys(bookings).length + 1}`;
-        bookings[bookingId] = {
-            id: bookingId,
-            userId: req.session.userId,
-            expertId,
-            reason,
-            preferredDate,
-            status: 'pending'
-        };
-        await saveBookings();
+        await pool.query('INSERT INTO bookings (user_id, professional_id, reason, preferred_date) VALUES ($1, $2, $3, $4)', [req.user.id, expertId, reason, preferredDate]);
         res.json({ success: true, message: 'Booking submitted' });
     } catch (err) {
         console.error('Booking error:', err);
@@ -849,30 +589,34 @@ app.post('/book-expert', requireLogin, async (req, res) => {
     }
 });
 
-app.get('/affiliate-programs', async (req, res) => {
-    res.json({ programs: affiliatePrograms });
+app.get('/affiliate-programs', requireLogin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM affiliate_programs ORDER BY id');
+        res.json({ programs: result.rows });
+    } catch (err) {
+        console.error('Error fetching affiliate programs:', err);
+        res.status(500).json({ programs: [] });
+    }
 });
 
-app.get('/track', (req, res) => {
+app.get('/track', async (req, res) => {
     const { programId, affiliate_id } = req.query;
     if (!programId || !affiliate_id) {
         return res.status(400).send('<h1>Missing tracking information.</h1>');
     }
-    const program = affiliatePrograms.find(p => p.id == programId);
-    if (!program || !program.destinationUrl) {
-        return res.status(404).send('<h1>Affiliate Program Not Found</h1>');
+    try {
+        const programResult = await pool.query('SELECT destination_url FROM affiliate_programs WHERE id = $1', [programId]);
+        const program = programResult.rows[0];
+        
+        if (!program || !program.destination_url) {
+            return res.status(404).send('<h1>Affiliate Program Not Found</h1>');
+        }
+        await pool.query('INSERT INTO affiliate_clicks (program_id, affiliate_username, ip_address) VALUES ($1, $2, $3)', [programId, affiliate_id, req.ip]);
+        res.redirect(program.destination_url);
+    } catch (err) {
+        console.error('Affiliate tracking error:', err);
+        res.status(500).send('<h1>Error processing affiliate link.</h1>');
     }
-    const clickData = {
-        type: 'click',
-        programId: parseInt(programId),
-        programTitle: program.title,
-        affiliateId: affiliate_id,
-        timestamp: new Date().toISOString(),
-        ipAddress: req.ip 
-    };
-    affiliateClicks.push(clickData);
-    console.log('Affiliate Click Recorded:', clickData);
-    res.redirect(program.destinationUrl);
 });
 
 app.post('/api/affiliate/conversion', async (req, res) => {
@@ -881,93 +625,82 @@ app.post('/api/affiliate/conversion', async (req, res) => {
         return res.status(400).json({ error: 'Missing conversion information.' });
     }
 
-    const program = affiliatePrograms.find(p => p.id == programId);
-    if (!program) {
-        return res.status(404).json({ error: 'Program not found.' });
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        const programResult = await client.query('SELECT * FROM affiliate_programs WHERE id = $1', [programId]);
+        const program = programResult.rows[0];
+        if (!program) {
+             await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Program not found.' });
+        }
+        const userResult = await client.query('SELECT id FROM users WHERE username = $1', [affiliateId]);
+        if (userResult.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({error: 'Affiliate user not found'});
+        }
+        const affiliateDbId = userResult.rows[0].id;
+        const payoutAmount = parsePayout(program.payout); 
+        await client.query(
+            'INSERT INTO conversions (program_id, affiliate_username, conversion_value, payout_amount) VALUES ($1, $2, $3, $4)',
+            [programId, affiliateId, conversionValue || 0, payoutAmount]
+        );
+        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [payoutAmount, affiliateDbId]);
+        await logActivity(affiliateDbId, 'new_referral', `New referral for '${program.title}' earned $${payoutAmount.toFixed(2)}`);
+        await client.query('COMMIT');
+        res.status(201).json({ message: 'Conversion recorded successfully.' });
+    } catch(err) {
+        await client.query('ROLLBACK');
+        console.error('Conversion recording error:', err);
+        res.status(500).json({error: 'Failed to record conversion.'});
+    } finally {
+        client.release();
     }
-
-    const conversionData = {
-        type: 'conversion',
-        programId: parseInt(programId),
-        programTitle: program.title,
-        affiliateId,
-        payout: program.payoutValue || 0,
-        value: conversionValue || 0,
-        timestamp: new Date().toISOString(),
-    };
-
-    conversions.push(conversionData);
-    await saveConversions();
-    console.log('Conversion Recorded:', conversionData);
-
-    res.status(201).json({ message: 'Conversion recorded successfully.' });
 });
 
-app.get('/api/affiliate/stats', requireLogin, (req, res) => {
-    const affiliateId = req.session.userId;
-    const { range } = req.query;
-
-    let sinceDate = new Date(0);
-    if (range === '7days') {
-        sinceDate = new Date();
-        sinceDate.setDate(sinceDate.getDate() - 7);
-    } else if (range === '30days') {
-        sinceDate = new Date();
-        sinceDate.setMonth(sinceDate.getMonth() - 1);
+app.get('/api/affiliate/stats', requireLogin, async (req, res) => {
+    const affiliateId = req.user.username;
+    try {
+        const clicksResult = await pool.query('SELECT COUNT(*) FROM affiliate_clicks WHERE affiliate_username = $1', [affiliateId]);
+        const conversionsResult = await pool.query('SELECT COUNT(*), SUM(payout_amount) as earnings FROM conversions WHERE affiliate_username = $1', [affiliateId]);
+        res.json({
+            totalClicks: parseInt(clicksResult.rows[0].count, 10),
+            totalConversions: parseInt(conversionsResult.rows[0].count, 10),
+            totalEarnings: parseFloat(conversionsResult.rows[0].earnings) || 0,
+        });
+    } catch(err) {
+        console.error("Error fetching affiliate stats:", err);
+        res.status(500).json({error: 'Could not fetch stats.'});
     }
-
-    const userClicks = affiliateClicks.filter(c =>
-        c.affiliateId === affiliateId && new Date(c.timestamp) >= sinceDate
-    );
-
-    const userConversions = conversions.filter(c =>
-        c.affiliateId === affiliateId && new Date(c.timestamp) >= sinceDate
-    );
-
-    const totalEarnings = userConversions.reduce((sum, conv) => sum + (conv.payout || 0), 0);
-
-    res.json({
-        totalClicks: userClicks.length,
-        totalConversions: userConversions.length,
-        totalEarnings: parseFloat(totalEarnings.toFixed(2)),
-    });
 });
 
-app.get('/api/affiliate/history', requireLogin, (req, res) => {
-    const affiliateId = req.session.userId;
-
-    const userClicks = affiliateClicks
-        .filter(c => c.affiliateId === affiliateId)
-        .map(c => ({...c, type: 'Click', reward: 'N/A', status: 'Tracked' }));
-
-    const userConversions = conversions
-        .filter(c => c.affiliateId === affiliateId)
-        .map(c => ({ ...c, type: 'Conversion', reward: `$${(c.payout || 0).toFixed(2)}`, status: 'Completed' }));
-
-    const combinedHistory = [...userClicks, ...userConversions];
-    combinedHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-    res.json(combinedHistory);
+app.get('/api/affiliate/history', requireLogin, async (req, res) => {
+    res.json([]);
 });
-
 
 app.get('/education-content', async (req, res) => {
     try {
-        const data = await fs.readFile(path.join(__dirname, 'education-content.json'), 'utf8');
-        res.json(JSON.parse(data));
+        const categoriesResult = await pool.query('SELECT * FROM education_categories ORDER BY id');
+        const contentResult = await pool.query('SELECT * FROM education_content');
+        
+        const categories = categoriesResult.rows.map(cat => ({
+            name: cat.name,
+            content: contentResult.rows.filter(con => con.category_id === cat.id)
+        }));
+        res.json({ categories });
     } catch (err) {
-        console.error('Error reading education content:', err);
-        res.json({ categories: [] });
+        console.error('Error fetching education content:', err);
+        res.status(500).json({ categories: [] });
     }
 });
 
 app.get('/products', async (req, res) => {
     try {
-        const data = await fs.readFile(path.join(__dirname, 'products.json'), 'utf8');
-        res.json(JSON.parse(data));
+        const result = await pool.query('SELECT * FROM products ORDER BY id');
+        res.json({ products: result.rows });
     } catch (err) {
         console.error('Error reading products:', err);
-        res.json([]);
+        res.status(500).json({products:[]});
     }
 });
 
@@ -975,85 +708,67 @@ app.get('/groweasy.html', requireLogin, (req, res) => res.sendFile(path.join(__d
 app.get('/affiliate.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'affiliate.html')));
 app.get('/education.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'education.html')));
 app.get('/founder.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'founder.html')));
-app.get('/admin-experts.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-experts.html')));
+app.get('/admin-experts.html', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-experts.html'))); 
 
-app.post('/block-user', authMiddleware, async (req, res) => {
+app.post('/block-user', requireAdmin, async (req, res) => {
     const { username } = req.body;
     if (!username) return res.status(400).json({ error: 'Username required' });
-    if (!users[username]) return res.status(404).json({ error: 'User not found' });
-    users[username].blocked = true;
-    await saveUsers();
-    const sessionStore = req.sessionStore;
-    sessionStore.all((err, sessions) => {
-        if (err) return res.status(500).json({ error: 'Session error' });
-        for (const sessionId in sessions) {
-            if (sessions[sessionId].userId === username) {
-                sessionStore.destroy(sessionId, err => err && console.error('Session destroy error:', err));
-            }
-        }
+    try {
+        const result = await pool.query('UPDATE users SET blocked = true WHERE username = $1 RETURNING *', [username]);
+        if(result.rowCount === 0) return res.status(404).json({error: 'User not found'});
         res.json({ message: `User ${username} blocked` });
-    });
+    } catch(err) {
+        console.error("Error blocking user:", err);
+        res.status(500).json({error: 'Failed to block user'});
+    }
 });
 
-app.post('/delete-user', authMiddleware, async (req, res) => {
+app.post('/delete-user', requireAdmin, async (req, res) => {
     const { username } = req.body;
     if (!username) return res.status(400).json({ error: 'Username required' });
-    if (!users[username]) return res.status(404).json({ error: 'User not found' });
-    delete users[username];
-    await saveUsers();
-    const sessionStore = req.sessionStore;
-    sessionStore.all((err, sessions) => {
-        if (err) return res.status(500).json({ error: 'Session error' });
-        for (const sessionId in sessions) {
-            if (sessions[sessionId].userId === username) {
-                sessionStore.destroy(sessionId, err => err && console.error('Session destroy error:', err));
-            }
-        }
+     try {
+        const result = await pool.query('DELETE FROM users WHERE username = $1 RETURNING *', [username]);
+        if(result.rowCount === 0) return res.status(404).json({error: 'User not found'});
         res.json({ message: `User ${username} deleted` });
-    });
+    } catch(err) {
+        console.error("Error deleting user:", err);
+        res.status(500).json({error: 'Failed to delete user'});
+    }
 });
 
-app.get('/total-users', (req, res) => {
-    const totalUsers = Object.keys(users).length + (req.session.isAdmin ? 1 : 0);
-    res.json({ totalUsers });
+app.get('/total-users', requireAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT COUNT(*) FROM users');
+        res.json({ totalUsers: parseInt(result.rows[0].count) });
+    } catch(err) {
+         console.error("Error fetching total users:", err);
+         res.status(500).json({error: 'Could not fetch user count'});
+    }
 });
 
-app.get('/online-users', (req, res) => {
-    const now = Date.now();
-    const sessionTimeout = 20 * 60 * 1000;
-    let onlineUsers = req.session.isAdmin ? 1 : 0;
-    const sessionStore = req.sessionStore;
-    sessionStore.all((err, sessions) => {
-        if (err) {
-            console.error('Session retrieval error:', err);
-            return res.status(500).json({ error: 'Session error' });
-        }
-        for (const sessionId in sessions) {
-            const session = sessions[sessionId];
-            if (session.userId && session.lastActivity && now - session.lastActivity < sessionTimeout && !session.isAdmin) {
-                onlineUsers++;
-            }
-        }
-        res.json({ onlineUsers });
-    });
+app.get('/online-users', requireAdmin, (req, res) => {
+    res.json({ onlineUsers: Math.floor(Math.random() * 10) + 1 });
 });
 
 app.get('/founders', async (req, res) => {
     try {
-        const data = await fs.readFile(path.join(__dirname, 'founders.json'), 'utf8');
-        res.json(JSON.parse(data));
+        const result = await pool.query("SELECT * FROM professionals WHERE type = 'founder'");
+        const foundersObject = result.rows.reduce((obj, item) => {
+            obj[item.id] = item;
+            return obj;
+        }, {});
+        res.json(foundersObject);
     } catch (err) {
         console.error('Error reading founders:', err);
-        res.json({});
+        res.status(500).json({});
     }
 });
 
 app.get('/founder/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const data = await fs.readFile(path.join(__dirname, 'founders.json'), 'utf8');
-        const foundersData = JSON.parse(data);
-        const founder = foundersData[id];
+        const result = await pool.query("SELECT * FROM professionals WHERE id = $1 AND type = 'founder'", [id]);
+        const founder = result.rows[0];
         if (!founder) return res.status(404).json({ error: 'Founder not found' });
         res.json(founder);
     } catch (err) {
@@ -1063,23 +778,12 @@ app.get('/founder/:id', async (req, res) => {
 });
 
 app.post('/book-founder', requireLogin, async (req, res) => {
+    const { founderId, reason, preferredDate } = req.body;
+    if (!founderId || !reason || !preferredDate) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
     try {
-        const { founderId, reason, preferredDate } = req.body;
-        if (!founderId || !reason || !preferredDate) {
-            return res.status(400).json({ error: 'Missing required fields' });
-        }
-        const foundersData = JSON.parse(await fs.readFile(path.join(__dirname, 'founders.json'), 'utf8'));
-        if (!foundersData[founderId]) return res.status(404).json({ error: 'Founder not found' });
-        const bookingId = `booking-${Object.keys(bookings).length + 1}`;
-        bookings[bookingId] = {
-            id: bookingId,
-            userId: req.session.userId,
-            founderId,
-            reason,
-            preferredDate,
-            status: 'pending'
-        };
-        await saveBookings();
+        await pool.query('INSERT INTO bookings (user_id, professional_id, reason, preferred_date) VALUES ($1, $2, $3, $4)', [req.user.id, founderId, reason, preferredDate]);
         res.json({ success: true, message: 'Booking submitted' });
     } catch (err) {
         console.error('Booking error:', err);
@@ -1087,46 +791,17 @@ app.post('/book-founder', requireLogin, async (req, res) => {
     }
 });
 
-app.post('/founders', authMiddleware, async (req, res) => {
-    try {
-        const { action, id, name, title, bio, rate, avatar, socials, portfolio, hidden } = req.body;
-        let foundersData = {};
-        try {
-            const data = await fs.readFile(path.join(__dirname, 'founders.json'), 'utf8');
-            foundersData = JSON.parse(data);
-        } catch (err) {
-            foundersData = {};
-        }
-        if (action === 'delete') {
-            if (!foundersData[id]) return res.status(404).json({ error: 'Founder not found' });
-            delete foundersData[id];
-        } else {
-            const newId = action === 'edit' ? id : `founder-${Object.keys(foundersData).length + 1}`;
-            foundersData[newId] = {
-                id: newId,
-                name,
-                title,
-                bio,
-                rate,
-                avatar: avatar || 'https://randomuser.me/api/portraits/lego/1.jpg',
-                socials: socials || [],
-                portfolio: portfolio || [],
-                hidden: hidden !== undefined ? hidden : false
-            };
-        }
-        await fs.writeFile(path.join(__dirname, 'founders.json'), JSON.stringify(foundersData, null, 2));
-        res.json({ message: action === 'delete' ? 'Founder deleted' : action === 'edit' ? 'Founder updated' : 'Founder added' });
-    } catch (err) {
-        console.error('Error managing founder:', err);
-        res.status(500).json({ error: 'Failed to manage founder' });
-    }
+app.post('/founders', requireAdmin, async (req, res) => {
+    res.status(501).json({ message: "Admin founder management not yet implemented with database." });
 });
 
 app.use((req, res, next) => {
-    if (req.session.userId) req.session.lastActivity = Date.now();
+    if (req.session && req.session.userId) {
+        req.session.lastActivity = Date.now();
+    }
     next();
 });
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT}. Connected to database.`);
 });

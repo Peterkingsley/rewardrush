@@ -7,6 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         :root {
@@ -35,6 +37,10 @@
         .nav-menu .profile-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; transition: var(--transition); }
         .nav-menu .profile-btn:hover { transform: scale(1.05); box-shadow: 0 0 10px rgba(108, 92, 231, 0.5); }
         .hamburger { display: none; font-size: 1.5rem; cursor: pointer; color: var(--primary-light); z-index: 101; }
+        #earnings-filter-buttons .bg-primary {
+            background-color: var(--primary);
+            color: white;
+        }
         @media (max-width: 768px) { .nav-menu { display: none; flex-direction: column; position: absolute; top: 60px; left: 0; width: 100%; background: rgba(30, 39, 46, 0.95); padding: 1rem 0; } .nav-menu.open { display: flex; } .nav-menu a { width: 100%; text-align: center; padding: 1rem 0; } .hamburger { display: block; } }
     </style>
 </head>
@@ -52,51 +58,56 @@
     </nav>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-16">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <div class="flex items-center mb-4 md:mb-0">
-                <div class="relative group">
-                    <img id="profileImage" class="h-20 w-20 rounded-full border-2 border-primary neon-shadow object-cover" src="" alt="Profile">
-                    <div id="uploadTrigger" class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                        <i class="fas fa-camera text-white text-xl"></i>
+        
+        <div id="profile-shareable-area" class="p-6 rounded-xl" style="background-color: var(--dark);">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <div class="relative group">
+                        <img id="profileImage" class="h-20 w-20 rounded-full border-2 border-primary neon-shadow object-cover" src="" alt="Profile">
+                        <div id="uploadTrigger" class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                            <i class="fas fa-camera text-white text-xl"></i>
+                        </div>
+                    </div>
+                    <input type="file" id="imageUpload" class="hidden" accept="image/*">
+                    <div class="ml-4">
+                        <h1 id="profile-name" class="text-2xl font-bold skeleton rounded w-48">&nbsp;</h1>
+                        <div class="flex items-center mt-1">
+                            <span id="profile-username" class="text-gray-400 skeleton rounded w-32">&nbsp;</span>
+                            <span id="profile-level" class="ml-3 px-2 py-1 bg-gray-800 text-xs rounded-full text-primary font-bold skeleton w-12">&nbsp;</span>
+                            <span id="profile-title" class="ml-2 px-2 py-1 bg-primary/10 text-xs rounded-full text-primary font-bold skeleton w-40">&nbsp;</span>
+                        </div>
                     </div>
                 </div>
-                <input type="file" id="imageUpload" class="hidden" accept="image/*">
-                <div class="ml-4">
-                    <h1 id="profile-name" class="text-2xl font-bold skeleton rounded w-48">&nbsp;</h1>
-                    <div class="flex items-center mt-1">
-                        <span id="profile-username" class="text-gray-400 skeleton rounded w-32">&nbsp;</span>
-                        <span id="profile-level" class="ml-3 px-2 py-1 bg-gray-800 text-xs rounded-full text-primary font-bold skeleton w-12">&nbsp;</span>
-                        <span id="profile-title" class="ml-2 px-2 py-1 bg-primary/10 text-xs rounded-full text-primary font-bold skeleton w-40">&nbsp;</span>
-                    </div>
+                <div class="flex space-x-3">
+                    <button id="share-profile-btn" class="px-4 py-2 bg-primary hover:bg-primary-light rounded-lg font-medium flex items-center neon-shadow">
+                        <i class="fas fa-share-alt mr-2"></i> Share Profile
+                    </button>
+                    <button class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium flex items-center"><i class="fas fa-cog mr-2"></i> Settings</button>
                 </div>
             </div>
-            <div class="flex space-x-3">
-                <button class="px-4 py-2 bg-primary hover:bg-primary-light rounded-lg font-medium flex items-center neon-shadow"><i class="fas fa-share-alt mr-2"></i> Share</button>
-                <button class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium flex items-center"><i class="fas fa-cog mr-2"></i> Settings</button>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
+                    <div class="text-gray-400 text-sm">Total Earnings</div>
+                    <div class="text-2xl font-bold mt-1">$<span id="total-earnings" class="skeleton rounded inline-block w-24">&nbsp;</span></div>
+                </div>
+                <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
+                    <div class="text-gray-400 text-sm">Quests Completed</div>
+                    <div class="text-2xl font-bold mt-1"><span id="quests-completed" class="skeleton rounded inline-block w-12">&nbsp;</span></div>
+                </div>
+                <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
+                    <div class="text-gray-400 text-sm">Referrals</div>
+                    <div class="text-2xl font-bold mt-1"><span id="referrals-count" class="skeleton rounded inline-block w-12">&nbsp;</span></div>
+                    <div class="text-xs text-gray-500 mt-1">$<span id="referral-earnings">0.00</span> earned</div>
+                </div>
+                <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
+                    <div class="text-gray-400 text-sm">Streak</div>
+                    <div class="text-2xl font-bold mt-1"><span id="login-streak" class="skeleton rounded inline-block w-12">&nbsp;</span> days</div>
+                </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
-                <div class="text-gray-400 text-sm">Total Earnings</div>
-                <div class="text-2xl font-bold mt-1">$<span id="total-earnings" class="skeleton rounded inline-block w-24">&nbsp;</span></div>
-            </div>
-            <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
-                <div class="text-gray-400 text-sm">Quests Completed</div>
-                <div class="text-2xl font-bold mt-1"><span id="quests-completed" class="skeleton rounded inline-block w-12">&nbsp;</span></div>
-            </div>
-            <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
-                <div class="text-gray-400 text-sm">Referrals</div>
-                <div class="text-2xl font-bold mt-1"><span id="referrals-count" class="skeleton rounded inline-block w-12">&nbsp;</span></div>
-                <div class="text-xs text-gray-500 mt-1">$<span id="referral-earnings">0.00</span> earned</div>
-            </div>
-            <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
-                <div class="text-gray-400 text-sm">Streak</div>
-                <div class="text-2xl font-bold mt-1"><span id="login-streak" class="skeleton rounded inline-block w-12">&nbsp;</span> days</div>
-            </div>
-        </div>
-
-        <div class="border-b border-gray-800 mb-6">
+        <div class="border-b border-gray-800 mb-6 mt-8">
             <div class="flex space-x-8">
                 <button id="overview-tab" class="py-3 px-1 font-medium tab-active">Overview</button>
                 <button id="refer-tab" class="py-3 px-1 font-medium text-gray-400 hover:text-white">Refer & Earn</button>
@@ -108,68 +119,86 @@
             <div id="overview-content" class="tab-pane active">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="bg-card-bg rounded-xl p-6 border border-gray-800 neon-border lg:col-span-2">
-                        <h2 class="text-lg font-bold mb-4">Earnings Last 7 Days</h2>
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold">Earnings</h2>
+                            <div id="earnings-filter-buttons" class="flex space-x-1 sm:space-x-2">
+                                <button data-range="7d" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">7D</button>
+                                <button data-range="1m" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">1M</button>
+                                <button data-range="6m" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">6M</button>
+                                <button data-range="1y" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">1Y</button>
+                                <button data-range="all" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">All</button>
+                            </div>
+                        </div>
                         <div class="h-64"><canvas id="earningsChart"></canvas></div>
                     </div>
                     <div class="bg-card-bg rounded-xl p-6 border border-gray-800 neon-border">
-                        <h2 class="text-lg font-bold mb-4">Active Quests</h2>
-                        <div id="active-quests-list" class="space-y-4"> </div>
+                        <h2 class="text-lg font-bold mb-4 text-center">Active Quests</h2>
+                        <div id="active-quests-list" class="space-y-4 flex items-center justify-center h-full">
+                           </div>
                     </div>
                     <div class="bg-card-bg rounded-xl p-6 border border-gray-800 neon-border lg:col-span-3">
                         <h2 class="text-lg font-bold mb-4">Recent Activity</h2>
-                        <div id="recent-activity-list" class="space-y-3"> </div>
+                        <div id="recent-activity-list" class="space-y-3">
+                            </div>
                     </div>
                 </div>
             </div>
-            </div>
+        </div>
     </main>
 
     <script>
         let earningsChart = null;
+        let currentUserId = null; 
 
-        // Function to update the UI with fetched data
         function updateProfileUI(data) {
-            // Remove skeleton class and update text for a single element
-            const updateElement = (id, value) => {
+            const updateElement = (id, value, prefix = '', suffix = '') => {
                 const el = document.getElementById(id);
                 if (el) {
-                    el.textContent = value;
+                    el.textContent = `${prefix}${value}${suffix}`;
                     el.classList.remove('skeleton', 'w-48', 'w-32', 'w-12', 'w-40', 'w-24', 'inline-block');
                 }
             };
             
             document.getElementById('profileImage').src = data.avatar || 'https://www.gravatar.com/avatar/?d=mp';
-            updateElement('profile-name', data.fullName);
-            updateElement('profile-username', `@${data.username}`);
-            updateElement('profile-level', `Lvl ${data.level}`);
-            updateElement('profile-title', data.title);
-            
-            updateElement('total-earnings', data.totalEarnings);
+            // **FIXED**: Use username as a fallback if full name is null or empty
+            updateElement('profile-name', data.fullName || data.username);
+            updateElement('profile-username', data.username, '@');
+            updateElement('profile-level', data.level || 1, 'Lvl ');
+            updateElement('profile-title', data.title || 'Newcomer');
+            updateElement('total-earnings', (data.totalEarnings || 0).toFixed(2));
             updateElement('quests-completed', data.questsCompleted);
-            updateElement('referrals-count', data.referralsCount);
-            updateElement('referral-earnings', data.referralEarnings);
-            updateElement('login-streak', data.loginStreak);
+            updateElement('referrals-count', data.referralsCount || 0);
+            updateElement('referral-earnings', (data.referralEarnings || 0).toFixed(2));
+            updateElement('login-streak', data.loginStreak || 0);
 
-            // Populate recent activity
             const activityList = document.getElementById('recent-activity-list');
-            activityList.innerHTML = ''; // Clear placeholder
-            data.recentActivity.forEach(item => {
-                activityList.innerHTML += `
-                    <div class="activity-item flex items-start">
-                        <div class="bg-${item.color}/10 p-2 rounded-lg mr-3">
-                            <i class="fas ${item.icon} text-${item.color}"></i>
-                        </div>
-                        <div>
-                            <div>${item.text}</div>
-                            <div class="text-sm text-gray-400">${item.detail}</div>
-                        </div>
-                    </div>
-                `;
-            });
+            activityList.innerHTML = ''; 
+            if (data.recentActivity && data.recentActivity.length > 0) {
+                data.recentActivity.forEach(item => {
+                    const iconData = {
+                        quest_completed: { icon: 'fa-check-circle', color: 'primary' },
+                        new_referral: { icon: 'fa-user-plus', color: 'green-500' },
+                        account_created: { icon: 'fa-rocket', color: 'blue-500' }
+                    };
+                    const { icon, color } = iconData[item.activity_type] || { icon: 'fa-star', color: 'yellow-500' };
+
+                    activityList.innerHTML += `
+                        <div class="activity-item flex items-start">
+                            <div class="bg-${color}/10 p-2 rounded-lg mr-3">
+                                <i class="fas ${icon} text-${color}"></i>
+                            </div>
+                            <div>
+                                <div>${item.details}</div>
+                                <div class="text-sm text-gray-400">${new Date(item.created_at).toLocaleString()}</div>
+                            </div>
+                        </div>`;
+                });
+            } else {
+                 activityList.innerHTML = `<p class="text-gray-400 text-center">No recent activity to display.</p>`;
+            }
         }
 
-        // Function to initialize or update the chart
-        function initChart(chartData) {
+        function initChart(labels, chartData) {
             const ctx = document.getElementById('earningsChart').getContext('2d');
             if (earningsChart) {
                 earningsChart.destroy();
@@ -177,7 +206,7 @@
             earningsChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+                    labels: labels,
                     datasets: [{
                         label: 'Earnings ($)',
                         data: chartData,
@@ -193,33 +222,72 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { ticks: { color: 'rgba(255, 255, 255, 0.7)', callback: (value) => '$' + value } },
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)', callback: (value) => '$' + value } 
+                        },
                         x: { ticks: { color: 'rgba(255, 255, 255, 0.7)' } }
                     }
                 }
             });
         }
 
-        // Main function to load all profile data
+        async function fetchAndRenderEarnings(userId, range = '7d') {
+            try {
+                const response = await fetch(`/api/profile/${userId}/earnings-history?range=${range}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                
+                initChart(data.labels, data.data);
+
+                document.querySelectorAll('#earnings-filter-buttons button').forEach(button => {
+                    button.classList.toggle('bg-primary', button.dataset.range === range);
+                    button.classList.toggle('bg-gray-700', button.dataset.range !== range);
+                });
+
+            } catch (error) {
+                console.error(`Could not fetch earnings for range ${range}:`, error);
+            }
+        }
+
         async function loadProfileData(userId) {
+            currentUserId = userId;
             try {
                 const response = await fetch(`/api/profile/${userId}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
                 const data = await response.json();
                 
                 updateProfileUI(data);
-                initChart(data.earningsChartData);
+
+                const activeQuestsEl = document.getElementById('active-quests-list');
+                if (activeQuestsEl) {
+                    activeQuestsEl.innerHTML = `
+                        <div class="text-center">
+                            <div class="text-4xl font-bold gradient-text">${data.activeQuestsCount}</div>
+                            <p class="text-gray-400 mt-2">Quests Available</p>
+                            <a href="groweasy.html" class="mt-4 inline-block px-4 py-2 bg-primary hover:bg-primary-light rounded-lg font-medium text-sm">
+                                View Quests
+                            </a>
+                        </div>
+                    `;
+                }
+
+                if (data.earningsChartData) {
+                    initChart(data.earningsChartData.labels, data.earningsChartData.data);
+                    const initialButton = document.querySelector('#earnings-filter-buttons button[data-range="7d"]');
+                    if(initialButton) {
+                        initialButton.classList.add('bg-primary');
+                        initialButton.classList.remove('bg-gray-700');
+                    }
+                }
 
             } catch (error) {
                 console.error("Could not fetch profile data:", error);
-                // Optionally, show an error message on the page
-                document.querySelector('main').innerHTML = '<p class="text-center text-danger">Could not load profile. Please try again later.</p>';
+                document.querySelector('main').innerHTML = `<p class="text-center text-danger">Could not load profile. Please try again later.</p>`;
             }
         }
         
-        // Handle profile picture upload
         function setupProfileUpload(userId) {
             const uploadTrigger = document.getElementById('uploadTrigger');
             const imageUpload = document.getElementById('imageUpload');
@@ -233,12 +301,10 @@
                 imageUpload.addEventListener('change', async function(event) {
                     const file = event.target.files[0];
                     if (file && file.type.startsWith('image/')) {
-                        // Optimistically update the UI
                         const reader = new FileReader();
                         reader.onload = (e) => { profileImage.src = e.target.result; };
                         reader.readAsDataURL(file);
 
-                        // Upload to server
                         const formData = new FormData();
                         formData.append('profilePicture', file);
 
@@ -249,20 +315,66 @@
                             });
                             const result = await response.json();
                             if (!response.ok) throw new Error(result.error || 'Upload failed');
-                            console.log('Upload successful:', result);
-                            // Optionally update the image src again with the server path
-                            profileImage.src = result.filePath;
+                            profileImage.src = result.filePath; 
                         } catch (error) {
                             console.error('Error uploading file:', error);
-                            alert('Could not upload profile picture.');
-                            // Revert to old picture if needed, or just leave the optimistic one
+                            alert('Could not upload profile picture. ' + error.message);
+                            loadProfileData(userId); 
                         }
                     }
                 });
             }
         }
 
-        // Initialize page on load
+        function setupShareButton(userId) {
+            const shareButton = document.getElementById('share-profile-btn');
+            const shareArea = document.getElementById('profile-shareable-area');
+
+            if (!shareButton || !shareArea) return;
+
+            shareButton.addEventListener('click', async () => {
+                shareButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generating...';
+                shareButton.disabled = true;
+
+                try {
+                    const canvas = await html2canvas(shareArea, {
+                        backgroundColor: '#0f172a', 
+                        useCORS: true 
+                    });
+
+                    canvas.toBlob(async (blob) => {
+                        if (!blob) throw new Error('Canvas to Blob conversion failed');
+                        const referralLink = `https://rewardrush.com/join?ref=${userId}`;
+                        const files = [new File([blob], 'rewardrush-profile.png', { type: 'image/png' })];
+
+                        if (navigator.canShare && navigator.canShare({ files })) {
+                            await navigator.share({
+                                files: files,
+                                title: 'My RewardRush Profile',
+                                text: `Check out my progress on RewardRush and join with my link!`,
+                                url: referralLink
+                            });
+                        } else {
+                            const link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = `rewardrush-profile-${userId}.png`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(link.href);
+                        }
+                    }, 'image/png');
+
+                } catch (err) {
+                    console.error('Error generating or sharing profile image:', err);
+                    alert('Sorry, could not generate the profile image.');
+                } finally {
+                    shareButton.innerHTML = '<i class="fas fa-share-alt mr-2"></i> Share Profile';
+                    shareButton.disabled = false;
+                }
+            });
+        }
+        
         document.addEventListener('DOMContentLoaded', async function() {
             try {
                 const sessionRes = await fetch('/check-session');
@@ -271,8 +383,22 @@
                 if (sessionData.loggedIn) {
                     await loadProfileData(sessionData.userId);
                     setupProfileUpload(sessionData.userId);
+                    setupShareButton(sessionData.userId);
+
+                    const filterContainer = document.getElementById('earnings-filter-buttons');
+                    if (filterContainer) {
+                        filterContainer.addEventListener('click', (event) => {
+                            if (event.target.tagName === 'BUTTON') {
+                                const range = event.target.dataset.range;
+                                if(range && currentUserId) {
+                                    fetchAndRenderEarnings(currentUserId, range);
+                                }
+                            }
+                        });
+                    }
+
                 } else {
-                    window.location.href = '/auth.html'; // Redirect if not logged in
+                    window.location.href = '/auth.html';
                 }
             } catch (error) {
                 console.error("Session check failed:", error);
@@ -280,14 +406,18 @@
             }
         });
 
-        // Tab Switching Logic (no changes needed here)
         document.querySelectorAll('[id$="-tab"]').forEach(tab => {
             tab.addEventListener('click', function() {
-                const tabName = this.id.replace('-tab', '');
-                document.querySelectorAll('[id$="-tab"]').forEach(t => t.classList.remove('tab-active'));
-                this.classList.add('tab-active');
+                document.querySelectorAll('[id$="-tab"]').forEach(t => t.classList.remove('tab-active', 'text-primary-light'));
                 document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
-                document.getElementById(`${tabName}-content`).classList.remove('hidden');
+                
+                this.classList.add('tab-active', 'text-primary-light');
+                const tabName = this.id.replace('-tab', '');
+                const contentPane = document.getElementById(`${tabName}-content`);
+                if(contentPane) {
+                   contentPane.classList.remove('hidden');
+                   contentPane.classList.add('active');
+                }
             });
         });
         
