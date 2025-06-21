@@ -188,28 +188,33 @@ app.post('/login', async (req, res) => {
             const lastLogin = user.last_login ? new Date(last_login) : null;
             let newStreak = 1;
 
-            if (lastLogin) {
-                const todayMidnight = new Date(today).setHours(0, 0, 0, 0);
-                const lastLoginMidnight = new Date(lastLogin).setHours(0, 0, 0, 0);
-                const diffDays = (todayMidnight - lastLoginMidnight) / (1000 * 60 * 60 * 24);
-                if (diffDays === 1) newStreak = (user.login_streak || 0) + 1;
-                else if (diffDays > 1) newStreak = 1;
-                else newStreak = user.login_streak || 1;
-            }
-            await pool.query('UPDATE users SET last_login = NOW(), login_streak = $1 WHERE id = $2', [newStreak, user.id]);
-            
-            req.session.userId = username;
-            req.session.isAdmin = false;
-            req.session.lastActivity = Date.now();
-            res.json({ message: 'Logged in', userId: username, isAdmin: false });
-        } else {
-            res.status(401).json({ error: 'Invalid credentials' });
-        }
-    } catch (err) {
-        console.error('Login error:', err);
-        res.status(500).json({error: 'Server error during login.'});
-    }
-});
+            if (match) {
+          const today = new Date();
+          // This is the corrected line
+          const lastLogin = user.last_login ? new Date(user.last_login) : null;
+          let newStreak = 1;
+
+          if (lastLogin) {
+              const todayMidnight = new Date(today).setHours(0, 0, 0, 0);
+              const lastLoginMidnight = new Date(lastLogin).setHours(0, 0, 0, 0);
+              const diffDays = (todayMidnight - lastLoginMidnight) / (1000 * 60 * 60 * 24);
+              if (diffDays === 1) {
+                  newStreak = (user.login_streak || 0) + 1;
+              } else if (diffDays > 1) {
+                  newStreak = 1;
+              } else {
+                  newStreak = user.login_streak || 1;
+              }
+          }
+          await pool.query('UPDATE users SET last_login = NOW(), login_streak = $1 WHERE id = $2', [newStreak, user.id]);
+          
+          req.session.userId = username;
+          req.session.isAdmin = false;
+          req.session.lastActivity = Date.now();
+          res.json({ message: 'Logged in', userId: username, isAdmin: false });
+      } else {
+          res.status(401).json({ error: 'Invalid credentials' });
+      }
 
 app.get('/logout', (req, res) => {
     req.session.destroy(() => res.json({ message: 'Logged out' }));
@@ -808,3 +813,4 @@ app.use((req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
 });
+lastLoginMidnight
