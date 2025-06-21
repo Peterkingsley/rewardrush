@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RewardRush - Affiliate Hub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -22,7 +22,11 @@
             --neon: #00f5d4;
             --neon-pink: #ff00ff;
             --neon-purple: #9d4edd;
-            --space-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --border-radius-sm: 0.75rem;
+            --border-radius-md: 1.25rem;
+            --border-radius-lg: 1.5rem;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --border-color: rgba(255, 255, 255, 0.1);
         }
         
         * {
@@ -32,27 +36,81 @@
             font-family: 'Space Grotesk', 'Poppins', sans-serif;
         }
         
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            background: var(--space-gradient);
-            background-attachment: fixed;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
             color: var(--light);
             min-height: 100vh;
             overflow-x: hidden;
-            width: 100vw;
+            width: 100%;
         }
         
+        /* GENERAL UTILITIES */
+        .container {
+            width: 90%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 0;
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: var(--light);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-weight: 600;
+        }
+        
+        .section-title i {
+            color: var(--neon);
+        }
+
+        /* BLOB ANIMATION */
+        .bg-blob {
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            animation: float 20s infinite ease-in-out alternate;
+            opacity: 0.8;
+        }
+        
+        .bg-blob.one {
+            top: -150px; left: -150px;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(108, 92, 231, 0.1) 0%, transparent 70%);
+            animation-delay: 0s;
+        }
+        
+        .bg-blob.two {
+            bottom: -200px; right: -200px;
+            width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(0, 206, 201, 0.1) 0%, transparent 70%);
+            animation-delay: 5s;
+        }
+
+        @keyframes float {
+            from { transform: translate(0, 0) rotate(0deg); }
+            to { transform: translate(100px, 50px) rotate(180deg); }
+        }
+
+        /* DESKTOP NAVIGATION */
         nav {
-            background: rgba(30, 39, 46, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
+            background: rgba(22, 33, 62, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 1rem 5%; /* Use percentage for better scaling */
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
             z-index: 100;
-            border-bottom: 1px solid rgba(108, 92, 231, 0.2);
-            width: 100%;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            border-bottom: 1px solid var(--border-color);
         }
         
         .logo {
@@ -67,9 +125,7 @@
             gap: 0.5rem;
         }
         
-        .logo i {
-            font-size: 1.5rem;
-        }
+        .logo i { font-size: 1.5rem; }
         
         .nav-menu {
             display: flex;
@@ -77,300 +133,121 @@
             align-items: center;
         }
         
-        .nav-menu a {
+        .nav-menu a, .nav-menu .logout-btn {
             color: var(--light);
             text-decoration: none;
             font-size: 1rem;
             font-weight: 500;
             transition: all 0.3s ease;
             padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-        }
-        
-        .nav-menu a:hover, .nav-menu a.active {
-            color: var(--primary-light);
-            background: rgba(108, 92, 231, 0.2);
-        }
-        
-        .nav-menu .profile-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-menu .profile-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(108, 92, 231, 0.6);
-        }
-        
-        .nav-menu .logout-btn {
-            background: var(--danger);
-            color: white;
-            padding: 0.5rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
+            border-radius: var(--border-radius-sm);
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
         
-        .nav-menu .logout-btn:hover {
+        .nav-menu a:hover, .nav-menu a:focus-visible {
+            color: var(--neon);
+            background: rgba(108, 92, 231, 0.1);
+            outline: none;
+        }
+        
+        .nav-menu a.active {
+            color: var(--primary-light);
+            background: rgba(108, 92, 231, 0.2);
+            font-weight: 600;
+        }
+        
+        .nav-menu .profile-btn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+        }
+        
+        .nav-menu .profile-btn:hover, .nav-menu .profile-btn:focus-visible {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(108, 92, 231, 0.5);
+            background: var(--primary-light);
+        }
+        
+        .nav-menu .logout-btn {
+            background: var(--danger);
+            border: none;
+            cursor: pointer;
+        }
+        
+        .nav-menu .logout-btn:hover, .nav-menu .logout-btn:focus-visible {
             background: #ff5252;
             transform: translateY(-2px);
+            outline: none;
         }
         
+        /* MOBILE NAVIGATION */
         .mobile-nav { display: none; }
         
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-            width: 100%;
-        }
-
-        .stats-section-wrapper {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 1.25rem;
-            padding: 2rem;
-            margin-bottom: 3rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
+        /* HERO SECTION */
         .hero-section {
             text-align: center;
-            padding: 3rem 1rem;
+            padding: 4rem 1rem;
             margin-bottom: 2rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 1.5rem;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(108, 92, 231, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(108, 92, 231, 0.15) 0%, transparent 70%);
-            animation: pulse-hero 15s infinite alternate;
-            z-index: -1;
-        }
-        
-        @keyframes pulse-hero {
-            0% { transform: scale(1) translate(0, 0); }
-            50% { transform: scale(1.1) translate(30px, -30px); }
-            100% { transform: scale(1) translate(0, 0); }
+            background: rgba(255, 255, 255, 0.03);
         }
         
         .hero-section h1 {
             font-size: 3.5rem;
             margin-bottom: 1rem;
-            background: linear-gradient(to right, var(--primary), var(--neon));
+            background: linear-gradient(45deg, var(--primary), var(--neon));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             font-weight: 700;
-            letter-spacing: -1px;
+            letter-spacing: -1.5px;
         }
         
         .hero-section p {
             font-size: 1.2rem;
             color: rgba(255, 255, 255, 0.9);
             max-width: 700px;
-            margin: 0 auto 1rem;
+            margin: 0 auto;
             line-height: 1.6;
         }
         
-        .stats-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .section-title {
-            font-size: 1.8rem;
-            margin: 0;
-            color: var(--light);
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            font-weight: 600;
-        }
-
-        .section-title i { color: var(--neon); }
-        
-        .date-filter-container {
-            display: flex;
-            gap: 0.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.5rem;
-            border-radius: 2rem;
-            backdrop-filter: blur(5px);
-        }
-        
-        .date-filter-btn {
-            background: transparent;
-            color: rgba(255, 255, 255, 0.7);
-            border: none;
-            padding: 0.5rem 1.25rem;
-            border-radius: 2rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-        
-        .date-filter-btn.active, .date-filter-btn:hover {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
-        }
-
-        .collapsible-section {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 1.25rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            overflow: hidden;
-            transition: background-color 0.3s;
-        }
-
-        .collapsible-section:hover {
+        /* STATS SECTION */
+        .stats-section-wrapper {
             background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
         }
 
-        .section-header {
-            padding: 1.25rem 1.5rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .toggle-icon {
-            font-size: 1.5rem;
-            color: var(--primary-light);
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .collapsible-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
-            padding: 0 1.5rem;
-        }
-
-        .collapsible-content.open {
-            max-height: 2000px; 
-            padding: 0 1.5rem 1.5rem 1.5rem;
-        }
-        
-        .section-header.active .toggle-icon { transform: rotate(180deg); }
-
-        .search-container {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .search-input {
-            flex-grow: 1;
-            padding: 0.75rem 1.25rem;
-            border-radius: 0.75rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.3);
-            color: var(--light);
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
-        }
-
-        .search-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 0.75rem;
-            padding: 0 1.25rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-        }
-
-        .search-btn:hover { background: var(--primary-light); }
-        
-        .dashboard-carousel {
-            position: relative;
-            width: 100%;
-            overflow: hidden;
-        }
-
-        .dashboard-track {
-            display: flex;
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
-            transition: transform 0.5s ease;
-            padding: 0.5rem 0; /* Add padding for shadow visibility */
         }
-        
+
         .dashboard-card {
-            background: rgba(30, 39, 46, 0.5);
-            backdrop-filter: blur(10px);
+            background: var(--dark);
             padding: 1.5rem;
-            border-radius: 1.25rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border-radius: var(--border-radius-md);
+            border: 1px solid transparent;
+            border-top: 4px solid var(--primary);
+            box-shadow: 0 8px 32px var(--shadow-color);
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            position: relative;
-            overflow: hidden;
-            min-width: 280px;
-            flex-shrink: 0;
-        }
-        
-        .dashboard-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            transition: transform 0.3s ease;
-            transform: scaleX(0);
-            transform-origin: left;
-        }
-        
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-            border-color: rgba(108, 92, 231, 0.5);
         }
 
-        .dashboard-card:hover::after {
-            transform: scaleX(1);
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+            border-color: rgba(108, 92, 231, 0.5);
         }
         
         .dashboard-card .card-header {
@@ -388,15 +265,15 @@
         }
         
         .dashboard-card .card-icon {
-            width: 48px;
-            height: 48px;
+            width: 48px; height: 48px;
             border-radius: 50%;
             background: rgba(108, 92, 231, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--primary-light);
+            color: var(--primary);
             font-size: 1.2rem;
+            flex-shrink: 0;
         }
         
         .dashboard-card h3 {
@@ -408,7 +285,7 @@
         .dashboard-card p.value {
             font-size: 2.5rem;
             font-weight: 700;
-            background: linear-gradient(to right, var(--primary-light), var(--neon));
+            background: linear-gradient(to right, var(--primary), var(--neon));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
@@ -426,42 +303,107 @@
             cursor: pointer;
             color: var(--primary-light);
             font-size: 1.2rem;
-            transition: color 0.3s;
+            transition: color 0.3s ease;
         }
-
-        .balance-toggle:hover { color: var(--light); }
+        .balance-toggle:hover {
+            color: var(--neon);
+        }
         
-        .carousel-nav {
-            display: none;
-            justify-content: center;
+        /* PROGRAMS SECTION */
+        .search-container {
+            display: flex;
             gap: 0.5rem;
-            margin-top: 1rem;
+            margin-bottom: 1.5rem;
         }
 
-        .carousel-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            cursor: pointer;
+        .search-input {
+            flex-grow: 1;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--light);
+            font-size: 1rem;
             transition: all 0.3s ease;
         }
 
-        .carousel-dot.active {
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
+        }
+
+        .search-btn {
             background: var(--primary);
-            transform: scale(1.2);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            padding: 0 1.25rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .search-btn:hover {
+            background: var(--primary-light);
         }
         
-        .category-section h3.category-title {
+        /* Collapsible Sections */
+        .collapsible-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius-md);
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .section-header:hover {
+            background: rgba(108, 92, 231, 0.1);
+        }
+
+        .section-header .category-title {
+            margin-bottom: 0;
             font-size: 1.5rem;
             color: var(--neon);
-            margin-bottom: 0;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            font-weight: 600;
+        }
+
+        .toggle-icon {
+            font-size: 1.5rem;
+            color: var(--primary-light);
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+            padding: 0 1.5rem;
+        }
+
+        .collapsible-content.open {
+            max-height: 5000px; /* Large value */
+            padding: 1.5rem;
+            padding-top: 1rem;
         }
         
+        .section-header.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+        
+        /* Program Cards */
         .program-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -469,38 +411,28 @@
         }
         
         .program-card {
-            background: rgba(30, 39, 46, 0.5);
-            backdrop-filter: blur(10px);
+            background: var(--dark);
             padding: 1.5rem;
-            border-radius: 1.25rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border-radius: var(--border-radius-md);
+            box-shadow: 0 8px 32px var(--shadow-color);
             transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent);
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            position: relative;
-            overflow: hidden;
         }
         
         .program-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-            border-color: rgba(108, 92, 231, 0.5);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+            border-color: var(--accent);
         }
         
         .program-card h4 {
             font-size: 1.3rem;
             color: var(--primary-light);
-            margin-bottom: 0.25rem;
             font-weight: 600;
-        }
-        
-        .program-card .program-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
         }
         
         .program-card .program-reward {
@@ -510,7 +442,7 @@
             border-radius: 1rem;
             font-size: 0.9rem;
             font-weight: 600;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 0.3rem;
         }
@@ -519,24 +451,18 @@
             font-size: 0.95rem;
             color: rgba(255, 255, 255, 0.8);
             line-height: 1.6;
+            flex-grow: 1; /* Pushes button to bottom */
         }
         
-        .program-card .program-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: auto;
-        }
-        
-        .primary-btn {
+        .program-card .primary-btn {
             background: linear-gradient(to right, var(--primary), var(--neon-purple));
             color: white;
             padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 0.75rem;
+            border-radius: var(--border-radius-sm);
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 500;
-            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -544,41 +470,41 @@
             box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
         }
         
-        .primary-btn:hover {
+        .program-card .primary-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.5);
+            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
         }
-        
+
+        /* HISTORY TABLE */
         .history-container {
             overflow-x: auto;
-            background: rgba(30, 39, 46, 0.5);
-            border-radius: 1.25rem;
-            padding: 0.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius-md);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
         }
         
         .history-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 600px;
+            min-width: 600px; /* Ensures table looks good even when scrolling */
         }
         
+        .history-table th, .history-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+        }
+
         .history-table th {
             background: rgba(108, 92, 231, 0.2);
             color: var(--primary-light);
-            padding: 1rem 1.5rem;
-            text-align: left;
             font-weight: 600;
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
         
-        .history-table th:first-child { border-radius: 0.75rem 0 0 0.75rem; }
-        .history-table th:last-child { border-radius: 0 0.75rem 0.75rem 0; }
-        
         .history-table td {
-            padding: 1rem 1.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             color: rgba(255, 255, 255, 0.9);
             font-size: 0.95rem;
@@ -601,13 +527,11 @@
         .status-completed { background: rgba(0, 184, 148, 0.2); color: var(--success); }
         .status-tracked { background: rgba(253, 203, 110, 0.2); color: var(--warning); }
         
+        /* MODAL */
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0; /* a shorthand for top, right, bottom, left */
             background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(5px);
             align-items: center;
@@ -625,13 +549,18 @@
         .modal-content {
             background: var(--darker);
             padding: 2rem;
-            border-radius: 1.5rem;
+            border-radius: var(--border-radius-lg);
             width: 90%;
-            max-width: 500px;
+            max-width: 550px;
             max-height: 90vh;
             overflow-y: auto;
             border: 1px solid rgba(108, 92, 231, 0.3);
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        .modal.open .modal-content {
+            transform: scale(1);
         }
         
         .modal-content h3 {
@@ -647,7 +576,7 @@
         .modal-section {
             background: rgba(30, 39, 46, 0.7);
             padding: 1.25rem;
-            border-radius: 0.75rem;
+            border-radius: var(--border-radius-sm);
             margin-bottom: 1.25rem;
             border-left: 3px solid var(--primary);
         }
@@ -662,24 +591,14 @@
             font-weight: 500;
         }
 
-        .modal-section p {
+        .modal-section p, .modal-section li {
             font-size: 0.95rem;
             color: rgba(255, 255, 255, 0.8);
             line-height: 1.6;
             margin-bottom: 0.5rem;
         }
 
-        .modal-section ul {
-            padding-left: 1.25rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .modal-section ul li {
-            margin-bottom: 0.5rem;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
+        .modal-section ul { padding-left: 1.25rem; }
         
         .modal-section .highlight {
             color: var(--secondary);
@@ -697,15 +616,17 @@
 
         .modal-actions {
             display: flex;
+            flex-wrap: wrap;
             gap: 1rem;
             margin-top: 1.5rem;
         }
         
         .modal-btn {
             flex: 1;
+            min-width: 150px;
             padding: 0.75rem;
             border: none;
-            border-radius: 0.75rem;
+            border-radius: var(--border-radius-sm);
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 500;
@@ -716,24 +637,25 @@
             font-size: 0.95rem;
         }
         
-        .modal-btn-primary { 
+        .modal-btn-primary {  
             background: linear-gradient(to right, var(--primary), var(--neon-purple));
-            color: white; 
+            color: white;  
             box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
         }
-        .modal-btn-primary:hover { 
+        .modal-btn-primary:hover {  
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
         }
-        .modal-btn-secondary { 
-            background: rgba(255, 255, 255, 0.1); 
-            color: white; 
+        .modal-btn-secondary {  
+            background: rgba(255, 255, 255, 0.1);  
+            color: white;  
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .modal-btn-secondary:hover { 
-            background: rgba(255, 255, 255, 0.2); 
+        .modal-btn-secondary:hover {  
+            background: rgba(255, 255, 255, 0.2);  
         }
-        
+
+        /* TOAST NOTIFICATION */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -742,11 +664,11 @@
             background-color: var(--dark);
             color: white;
             padding: 1rem 1.5rem;
-            border-radius: 0.75rem;
+            border-radius: var(--border-radius-sm);
             box-shadow: 0 8px 20px rgba(0,0,0,0.3);
             z-index: 2000;
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             border-left: 4px solid var(--success);
             display: flex;
             align-items: center;
@@ -756,113 +678,199 @@
         .toast-success { border-left-color: var(--success); }
         .toast-error { border-left-color: var(--danger); }
         
-        .bg-blob {
-            position: fixed;
-            width: 500px;
-            height: 500px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(108, 92, 231, 0.1) 0%, transparent 70%);
-            z-index: -1;
-            animation: float 15s infinite ease-in-out;
-        }
         
-        .bg-blob:nth-child(1) {
-            top: -100px;
-            left: -100px;
-            width: 600px;
-            height: 600px;
-            animation-delay: 0s;
-        }
-        
-        .bg-blob:nth-child(2) {
-            bottom: -150px;
-            right: -100px;
-            width: 700px;
-            height: 700px;
-            background: radial-gradient(circle, rgba(0, 206, 201, 0.1) 0%, transparent 70%);
-            animation-delay: 2s;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(50px, 50px); }
+        /* SOCIAL LINKS FORM IN MODAL */
+        .social-links-form {
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-sm);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
         }
 
-        @media (min-width: 769px) {
-            .dashboard-carousel {
-                overflow: visible;
-            }
-            .dashboard-track {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                gap: 1.5rem;
-            }
+        .social-links-form h4 {
+            font-size: 1.1rem; color: var(--neon);
+            margin-bottom: 1rem; display: flex;
+            align-items: center; gap: 0.5rem;
+        }
+        
+        .social-link-input-group {
+            display: flex; flex-direction: column;
+            gap: 1rem; margin-bottom: 1.5rem;
         }
 
+        .social-link-input {
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+
+        .social-link-input i {
+            font-size: 1.2rem; width: 24px; text-align: center;
+        }
+
+        .social-link-input input {
+            flex: 1; padding: 0.75rem 1rem;
+            border-radius: 0.5rem; border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3); color: var(--light);
+            font-size: 0.95rem; transition: all 0.3s ease;
+        }
+
+        .social-link-input input:focus {
+            outline: none; border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(108, 92, 231, 0.3);
+        }
+
+        .social-links-submit-btn {
+            background: linear-gradient(to right, var(--primary), var(--neon-purple));
+            color: white; border: none; padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem; cursor: pointer; transition: all 0.3s ease;
+            font-weight: 500; display: flex; align-items: center;
+            justify-content: center; gap: 0.5rem; width: 100%;
+        }
+
+        .social-links-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+        }
+
+        .social-platform-icon.youtube { color: #FF0000; }
+        .social-platform-icon.twitter { color: #1DA1F2; }
+
+        /* ----------- RESPONSIVE STYLES (Mobile First Approach) ----------- */
+        
+        /* Tablets and below */
         @media (max-width: 768px) {
-            body { padding-bottom: 80px; }
-            nav { justify-content: center; }
-            .nav-menu { display: none; }
+            body {
+                padding-bottom: 80px; /* Space for bottom nav */
+            }
+
+            .container {
+                padding: 1rem 0;
+            }
+            
+            nav {
+                display: none; /* Hide desktop nav */
+            }
 
             .mobile-nav {
                 display: flex;
                 position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background: rgba(30, 39, 46, 0.9);
-                backdrop-filter: blur(10px);
+                bottom: 0; left: 0; right: 0;
+                background: rgba(22, 33, 62, 0.9);
+                backdrop-filter: blur(12px);
                 justify-content: space-around;
                 padding: 0.5rem 0;
                 z-index: 100;
-                border-top: 1px solid rgba(108, 92, 231, 0.2);
+                border-top: 1px solid var(--border-color);
+                box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
             }
 
             .mobile-nav a {
                 color: var(--light);
                 text-decoration: none;
-                font-size: 1.2rem;
+                font-size: 1rem; /* Adjusted for better spacing */
                 padding: 0.5rem 1rem;
-                border-radius: 0.5rem;
+                border-radius: 50%; /* Make it circular for a modern feel */
                 transition: all 0.3s ease;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px; /* Space between icon and text */
+            }
+            .mobile-nav a .nav-text {
+                font-size: 0.6rem;
+                display: none; /* Hides text by default */
             }
 
-            .mobile-nav a.active { color: var(--primary-light); }
-            .container { padding: 1rem; }
-            .hero-section h1 { font-size: 2.5rem; }
-            
-            .stats-header {
-                 flex-direction: column;
-                 align-items: flex-start;
-                 gap: 1rem;
+            .mobile-nav a.active {
+                color: var(--neon);
+                background: rgba(108, 92, 231, 0.2);
             }
             
-            .date-filter-container {
-                 align-self: stretch;
-                 justify-content: space-between;
+            .hero-section {
+                padding: 2rem 1rem;
+            }
+            .hero-section h1 {
+                font-size: 2.5rem;
+            }
+            .hero-section p {
+                font-size: 1rem;
+            }
+
+            .stats-section-wrapper {
+                padding: 1.5rem;
             }
             
-            .date-filter-btn {
-                 flex: 1;
-                 text-align: center;
-                 padding: 0.5rem 0.75rem;
+            /* Responsive Stats Carousel (CSS Only) */
+            .dashboard-grid {
+                display: flex;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch; /* for smooth scrolling on iOS */
+                gap: 1rem;
+                padding-bottom: 1rem; /* Space for scrollbar */
+                margin: 0 -1.5rem; /* Extend to edge of wrapper */
+                padding-left: 1.5rem; /* Re-add padding */
+                padding-right: 1.5rem;
             }
-            .carousel-nav { display: flex; }
-        }
-        
-        @media (max-width: 576px) {
-            .hero-section { padding: 2rem 1rem; }
-            .hero-section h1 { font-size: 2rem; }
+            .dashboard-grid::-webkit-scrollbar {
+                height: 5px;
+            }
+            .dashboard-grid::-webkit-scrollbar-thumb {
+                background: var(--primary);
+                border-radius: 10px;
+            }
+
+            .dashboard-card {
+                scroll-snap-align: start;
+                flex: 0 0 80%; /* Each card takes 80% of the viewport width */
+                max-width: 300px;
+            }
+            .dashboard-card p.value {
+                font-size: 2rem;
+            }
             
-            .dashboard-card { width: calc(100vw - 4rem); }
-            .dashboard-card p.value { font-size: 2rem; }
-            .program-list { grid-template-columns: 1fr; }
+            .program-list {
+                grid-template-columns: 1fr;
+            }
+
+            /* Responsive History Table */
+            .history-table {
+                min-width: 0; /* Override desktop min-width */
+            }
+            .history-table thead {
+                display: none; /* Hide table headers */
+            }
+            .history-table tr {
+                display: block;
+                margin-bottom: 1rem;
+                border-radius: var(--border-radius-sm);
+                overflow: hidden;
+                border: 1px solid var(--border-color);
+                background: rgba(0,0,0,0.2);
+            }
+            .history-table td {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.75rem 1rem;
+                text-align: right;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            .history-table td:last-child {
+                border-bottom: none;
+            }
+            .history-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                text-align: left;
+                margin-right: 1rem;
+                color: var(--primary-light);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="bg-blob"></div>
-    <div class="bg-blob"></div>
+    <div class="bg-blob one"></div>
+    <div class="bg-blob two"></div>
     
     <nav>
         <div class="logo">
@@ -870,11 +878,11 @@
             <span>RewardRush</span>
         </div>
         <div class="nav-menu" id="nav-menu">
-            <a href="groweasy.html"><i class="fas fa-tasks"></i> Quests</a>
+            <a href="#quests"><i class="fas fa-tasks"></i> Quests</a>
             <a href="affiliate.html" class="active"><i class="fas fa-users"></i> Affiliate</a>
-            <a href="education.html"><i class="fas fa-graduation-cap"></i> Education</a>
-            <a href="founder.html"><i class="fas fa-user-tie"></i> Founder</a>
-            <a href="profile.html" class="profile-btn">
+            <a href="#education"><i class="fas fa-graduation-cap"></i> Education</a>
+            <a href="#founder"><i class="fas fa-user-tie"></i> Founder</a>
+            <a href="#profile" class="profile-btn" aria-label="Profile">
                 <i class="fas fa-user"></i>
             </a>
             <button class="logout-btn" onclick="logout()">
@@ -885,86 +893,75 @@
     </nav>
     
     <div class="mobile-nav">
-        <a href="groweasy.html"><i class="fas fa-tasks"></i></a>
-        <a href="affiliate.html" class="active"><i class="fas fa-users"></i></a>
-        <a href="education.html"><i class="fas fa-graduation-cap"></i></a>
-        <a href="founder.html"><i class="fas fa-user-tie"></i></a>
-        <a href="profile.html"><i class="fas fa-user"></i></a>
+        <a href="#quests" aria-label="Quests"><i class="fas fa-tasks"></i></a>
+        <a href="affiliate.html" class="active" aria-label="Affiliate"><i class="fas fa-users"></i></a>
+        <a href="#education" aria-label="Education"><i class="fas fa-graduation-cap"></i></a>
+        <a href="#founder" aria-label="Founder"><i class="fas fa-user-tie"></i></a>
+        <a href="#profile" aria-label="Profile"><i class="fas fa-user"></i></a>
     </div>
 
     <div class="hero-section">
-        <h1>💰 Affiliate Hub</h1>
-        <p>Earn crypto rewards by promoting top brands.</p>
+        <h1><i class="fas fa-hand-holding-usd" style="font-size: 3rem; margin-right: 1rem;"></i>Affiliate Hub</h1>
+        <p>Earn crypto rewards by promoting top-tier brands and services.</p>
     </div>
 
-    <div class="container">
+    <main class="container">
         <div class="stats-section-wrapper">
-            <div class="stats-header">
-                <h2 class="section-title">
-                    <i class="fas fa-chart-pie"></i>
-                    Affiliate Stats
-                </h2>
-                <div class="date-filter-container">
-                    <button class="date-filter-btn" data-range="7days">7 Days</button>
-                    <button class="date-filter-btn" data-range="30days">30 Days</button>
-                    <button class="date-filter-btn active" data-range="all">All Time</button>
+            <h2 class="section-title">
+                <i class="fas fa-chart-pie"></i>
+                Your Stats
+            </h2>
+            <div class="dashboard-grid" id="dashboard-track">
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <div class="card-icon"><i class="fas fa-coins"></i></div>
+                            <h3>Total Earnings</h3>
+                        </div>
+                        <button class="balance-toggle" onclick="toggleBalanceVisibility()" aria-label="Toggle balance visibility">
+                            <i class="fas fa-eye-slash" id="balance-toggle-icon"></i>
+                        </button>
+                    </div>
+                    <p class="value" id="total-earnings">$0.00</p>
+                    <p class="description">All-time earnings from conversions</p>
+                </div>
+                <div class="dashboard-card">
+                    <div class="card-header">
+                         <div class="card-title-group">
+                            <div class="card-icon"><i class="fas fa-mouse-pointer"></i></div>
+                            <h3>Total Clicks</h3>
+                        </div>
+                    </div>
+                    <p class="value" id="total-clicks">0</p>
+                    <p class="description">Total clicks on your links</p>
+                </div>
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <div class="card-icon"><i class="fas fa-check-double"></i></div>
+                            <h3>Total Conversions</h3>
+                        </div>
+                    </div>
+                    <p class="value" id="total-conversions">0</p>
+                    <p class="description">Completed referrals & sign-ups</p>
+                </div>
+                <div class="dashboard-card">
+                    <div class="card-header">
+                         <div class="card-title-group">
+                            <div class="card-icon"><i class="fas fa-percentage"></i></div>
+                            <h3>Conversion Rate</h3>
+                        </div>
+                    </div>
+                    <p class="value" id="conversion-rate">0%</p>
+                    <p class="description">Ratio of clicks to conversions</p>
                 </div>
             </div>
-            
-            <div class="dashboard-carousel">
-                <div class="dashboard-track" id="dashboard-track">
-                    <div class="dashboard-card">
-                        <div class="card-header">
-                            <div class="card-title-group">
-                                <div class="card-icon"><i class="fas fa-coins"></i></div>
-                                <h3>Total Earnings</h3>
-                            </div>
-                            <div class="balance-toggle" onclick="toggleBalanceVisibility()">
-                                <i class="fas fa-eye-slash" id="balance-toggle-icon"></i>
-                            </div>
-                        </div>
-                        <p class="value" id="total-earnings">$0.00</p>
-                        <p class="description">Earnings from conversions</p>
-                    </div>
-                    <div class="dashboard-card">
-                        <div class="card-header">
-                             <div class="card-title-group">
-                                <div class="card-icon"><i class="fas fa-mouse-pointer"></i></div>
-                                <h3>Total Clicks</h3>
-                            </div>
-                        </div>
-                        <p class="value" id="total-clicks">0</p>
-                        <p class="description">Clicks on your links</p>
-                    </div>
-                    <div class="dashboard-card">
-                        <div class="card-header">
-                            <div class="card-title-group">
-                                <div class="card-icon"><i class="fas fa-check-double"></i></div>
-                                <h3>Total Conversions</h3>
-                            </div>
-                        </div>
-                        <p class="value" id="total-conversions">0</p>
-                        <p class="description">Successful referrals</p>
-                    </div>
-                    <div class="dashboard-card">
-                        <div class="card-header">
-                             <div class="card-title-group">
-                                <div class="card-icon"><i class="fas fa-percentage"></i></div>
-                                <h3>Conversion Rate</h3>
-                            </div>
-                        </div>
-                        <p class="value" id="conversion-rate">0%</p>
-                        <p class="description">Clicks to conversions</p>
-                    </div>
-                </div>
-            </div>
-             <div class="carousel-nav" id="carousel-nav"></div>
         </div>
 
-        <h2 class="section-title"><i class="fas fa-bullhorn"></i> Featured Programs</h2>
+        <h2 class="section-title"><i class="fas fa-bullhorn"></i> Available Programs</h2>
         <div class="search-container">
-            <input type="text" class="search-input" id="programs-search" placeholder="Search for programs by name...">
-            <button class="search-btn"><i class="fas fa-search"></i></button>
+            <input type="text" class="search-input" id="programs-search" placeholder="Search all programs...">
+            <button class="search-btn" aria-label="Search"><i class="fas fa-search"></i></button>
         </div>
         <div id="program-sections"></div>
         
@@ -980,227 +977,160 @@
                         <th>Date</th>
                     </tr>
                 </thead>
-                <tbody id="history-table-body"></tbody>
+                <tbody id="history-table-body">
+                    </tbody>
             </table>
         </div>
-        
-        <div class="modal" id="program-modal">
-            <div class="modal-content">
-                <h3 id="modal-title"></h3>
-                <div id="modal-body"></div>
-                <div class="modal-actions" id="button-group"></div>
-            </div>
+    </main>
+    
+    <div class="modal" id="program-modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 id="modal-title"></h3>
+            <div id="modal-body"></div>
+            <div class="modal-actions" id="button-group"></div>
         </div>
     </div>
 
     <script>
+        // --- STATE MANAGEMENT ---
         let programs = [];
         let userProgress = {};
-        let currentFilter = 'all';
         let balanceVisible = true;
 
-        // Carousel State
-        let currentSlide = 0;
-        let slideCount = 0; 
-        let isTransitioning = false;
-        let touchStartX = 0;
-        let touchEndX = 0;
+        // --- DOM ELEMENT SELECTORS ---
+        const DOMElements = {
+            totalEarningsEl: document.getElementById('total-earnings'),
+            totalClicksEl: document.getElementById('total-clicks'),
+            totalConversionsEl: document.getElementById('total-conversions'),
+            conversionRateEl: document.getElementById('conversion-rate'),
+            balanceToggleIcon: document.getElementById('balance-toggle-icon'),
+            historyTableBody: document.getElementById('history-table-body'),
+            programSections: document.getElementById('program-sections'),
+            programSearchInput: document.getElementById('programs-search'),
+            programModal: document.getElementById('program-modal'),
+            modalTitle: document.getElementById('modal-title'),
+            modalBody: document.getElementById('modal-body'),
+            buttonGroup: document.getElementById('button-group'),
+        };
 
+        // --- MOCK DATA ---
+        const mockApiData = {
+            stats: {
+                totalEarnings: 1250.00,
+                totalClicks: 5200,
+                totalConversions: 210,
+            },
+            history: [
+                { type: 'Conversion', programTitle: 'Binance Sign Up', reward: '$5.00', status: 'Completed', timestamp: new Date() },
+                { type: 'Click', programTitle: 'KuCoin Trading', reward: 'N/A', status: 'Tracked', timestamp: new Date(Date.now() - 86400000) },
+                { type: 'Conversion', programTitle: 'ByBit Trading Volume', reward: '$10.00', status: 'Completed', timestamp: new Date(Date.now() - 172800000) },
+                { type: 'Click', programTitle: 'Create a Video about RewardRush', reward: 'N/A', status: 'Tracked', timestamp: new Date(Date.now() - 259200000) },
+            ],
+            programs: [
+                { id: 1, title: "Binance Sign Up", payout: "$5 per Sign Up", details: "Get new users to sign up on Binance using your link.", guidelines: "Share your link. When a user signs up and completes KYC, you get paid.", pros: ["High conversion rate", "Trusted brand", "Quick payout"], bonus: "Bonus $50 for every 10 referrals!", category: "Sign Up", featured: true },
+                { id: 2, title: "KuCoin Trading Volume", payout: "20% of Trading Fees", details: "Earn a percentage of trading fees from your referred users.", guidelines: "Users must trade at least $1000 in volume for you to be eligible.", pros: ["Recurring income potential", "Large user base"], category: "Trading Volume" },
+                { id: 3, title: "Crypto.com App Install", payout: "$2 per Install", details: "Drive installs for the Crypto.com mobile app.", guidelines: "Users must install the app and create an account.", pros: ["Easy action to complete", "Popular app"], category: "Sign Up" },
+                { id: 4, title: "Create a Video about RewardRush", payout: "$50 in ETH", details: "Create a YouTube video explaining how RewardRush works.", guidelines: "Video must be at least 3 minutes long, have good quality, and include your affiliate link in the description.", pros: ["High one-time payout", "Creative freedom"], category: "Content Creation", featured: true },
+                { id: 5, title: "Post about us on X (Twitter)", payout: "$5 in BTC", details: "Create a thread (at least 3 posts) about our platform on X.", guidelines: "Thread must get at least 10 retweets and include the hashtag #RewardRush", pros: ["Quick and easy", "Reach a wide audience"], category: "Social Media" }
+            ]
+        };
 
+        // --- UI FUNCTIONS ---
+        
         function toggleBalanceVisibility() {
             balanceVisible = !balanceVisible;
-            const toggleIcon = document.getElementById('balance-toggle-icon');
-            const valueElement = document.getElementById('total-earnings');
+            const { totalEarningsEl, balanceToggleIcon } = DOMElements;
             
             if (balanceVisible) {
-                toggleIcon.className = 'fas fa-eye-slash';
-                if (valueElement.dataset.originalValue) {
-                    valueElement.textContent = valueElement.dataset.originalValue;
+                balanceToggleIcon.className = 'fas fa-eye-slash';
+                if (totalEarningsEl.dataset.originalValue) {
+                    totalEarningsEl.textContent = totalEarningsEl.dataset.originalValue;
                 }
             } else {
-                toggleIcon.className = 'fas fa-eye';
-                valueElement.dataset.originalValue = valueElement.textContent;
-                valueElement.textContent = '****';
+                balanceToggleIcon.className = 'fas fa-eye';
+                totalEarningsEl.dataset.originalValue = totalEarningsEl.textContent;
+                totalEarningsEl.textContent = '$****';
             }
         }
 
-        function updateCarousel() {
-            if (isTransitioning) return;
-            const track = document.getElementById('dashboard-track');
-            const dots = document.querySelectorAll('.carousel-dot');
-            const cardWidth = track.querySelector('.dashboard-card').offsetWidth + 24; 
+        function populateStats(stats) {
+            const { totalEarningsEl, totalClicksEl, totalConversionsEl, conversionRateEl } = DOMElements;
             
-            track.style.transition = 'transform 0.5s ease';
-            track.style.transform = `translateX(-${currentSlide * cardWidth}px)`;
+            const earningsText = `$${stats.totalEarnings.toFixed(2)}`;
+            totalEarningsEl.textContent = balanceVisible ? earningsText : '$****';
+            totalEarningsEl.dataset.originalValue = earningsText;
+            totalClicksEl.textContent = stats.totalClicks;
+            totalConversionsEl.textContent = stats.totalConversions;
             
-            dots.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentSlide);
-            });
-            isTransitioning = true;
-            track.addEventListener('transitionend', () => {
-                isTransitioning = false;
-            }, { once: true });
-        }
-
-        function goToSlide(index) {
-            currentSlide = index;
-            updateCarousel();
-        }
-
-        function handleTouchStart(e) {
-            touchStartX = e.changedTouches[0].screenX;
-        }
-
-        function handleTouchEnd(e) {
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
-        }
-        
-        function handleSwipe() {
-            if (window.innerWidth > 768) return;
-            if (touchEndX < touchStartX - 50 && currentSlide < slideCount - 1) { // -50 for swipe threshold
-                currentSlide++;
-                updateCarousel();
-            }
-            if (touchEndX > touchStartX + 50 && currentSlide > 0) { // +50 for swipe threshold
-                currentSlide--;
-                updateCarousel();
-            }
-        }
-
-
-        async function fetchAffiliateStats(range = 'all') {
-            try {
-                // Mocking API call
-                const stats = {
-                    totalEarnings: range === '7days' ? 120.50 : (range === '30days' ? 550.75 : 1250.00),
-                    totalClicks: range === '7days' ? 350 : (range === '30days' ? 1500 : 5200),
-                    totalConversions: range === '7days' ? 15 : (range === '30days' ? 80 : 210),
-                };
-                const earningsEl = document.getElementById('total-earnings');
-                earningsEl.textContent = `$${stats.totalEarnings.toFixed(2)}`;
-                earningsEl.dataset.originalValue = earningsEl.textContent;
-
-                document.getElementById('total-clicks').textContent = stats.totalClicks;
-                document.getElementById('total-conversions').textContent = stats.totalConversions;
-                
-                const conversionRate = stats.totalClicks > 0 
-                    ? (stats.totalConversions / stats.totalClicks * 100).toFixed(1)
-                    : 0;
-                document.getElementById('conversion-rate').textContent = `${conversionRate}%`;
-
-                if (!balanceVisible) {
-                    earningsEl.textContent = '****';
-                }
-            } catch (err) {
-                console.error('Error fetching affiliate stats:', err);
-                showToast('Could not load your stats.', 'error');
-            }
-        }
-
-        async function fetchActivityHistory() {
-            try {
-                // Mocking API call
-                const history = [
-                    { type: 'Conversion', programTitle: 'Binance Sign Up', reward: '$5.00', status: 'Completed', timestamp: new Date() },
-                    { type: 'Click', programTitle: 'KuCoin Trading', reward: 'N/A', status: 'Tracked', timestamp: new Date(Date.now() - 86400000) },
-                    { type: 'Conversion', programTitle: 'ByBit Trading Volume', reward: '$10.00', status: 'Completed', timestamp: new Date(Date.now() - 172800000) },
-                ];
-                populateHistoryTable(history);
-            } catch (err) {
-                console.error('Error fetching activity history:', err);
-            }
+            const conversionRate = stats.totalClicks > 0 ? (stats.totalConversions / stats.totalClicks * 100).toFixed(1) : 0;
+            conversionRateEl.textContent = `${conversionRate}%`;
         }
 
         function populateHistoryTable(history) {
-            const tbody = document.getElementById('history-table-body');
+            const { historyTableBody } = DOMElements;
             if (!history || history.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem;">No activity yet. Start sharing your links! 🚀</td></tr>`;
+                historyTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem;">No activity yet. Start sharing your links! 🚀</td></tr>`;
                 return;
             }
             
-            tbody.innerHTML = history.map(item => `
+            historyTableBody.innerHTML = history.map(item => `
                 <tr>
-                    <td>${item.type}</td>
-                    <td>${item.programTitle}</td>
-                    <td>${item.reward}</td>
-                    <td><span class="status-badge status-${item.status.toLowerCase()}">
-                        <i class="fas ${item.status === 'Completed' ? 'fa-check-circle' : 'fa-clock'}"></i> ${item.status}
-                    </span></td>
-                    <td>${new Date(item.timestamp).toLocaleDateString()}</td>
+                    <td data-label="Type">${item.type}</td>
+                    <td data-label="Program">${item.programTitle}</td>
+                    <td data-label="Reward">${item.reward}</td>
+                    <td data-label="Status">
+                        <span class="status-badge status-${item.status.toLowerCase()}">
+                            <i class="fas ${item.status === 'Completed' ? 'fa-check-circle' : 'fa-clock'}"></i> ${item.status}
+                        </span>
+                    </td>
+                    <td data-label="Date">${new Date(item.timestamp).toLocaleDateString()}</td>
                 </tr>
             `).join('');
         }
 
-        async function fetchPrograms() {
-            try {
-                // Mocking API call
-                const data = {
-                    programs: [
-                        { id: 1, title: "Binance Sign Up", payout: "$5 per Sign Up", details: "Get new users to sign up on Binance using your link.", guidelines: "Share your link. When a user signs up and completes KYC, you get paid.", pros: ["High conversion rate", "Trusted brand", "Quick payout"], bonus: "Bonus $50 for every 10 referrals!", category: "Sign Up", featured: true },
-                        { id: 2, title: "KuCoin Trading Volume", payout: "20% of Trading Fees", details: "Earn a percentage of trading fees from your referred users.", guidelines: "Users must trade at least $1000 in volume for you to be eligible.", pros: ["Recurring income potential", "Large user base"], category: "Trading Volume" },
-                        { id: 3, title: "Crypto.com App Install", payout: "$2 per Install", details: "Drive installs for the Crypto.com mobile app.", guidelines: "Users must install the app and create an account.", pros: ["Easy action to complete", "Popular app"], category: "Sign Up" },
-                        { id: 4, title: "Create a Video about RewardRush", payout: "$50 in ETH", details: "Create a YouTube video explaining how RewardRush works.", guidelines: "Video must be at least 3 minutes long, have good quality, and include your affiliate link in the description.", pros: ["High one-time payout", "Creative freedom"], category: "Video Creation", featured: true },
-                        { id: 5, title: "Post about us on X (Twitter)", payout: "$5 in BTC", details: "Create a thread (at least 3 posts) about our platform on X.", guidelines: "Thread must get at least 10 retweets and include the hashtag #RewardRush", pros: ["Quick and easy", "Reach a wide audience"], category: "Post on Socials" }
-                    ]
-                };
-                programs = data.programs || [];
-                populatePrograms();
-            } catch (err) {
-                console.error('Failed to load programs:', err);
-                showToast('Failed to load programs', 'error');
-            }
-        }
-
         function populatePrograms() {
-            const sections = document.getElementById('program-sections');
+            const { programSections } = DOMElements;
             const categories = [...new Set(programs.map(p => p.category))];
             
-            categories.sort((a, b) => {
-                if (a === 'Featured') return -1;
-                if (b === 'Featured') return 1;
-                return 0;
-            });
+            const categoryOrder = ["Sign Up", "Trading Volume", "Social Media", "Content Creation"];
+            categories.sort((a, b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b));
+
+            const categoryIcons = {
+                'Sign Up': 'user-plus',
+                'Trading Volume': 'chart-line',
+                'Content Creation': 'video',
+                'Social Media': 'share-alt',
+            };
             
-            sections.innerHTML = categories.map(category => {
+            programSections.innerHTML = categories.map(category => {
                 const categoryPrograms = programs.filter(p => p.category === category);
                 if (categoryPrograms.length === 0) return '';
                 
-                const icon = {
-                    'Featured': 'star',
-                    'Sign Up': 'user-plus',
-                    'Trading Volume': 'chart-bar',
-                    'Video Creation': 'video',
-                    'Post on Socials': 'share-alt',
-                }[category] || 'bullhorn';
+                const icon = categoryIcons[category] || 'bullhorn';
                 
                 return `
                     <div class="collapsible-section category-section">
-                         <div class="section-header">
-                            <h3 class="category-title"><i class="fas fa-${icon}"></i> ${category} ${category === 'Featured' ? '🔥' : ''}</h3>
+                        <div class="section-header">
+                            <h3 class="category-title"><i class="fas fa-${icon}"></i> ${category}</h3>
                             <i class="fas fa-chevron-down toggle-icon"></i>
                         </div>
                         <div class="collapsible-content">
                             <div class="program-list">
                                 ${categoryPrograms.map(program => `
-                                    <div class="program-card">
+                                    <div class="program-card" data-program-id="${program.id}">
                                         <h4>${program.title} ${program.featured ? '⭐' : ''}</h4>
-                                        <div class="program-meta">
-                                            <span class="program-reward"><i class="fas fa-coins"></i> ${program.payout}</span>
-                                        </div>
+                                        <span class="program-reward"><i class="fas fa-coins"></i> ${program.payout}</span>
                                         <p>${program.details}</p>
-                                        <div class="program-actions">
-                                            <button class="primary-btn" onclick="showProgramModal(${program.id})">
-                                                <i class="fas fa-arrow-right"></i> Get Started
-                                            </button>
-                                        </div>
+                                        <button class="primary-btn" onclick="showProgramModal(${program.id})">
+                                            <i class="fas fa-arrow-right"></i> Get Started
+                                        </button>
                                     </div>
                                 `).join('')}
                             </div>
                         </div>
                     </div>`;
             }).join('');
-
+            
             setupCollapsibleSections();
         }
 
@@ -1208,11 +1138,12 @@
             const program = programs.find(p => p.id === id);
             if (!program) return;
 
-            document.getElementById('modal-title').innerHTML = `<i class="fas fa-${program.featured ? 'star' : 'bullhorn'}"></i> ${program.title}`;
-            const modalBody = document.getElementById('modal-body');
-            const buttonGroup = document.getElementById('button-group');
+            const { programModal, modalTitle, modalBody, buttonGroup } = DOMElements;
 
+            modalTitle.innerHTML = `<i class="fas fa-bullhorn"></i> ${program.title}`;
+            
             const progress = userProgress[id] || { accepted: false };
+            const isContentProgram = program.category === 'Content Creation' || program.category === 'Social Media';
 
             if (!progress.accepted) {
                 modalBody.innerHTML = `
@@ -1221,58 +1152,55 @@
                         <p>${program.guidelines}</p>
                     </div>
                     <div class="modal-section">
-                        <h4><i class="fas fa-star"></i> Why This Rocks</h4>
+                        <h4><i class="fas fa-star"></i> Program Perks</h4>
                         <ul>${program.pros.map(pro => `<li>${pro}</li>`).join('')}</ul>
                         <p><strong>💰 Payout:</strong> <span class="highlight">${program.payout}</span></p>
                         ${program.bonus ? `<p><strong>🎉 Bonus:</strong> <span class="highlight">${program.bonus}</span></p>` : ''}
                     </div>
                 `;
                 buttonGroup.innerHTML = `
-                    <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
-                        <i class="fas fa-times"></i> Maybe Later
+                    <button class="modal-btn modal-btn-secondary" onclick="closeModal({target: DOMElements.programModal})">
+                        <i class="fas fa-times"></i> Close
                     </button>
                     <button class="modal-btn modal-btn-primary" onclick="acceptProgram(${id})">
-                        <i class="fas fa-check"></i> Let's Do This!
+                        <i class="fas fa-check"></i> Accept Program
                     </button>
                 `;
             } else {
-                const isContentProgram = program.category === 'Video Creation' || program.category === 'Post on Socials';
-                
                 modalBody.innerHTML = `
                     <div class="modal-section">
-                        <h4><i class="fas fa-link"></i> Your Magic Link</h4>
-                        <p>Share this link anywhere to start earning. Track your performance in the Activity Feed.</p>
+                        <h4><i class="fas fa-link"></i> Your Unique Referral Link</h4>
+                        <p>Share this link to start earning. Track your performance on the dashboard.</p>
                         <p class="referral-link" id="referral-link-text-${id}">https://rewardrush.com/track?pid=${id}&uid=USER123</p>
                     </div>
                     ${isContentProgram ? `
                     <div class="social-links-form" id="social-links-form-${id}">
-                        <h4><i class="fas fa-share-alt"></i> Submit Your Content Links</h4>
-                        <p>Please provide links to where you've shared this content:</p>
+                        <h4><i class="fas fa-paper-plane"></i> Submit Your Content for Review</h4>
                         <div class="social-link-input-group">
                             <div class="social-link-input">
-                                <div class="social-platform-icon youtube"><i class="fab fa-youtube"></i></div>
+                                <i class="fab fa-youtube youtube"></i>
                                 <input type="url" id="youtube-link-${id}" placeholder="YouTube video URL">
                             </div>
                             <div class="social-link-input">
-                                <div class="social-platform-icon twitter"><i class="fab fa-twitter"></i></div>
+                                <i class="fab fa-twitter twitter"></i>
                                 <input type="url" id="twitter-link-${id}" placeholder="Twitter (X) post URL">
                             </div>
-                            </div>
+                        </div>
                         <button class="social-links-submit-btn" onclick="submitSocialLinks(${id})">
-                            <i class="fas fa-paper-plane"></i> Submit Links
+                            <i class="fas fa-check-circle"></i> Submit Links
                         </button>
                     </div>` : `
                     <div class="modal-section">
-                        <h4><i class="fas fa-share-alt"></i> Sharing Tips</h4>
+                        <h4><i class="fas fa-lightbulb"></i> Sharing Tips</h4>
                         <ul>
-                            <li>Post on Twitter with relevant hashtags</li>
-                            <li>Share in crypto Discord/Telegram groups</li>
+                            <li>Post on Twitter (X) with relevant hashtags like #crypto, #web3.</li>
+                            <li>Share in relevant crypto-focused Discord or Telegram groups.</li>
+                            <li>Include the link in your blog posts or newsletters.</li>
                         </ul>
                     </div>`}
                 `;
-                
                 buttonGroup.innerHTML = `
-                    <button class="modal-btn modal-btn-secondary" onclick="closeModal()">
+                    <button class="modal-btn modal-btn-secondary" onclick="closeModal({target: DOMElements.programModal})">
                         <i class="fas fa-times"></i> Close
                     </button>
                     <button class="modal-btn modal-btn-primary" onclick="copyToClipboard(${id})">
@@ -1280,45 +1208,16 @@
                     </button>
                 `;
             }
-            document.getElementById('program-modal').classList.add('open');
+            programModal.classList.add('open');
         }
 
-        function submitSocialLinks(programId) {
-            showToast('🎉 Your content links have been submitted for review!', 'success');
-            closeModal();
+        function closeModal(event) {
+            if (event.target === DOMElements.programModal) {
+                DOMElements.programModal.classList.remove('open');
+            }
         }
-
-        function acceptProgram(id) {
-            userProgress[id] = { accepted: true };
-            showToast('🎉 Offer accepted! Your link is ready to share.', 'success');
-            showProgramModal(id);
-        }
-
-        function copyToClipboard(programId) {
-            const link = `https://rewardrush.com/track?pid=${programId}&uid=USER123`;
-            navigator.clipboard.writeText(link).then(() => {
-                showToast('✨ Link copied to clipboard!', 'success');
-            }).catch(err => {
-                showToast('Failed to copy link', 'error');
-            });
-        }
-
-        function setupDateFilters() {
-            document.querySelectorAll('.date-filter-btn').forEach(button => {
-                button.addEventListener('click', () => {
-                    document.querySelectorAll('.date-filter-btn').forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    currentFilter = button.dataset.range;
-                    fetchAffiliateStats(currentFilter);
-                });
-            });
-        }
-
-        function closeModal() { 
-            document.getElementById('program-modal').classList.remove('open'); 
-        }
-
-        function showToast(message, type) {
+        
+        function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
             toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
@@ -1327,16 +1226,54 @@
                 toast.classList.add('show');
                 setTimeout(() => {
                     toast.classList.remove('show');
-                    setTimeout(() => document.body.removeChild(toast), 300);
+                    setTimeout(() => document.body.removeChild(toast), 400);
                 }, 3000);
             }, 100);
         }
-        
-        function logout() { 
-            showToast('Logged out successfully.', 'success');
-            // In a real app: fetch('/logout').then(() => window.location.href = 'auth.html'); 
+
+        // --- EVENT HANDLERS & ACTIONS ---
+        function acceptProgram(id) {
+            userProgress[id] = { accepted: true };
+            showToast('🎉 Program accepted! Your link is ready to share.');
+            showProgramModal(id);
         }
 
+        function submitSocialLinks(programId) {
+            showToast('✅ Links submitted for review. Great work!');
+            DOMElements.programModal.classList.remove('open');
+        }
+
+        function copyToClipboard(programId) {
+            const link = document.getElementById(`referral-link-text-${programId}`).textContent;
+            navigator.clipboard.writeText(link).then(() => {
+                showToast('✨ Link copied to clipboard!');
+            }).catch(err => {
+                showToast('Failed to copy link', 'error');
+            });
+        }
+
+        function handleSearch() {
+            const searchTerm = DOMElements.programSearchInput.value.toLowerCase();
+            document.querySelectorAll('.program-card').forEach(card => {
+                const title = card.querySelector('h4').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                const isVisible = title.includes(searchTerm) || description.includes(searchTerm);
+                card.style.display = isVisible ? 'flex' : 'none';
+            });
+            
+            // Show/hide category sections if they become empty
+            document.querySelectorAll('.category-section').forEach(section => {
+                const visibleCards = section.querySelectorAll('.program-card[style*="display: flex"]');
+                section.style.display = visibleCards.length > 0 ? 'block' : 'none';
+            });
+        }
+
+        function logout() {
+            showToast('Logged out successfully.');
+            // In a real app: fetch('/logout').then(() => window.location.href = 'auth.html');
+        }
+
+        // --- SETUP FUNCTIONS ---
         function setupCollapsibleSections() {
             document.querySelectorAll('.collapsible-section .section-header').forEach(header => {
                 header.addEventListener('click', () => {
@@ -1346,82 +1283,30 @@
                 });
             });
         }
-
-        function setupSearch() {
-            document.getElementById('programs-search').addEventListener('keyup', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                document.querySelectorAll('.category-section').forEach(section => {
-                    let hasVisibleCards = false;
-                    section.querySelectorAll('.program-card').forEach(card => {
-                        const title = card.querySelector('h4').textContent.toLowerCase();
-                        const description = card.querySelector('p').textContent.toLowerCase();
-                        if (title.includes(searchTerm) || description.includes(searchTerm)) {
-                            card.style.display = 'flex';
-                            hasVisibleCards = true;
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
-
-                    section.style.display = hasVisibleCards ? 'block' : 'none';
-                });
-            });
-        }
         
-        function setupCarousel() {
-            const track = document.getElementById('dashboard-track');
-            const cards = track.querySelectorAll('.dashboard-card');
-            slideCount = cards.length;
-            const navContainer = document.getElementById('carousel-nav');
-            
-            if (slideCount > 0) {
-                 // Create nav dots
-                for(let i=0; i<slideCount; i++) {
-                    const dot = document.createElement('div');
-                    dot.classList.add('carousel-dot');
-                    dot.dataset.index = i;
-                    dot.addEventListener('click', () => goToSlide(i));
-                    navContainer.appendChild(dot);
-                }
-                navContainer.firstChild.classList.add('active');
-
-                // Add touch listeners
-                track.addEventListener('touchstart', handleTouchStart, false);
-                track.addEventListener('touchend', handleTouchEnd, false);
-            }
+        function setupEventListeners() {
+            DOMElements.programSearchInput.addEventListener('keyup', handleSearch);
+            DOMElements.programSearchInput.parentElement.querySelector('.search-btn').addEventListener('click', handleSearch);
         }
 
-        function ensureFullScreenMobile() {
-            document.documentElement.style.width = '100vw';
-            document.body.style.width = '100vw';
-            document.body.style.margin = '0';
-            document.body.style.padding = '0';
-            document.body.style.overflowX = 'hidden';
-
-            const mobileNav = document.querySelector('.mobile-nav');
-            if (mobileNav) {
-                mobileNav.style.width = '100vw';
-            }
-
-            const container = document.querySelector('.container');
-            if (container) {
-                container.style.width = '100%';
-                container.style.maxWidth = '100vw';
-                if (window.innerWidth <= 768) {
-                    container.style.padding = '1rem';
-                }
-            }
-        }
-        
+        // --- INITIALIZATION ---
         async function init() {
-            await fetchPrograms();
-            fetchAffiliateStats(currentFilter);
-            fetchActivityHistory();
-            setupDateFilters();
-            setupSearch();
-            setupCarousel();
-            ensureFullScreenMobile();
-            window.addEventListener('resize', ensureFullScreenMobile);
+            // Mock API calls
+            programs = mockApiData.programs;
+            const stats = mockApiData.stats;
+            const history = mockApiData.history;
+
+            populateStats(stats);
+            populateHistoryTable(history);
+            populatePrograms();
+            
+            setupEventListeners();
+
+            // Open the first category by default for better initial view
+            const firstCollapsible = document.querySelector('.collapsible-section .section-header');
+            if (firstCollapsible) {
+                firstCollapsible.click();
+            }
         }
 
         window.onload = init;
