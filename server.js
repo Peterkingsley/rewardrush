@@ -48,7 +48,7 @@ app.use(session({
         // For production, these settings are now enabled
         secure: true, 
         httpOnly: true, 
-        sameSite: 'strict'
+        sameSite: 'lax'
     }
 }));
 
@@ -809,3 +809,4 @@ app.use((req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
 });
+app.use(session
