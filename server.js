@@ -526,8 +526,8 @@ app.get('/generate-referral-link', requireLogin, async (req, res) => {
     if (!questId || !userId) {
         return res.status(400).json({ error: 'Invalid quest or user ID' });
     }
-    const referralLink = `http://localhost:${PORT}/referral?questId=${questId}&referrerId=${encodeURIComponent(userId)}`;
-    res.json({ referralLink });
+    const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+const referralLink = `<span class="math-inline">\{baseUrl\}/referral?questId\=</span>{questId}&referrerId=${encodeURIComponent(userId)}`;
 });
 
 app.get('/referral', async (req, res) => {
@@ -805,3 +805,4 @@ app.use((req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
 });
+const referralLink
