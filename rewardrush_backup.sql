@@ -937,4 +937,3 @@ ALTER TABLE ONLY public.user_quests
 --
 -- PostgreSQL database dump complete
 --
-
