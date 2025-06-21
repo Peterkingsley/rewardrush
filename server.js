@@ -221,7 +221,7 @@ app.post('/forgot-password', async (req, res) => {
             const token = crypto.randomBytes(20).toString('hex');
             const expires = new Date(Date.now() + 3600000); // 1 hour
             await pool.query('UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE id = $3', [token, expires, user.id]);
-            const resetLink = `http://localhost:${PORT}/reset-password.html?token=${token}`;
+            const resetLink = `<span class="math-inline">\{process\.env\.BASE\_URL\}/reset\-password\.html?token\=</span>{token}`;
             console.log(`Password reset link for ${user.username} (${email}): ${resetLink}`);
         }
     } catch (err) {
@@ -806,3 +806,4 @@ app.use((req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
 });
+const resetLink
