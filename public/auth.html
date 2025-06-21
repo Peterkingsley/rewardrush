@@ -475,7 +475,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        const API_BASE_URL = 'http://localhost:3000';
+        const API_BASE_URL = '';
         const endpoint = isSignUp ? `${API_BASE_URL}/signup` : `${API_BASE_URL}/login`;
         const body = isSignUp ? { fullName, username, email, password } : { username, password };
         
@@ -613,3 +613,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+const API_BASE_URL
