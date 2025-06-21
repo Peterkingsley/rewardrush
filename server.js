@@ -185,7 +185,7 @@ app.post('/login', async (req, res) => {
 
         if (match) {
             const today = new Date();
-            const lastLogin = user.last_login ? new Date(last_login) : null;
+            const lastLogin = user.last_login ? new Date(user.last_login) : null;
             let newStreak = 1;
 
             if (lastLogin) {
