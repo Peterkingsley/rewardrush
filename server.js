@@ -13,6 +13,9 @@ const multer = require('multer');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Tell Express to trust the proxy that Render uses
+app.set('trust proxy', 1);
+
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const saltRounds = 10;
@@ -45,7 +48,6 @@ app.use(session({
     saveUninitialized: false,
     cookie: { 
         maxAge: 20 * 60 * 1000,
-        // For production, these settings are now enabled
         secure: true, 
         httpOnly: true, 
         sameSite: 'lax'
@@ -104,7 +106,6 @@ async function logActivity(userId, activityType, details) {
 
 // --- Routes ---
 
-// FIX: Add route for the root path '/'
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'home.html'));
 });
@@ -184,7 +185,7 @@ app.post('/login', async (req, res) => {
 
         if (match) {
             const today = new Date();
-            const lastLogin = user.last_login ? new Date(user.last_login) : null;
+            const lastLogin = user.last_login ? new Date(last_login) : null;
             let newStreak = 1;
 
             if (lastLogin) {
@@ -223,7 +224,6 @@ app.post('/forgot-password', async (req, res) => {
             const token = crypto.randomBytes(20).toString('hex');
             const expires = new Date(Date.now() + 3600000); // 1 hour
             await pool.query('UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE id = $3', [token, expires, user.id]);
-            // FIX: Use BASE_URL for password reset link
             const resetLink = `${process.env.BASE_URL}/reset-password.html?token=${token}`;
             console.log(`Password reset link for ${user.username} (${email}): ${resetLink}`);
         }
@@ -528,7 +528,6 @@ app.get('/generate-referral-link', requireLogin, async (req, res) => {
     if (!questId || !userId) {
         return res.status(400).json({ error: 'Invalid quest or user ID' });
     }
-    // FIX: Use BASE_URL for referral link
     const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
     const referralLink = `${baseUrl}/referral?questId=${questId}&referrerId=${encodeURIComponent(userId)}`;
     res.json({ referralLink });
