@@ -2,304 +2,146 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - RewardRush</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&display=swap');
-        
-        :root {
-            --primary: #6c5ce7;
-            --primary-light: #a29bfe;
-            --primary-dark: #5649c0;
-            --secondary: #00cec9;
-            --accent: #fd79a8;
-            --dark: #2d3436;
-            --darker: #1e272e;
-            --light: #f5f6fa;
-            --success: #00b894;
-            --warning: #fdcb6e;
-            --danger: #ef4444;
-            --card-bg: rgba(45, 52, 54, 0.7);
-            --border-radius: 12px;
-            --galaxy-gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-        }
-        
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        body {
-            background: var(--galaxy-gradient);
-            color: var(--light);
-            min-height: 100vh;
-            width: 100vw;
-            overflow-x: hidden;
-            position: relative;
-            padding-bottom: 80px;
-        }
 
-        .bg-particle {
-            position: fixed; border-radius: 50%;
-            background: rgba(108, 92, 231, 0.1);
-            pointer-events: none; z-index: -1;
-            animation: float 15s infinite ease-in-out;
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        :root {
+            --primary: #8a63f2; --primary-light: #a78bfa; --secondary: #00f5d4; --accent: #ff5c8d;
+            --dark: #0f172a; --darker: #020617; --light: #f8fafc; --success: #10b981; --warning: #f59e0b;
+            --danger: #ef4444; --card-bg: rgba(15, 23, 42, 0.7); --border-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-        
-        nav {
-            background: rgba(30, 39, 46, 0.9);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 100;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border-bottom: 1px solid rgba(108, 92, 231, 0.2);
-            width: 100%;
-        }
-        
-        .logo {
-            font-size: 1.8rem; font-weight: 700;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text; background-clip: text; color: transparent;
-            display: flex; align-items: center; gap: 0.5rem;
-            font-family: 'Montserrat', sans-serif; letter-spacing: 1px;
-        }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(to bottom, var(--darker), var(--dark)); color: var(--light); min-height: 100vh; }
+        .gradient-text { background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .neon-shadow { box-shadow: 0 0 10px rgba(138, 99, 242, 0.5), 0 0 20px rgba(138, 99, 242, 0.3); }
+        .neon-border { border: 1px solid var(--primary); box-shadow: 0 0 10px rgba(138, 99, 242, 0.3); }
+        .badge-earned { filter: drop-shadow(0 0 8px rgba(138, 99, 242, 0.6)); }
+        .badge-locked { filter: grayscale(100%) brightness(0.5); }
+        .tab-active { border-bottom: 3px solid var(--primary); color: var(--primary-light); }
+        .progress-bar { background: linear-gradient(90deg, var(--primary), var(--accent)); }
+        .skeleton { background: linear-gradient(90deg, rgba(15, 23, 42, 0.5), rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.5)); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        nav { background: rgba(30, 39, 46, 0.95); backdrop-filter: blur(10px); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        .logo { font-size: 1.8rem; font-weight: 700; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; color: transparent; display: flex; align-items: center; gap: 0.5rem; }
         .logo i { font-size: 1.5rem; }
-        
         .nav-menu { display: flex; gap: 1.5rem; align-items: center; }
-        .nav-menu a {
-            color: var(--light); text-decoration: none; font-size: 1rem;
-            font-weight: 500; transition: all 0.3s ease;
-            padding: 0.5rem 1rem; border-radius: 0.5rem;
-        }
+        .nav-menu a { color: var(--light); text-decoration: none; font-size: 1rem; font-weight: 500; transition: var(--transition); padding: 0.5rem 1rem; border-radius: var(--border-radius); }
         .nav-menu a:hover { color: var(--primary-light); background: rgba(108, 92, 231, 0.1); }
         .nav-menu a.active { color: var(--primary-light); background: rgba(108, 92, 231, 0.2); }
-        .nav-menu .profile-btn {
-            width: 40px; height: 40px; border-radius: 50%;
-            background: var(--primary); display: flex; align-items: center;
-            justify-content: center; color: white; cursor: pointer; transition: all 0.3s ease;
-        }
+        .nav-menu .profile-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; transition: var(--transition); }
         .nav-menu .profile-btn:hover { transform: scale(1.05); box-shadow: 0 0 10px rgba(108, 92, 231, 0.5); }
-        .mobile-nav { display: none; }
-        .container { max-width: 1280px; margin: 0 auto; padding: 2rem; width: 100%; }
-
-        #profile-shareable-area {
-            background-color: rgba(30, 39, 46, 0.5);
-            padding: 1.5rem;
-            border-radius: var(--border-radius);
-            border: 1px solid rgba(108, 92, 231, 0.2);
-            margin-bottom: 2rem;
+        .hamburger { display: none; font-size: 1.5rem; cursor: pointer; color: var(--primary-light); z-index: 101; }
+        #earnings-filter-buttons .bg-primary {
+            background-color: var(--primary);
+            color: white;
         }
-
-        .profile-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 2rem; }
-        .profile-info { display: flex; align-items: center; gap: 1rem; }
-        .profile-image-container { position: relative; group; }
-        #profileImage { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--primary); object-cover; box-shadow: 0 0 15px rgba(108, 92, 231, 0.4); }
-        #uploadTrigger {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.5); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; opacity: 0;
-            cursor: pointer; transition: opacity 0.3s ease;
-        }
-        .profile-image-container:hover #uploadTrigger { opacity: 1; }
-        #imageUpload { display: none; }
-        #profile-name { font-size: 1.5rem; font-weight: 700; color: var(--light); }
-        .profile-meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem; flex-wrap: wrap; }
-        #profile-username { color: var(--primary-light); }
-        #profile-level, #profile-title {
-            font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 1rem;
-        }
-        #profile-level { background: rgba(108, 92, 231, 0.2); color: var(--primary-light); }
-        #profile-title { background: rgba(0, 206, 201, 0.2); color: var(--secondary); }
-        
-        .profile-actions { display: flex; gap: 0.75rem; }
-        .action-btn {
-            background: var(--primary); color: white; padding: 0.6rem 1.2rem;
-            border: none; border-radius: 0.5rem; cursor: pointer; transition: all 0.3s ease;
-            font-weight: 500; display: flex; align-items: center; gap: 0.5rem;
-        }
-        .action-btn:hover { background: var(--primary-light); transform: translateY(-2px); }
-        .action-btn.secondary { background: rgba(255, 255, 255, 0.1); }
-        .action-btn.secondary:hover { background: rgba(255, 255, 255, 0.2); }
-
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-        .stat-card {
-            background: var(--card-bg); padding: 1rem; border-radius: 0.75rem;
-            border-left: 3px solid var(--primary); transition: all 0.3s ease;
-        }
-        .stat-card:hover { transform: translateY(-3px); background: rgba(45, 52, 54, 0.9); }
-        .stat-card .label { font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); margin-bottom: 0.25rem; }
-        .stat-card .value { font-size: 1.5rem; font-weight: 700; color: var(--light); }
-        .stat-card .sub-value { font-size: 0.8rem; color: var(--success); }
-
-        .tabs-container { border-bottom: 1px solid rgba(108, 92, 231, 0.2); margin-bottom: 1.5rem; }
-        .tabs { display: flex; gap: 1rem; }
-        .tab-btn {
-            padding: 0.75rem 1rem; border: none; background: transparent; color: rgba(255,255,255,0.7);
-            font-weight: 500; cursor: pointer; transition: all 0.3s ease; border-bottom: 3px solid transparent;
-        }
-        .tab-btn.active { color: var(--primary-light); border-bottom-color: var(--primary); }
-        
-        .tab-pane { display: none; }
-        .tab-pane.active { display: block; animation: fadeIn 0.5s ease; }
-
-        .content-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 1.5rem; }
-        @media (min-width: 1024px) { .content-grid { grid-template-columns: repeat(3, 1fr); } }
-
-        .content-card {
-            background: var(--card-bg); padding: 1.5rem; border-radius: var(--border-radius);
-            border: 1px solid rgba(108, 92, 231, 0.1);
-        }
-        @media (min-width: 1024px) { .content-card.col-span-2 { grid-column: span 2 / span 2; } }
-
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .card-title { font-size: 1.2rem; font-weight: 600; }
-
-        #earnings-filter-buttons { display: flex; gap: 0.5rem; }
-        #earnings-filter-buttons button {
-            padding: 0.25rem 0.75rem; font-size: 0.8rem; background: rgba(255,255,255,0.1);
-            border-radius: 0.5rem; transition: all 0.3s ease;
-        }
-        #earnings-filter-buttons button.active { background: var(--primary); color: white; }
-
-        .chart-container { height: 250px; }
-        
-        #active-quests-list .quest-item { text-align: center; }
-        #active-quests-list .count { font-size: 2.5rem; font-weight: 700; background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; color: transparent; }
-
-        #recent-activity-list .activity-item { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        #recent-activity-list .activity-item:last-child { border: none; }
-        #recent-activity-list .icon-container {
-            width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
-            border-radius: 0.5rem;
-        }
-
-        .skeleton { background: linear-gradient(90deg, rgba(45, 52, 54, 0.8), rgba(30, 39, 46, 0.8), rgba(45, 52, 54, 0.8)); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
-        
-        @media (max-width: 768px) {
-            nav { justify-content: center; }
-            .nav-menu { display: none; }
-            .mobile-nav {
-                display: flex; position: fixed; bottom: 0; left: 0; right: 0; width: 100vw;
-                background: rgba(30, 39, 46, 0.9); backdrop-filter: blur(10px);
-                justify-content: space-around; padding: 0.5rem 0; z-index: 100;
-                border-top: 1px solid rgba(108, 92, 231, 0.2);
-            }
-            .mobile-nav a {
-                color: var(--light); text-decoration: none; font-size: 1.2rem;
-                padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.3s ease;
-            }
-            .mobile-nav a.active { color: var(--primary-light); }
-            .container { padding: 1rem; margin-top: 1rem; }
-        }
-
+        @media (max-width: 768px) { .nav-menu { display: none; flex-direction: column; position: absolute; top: 60px; left: 0; width: 100%; background: rgba(30, 39, 46, 0.95); padding: 1rem 0; } .nav-menu.open { display: flex; } .nav-menu a { width: 100%; text-align: center; padding: 1rem 0; } .hamburger { display: block; } }
     </style>
 </head>
-<body>
-    <div id="bg-particles"></div>
-
+<body class="bg-darker text-light">
     <nav>
         <div class="logo"> <i class="fas fa-rocket"></i> <span>RewardRush</span> </div>
+        <div class="hamburger" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
         <div class="nav-menu" id="nav-menu">
             <a href="groweasy.html"><i class="fas fa-tasks"></i> Quests</a>
             <a href="affiliate.html"><i class="fas fa-users"></i> Affiliate</a>
             <a href="education.html"><i class="fas fa-graduation-cap"></i> Education</a>
             <a href="founder.html"><i class="fas fa-user-tie"></i> Founder</a>
-            <a href="profile.html" class="profile-btn active"><i class="fas fa-user"></i></a>
+            <a href="profile.html" class="profile-btn"><i class="fas fa-user"></i></a>
         </div>
     </nav>
-     <div class="mobile-nav">
-        <a href="groweasy.html"><i class="fas fa-tasks"></i></a>
-        <a href="affiliate.html"><i class="fas fa-users"></i></a>
-        <a href="education.html"><i class="fas fa-graduation-cap"></i></a>
-        <a href="founder.html"><i class="fas fa-user-tie"></i></a>
-        <a href="profile.html" class="active"><i class="fas fa-user"></i></a>
-    </div>
 
-    <main class="container">
-        <div id="profile-shareable-area">
-            <header class="profile-header">
-                <div class="profile-info">
-                    <div class="profile-image-container">
-                        <img id="profileImage" src="" alt="Profile">
-                        <div id="uploadTrigger"><i class="fas fa-camera text-white text-xl"></i></div>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-16">
+        
+        <div id="profile-shareable-area" class="p-6 rounded-xl" style="background-color: var(--dark);">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <div class="relative group">
+                        <img id="profileImage" class="h-20 w-20 rounded-full border-2 border-primary neon-shadow object-cover" src="" alt="Profile">
+                        <div id="uploadTrigger" class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                            <i class="fas fa-camera text-white text-xl"></i>
+                        </div>
                     </div>
-                    <input type="file" id="imageUpload" accept="image/*">
-                    <div>
-                        <h1 id="profile-name" class="skeleton rounded" style="width: 12rem; height: 1.5rem;"></h1>
-                        <div class="profile-meta">
-                            <span id="profile-username" class="skeleton rounded" style="width: 8rem; height: 1rem;"></span>
-                            <span id="profile-level" class="skeleton rounded" style="width: 4rem; height: 1.2rem;"></span>
-                            <span id="profile-title" class="skeleton rounded" style="width: 6rem; height: 1.2rem;"></span>
+                    <input type="file" id="imageUpload" class="hidden" accept="image/*">
+                    <div class="ml-4">
+                        <h1 id="profile-name" class="text-2xl font-bold skeleton rounded w-48">&nbsp;</h1>
+                        <div class="flex items-center mt-1">
+                            <span id="profile-username" class="text-gray-400 skeleton rounded w-32">&nbsp;</span>
+                            <span id="profile-level" class="ml-3 px-2 py-1 bg-gray-800 text-xs rounded-full text-primary font-bold skeleton w-12">&nbsp;</span>
+                            <span id="profile-title" class="ml-2 px-2 py-1 bg-primary/10 text-xs rounded-full text-primary font-bold skeleton w-40">&nbsp;</span>
                         </div>
                     </div>
                 </div>
-                <div class="profile-actions">
-                    <button id="share-profile-btn" class="action-btn"><i class="fas fa-share-alt mr-2"></i> Share Profile</button>
-                    <button class="action-btn secondary"><i class="fas fa-cog mr-2"></i> Settings</button>
+                <div class="flex space-x-3">
+                    <button id="share-profile-btn" class="px-4 py-2 bg-primary hover:bg-primary-light rounded-lg font-medium flex items-center neon-shadow">
+                        <i class="fas fa-share-alt mr-2"></i> Share Profile
+                    </button>
+                    <button class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium flex items-center"><i class="fas fa-cog mr-2"></i> Settings</button>
                 </div>
-            </header>
+            </div>
 
-            <div class="stats-grid">
-                <div class="stat-card"><div class="label">Total Earnings</div><div class="value">$<span id="total-earnings" class="skeleton rounded inline-block" style="width: 6rem;"></span></div></div>
-                <div class="stat-card"><div class="label">Quests Completed</div><div class="value"><span id="quests-completed" class="skeleton rounded inline-block" style="width: 3rem;"></span></div></div>
-                <div class="stat-card"><div class="label">Referrals</div><div class="value"><span id="referrals-count" class="skeleton rounded inline-block" style="width: 3rem;"></span></div><div class="sub-value">$<span id="referral-earnings">0.00</span> earned</div></div>
-                <div class="stat-card"><div class="label">Streak</div><div class="value"><span id="login-streak" class="skeleton rounded inline-block" style="width: 3rem;"></span> days</div></div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
+                    <div class="text-gray-400 text-sm">Total Earnings</div>
+                    <div class="text-2xl font-bold mt-1">$<span id="total-earnings" class="skeleton rounded inline-block w-24">&nbsp;</span></div>
+                </div>
+                <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
+                    <div class="text-gray-400 text-sm">Quests Completed</div>
+                    <div class="text-2xl font-bold mt-1"><span id="quests-completed" class="skeleton rounded inline-block w-12">&nbsp;</span></div>
+                </div>
+                <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
+                    <div class="text-gray-400 text-sm">Referrals</div>
+                    <div class="text-2xl font-bold mt-1"><span id="referrals-count" class="skeleton rounded inline-block w-12">&nbsp;</span></div>
+                    <div class="text-xs text-gray-500 mt-1">$<span id="referral-earnings">0.00</span> earned</div>
+                </div>
+                <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
+                    <div class="text-gray-400 text-sm">Streak</div>
+                    <div class="text-2xl font-bold mt-1"><span id="login-streak" class="skeleton rounded inline-block w-12">&nbsp;</span> days</div>
+                </div>
             </div>
         </div>
 
-        <div class="tabs-container">
-            <div class="tabs">
-                <button id="overview-tab" class="tab-btn active">Overview</button>
-                <button id="refer-tab" class="tab-btn">Refer & Earn</button>
-                <button id="achievements-tab" class="tab-btn">Achievements</button>
+        <div class="border-b border-gray-800 mb-6 mt-8">
+            <div class="flex space-x-8">
+                <button id="overview-tab" class="py-3 px-1 font-medium tab-active">Overview</button>
+                <button id="refer-tab" class="py-3 px-1 font-medium text-gray-400 hover:text-white">Refer & Earn</button>
+                <button id="achievements-tab" class="py-3 px-1 font-medium text-gray-400 hover:text-white">Achievements</button>
             </div>
         </div>
 
         <div id="tab-content">
             <div id="overview-content" class="tab-pane active">
-                <div class="content-grid">
-                    <div class="content-card col-span-2">
-                        <div class="card-header">
-                            <h2 class="card-title">Earnings</h2>
-                            <div id="earnings-filter-buttons">
-                                <button data-range="7d" class="active">7D</button><button data-range="1m">1M</button>
-                                <button data-range="6m">6M</button><button data-range="1y">1Y</button><button data-range="all">All</button>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-card-bg rounded-xl p-6 border border-gray-800 neon-border lg:col-span-2">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold">Earnings</h2>
+                            <div id="earnings-filter-buttons" class="flex space-x-1 sm:space-x-2">
+                                <button data-range="7d" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">7D</button>
+                                <button data-range="1m" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">1M</button>
+                                <button data-range="6m" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">6M</button>
+                                <button data-range="1y" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">1Y</button>
+                                <button data-range="all" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">All</button>
                             </div>
                         </div>
-                        <div class="chart-container"><canvas id="earningsChart"></canvas></div>
+                        <div class="h-64"><canvas id="earningsChart"></canvas></div>
                     </div>
-                    <div class="content-card">
-                        <h2 class="card-title text-center">Active Quests</h2>
-                        <div id="active-quests-list" class="flex items-center justify-center h-full"></div>
+                    <div class="bg-card-bg rounded-xl p-6 border border-gray-800 neon-border">
+                        <h2 class="text-lg font-bold mb-4 text-center">Active Quests</h2>
+                        <div id="active-quests-list" class="space-y-4 flex items-center justify-center h-full">
+                           </div>
                     </div>
-                    <div class="content-card col-span-3">
-                        <h2 class="card-title">Recent Activity</h2>
-                        <div id="recent-activity-list" class="space-y-3"></div>
-                    </div>
-                </div>
-            </div>
-             <div id="refer-content" class="tab-pane">
-                 <div class="content-card text-center">
-                    <h2 class="card-title">Your Referral Link</h2>
-                    <p class="text-gray-400 my-4">Share this link with friends. You'll earn rewards when they sign up and complete quests!</p>
-                    <div class="bg-darker p-4 rounded-lg flex items-center justify-between">
-                        <span id="referral-link" class="text-primary-light font-mono"></span>
-                        <button onclick="copyReferralLink()" class="action-btn"><i class="fas fa-copy"></i></button>
+                    <div class="bg-card-bg rounded-xl p-6 border border-gray-800 neon-border lg:col-span-3">
+                        <h2 class="text-lg font-bold mb-4">Recent Activity</h2>
+                        <div id="recent-activity-list" class="space-y-3">
+                            </div>
                     </div>
                 </div>
-            </div>
-             <div id="achievements-content" class="tab-pane">
-                 <div class="content-card">
-                    <h2 class="card-title">Badges</h2>
-                    <div id="badges-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-center"></div>
-                 </div>
             </div>
         </div>
     </main>
@@ -308,35 +150,17 @@
         let earningsChart = null;
         let currentUserId = null; 
 
-        function createBackgroundParticles() {
-            const container = document.getElementById('bg-particles');
-            if (!container) return;
-            const particleCount = Math.floor(window.innerWidth / 20);
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('bg-particle');
-                const size = Math.random() * 5 + 1;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                particle.style.left = `${Math.random() * 100}%`;
-                particle.style.top = `${Math.random() * 100}%`;
-                particle.style.animationDuration = `${Math.random() * 20 + 10}s`;
-                particle.style.animationDelay = `-${Math.random() * 10}s`;
-                container.appendChild(particle);
-            }
-        }
-
         function updateProfileUI(data) {
             const updateElement = (id, value, prefix = '', suffix = '') => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.textContent = `${prefix}${value}${suffix}`;
-                    el.classList.remove('skeleton', 'rounded', 'inline-block');
-                    el.style.width = ''; el.style.height = '';
+                    el.classList.remove('skeleton', 'w-48', 'w-32', 'w-12', 'w-40', 'w-24', 'inline-block');
                 }
             };
             
             document.getElementById('profileImage').src = data.avatar || 'https://www.gravatar.com/avatar/?d=mp';
+            // **FIXED**: Use username as a fallback if full name is null or empty
             updateElement('profile-name', data.fullName || data.username);
             updateElement('profile-username', data.username, '@');
             updateElement('profile-level', data.level || 1, 'Lvl ');
@@ -346,8 +170,6 @@
             updateElement('referrals-count', data.referralsCount || 0);
             updateElement('referral-earnings', (data.referralEarnings || 0).toFixed(2));
             updateElement('login-streak', data.loginStreak || 0);
-             document.getElementById('referral-link').textContent = `https://rewardrush.com/join?ref=${data.userId}`;
-
 
             const activityList = document.getElementById('recent-activity-list');
             activityList.innerHTML = ''; 
@@ -355,160 +177,253 @@
                 data.recentActivity.forEach(item => {
                     const iconData = {
                         quest_completed: { icon: 'fa-check-circle', color: 'primary' },
-                        new_referral: { icon: 'fa-user-plus', color: 'success' },
-                        account_created: { icon: 'fa-rocket', color: 'secondary' }
+                        new_referral: { icon: 'fa-user-plus', color: 'green-500' },
+                        account_created: { icon: 'fa-rocket', color: 'blue-500' }
                     };
-                    const { icon, color } = iconData[item.activity_type] || { icon: 'fa-star', color: 'warning' };
+                    const { icon, color } = iconData[item.activity_type] || { icon: 'fa-star', color: 'yellow-500' };
 
                     activityList.innerHTML += `
-                        <div class="activity-item">
-                            <div class="icon-container" style="background-color: var(--${color}-transparent); color: var(--${color});">
-                                <i class="fas ${icon}"></i>
+                        <div class="activity-item flex items-start">
+                            <div class="bg-${color}/10 p-2 rounded-lg mr-3">
+                                <i class="fas ${icon} text-${color}"></i>
                             </div>
                             <div>
                                 <div>${item.details}</div>
-                                <div class="text-sm" style="color: rgba(255,255,255,0.6)">${new Date(item.created_at).toLocaleString()}</div>
+                                <div class="text-sm text-gray-400">${new Date(item.created_at).toLocaleString()}</div>
                             </div>
                         </div>`;
                 });
             } else {
-                 activityList.innerHTML = `<p class="text-center" style="color: rgba(255,255,255,0.6)">No recent activity.</p>`;
-            }
-             const badgesGrid = document.getElementById('badges-grid');
-            badgesGrid.innerHTML = '';
-            if (data.badges && data.badges.length > 0) {
-                data.badges.forEach(badge => {
-                    badgesGrid.innerHTML += `
-                        <div class="badge ${badge.earned ? 'badge-earned' : 'badge-locked'}">
-                            <img src="${badge.icon_url}" alt="${badge.name}" class="w-20 h-20 mx-auto">
-                            <p class="font-bold mt-2">${badge.name}</p>
-                            ${!badge.earned ? `<p class="text-xs text-gray-400">${badge.description}</p>`: ''}
-                        </div>
-                    `;
-                });
-            } else {
-                badgesGrid.innerHTML = `<p class="text-center col-span-full" style="color: rgba(255,255,255,0.6)">No badges earned yet.</p>`;
+                 activityList.innerHTML = `<p class="text-gray-400 text-center">No recent activity to display.</p>`;
             }
         }
 
         function initChart(labels, chartData) {
             const ctx = document.getElementById('earningsChart').getContext('2d');
-            if (earningsChart) earningsChart.destroy();
-            
-            const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-            gradient.addColorStop(0, 'rgba(108, 92, 231, 0.5)');
-            gradient.addColorStop(1, 'rgba(108, 92, 231, 0)');
-
+            if (earningsChart) {
+                earningsChart.destroy();
+            }
             earningsChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Earnings ($)', data: chartData,
-                        backgroundColor: gradient, borderColor: 'var(--primary)',
-                        borderWidth: 2, tension: 0.4, fill: true, pointBackgroundColor: 'var(--primary)'
+                        label: 'Earnings ($)',
+                        data: chartData,
+                        backgroundColor: 'rgba(138, 99, 242, 0.2)',
+                        borderColor: 'rgba(138, 99, 242, 1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
                     }]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
+                    responsive: true,
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: 'rgba(255, 255, 255, 0.7)', callback: (value) => '$' + value } },
-                        x: { grid: { display: false }, ticks: { color: 'rgba(255, 255, 255, 0.7)' } }
+                        y: { 
+                            beginAtZero: true,
+                            ticks: { color: 'rgba(255, 255, 255, 0.7)', callback: (value) => '$' + value } 
+                        },
+                        x: { ticks: { color: 'rgba(255, 255, 255, 0.7)' } }
                     }
                 }
             });
         }
 
         async function fetchAndRenderEarnings(userId, range = '7d') {
-            // Mocking API call for chart data
-            const mockData = {
-                '7d': { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], data: [12, 19, 3, 5, 2, 3, 7] },
-                '1m': { labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'], data: [45, 60, 55, 70] },
-                '6m': { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], data: [200, 250, 300, 280, 320, 350] },
-                '1y': { labels: ['Q1', 'Q2', 'Q3', 'Q4'], data: [800, 950, 1100, 1050] },
-                'all': { labels: ['2022', '2023', '2024'], data: [500, 1200, 1500] }
-            };
-            const data = mockData[range];
-            initChart(data.labels, data.data);
+            try {
+                const response = await fetch(`/api/profile/${userId}/earnings-history?range=${range}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                
+                initChart(data.labels, data.data);
 
-            document.querySelectorAll('#earnings-filter-buttons button').forEach(button => {
-                button.classList.toggle('active', button.dataset.range === range);
-            });
+                document.querySelectorAll('#earnings-filter-buttons button').forEach(button => {
+                    button.classList.toggle('bg-primary', button.dataset.range === range);
+                    button.classList.toggle('bg-gray-700', button.dataset.range !== range);
+                });
+
+            } catch (error) {
+                console.error(`Could not fetch earnings for range ${range}:`, error);
+            }
         }
 
         async function loadProfileData(userId) {
             currentUserId = userId;
-            // Mocking API call for main profile data
-            const data = {
-                userId: 'user12345', fullName: 'Alex Ryder', username: 'alexryder', level: 12,
-                title: 'Quest Master', avatar: 'https://placehold.co/80x80/6c5ce7/white?text=A',
-                totalEarnings: 1250.75, questsCompleted: 42, referralsCount: 5,
-                referralEarnings: 25.00, loginStreak: 14,
-                recentActivity: [
-                    { activity_type: 'quest_completed', details: 'Completed "Master of Markets" quiz', created_at: new Date() },
-                    { activity_type: 'new_referral', details: 'Referred user @janesmith', created_at: new Date(Date.now() - 86400000) }
-                ],
-                badges: [ {name: "Pioneer", icon_url: "https://img.icons8.com/color/96/000000/mission-of-a-company.png", earned: true } ]
-            };
-            
-            updateProfileUI(data);
+            try {
+                const response = await fetch(`/api/profile/${userId}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                
+                updateProfileUI(data);
 
-            const activeQuestsEl = document.getElementById('active-quests-list');
-            activeQuestsEl.innerHTML = `<div class="quest-item"><div class="count">${data.activeQuestsCount || 15}</div><p style="color: rgba(255,255,255,0.6)">Quests Available</p><a href="groweasy.html" class="action-btn" style="margin-top: 1rem;">View Quests</a></div>`;
-            
-            fetchAndRenderEarnings(userId, '7d');
+                const activeQuestsEl = document.getElementById('active-quests-list');
+                if (activeQuestsEl) {
+                    activeQuestsEl.innerHTML = `
+                        <div class="text-center">
+                            <div class="text-4xl font-bold gradient-text">${data.activeQuestsCount}</div>
+                            <p class="text-gray-400 mt-2">Quests Available</p>
+                            <a href="groweasy.html" class="mt-4 inline-block px-4 py-2 bg-primary hover:bg-primary-light rounded-lg font-medium text-sm">
+                                View Quests
+                            </a>
+                        </div>
+                    `;
+                }
+
+                if (data.earningsChartData) {
+                    initChart(data.earningsChartData.labels, data.earningsChartData.data);
+                    const initialButton = document.querySelector('#earnings-filter-buttons button[data-range="7d"]');
+                    if(initialButton) {
+                        initialButton.classList.add('bg-primary');
+                        initialButton.classList.remove('bg-gray-700');
+                    }
+                }
+
+            } catch (error) {
+                console.error("Could not fetch profile data:", error);
+                document.querySelector('main').innerHTML = `<p class="text-center text-danger">Could not load profile. Please try again later.</p>`;
+            }
         }
         
         function setupProfileUpload(userId) {
-            document.getElementById('uploadTrigger')?.addEventListener('click', () => document.getElementById('imageUpload').click());
-            document.getElementById('imageUpload')?.addEventListener('change', event => { /* upload logic */ });
+            const uploadTrigger = document.getElementById('uploadTrigger');
+            const imageUpload = document.getElementById('imageUpload');
+            const profileImage = document.getElementById('profileImage');
+
+            if (uploadTrigger) {
+                uploadTrigger.addEventListener('click', () => imageUpload.click());
+            }
+
+            if(imageUpload) {
+                imageUpload.addEventListener('change', async function(event) {
+                    const file = event.target.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => { profileImage.src = e.target.result; };
+                        reader.readAsDataURL(file);
+
+                        const formData = new FormData();
+                        formData.append('profilePicture', file);
+
+                        try {
+                            const response = await fetch('/api/user/upload-picture', {
+                                method: 'POST',
+                                body: formData,
+                            });
+                            const result = await response.json();
+                            if (!response.ok) throw new Error(result.error || 'Upload failed');
+                            profileImage.src = result.filePath; 
+                        } catch (error) {
+                            console.error('Error uploading file:', error);
+                            alert('Could not upload profile picture. ' + error.message);
+                            loadProfileData(userId); 
+                        }
+                    }
+                });
+            }
         }
 
         function setupShareButton(userId) {
-            document.getElementById('share-profile-btn')?.addEventListener('click', async () => { /* share logic */ });
-        }
-        
-        function copyReferralLink() {
-            const link = document.getElementById('referral-link').textContent;
-            navigator.clipboard.writeText(link).then(() => {
-                alert('Referral link copied!');
+            const shareButton = document.getElementById('share-profile-btn');
+            const shareArea = document.getElementById('profile-shareable-area');
+
+            if (!shareButton || !shareArea) return;
+
+            shareButton.addEventListener('click', async () => {
+                shareButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generating...';
+                shareButton.disabled = true;
+
+                try {
+                    const canvas = await html2canvas(shareArea, {
+                        backgroundColor: '#0f172a', 
+                        useCORS: true 
+                    });
+
+                    canvas.toBlob(async (blob) => {
+                        if (!blob) throw new Error('Canvas to Blob conversion failed');
+                        const referralLink = `https://rewardrush.com/join?ref=${userId}`;
+                        const files = [new File([blob], 'rewardrush-profile.png', { type: 'image/png' })];
+
+                        if (navigator.canShare && navigator.canShare({ files })) {
+                            await navigator.share({
+                                files: files,
+                                title: 'My RewardRush Profile',
+                                text: `Check out my progress on RewardRush and join with my link!`,
+                                url: referralLink
+                            });
+                        } else {
+                            const link = document.createElement('a');
+                            link.href = URL.createObjectURL(blob);
+                            link.download = `rewardrush-profile-${userId}.png`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(link.href);
+                        }
+                    }, 'image/png');
+
+                } catch (err) {
+                    console.error('Error generating or sharing profile image:', err);
+                    alert('Sorry, could not generate the profile image.');
+                } finally {
+                    shareButton.innerHTML = '<i class="fas fa-share-alt mr-2"></i> Share Profile';
+                    shareButton.disabled = false;
+                }
             });
         }
-
+        
         document.addEventListener('DOMContentLoaded', async function() {
-            createBackgroundParticles();
-            const session = await checkSession();
-            if (session.loggedIn) {
-                const mockUserId = 'user12345';
-                await loadProfileData(mockUserId);
-                setupProfileUpload(mockUserId);
-                setupShareButton(mockUserId);
+            try {
+                const sessionRes = await fetch('/check-session');
+                const sessionData = await sessionRes.json();
 
-                document.getElementById('earnings-filter-buttons')?.addEventListener('click', (event) => {
-                    if (event.target.tagName === 'BUTTON') {
-                        const range = event.target.dataset.range;
-                        if(range && currentUserId) fetchAndRenderEarnings(currentUserId, range);
+                if (sessionData.loggedIn) {
+                    await loadProfileData(sessionData.userId);
+                    setupProfileUpload(sessionData.userId);
+                    setupShareButton(sessionData.userId);
+
+                    const filterContainer = document.getElementById('earnings-filter-buttons');
+                    if (filterContainer) {
+                        filterContainer.addEventListener('click', (event) => {
+                            if (event.target.tagName === 'BUTTON') {
+                                const range = event.target.dataset.range;
+                                if(range && currentUserId) {
+                                    fetchAndRenderEarnings(currentUserId, range);
+                                }
+                            }
+                        });
                     }
-                });
-                
-                document.querySelectorAll('[id$="-tab"]').forEach(tab => {
-                    tab.addEventListener('click', function() {
-                        document.querySelectorAll('[id$="-tab"]').forEach(t => t.classList.remove('active'));
-                        document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
-                        
-                        this.classList.add('active');
-                        const tabName = this.id.replace('-tab', '');
-                        const contentPane = document.getElementById(`${tabName}-content`);
-                        if(contentPane) contentPane.style.display = 'block';
-                    });
-                });
-                // Activate the first tab content
-                document.getElementById('overview-content').style.display = 'block';
-            } else {
-                window.location.href = '/auth.html';
+
+                } else {
+                    window.location.href = '/auth.html';
+                }
+            } catch (error) {
+                console.error("Session check failed:", error);
+                 window.location.href = '/auth.html';
             }
         });
+
+        document.querySelectorAll('[id$="-tab"]').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('[id$="-tab"]').forEach(t => t.classList.remove('tab-active', 'text-primary-light'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+                
+                this.classList.add('tab-active', 'text-primary-light');
+                const tabName = this.id.replace('-tab', '');
+                const contentPane = document.getElementById(`${tabName}-content`);
+                if(contentPane) {
+                   contentPane.classList.remove('hidden');
+                   contentPane.classList.add('active');
+                }
+            });
+        });
+        
+        function toggleMenu() {
+            document.getElementById('nav-menu').classList.toggle('open');
+        }
     </script>
 </body>
 </html>
