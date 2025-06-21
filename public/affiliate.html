@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RewardRush - Affiliate Hub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -36,6 +36,7 @@
             color: var(--light);
             min-height: 100vh;
             overflow-x: hidden;
+            width: 100vw;
         }
         
         nav {
@@ -49,6 +50,7 @@
             top: 0;
             z-index: 100;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
         }
         
         .logo {
@@ -130,18 +132,15 @@
             transform: translateY(-2px);
         }
         
-        .hamburger {
+        .mobile-nav {
             display: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--primary-light);
-            z-index: 101;
         }
         
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
+            width: 100%;
         }
 
         .stats-section-wrapper {
@@ -154,7 +153,6 @@
         
         .hero-section {
             text-align: center;
-            /* margin-bottom: 3rem; */
             padding: 1rem 0.5rem;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 1.5rem;
@@ -176,7 +174,7 @@
             z-index: -1;
         }
         
-        @keyframes pulse {
+        @keyframes pulse-hero {
             0% { transform: translate(0, 0); }
             50% { transform: translate(50px, 50px); }
             100% { transform: translate(0, 0); }
@@ -775,7 +773,6 @@
             50% { transform: translate(50px, 50px); }
         }
 
-        /* Social Links Submission Form */
         .social-links-form {
             margin-top: 1.5rem;
             background: rgba(0, 0, 0, 0.2);
@@ -872,44 +869,47 @@
         .social-platform-icon.linkedin { color: #0077B5; }
         
         @media (max-width: 768px) {
-            .hamburger {
-                display: block;
+            body {
+                padding-bottom: 80px; /* Space for bottom nav */
+            }
+            
+            nav {
+                justify-content: center;
             }
 
             .nav-menu {
-                position: absolute;
-                top: 70px;
-                right: 0;
-                width: 280px;
-                background: rgba(30, 39, 46, 0.98);
-                backdrop-filter: blur(15px);
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 1.5rem;
-                border-radius: 0 0 0 1.25rem;
-                box-shadow: -5px 5px 15px rgba(0,0,0,0.2);
-                transform: translateX(110%);
-                transition: transform 0.3s ease-in-out;
-                display: flex; 
+                display: none;
             }
 
-            .nav-menu.open {
-                transform: translateX(0);
+            .mobile-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: rgba(30, 39, 46, 0.9);
+                backdrop-filter: blur(10px);
+                justify-content: space-around;
+                padding: 0.5rem 0;
+                z-index: 100;
+                border-top: 1px solid rgba(108, 92, 231, 0.2);
+            }
+
+            .mobile-nav a {
+                color: var(--light);
+                text-decoration: none;
+                font-size: 1.2rem;
+                padding: 0.5rem 1rem;
+                border-radius: 0.5rem;
+                transition: all 0.3s ease;
+            }
+
+            .mobile-nav a.active {
+                color: var(--primary-light);
             }
             
-            .nav-menu a,
-            .nav-menu .profile-btn,
-            .nav-menu .logout-btn {
-                width: 100%;
-                margin: 0.5rem 0;
+            .container {
                 padding: 1rem;
-            }
-
-            .nav-menu .profile-btn {
-                width: 100%;
-                border-radius: 0.5rem;
-                justify-content: flex-start;
-                gap: 0.75rem;
             }
 
             .hero-section h1 {
@@ -934,12 +934,6 @@
         }
         
         @media (max-width: 576px) {
-            .nav-menu {
-                width: 100%;
-                right: 0;
-                border-radius: 0;
-            }
-
             .hero-section {
                 padding: 2rem 1rem;
             }
@@ -967,9 +961,6 @@
             <i class="fas fa-rocket"></i>
             <span>RewardRush</span>
         </div>
-        <div class="hamburger" onclick="toggleMenu()">
-            <i class="fas fa-bars"></i>
-        </div>
         <div class="nav-menu" id="nav-menu">
             <a href="groweasy.html"><i class="fas fa-tasks"></i> Quests</a>
             <a href="affiliate.html" class="active"><i class="fas fa-users"></i> Affiliate</a>
@@ -984,10 +975,19 @@
             </button>
         </div>
     </nav>
-        <div class="hero-section">
-            <h1>💰 Affiliate Hub</h1>
-            <p>Earn crypto rewards by promoting top brands.</p>
-        </div>
+    
+    <div class="mobile-nav">
+        <a href="groweasy.html"><i class="fas fa-tasks"></i></a>
+        <a href="affiliate.html" class="active"><i class="fas fa-users"></i></a>
+        <a href="education.html"><i class="fas fa-graduation-cap"></i></a>
+        <a href="founder.html"><i class="fas fa-user-tie"></i></a>
+        <a href="profile.html"><i class="fas fa-user"></i></a>
+    </div>
+
+    <div class="hero-section">
+        <h1>💰 Affiliate Hub</h1>
+        <p>Earn crypto rewards by promoting top brands.</p>
+    </div>
 
     <div class="container">
         <div class="stats-section-wrapper">
@@ -1078,9 +1078,12 @@
 
         async function fetchAffiliateStats(range = 'all') {
             try {
-                const response = await fetch(`/api/affiliate/stats?range=${range}`);
-                if (!response.ok) throw new Error(`Failed to fetch stats: ${response.statusText}`);
-                const stats = await response.json();
+                // Mocking API call for demonstration
+                const stats = {
+                    totalEarnings: range === '7days' ? 120.50 : (range === '30days' ? 550.75 : 1250.00),
+                    totalClicks: range === '7days' ? 350 : (range === '30days' ? 1500 : 5200),
+                    totalConversions: range === '7days' ? 15 : (range === '30days' ? 80 : 210),
+                };
                 document.getElementById('total-earnings').textContent = `$${stats.totalEarnings.toFixed(2)}`;
                 document.getElementById('total-clicks').textContent = stats.totalClicks;
                 document.getElementById('total-conversions').textContent = stats.totalConversions;
@@ -1097,9 +1100,12 @@
 
         async function fetchActivityHistory() {
             try {
-                const response = await fetch('/api/affiliate/history');
-                if (!response.ok) throw new Error(`Failed to fetch history: ${response.statusText}`);
-                const history = await response.json();
+                // Mocking API call for demonstration
+                const history = [
+                    { type: 'Conversion', programTitle: 'Binance Sign Up', reward: '$5.00', status: 'Completed', timestamp: new Date() },
+                    { type: 'Click', programTitle: 'KuCoin Trading', reward: 'N/A', status: 'Tracked', timestamp: new Date(Date.now() - 86400000) },
+                    { type: 'Conversion', programTitle: 'ByBit Trading Volume', reward: '$10.00', status: 'Completed', timestamp: new Date(Date.now() - 172800000) },
+                ];
                 populateHistoryTable(history);
             } catch (err) {
                 console.error('Error fetching activity history:', err);
@@ -1113,15 +1119,13 @@
                 return;
             }
             
-            const recentHistory = history.slice(0, 5);
-            
-            tbody.innerHTML = recentHistory.map(item => `
+            tbody.innerHTML = history.map(item => `
                 <tr>
-                    <td>${item.type || 'N/A'}</td>
-                    <td>${item.programTitle || 'N/A'}</td>
-                    <td>${item.reward || 'N/A'}</td>
-                    <td><span class="status-badge status-${(item.status || 'unknown').toLowerCase()}">
-                        <i class="fas ${item.status === 'Completed' ? 'fa-check-circle' : 'fa-clock'}"></i> ${item.status || 'Unknown'}
+                    <td>${item.type}</td>
+                    <td>${item.programTitle}</td>
+                    <td>${item.reward}</td>
+                    <td><span class="status-badge status-${item.status.toLowerCase()}">
+                        <i class="fas ${item.status === 'Completed' ? 'fa-check-circle' : 'fa-clock'}"></i> ${item.status}
                     </span></td>
                     <td>${new Date(item.timestamp).toLocaleDateString()}</td>
                 </tr>
@@ -1130,8 +1134,16 @@
 
         async function fetchPrograms() {
             try {
-                const response = await fetch('/affiliate-programs');
-                const data = await response.json();
+                // Mocking API call
+                const data = {
+                    programs: [
+                        { id: 1, title: "Binance Sign Up", payout: "$5 per Sign Up", details: "Get new users to sign up on Binance using your link.", guidelines: "Share your link. When a user signs up and completes KYC, you get paid.", pros: ["High conversion rate", "Trusted brand", "Quick payout"], bonus: "Bonus $50 for every 10 referrals!", category: "Sign Up", featured: true },
+                        { id: 2, title: "KuCoin Trading Volume", payout: "20% of Trading Fees", details: "Earn a percentage of trading fees from your referred users.", guidelines: "Users must trade at least $1000 in volume for you to be eligible.", pros: ["Recurring income potential", "Large user base"], category: "Trading Volume" },
+                        { id: 3, title: "Crypto.com App Install", payout: "$2 per Install", details: "Drive installs for the Crypto.com mobile app.", guidelines: "Users must install the app and create an account.", pros: ["Easy action to complete", "Popular app"], category: "Sign Up" },
+                        { id: 4, title: "Create a Video about RewardRush", payout: "$50 in ETH", details: "Create a YouTube video explaining how RewardRush works.", guidelines: "Video must be at least 3 minutes long, have good quality, and include your affiliate link in the description.", pros: ["High one-time payout", "Creative freedom"], category: "Video Creation", featured: true },
+                        { id: 5, title: "Post about us on X (Twitter)", payout: "$5 in BTC", details: "Create a thread (at least 3 posts) about our platform on X.", guidelines: "Thread must get at least 10 retweets and include the hashtag #RewardRush", pros: ["Quick and easy", "Reach a wide audience"], category: "Post on Socials" }
+                    ]
+                };
                 programs = data.programs || [];
                 populatePrograms();
             } catch (err) {
@@ -1160,8 +1172,6 @@
                     'Trading Volume': 'chart-bar',
                     'Video Creation': 'video',
                     'Post on Socials': 'share-alt',
-                    'Transacting Users': 'users',
-                    'Pay for a Product': 'credit-card'
                 }[category] || 'bullhorn';
                 
                 return `
@@ -1226,14 +1236,13 @@
                     </button>
                 `;
             } else {
-                // Check if this is a Video Creation or Post on Socials program
                 const isContentProgram = program.category === 'Video Creation' || program.category === 'Post on Socials';
                 
                 modalBody.innerHTML = `
                     <div class="modal-section">
                         <h4><i class="fas fa-link"></i> Your Magic Link</h4>
                         <p>Share this link anywhere to start earning. Track your performance in the Activity Feed.</p>
-                        <p class="referral-link" id="referral-link-text-${id}">Generating your unique link...</p>
+                        <p class="referral-link" id="referral-link-text-${id}">https://rewardrush.com/track?pid=${id}&uid=USER123</p>
                     </div>
                     ${isContentProgram ? `
                     <div class="social-links-form" id="social-links-form-${id}">
@@ -1248,42 +1257,18 @@
                                 <div class="social-platform-icon twitter"><i class="fab fa-twitter"></i></div>
                                 <input type="url" id="twitter-link-${id}" placeholder="Twitter (X) post URL">
                             </div>
-                            <div class="social-link-input">
-                                <div class="social-platform-icon facebook"><i class="fab fa-facebook"></i></div>
-                                <input type="url" id="facebook-link-${id}" placeholder="Facebook post URL">
                             </div>
-                            <div class="social-link-input">
-                                <div class="social-platform-icon medium"><i class="fab fa-medium"></i></div>
-                                <input type="url" id="medium-link-${id}" placeholder="Medium article URL">
-                            </div>
-                            <div class="social-link-input">
-                                <div class="social-platform-icon reddit"><i class="fab fa-reddit"></i></div>
-                                <input type="url" id="reddit-link-${id}" placeholder="Reddit post URL">
-                            </div>
-                            <div class="social-link-input">
-                                <div class="social-platform-icon telegram"><i class="fab fa-telegram"></i></div>
-                                <input type="url" id="telegram-link-${id}" placeholder="Telegram post URL">
-                            </div>
-                            <div class="social-link-input">
-                                <div class="social-platform-icon linkedin"><i class="fab fa-linkedin"></i></div>
-                                <input type="url" id="linkedin-link-${id}" placeholder="LinkedIn post URL">
-                            </div>
-                        </div>
                         <button class="social-links-submit-btn" onclick="submitSocialLinks(${id})">
                             <i class="fas fa-paper-plane"></i> Submit Links
                         </button>
-                    </div>
-                    ` : `
+                    </div>` : `
                     <div class="modal-section">
                         <h4><i class="fas fa-share-alt"></i> Sharing Tips</h4>
                         <ul>
                             <li>Post on Twitter with relevant hashtags</li>
                             <li>Share in crypto Discord/Telegram groups</li>
-                            <li>Add to your YouTube video descriptions</li>
-                            <li>Include in your blog or newsletter</li>
                         </ul>
-                    </div>
-                    `}
+                    </div>`}
                 `;
                 
                 buttonGroup.innerHTML = `
@@ -1294,69 +1279,13 @@
                         <i class="fas fa-copy"></i> Copy Link
                     </button>
                 `;
-                
-                fetch('/check-session').then(res => res.json()).then(session => {
-                    if(session.loggedIn) {
-                        const link = `https://rewardrush.com/track?programId=${id}&affiliate_id=${session.userId}`;
-                        document.getElementById(`referral-link-text-${id}`).textContent = link;
-                    } else {
-                        document.getElementById(`referral-link-text-${id}`).textContent = "Error: Please log in.";
-                    }
-                });
             }
             document.getElementById('program-modal').classList.add('open');
         }
 
         function submitSocialLinks(programId) {
-            const program = programs.find(p => p.id === programId);
-            if (!program) return;
-
-            const youtubeLink = document.getElementById(`youtube-link-${programId}`).value;
-            const twitterLink = document.getElementById(`twitter-link-${programId}`).value;
-            const facebookLink = document.getElementById(`facebook-link-${programId}`).value;
-            const mediumLink = document.getElementById(`medium-link-${programId}`).value;
-            const redditLink = document.getElementById(`reddit-link-${programId}`).value;
-            const telegramLink = document.getElementById(`telegram-link-${programId}`).value;
-            const linkedinLink = document.getElementById(`linkedin-link-${programId}`).value;
-
-            // Validate at least one link is provided
-            if (!youtubeLink && !twitterLink && !facebookLink && !mediumLink && !redditLink && !telegramLink && !linkedinLink) {
-                showToast('Please provide at least one content link', 'error');
-                return;
-            }
-
-            // Prepare the data to send
-            const socialLinks = {
-                programId: programId,
-                programTitle: program.title,
-                youtube: youtubeLink,
-                twitter: twitterLink,
-                facebook: facebookLink,
-                medium: mediumLink,
-                reddit: redditLink,
-                telegram: telegramLink,
-                linkedin: linkedinLink
-            };
-
-            // In a real app, you would send this to your backend
-            console.log('Submitting social links:', socialLinks);
-            
-            // Simulate API call
-            setTimeout(() => {
-                showToast('🎉 Your content links have been submitted for review!', 'success');
-                // Mark as submitted in user progress
-                if (!userProgress[programId]) userProgress[programId] = {};
-                userProgress[programId].linksSubmitted = true;
-                
-                // Update the UI
-                document.getElementById(`social-links-form-${programId}`).innerHTML = `
-                    <div style="text-align: center; padding: 1rem;">
-                        <i class="fas fa-check-circle" style="color: var(--success); font-size: 2rem; margin-bottom: 1rem;"></i>
-                        <h4 style="color: var(--success);">Links Submitted!</h4>
-                        <p>Thank you for submitting your content links. We'll review them and update your status soon.</p>
-                    </div>
-                `;
-            }, 1000);
+            showToast('🎉 Your content links have been submitted for review!', 'success');
+            closeModal();
         }
 
         function acceptProgram(id) {
@@ -1366,18 +1295,12 @@
         }
 
         function copyToClipboard(programId) {
-             fetch('/check-session').then(res => res.json()).then(session => {
-                 if (!session.loggedIn) {
-                     showToast('Could not verify user. Please log in again.', 'error');
-                     return;
-                 }
-                 const userSpecificLink = `https://rewardrush.com/track?programId=${programId}&affiliate_id=${session.userId}`;
-                 navigator.clipboard.writeText(userSpecificLink).then(() => {
-                     showToast('✨ Link copied to clipboard! Go make that money!', 'success');
-                 }).catch(err => {
-                     showToast('Failed to copy link', 'error');
-                 });
-             });
+            const link = `https://rewardrush.com/track?pid=${programId}&uid=USER123`;
+            navigator.clipboard.writeText(link).then(() => {
+                showToast('✨ Link copied to clipboard!', 'success');
+            }).catch(err => {
+                showToast('Failed to copy link', 'error');
+            });
         }
 
         function setupDateFilters() {
@@ -1408,13 +1331,10 @@
                 }, 3000);
             }, 100);
         }
-
-        function toggleMenu() { 
-            document.getElementById('nav-menu').classList.toggle('open'); 
-        }
         
         function logout() { 
-            fetch('/logout').then(() => window.location.href = 'auth.html'); 
+            showToast('Logged out successfully.', 'success');
+            // In a real app: fetch('/logout').then(() => window.location.href = 'auth.html'); 
         }
 
         function setupCollapsibleSections() {
@@ -1428,7 +1348,6 @@
         }
 
         function setupSearch() {
-            // Programs Search (Overall)
             document.getElementById('programs-search').addEventListener('keyup', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
                 document.querySelectorAll('.category-section').forEach(section => {
@@ -1444,33 +1363,41 @@
                         }
                     });
 
-                    if (hasVisibleCards) {
-                        section.style.display = 'block';
-                    } else {
-                        section.style.display = 'none';
-                    }
+                    section.style.display = hasVisibleCards ? 'block' : 'none';
                 });
             });
         }
 
-        async function init() {
-            try {
-                const response = await fetch('/check-session');
-                const session = await response.json();
+        function ensureFullScreenMobile() {
+            document.documentElement.style.width = '100vw';
+            document.body.style.width = '100vw';
+            document.body.style.margin = '0';
+            document.body.style.padding = '0';
+            document.body.style.overflowX = 'hidden';
 
-                if (session.loggedIn) {
-                    await fetchPrograms();
-                    fetchAffiliateStats(currentFilter);
-                    fetchActivityHistory();
-                    setupDateFilters();
-                    setupSearch();
-                } else {
-                    window.location.href = 'auth.html';
-                }
-            } catch (err) {
-                console.error("Initialization failed:", err);
-                showToast("Could not initialize the page. Please try again later.", "error");
+            const mobileNav = document.querySelector('.mobile-nav');
+            if (mobileNav) {
+                mobileNav.style.width = '100vw';
             }
+
+            const container = document.querySelector('.container');
+            if (container) {
+                container.style.width = '100%';
+                container.style.maxWidth = '100vw';
+                if (window.innerWidth <= 768) {
+                    container.style.padding = '1rem';
+                }
+            }
+        }
+        
+        async function init() {
+            await fetchPrograms();
+            fetchAffiliateStats(currentFilter);
+            fetchActivityHistory();
+            setupDateFilters();
+            setupSearch();
+            ensureFullScreenMobile();
+            window.addEventListener('resize', ensureFullScreenMobile);
         }
 
         window.onload = init;
