@@ -26,7 +26,7 @@ const pool = new Pool({
 });
 
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'public', 'auth.html')));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -36,13 +36,14 @@ app.use(session({
     saveUninitialized: false,
     cookie: { 
         maxAge: 20 * 60 * 1000,
-        // For production, uncomment the following lines
-        // secure: true, // only send cookie over https
-        // httpOnly: true, // prevent client-side script access
-        // sameSite: 'strict'
+        // For production, these settings are now enabled
+        secure: true, 
+        httpOnly: true, 
+        sameSite: 'strict'
     }
 }));
 
+// Middleware functions (requireLogin, requireAdmin, etc.)
 const requireLogin = async (req, res, next) => {
     if (!req.session.userId) {
         return res.status(401).json({ error: 'Unauthorized, please log in' });
@@ -93,6 +94,12 @@ async function logActivity(userId, activityType, details) {
 }
 
 // --- Routes ---
+
+// FIX: Add route for the root path '/'
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'home.html'));
+});
+
 app.get('/home.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'home.html')));
 
 app.get('/check-session', (req, res) => {
@@ -139,17 +146,13 @@ app.post('/signup', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-    console.log('\n--- LOGIN ATTEMPT ---');
     const { username, password } = req.body;
-    console.log(`[LOGIN DEBUG] 1. Received login request for username: ${username}`);
     
     if (!username || !password) {
-        console.log('[LOGIN DEBUG] FAILED: Username or password not provided.');
         return res.status(400).json({ error: 'Credentials required' });
     }
 
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-        console.log('[LOGIN DEBUG] Admin login successful.');
         req.session.userId = username;
         req.session.isAdmin = true;
         req.session.lastActivity = Date.now();
@@ -161,25 +164,16 @@ app.post('/login', async (req, res) => {
         const user = result.rows[0];
 
         if (!user) {
-            console.log('[LOGIN DEBUG] FAILED: User not found in database.');
             return res.status(401).json({ error: 'Invalid credentials' });
         }
         
-        console.log('[LOGIN DEBUG] 2. User found in database.');
-        console.log(`[LOGIN DEBUG] 3. Comparing passwords...`);
-        console.log(`   - Password from request: [${password}]`);
-        console.log(`   - Hash from database: [${user.password_hash}]`);
-
         if (user.blocked) {
-            console.log('[LOGIN DEBUG] FAILED: Account is blocked.');
             return res.status(403).json({ error: 'Account blocked' });
         }
 
         const match = await bcrypt.compare(password, user.password_hash);
-        console.log(`[LOGIN DEBUG] 4. bcrypt.compare result: ${match}`);
 
         if (match) {
-            console.log('[LOGIN DEBUG] SUCCESS: Passwords match.');
             const today = new Date();
             const lastLogin = user.last_login ? new Date(user.last_login) : null;
             let newStreak = 1;
@@ -199,11 +193,10 @@ app.post('/login', async (req, res) => {
             req.session.lastActivity = Date.now();
             res.json({ message: 'Logged in', userId: username, isAdmin: false });
         } else {
-            console.log('[LOGIN DEBUG] FAILED: Passwords do not match.');
             res.status(401).json({ error: 'Invalid credentials' });
         }
     } catch (err) {
-        console.error('[LOGIN DEBUG] FAILED: An error occurred in the try-catch block.', err);
+        console.error('Login error:', err);
         res.status(500).json({error: 'Server error during login.'});
     }
 });
@@ -221,7 +214,8 @@ app.post('/forgot-password', async (req, res) => {
             const token = crypto.randomBytes(20).toString('hex');
             const expires = new Date(Date.now() + 3600000); // 1 hour
             await pool.query('UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE id = $3', [token, expires, user.id]);
-            const resetLink = `<span class="math-inline">\{process\.env\.BASE\_URL\}/reset\-password\.html?token\=</span>{token}`;
+            // FIX: Use BASE_URL for password reset link
+            const resetLink = `${process.env.BASE_URL}/reset-password.html?token=${token}`;
             console.log(`Password reset link for ${user.username} (${email}): ${resetLink}`);
         }
     } catch (err) {
@@ -382,7 +376,6 @@ app.get('/quest-overview', requireLogin, async (req, res) => {
 
 app.post('/withdraw', requireLogin, async (req, res) => {
     const { amount } = req.body;
-    // FIX: Use the numerical ID from req.user, not the username from the body
     const userDbId = req.user.id; 
     const withdrawalAmount = parseFloat(amount);
 
@@ -407,7 +400,7 @@ app.post('/withdraw', requireLogin, async (req, res) => {
         const code = crypto.randomBytes(8).toString('hex').toUpperCase();
         await client.query(
             'INSERT INTO redeemable_codes (user_id, code, amount) VALUES ($1, $2, $3)',
-            [userDbId, code, withdrawalAmount] // Use the correct numerical ID
+            [userDbId, code, withdrawalAmount]
         );
 
         await logActivity(userDbId, 'withdrawal', `Withdrew ${withdrawalAmount.toFixed(2)}. Code: ${code}`);
@@ -526,8 +519,9 @@ app.get('/generate-referral-link', requireLogin, async (req, res) => {
     if (!questId || !userId) {
         return res.status(400).json({ error: 'Invalid quest or user ID' });
     }
+    // FIX: Use BASE_URL for referral link
     const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
-    const referralLink = `<span class="math-inline">\{baseUrl\}/referral?questId\=</span>{questId}&referrerId=${encodeURIComponent(userId)}`;
+    const referralLink = `${baseUrl}/referral?questId=${questId}&referrerId=${encodeURIComponent(userId)}`;
     res.json({ referralLink });
 });
 
@@ -806,4 +800,3 @@ app.use((req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
 });
-dirname, 'public
