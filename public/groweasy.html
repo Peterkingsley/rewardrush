@@ -44,6 +44,7 @@
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
+            padding-bottom: 80px; /* Space for bottom nav */
         }
 
         /* Animated background elements */
@@ -154,10 +155,10 @@
         
         .hamburger {
             display: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--primary-light);
-            z-index: 101;
+        }
+
+        .mobile-nav {
+            display: none;
         }
         
         .container {
@@ -272,6 +273,12 @@
             font-weight: 600;
         }
         
+        .dashboard-card .value-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
         .dashboard-card p.value {
             font-size: 2rem;
             font-weight: 700;
@@ -413,6 +420,10 @@
             transform: translateY(-50%);
             color: var(--primary-light);
         }
+
+        .mobile-filter-header {
+            display: none;
+        }
         
         .quest-list {
             display: grid;
@@ -517,7 +528,7 @@
         
         .quest-card .primary-btn,
         .quest-card .secondary-btn {
-            padding: 0.75rem 1.5rem;
+            padding: 0.75rem 1rem;
             border: none;
             border-radius: 0.5rem;
             cursor: pointer;
@@ -530,6 +541,7 @@
             gap: 0.5rem;
             position: relative;
             overflow: hidden;
+            font-size: 1rem;
         }
         
         .quest-card .primary-btn::before,
@@ -1220,14 +1232,76 @@
         }
 
         @media (max-width: 768px) {
+            nav {
+                display: none; /* Hide top nav on mobile */
+            }
+
+            .mobile-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: rgba(30, 39, 46, 0.9);
+                backdrop-filter: blur(10px);
+                justify-content: space-around;
+                padding: 0.5rem 0;
+                z-index: 100;
+                border-top: 1px solid rgba(108, 92, 231, 0.2);
+            }
+
+            .mobile-nav a {
+                color: var(--light);
+                text-decoration: none;
+                font-size: 1.2rem;
+                padding: 0.5rem 1rem;
+                border-radius: 0.5rem;
+                transition: all 0.3s ease;
+            }
+
+            .mobile-nav a.active {
+                color: var(--primary-light);
+            }
+
             .container { padding: 1.5rem; }
             .dashboard-grid { grid-template-columns: 1fr; }
             .quest-list { grid-template-columns: 1fr; }
-            .quest-controls { flex-direction: column; }
-            .nav-menu { position: fixed; top: 0; right: -100%; width: 280px; height: 100vh; background: var(--darker); flex-direction: column; padding: 2rem; gap: 1.5rem; transition: right 0.3s ease; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2); }
-            .nav-menu.open { right: 0; }
-            .hamburger { display: block; }
             
+            .quest-controls { 
+                flex-direction: column; 
+            }
+
+            .mobile-filter-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: pointer;
+            }
+
+            .mobile-filter-header h3 {
+                margin: 0;
+                font-size: 1.1rem;
+            }
+
+            #mobile-filter-toggle {
+                transition: transform 0.3s ease;
+            }
+
+            .quest-filters {
+                display: none;
+                flex-direction: column;
+                gap: 1rem;
+                margin-top: 1rem;
+            }
+
+            .quest-filters.open {
+                display: flex;
+            }
+
+            #mobile-filter-toggle.open {
+                transform: rotate(180deg);
+            }
+
             #quiz-modal .modal-content {
                 width: 95%;
                 max-height: 90vh;
@@ -1255,6 +1329,12 @@
             
             .quiz-nav-btn {
                 width: 100%;
+            }
+
+            .quest-card .primary-btn,
+            .quest-card .secondary-btn {
+                font-size: 0.9rem;
+                padding: 0.6rem 0.8rem;
             }
         }
 
@@ -1297,10 +1377,8 @@
     </style>
 </head>
 <body>
-    <!-- Background particles -->
     <div id="bg-particles"></div>
 
-    <!-- Loading overlay -->
     <div class="loading-overlay" id="loading-overlay">
         <div class="loading-spinner"></div>
         <div class="loading-text">Loading Quest...</div>
@@ -1310,9 +1388,6 @@
         <div class="logo">
             <i class="fas fa-rocket"></i>
             <span>RewardRush</span>
-        </div>
-        <div class="hamburger" onclick="toggleMenu()">
-            <i class="fas fa-bars"></i>
         </div>
         <div class="nav-menu" id="nav-menu">
             <a href="groweasy.html" class="active"><i class="fas fa-tasks"></i> Quests</a>
@@ -1329,21 +1404,29 @@
         </div>
     </nav>
 
+    <div class="mobile-nav">
+        <a href="groweasy.html" class="active"><i class="fas fa-tasks"></i></a>
+        <a href="affiliate.html"><i class="fas fa-users"></i></a>
+        <a href="education.html"><i class="fas fa-graduation-cap"></i></a>
+        <a href="founder.html"><i class="fas fa-user-tie"></i></a>
+        <a href="profile.html"><i class="fas fa-user"></i></a>
+    </div>
+
     <div class="container">
         <div class="dashboard-header">
             <h2>Dashboard Overview</h2>
-            <div class="balance-toggle" onclick="toggleBalanceVisibility()">
-                <i class="fas fa-eye-slash" id="balance-toggle-icon"></i>
-                <span>Hide Balance</span>
-            </div>
         </div>
         
-        <!-- Dashboard Cards Carousel -->
         <div class="dashboard-carousel">
             <div class="dashboard-track" id="dashboard-track">
                 <div class="dashboard-card animate-in">
                     <div class="card-header"> <div class="card-icon"><i class="fas fa-coins"></i></div> <h3>Total Earnings</h3> </div>
-                    <p class="value" id="total-earnings">$0.00</p>
+                    <div class="value-container">
+                        <p class="value" id="total-earnings">$0.00</p>
+                        <div class="balance-toggle" onclick="toggleBalanceVisibility()">
+                            <i class="fas fa-eye-slash" id="balance-toggle-icon"></i>
+                        </div>
+                    </div>
                     <p class="description">Total earnings from quests</p>
                     <button class="card-btn withdraw-btn"><i class="fas fa-wallet"></i> Withdraw</button>
                 </div>
@@ -1390,27 +1473,32 @@
                     <input type="search" id="quest-search-input" placeholder="Search by keyword...">
                 </div>
             </div>
-            <div class="control-group">
-                <label for="filter-status">Filter by Status</label>
-                <select id="filter-status">
-                    <option value="all">All</option>
-                    <option value="available">Available</option>
-                    <option value="completed">Completed</option>
-                </select>
+            <div class="mobile-filter-header" onclick="toggleFilters()">
+                <h3>Filter & Sort</h3>
+                <i class="fas fa-chevron-down" id="mobile-filter-toggle"></i>
             </div>
-            <div class="control-group">
-                <label for="sort-reward">Sort by Reward</label>
-                <select id="sort-reward">
-                    <option value="default">Default</option>
-                    <option value="reward-desc">Highest to Lowest</option>
-                    <option value="reward-asc">Lowest to Highest</option>
-                </select>
+            <div class="quest-filters" id="quest-filters">
+                <div class="control-group">
+                    <label for="filter-status">Filter by Status</label>
+                    <select id="filter-status">
+                        <option value="all">All</option>
+                        <option value="available">Available</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="sort-reward">Sort by Reward</label>
+                    <select id="sort-reward">
+                        <option value="default">Default</option>
+                        <option value="reward-desc">Highest to Lowest</option>
+                        <option value="reward-asc">Lowest to Highest</option>
+                    </select>
+                </div>
             </div>
         </div>
         
         <div class="quest-list" id="quest-list">
-            <!-- Skeletons will be shown here initially -->
-        </div>
+            </div>
 
         <div class="empty-state" id="empty-state">
             <i class="fas fa-search-minus"></i>
@@ -1419,8 +1507,7 @@
         </div>
 
         <div class="pagination" id="pagination-container">
-            <!-- Pagination buttons will be generated here -->
-        </div>
+            </div>
         
         <h2 class="section-title" id="history-section">
             <i class="fas fa-check-circle"></i>
@@ -1437,12 +1524,10 @@
                 </tr>
             </thead>
             <tbody id="history-table-body">
-                <!-- History rows will be generated here -->
-            </tbody>
+                </tbody>
         </table>
     </div>
     
-    <!-- Modals -->
     <div class="modal" id="quiz-modal">
         <div class="modal-content">
             <div id="quiz-header">
@@ -1544,7 +1629,7 @@
     <script>
         // --- Global State Variables ---
         let userId = null;
-        let allQuests = []; // Use one consistent variable for the master list of quests
+        let allQuests = [];
         let completedQuests = [];
         let completedQuestIdSet = new Set();
         let balanceVisible = true;
@@ -1559,11 +1644,11 @@
         let questions = [];
         let answers = {};
         let timerInterval;
-        let timeLeft = 150; // 2.5 minutes in seconds
+        let timeLeft = 150;
 
         // --- Carousel State ---
         let currentSlide = 0;
-        const slideCount = 4; // Number of dashboard cards
+        const slideCount = 4;
         let isTransitioning = false;
 
         // --- Skeleton Loader ---
@@ -1595,7 +1680,6 @@
                 const particle = document.createElement('div');
                 particle.classList.add('bg-particle');
                 
-                // Random properties
                 const size = Math.random() * 5 + 1;
                 const posX = Math.random() * window.innerWidth;
                 const posY = Math.random() * window.innerHeight;
@@ -1622,9 +1706,8 @@
             const track = document.getElementById('dashboard-track');
             const dots = document.querySelectorAll('.carousel-dot');
             const cards = document.querySelectorAll('.dashboard-card');
-            const cardWidth = cards[0].offsetWidth + 24; // width + gap
+            const cardWidth = cards[0].offsetWidth + 24;
             
-            // Clone cards for infinite loop
             if (currentSlide >= slideCount) {
                 currentSlide = 0;
             } else if (currentSlide < 0) {
@@ -1638,12 +1721,10 @@
                 dot.classList.toggle('active', index === currentSlide);
             });
             
-            // Reset position after transition ends for infinite loop
             track.addEventListener('transitionend', () => {
                 if (currentSlide === 0 || currentSlide === slideCount - 1) {
                     track.style.transition = 'none';
                     track.style.transform = `translateX(-${currentSlide * cardWidth}px)`;
-                    // Force reflow
                     track.offsetHeight;
                 }
                 isTransitioning = false;
@@ -1667,16 +1748,21 @@
             updateCarousel();
         }
 
+        function toggleFilters() {
+            const filters = document.getElementById('quest-filters');
+            const toggleIcon = document.getElementById('mobile-filter-toggle');
+            filters.classList.toggle('open');
+            toggleIcon.classList.toggle('open');
+        }
+
         // --- Balance Visibility Toggle ---
         function toggleBalanceVisibility() {
             balanceVisible = !balanceVisible;
             const toggleIcon = document.getElementById('balance-toggle-icon');
-            const toggleText = document.querySelector('.balance-toggle span');
             const valueElements = document.querySelectorAll('.value');
             
             if (balanceVisible) {
                 toggleIcon.className = 'fas fa-eye-slash';
-                toggleText.textContent = 'Hide Balance';
                 valueElements.forEach(el => {
                     if (el.dataset.originalValue) {
                         el.textContent = el.dataset.originalValue;
@@ -1684,7 +1770,6 @@
                 });
             } else {
                 toggleIcon.className = 'fas fa-eye';
-                toggleText.textContent = 'Show Balance';
                 valueElements.forEach(el => {
                     el.dataset.originalValue = el.textContent;
                     el.textContent = '****';
@@ -1746,7 +1831,7 @@
             try {
                 const response = await fetch('/quests');
                 const data = await response.json();
-                allQuests = data.quests || []; // Assign to the global 'allQuests' array
+                allQuests = data.quests || [];
             } catch (err) {
                 console.error('Failed to load quests:', err);
                 const questList = document.getElementById('quest-list');
@@ -1808,7 +1893,7 @@
             }
 
             const totalPages = Math.ceil(questsToDisplay.length / questsPerPage);
-            currentPage = Math.min(currentPage, totalPages); // Ensure currentPage is valid
+            currentPage = Math.min(currentPage, totalPages);
             const startIndex = (currentPage - 1) * questsPerPage;
             const endIndex = startIndex + questsPerPage;
             const paginatedQuests = questsToDisplay.slice(startIndex, endIndex);
@@ -1816,7 +1901,6 @@
             list.innerHTML = paginatedQuests.map((quest, index) => {
                 const isCompleted = completedQuestIdSet.has(quest.id);
                 
-                // **FIXED AVAILABILITY LOGIC**
                 const now = new Date();
                 const startTime = quest.start_time ? new Date(quest.start_time) : null;
                 const endTime = quest.end_time ? new Date(quest.end_time) : null;
@@ -1872,16 +1956,15 @@
             paginationContainer.innerHTML = '';
 
             const prevButton = document.createElement('button');
-            prevButton.innerHTML = '&laquo; Prev';
+            prevButton.innerHTML = '&laquo;';
             prevButton.disabled = currentPage === 1;
             prevButton.onclick = () => {
                 if (currentPage > 1) { currentPage--; displayQuests(); }
             };
             paginationContainer.appendChild(prevButton);
 
-            // Simple pagination logic for many pages
-            let startPage = Math.max(1, currentPage - 2);
-            let endPage = Math.min(totalPages, currentPage + 2);
+            let startPage = Math.max(1, currentPage - 1);
+            let endPage = Math.min(totalPages, currentPage + 1);
 
             if (startPage > 1) {
                 const firstBtn = document.createElement('button');
@@ -1908,7 +1991,7 @@
             }
 
             const nextButton = document.createElement('button');
-            nextButton.innerHTML = 'Next &raquo;';
+            nextButton.innerHTML = '&raquo;';
             nextButton.disabled = currentPage === totalPages;
             nextButton.onclick = () => {
                 if (currentPage < totalPages) { currentPage++; displayQuests(); }
@@ -1950,14 +2033,13 @@
         }
         
         async function refreshAllUI() {
-            showSkeletons(); // Show loading state immediately
+            showSkeletons();
             await Promise.all([fetchDashboardData(), fetchAllQuests()]);
             currentPage = 1;
             displayQuests();
             populateHistory();
         }
 
-        // **FIXED** function to find quest by numeric ID and start it
         async function startQuiz(questId) {
             showLoadingOverlay("An Extra Dollar");
             
@@ -1971,14 +2053,13 @@
                     throw new Error(data.error || 'No questions found for this quest.');
                 }
                 
-                // Simulate loading for 2 seconds
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 
                 questions = data.questions;
                 currentQuestId = questId;
                 currentQuestionIndex = 0;
                 answers = {};
-                timeLeft = 150; // Reset timer to 2.5 minutes
+                timeLeft = 150;
                 
                 document.getElementById('quiz-title').innerText = quest.title;
                 document.getElementById('quiz-progress-text').textContent = `Question 1 of ${questions.length}`;
@@ -2001,15 +2082,12 @@
             const question = questions[currentQuestionIndex];
             if (!question) return;
 
-            // Update progress
             const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
             document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
             document.getElementById('quiz-progress-text').textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
 
-            // Display question
             document.getElementById('quiz-question-text').textContent = question.question_text;
             
-            // Display options
             let optionsHtml = '';
             if (question.question_type === 'multiple-choice') {
                 const options = (typeof question.options === 'string') ? JSON.parse(question.options) : question.options;
@@ -2032,7 +2110,6 @@
 
             document.getElementById('quiz-options').innerHTML = optionsHtml;
             
-            // Set up event listeners for answer selection
             const inputs = document.querySelectorAll(`input[name="question-${question.question_id}"], #text-answer`);
             inputs.forEach(input => {
                 const eventType = input.type === 'radio' ? 'change' : 'input';
@@ -2042,7 +2119,6 @@
                 });
             });
 
-            // Update navigation buttons
             document.getElementById('next-btn').style.display = currentQuestionIndex < questions.length - 1 ? 'flex' : 'none';
             document.getElementById('submit-btn').style.display = currentQuestionIndex === questions.length - 1 ? 'flex' : 'none';
             document.getElementById('next-btn').disabled = true;
@@ -2070,7 +2146,6 @@
             document.getElementById('timer-text').textContent = 
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} remaining`;
                 
-            // Change color when time is running low
             if (timeLeft <= 30) {
                 document.getElementById('quiz-timer').style.color = 'var(--danger)';
                 document.getElementById('quiz-timer').style.borderColor = 'rgba(214, 48, 49, 0.3)';
@@ -2122,7 +2197,6 @@
                 confetti.style.height = Math.random() * 10 + 5 + 'px';
                 modalContent.appendChild(confetti);
                 
-                // Remove confetti after animation completes
                 setTimeout(() => {
                     confetti.remove();
                 }, 3000);
@@ -2189,7 +2263,6 @@
             l.select(); 
             document.execCommand('copy'); 
             
-            // Show feedback
             const copyBtn = document.querySelector('.completion-modal .copy-btn');
             const originalText = copyBtn.innerHTML;
             copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
@@ -2207,10 +2280,6 @@
             window.location.href = 'auth.html'; 
         }
         
-        function toggleMenu() { 
-            document.getElementById('nav-menu').classList.toggle('open'); 
-        }
-
         function openWithdrawModal() { openModal('withdrawal-modal'); }
         
         async function withdraw() {
@@ -2234,7 +2303,7 @@
                 const response = await fetch('/withdraw', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: amount, userId: userId }) // Ensure userId is being sent
+                    body: JSON.stringify({ amount: amount, userId: userId })
                 });
 
                 const result = await response.json();
@@ -2243,24 +2312,19 @@
                     throw new Error(result.error || 'Withdrawal failed due to a server error.');
                 }
 
-                // Check if the redeemable code exists in the response
                 if (result.code) {
                     closeModal('withdrawal-modal');
                     
-                    // Optimistically update the balance on the client side for immediate feedback
                     const newBalance = currentBalance - amount;
                     totalEarningsEl.textContent = `$${newBalance.toFixed(2)}`;
                     
                     document.getElementById('redeemable-code-input').value = result.code;
                     openModal('withdrawal-success-modal');
                     
-                    // Clear the input field for the next transaction
                     amountInput.value = '';
 
-                    // Refresh all data from the server to ensure consistency
                     await refreshAllUI();
                 } else {
-                    // This is the new, more informative error handling
                     alert('Your withdrawal was processed, but there was an issue generating your redeemable code. Please contact support.');
                     console.error('Server response was successful but did not contain a redeemable code.', result);
                 }
@@ -2275,7 +2339,6 @@
             codeInput.select();
             document.execCommand('copy');
             
-            // Show feedback
             const copyBtn = document.querySelector('#withdrawal-success-modal .copy-btn');
             const originalText = copyBtn.innerHTML;
             copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
@@ -2306,13 +2369,11 @@
 
         // --- Initial Load & Event Listeners ---
         document.addEventListener('DOMContentLoaded', async () => {
-            // Create background particles
             createBackgroundParticles();
             
             if (await checkSession()) {
                 await refreshAllUI();
 
-                // Clone cards for infinite loop
                 const track = document.getElementById('dashboard-track');
                 const cards = document.querySelectorAll('.dashboard-card');
                 cards.forEach(card => {
@@ -2320,14 +2381,12 @@
                     track.appendChild(clone);
                 });
 
-                // Set up carousel navigation
                 document.querySelectorAll('.carousel-dot').forEach(dot => {
                     dot.addEventListener('click', () => {
                         goToSlide(parseInt(dot.dataset.index));
                     });
                 });
 
-                // Auto-advance carousel
                 setInterval(nextSlide, 5000);
 
                 document.querySelector('.withdraw-btn').addEventListener('click', openWithdrawModal);
