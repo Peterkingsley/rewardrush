@@ -207,14 +207,12 @@
             position: relative;
             width: 100%;
             margin-bottom: 3rem;
-            overflow: hidden;
+            overflow: hidden; /* This is key to hiding the extra cloned cards */
         }
 
         .dashboard-track {
             display: flex;
-            gap: 1.5rem;
-            transition: transform 0.5s ease;
-            padding: 1rem 0;
+            gap: 1.5rem; /* This is 24px */
             will-change: transform;
         }
 
@@ -319,26 +317,9 @@
             transform: translateY(-2px);
         }
 
-        /* Carousel Navigation */
+        /* Carousel Navigation - Removed as per infinite scroll implementation */
         .carousel-nav {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .carousel-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .carousel-dot.active {
-            background: var(--primary);
-            transform: scale(1.2);
+           display: none;
         }
         
         /* Quest List */
@@ -885,7 +866,7 @@
         }
 
         .quiz-question-container {
-             display: flex;
+            display: flex;
             flex-direction: column;
         }
 
@@ -1366,6 +1347,37 @@
                 padding: 0.6rem 0.8rem;
             }
         }
+        
+        /* NEW: Styles for desktop quest controls */
+        @media (min-width: 769px) {
+            /* Make controls horizontal on desktop */
+            .quest-controls {
+                flex-direction: row;
+                align-items: flex-end; /* Align to bottom for a clean look */
+                gap: 1.5rem;
+            }
+
+            /* Hide the mobile-only filter dropdown toggle */
+            .mobile-filter-header {
+                display: none;
+            }
+
+            /* Display the filters directly on desktop */
+            .quest-filters {
+                display: flex;
+                flex-direction: row;
+                gap: 1rem;
+                margin-top: 0;
+                flex-grow: 1; /* Allow filters to take up space */
+            }
+
+            /* Give the search input group a flexible width */
+            .quest-controls > .control-group:first-child {
+                min-width: 300px;
+                flex: 1;
+            }
+        }
+
 
         @media (max-width: 600px) {
             .dashboard-card {
@@ -1481,12 +1493,7 @@
                     <button class="card-btn"><i class="fas fa-calendar-alt"></i> View Calendar</button>
                 </div>
             </div>
-            <div class="carousel-nav" id="carousel-nav">
-                <div class="carousel-dot active" data-index="0"></div>
-                <div class="carousel-dot" data-index="1"></div>
-                <div class="carousel-dot" data-index="2"></div>
-                <div class="carousel-dot" data-index="3"></div>
-            </div>
+            <!-- REMOVED: Carousel navigation dots for a cleaner infinite scroll -->
         </div>
         
         <h2 class="section-title">
@@ -1527,7 +1534,8 @@
         </div>
         
         <div class="quest-list" id="quest-list">
-            </div>
+            <!-- Quests will be dynamically inserted here -->
+        </div>
 
         <div class="empty-state" id="empty-state">
             <i class="fas fa-search-minus"></i>
@@ -1536,7 +1544,8 @@
         </div>
 
         <div class="pagination" id="pagination-container">
-            </div>
+            <!-- Pagination will be dynamically inserted here -->
+        </div>
         
         <h2 class="section-title" id="history-section">
             <i class="fas fa-check-circle"></i>
@@ -1553,7 +1562,8 @@
                 </tr>
             </thead>
             <tbody id="history-table-body">
-                </tbody>
+                <!-- History will be dynamically inserted here -->
+            </tbody>
         </table>
     </div>
     
@@ -1675,11 +1685,6 @@
         let timerInterval;
         let timeLeft = 150;
 
-        // --- Carousel State ---
-        let currentSlide = 0;
-        const slideCount = 4;
-        let isTransitioning = false;
-
         // --- Skeleton Loader ---
         function showSkeletons() {
             const list = document.getElementById('quest-list');
@@ -1728,54 +1733,44 @@
             }
         }
 
-        // --- Carousel Functions ---
-        function updateCarousel() {
-            if (isTransitioning) return;
-            
+        // --- NEW: Infinite Carousel Functions ---
+        function setupInfiniteDashboardCarousel() {
             const track = document.getElementById('dashboard-track');
-            const dots = document.querySelectorAll('.carousel-dot');
-            const cards = document.querySelectorAll('.dashboard-card');
-            const cardWidth = cards[0].offsetWidth + 24;
-            
-            if (currentSlide >= slideCount) {
-                currentSlide = 0;
-            } else if (currentSlide < 0) {
-                currentSlide = slideCount - 1;
-            }
-            
-            track.style.transition = 'transform 0.5s ease';
-            track.style.transform = `translateX(-${currentSlide * cardWidth}px)`;
-            
-            dots.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentSlide);
+            if (!track) return;
+
+            const originalCards = track.querySelectorAll('.dashboard-card');
+            const originalCardCount = originalCards.length;
+            if (originalCardCount === 0) return;
+
+            // 1. Clone cards for a seamless loop
+            originalCards.forEach(card => {
+                const clone = card.cloneNode(true);
+                track.appendChild(clone);
             });
-            
-            track.addEventListener('transitionend', () => {
-                if (currentSlide === 0 || currentSlide === slideCount - 1) {
-                    track.style.transition = 'none';
-                    track.style.transform = `translateX(-${currentSlide * cardWidth}px)`;
-                    track.offsetHeight;
+
+            let currentIndex = 0;
+            const cardWidth = originalCards[0].offsetWidth + 24; // Card width + 1.5rem gap
+
+            function slideNext() {
+                currentIndex++;
+                track.style.transition = 'transform 0.5s ease-in-out';
+                track.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+
+                // 2. Check if we've reached the end of the original set
+                if (currentIndex >= originalCardCount) {
+                    // After the transition finishes, reset to the start without animation
+                    setTimeout(() => {
+                        track.style.transition = 'none';
+                        currentIndex = 0;
+                        track.style.transform = 'translateX(0)';
+                    }, 500); // This must match the CSS transition duration
                 }
-                isTransitioning = false;
-            }, { once: true });
-            
-            isTransitioning = true;
+            }
+
+            // 3. Start auto-sliding
+            setInterval(slideNext, 5000); // Slide every 5 seconds
         }
 
-        function nextSlide() {
-            currentSlide = (currentSlide + 1) % slideCount;
-            updateCarousel();
-        }
-
-        function prevSlide() {
-            currentSlide = (currentSlide - 1 + slideCount) % slideCount;
-            updateCarousel();
-        }
-
-        function goToSlide(index) {
-            currentSlide = index;
-            updateCarousel();
-        }
 
         function toggleFilters() {
             const filters = document.getElementById('quest-filters');
@@ -2108,361 +2103,345 @@
         
         // --- Quiz Modal Logic ---
         function displayQuestion() {
-        const question = questions[currentQuestionIndex];
-        if (!question) return;
+            const question = questions[currentQuestionIndex];
+            if (!question) return;
 
-        const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
-        document.getElementById('quiz-progress-text').textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
-        document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById('quiz-progress-text').textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+            document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
 
-        document.getElementById('quiz-question-text').textContent = question.question_text;
+            document.getElementById('quiz-question-text').textContent = question.question_text;
 
-        const optionsContainer = document.getElementById('quiz-options');
-        optionsContainer.innerHTML = question.options.map((option, index) => `
-            <label class="quiz-option">
-                <input type="radio" name="quiz-option" value="${option}" data-index="${index}">
-                <span class="option-radio"></span>
-                <span class="option-text">${option}</span>
-            </label>
-        `).join('');
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = question.options.map((option, index) => `
+                <label class="quiz-option">
+                    <input type="radio" name="quiz-option" value="${option}" data-index="${index}">
+                    <span class="option-radio"></span>
+                    <span class="option-text">${option}</span>
+                </label>
+            `).join('');
 
-        const nextBtn = document.getElementById('next-btn');
-        const submitBtn = document.getElementById('submit-btn');
-        nextBtn.disabled = true;
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            nextBtn.disabled = true;
 
-        if (currentQuestionIndex === questions.length - 1) {
-            nextBtn.style.display = 'none';
-            submitBtn.style.display = 'flex';
-        } else {
-            nextBtn.style.display = 'flex';
-            submitBtn.style.display = 'none';
-        }
+            if (currentQuestionIndex === questions.length - 1) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'flex';
+            } else {
+                nextBtn.style.display = 'flex';
+                submitBtn.style.display = 'none';
+            }
 
-        const radioInputs = document.querySelectorAll('.quiz-option input');
-        radioInputs.forEach(input => {
-            input.addEventListener('change', () => {
-                answers[currentQuestionIndex] = input.value;
-                nextBtn.disabled = false;
-                submitBtn.disabled = false;
-            });
-        });
-
-        if (answers[currentQuestionIndex]) {
+            const radioInputs = document.querySelectorAll('.quiz-option input');
             radioInputs.forEach(input => {
-                if (input.value === answers[currentQuestionIndex]) {
-                    input.checked = true;
+                input.addEventListener('change', () => {
+                    answers[currentQuestionIndex] = input.value;
                     nextBtn.disabled = false;
                     submitBtn.disabled = false;
+                });
+            });
+
+            if (answers[currentQuestionIndex]) {
+                radioInputs.forEach(input => {
+                    if (input.value === answers[currentQuestionIndex]) {
+                        input.checked = true;
+                        nextBtn.disabled = false;
+                        submitBtn.disabled = false;
+                    }
+                });
+            }
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            document.getElementById('timer-text').textContent = formatTime(timeLeft);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-text').textContent = formatTime(timeLeft);
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitQuiz();
+                }
+            }, 1000);
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')} remaining`;
+        }
+
+        async function submitQuiz() {
+            clearInterval(timerInterval);
+            showLoadingOverlay("Submitting your answers...");
+
+            try {
+                const response = await fetch(`/submit-quiz/${currentQuestId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, answers })
+                });
+                const result = await response.json();
+
+                if (!response.ok) throw new Error(result.error || 'Failed to submit quiz');
+
+                if (result.success) {
+                    completedQuests.push({ quest_id: currentQuestId, completed_at: new Date().toISOString() });
+                    completedQuestIdSet.add(currentQuestId);
+
+                    document.getElementById('completion-message').textContent = `You've earned ${result.reward}!`;
+                    document.getElementById('referral-link').value = result.referralLink || `https://rewardrush.com/invite/${userId}`;
+                    
+                    await refreshAllUI();
+                    closeModal('quiz-modal');
+                    openModal('completion-modal');
+
+                    createConfetti();
+                } else {
+                    alert(`Quiz not passed. Score: ${result.score}/${questions.length}. Try again later!`);
+                    closeModal('quiz-modal');
+                }
+            } catch (err) {
+                console.error('Quiz submission error:', err);
+                alert(`Error: ${err.message}`);
+            } finally {
+                hideLoadingOverlay();
+            }
+        }
+
+        function createConfetti() {
+            const modal = document.getElementById('completion-modal');
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.animationDelay = `${Math.random() * 2}s`;
+                confetti.style.background = ['var(--primary)', 'var(--secondary)', 'var(--accent)'][Math.floor(Math.random() * 3)];
+                modal.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+            }
+        }
+
+        // --- Modal Functions ---
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('open');
+            document.body.style.overflow = 'auto';
+            if (modalId === 'quiz-modal') {
+                clearInterval(timerInterval);
+            }
+        }
+
+        async function showQuestDetails(questId) {
+            try {
+                const quest = allQuests.find(q => Number(q.id) === questId);
+                if (!quest) throw new Error('Quest not found');
+
+                document.getElementById('quest-details-title').textContent = quest.title;
+                document.getElementById('quest-details-content').innerHTML = `
+                    <p><strong>Reward:</strong> ${quest.reward}</p>
+                    <p><strong>Description:</strong> ${quest.description || 'No description available.'}</p>
+                    <p><strong>Status:</strong> ${completedQuestIdSet.has(questId) ? 'Completed' : 'Available'}</p>
+                `;
+                openModal('quest-details-modal');
+            } catch (err) {
+                console.error('Error showing quest details:', err);
+                alert(`Error: ${err.message}`);
+            }
+        }
+
+        // --- Withdrawal Functions ---
+        function openWithdrawalModal() {
+            openModal('withdrawal-modal');
+        }
+
+        async function confirmWithdrawal() {
+            const amount = document.getElementById('withdrawal-amount').value;
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount.');
+                return;
+            }
+
+            showLoadingOverlay("Processing withdrawal...");
+
+            try {
+                const response = await fetch(`/withdraw`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId, amount })
+                });
+                const result = await response.json();
+
+                if (!response.ok) throw new Error(result.error || 'Withdrawal failed');
+
+                document.getElementById('redeemable-code-input').value = result.code;
+                closeModal('withdrawal-modal');
+                openModal('withdrawal-success-modal');
+                await refreshAllUI();
+            } catch (err) {
+                console.error('Withdrawal error:', err);
+                alert(`Error: ${err.message}`);
+            } finally {
+                hideLoadingOverlay();
+            }
+        }
+
+        // --- Redeem Codes Functions ---
+        async function openRedeemModal() {
+            try {
+                const response = await fetch(`/redeem-codes?userId=${encodeURIComponent(userId)}`);
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Failed to fetch codes');
+
+                const codesList = document.getElementById('redeem-codes-list');
+                codesList.innerHTML = data.codes.length ? data.codes.map(code => `
+                    <div style="margin-bottom: 1rem;">
+                        <input type="text" value="${code.code}" readonly class="referral-input">
+                        <button class="copy-btn" onclick="copyText('${code.code}')"><i class="fas fa-copy"></i> Copy</button>
+                    </div>
+                `).join('') : '<p>No redeemable codes available.</p>';
+
+                openModal('redeem-codes-modal');
+            } catch (err) {
+                console.error('Error fetching redeem codes:', err);
+                alert(`Error: ${err.message}`);
+            }
+        }
+
+        // --- Copy Functions ---
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            }).catch(err => {
+                console.error('Copy failed:', err);
+                alert('Failed to copy.');
+            });
+        }
+
+        function copyCompletionLink() {
+            copyText(document.getElementById('referral-link').value);
+        }
+
+        function copyRedeemableCode() {
+            copyText(document.getElementById('redeemable-code-input').value);
+        }
+
+        // --- Scroll to History ---
+        function scrollToHistory() {
+            document.getElementById('history-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- Logout ---
+        async function logout() {
+            try {
+                const response = await fetch('/logout', { method: 'POST' });
+                if (response.ok) {
+                    window.location.href = 'auth.html';
+                } else {
+                    throw new Error('Logout failed');
+                }
+            } catch (err) {
+                console.error('Logout error:', err);
+                alert('Failed to log out.');
+            }
+        }
+
+        // --- Event Listeners ---
+        function setupEventListeners() {
+            // Quiz navigation
+            document.getElementById('next-btn').addEventListener('click', nextQuestion);
+            document.getElementById('submit-btn').addEventListener('click', submitQuiz);
+
+            // Quest interactions
+            document.getElementById('quest-list').addEventListener('click', async (e) => {
+                const questCard = e.target.closest('.quest-card');
+                if (!questCard) return;
+                const questId = Number(questCard.dataset.questId);
+
+                if (e.target.closest('.start-quiz-btn') && !e.target.closest('.start-quiz-btn').classList.contains('disabled')) {
+                    await startQuiz(questId);
+                } else if (e.target.closest('.details-btn')) {
+                    await showQuestDetails(questId);
                 }
             });
-        }
-    }
 
-    function startTimer() {
-        clearInterval(timerInterval);
-        document.getElementById('timer-text').textContent = formatTime(timeLeft);
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            document.getElementById('timer-text').textContent = formatTime(timeLeft);
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                submitQuiz();
-            }
-        }, 1000);
-    }
-
-    function formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')} remaining`;
-    }
-
-    async function submitQuiz() {
-        clearInterval(timerInterval);
-        showLoadingOverlay("Submitting your answers...");
-
-        try {
-            const response = await fetch(`/submit-quiz/${currentQuestId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, answers })
+            // Filters and search
+            document.getElementById('quest-search-input').addEventListener('input', () => {
+                currentPage = 1;
+                displayQuests();
             });
-            const result = await response.json();
+            document.getElementById('filter-status').addEventListener('change', () => {
+                currentPage = 1;
+                displayQuests();
+            });
+            document.getElementById('sort-reward').addEventListener('change', () => {
+                currentPage = 1;
+                displayQuests();
+            });
 
-            if (!response.ok) throw new Error(result.error || 'Failed to submit quiz');
+            // Withdrawal
+            document.querySelector('.withdraw-btn').addEventListener('click', openWithdrawalModal);
+            document.getElementById('confirm-withdrawal-btn').addEventListener('click', confirmWithdrawal);
+        }
 
-            if (result.success) {
-                completedQuests.push({ quest_id: currentQuestId, completed_at: new Date().toISOString() });
-                completedQuestIdSet.add(currentQuestId);
+        // --- Mobile Optimization ---
+        function ensureFullScreenMobile() {
+            const viewportMeta = document.querySelector('meta[name="viewport"]');
+            if (window.innerWidth <= 768) {
+                viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+            }
 
-                document.getElementById('completion-message').textContent = `You've earned ${result.reward}!`;
-                document.getElementById('referral-link').value = result.referralLink || `https://rewardrush.com/invite/${userId}`;
-                
+            document.documentElement.style.width = '100vw';
+            document.body.style.width = '100vw';
+            document.body.style.margin = '0';
+            document.body.style.padding = '0';
+            document.body.style.overflowX = 'hidden';
+
+            const mobileNav = document.querySelector('.mobile-nav');
+            if (mobileNav) {
+                mobileNav.style.width = '100vw';
+                mobileNav.style.left = '0';
+                mobileNav.style.right = '0';
+            }
+
+            const container = document.querySelector('.container');
+            if (container) {
+                container.style.width = '100%';
+                container.style.maxWidth = '100vw';
+                container.style.padding = '1rem';
+                container.style.margin = '0';
+            }
+        }
+
+        // --- Initialize ---
+        async function init() {
+            if (await checkSession()) {
+                createBackgroundParticles();
+                setupInfiniteDashboardCarousel(); // New carousel setup
                 await refreshAllUI();
-                closeModal('quiz-modal');
-                openModal('completion-modal');
+                setupEventListeners();
+                ensureFullScreenMobile();
 
-                createConfetti();
-            } else {
-                alert(`Quiz not passed. Score: ${result.score}/${questions.length}. Try again later!`);
-                closeModal('quiz-modal');
+                window.addEventListener('resize', ensureFullScreenMobile);
             }
-        } catch (err) {
-            console.error('Quiz submission error:', err);
-            alert(`Error: ${err.message}`);
-        } finally {
-            hideLoadingOverlay();
-        }
-    }
-
-    function createConfetti() {
-        const modal = document.getElementById('completion-modal');
-        for (let i = 0; i < 50; i++) {
-            const confetti = document.createElement('div');
-            confetti.classList.add('confetti');
-            confetti.style.left = `${Math.random() * 100}%`;
-            confetti.style.animationDelay = `${Math.random() * 2}s`;
-            confetti.style.background = ['var(--primary)', 'var(--secondary)', 'var(--accent)'][Math.floor(Math.random() * 3)];
-            modal.appendChild(confetti);
-            setTimeout(() => confetti.remove(), 3000);
-        }
-    }
-
-    function nextQuestion() {
-        if (currentQuestionIndex < questions.length - 1) {
-            currentQuestionIndex++;
-            displayQuestion();
-        }
-    }
-
-    // --- Modal Functions ---
-    function openModal(modalId) {
-        const modal = document.getElementById(modalId);
-        modal.classList.add('open');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        modal.classList.remove('open');
-        document.body.style.overflow = 'auto';
-        if (modalId === 'quiz-modal') {
-            clearInterval(timerInterval);
-        }
-    }
-
-    async function showQuestDetails(questId) {
-        try {
-            const quest = allQuests.find(q => Number(q.id) === questId);
-            if (!quest) throw new Error('Quest not found');
-
-            document.getElementById('quest-details-title').textContent = quest.title;
-            document.getElementById('quest-details-content').innerHTML = `
-                <p><strong>Reward:</strong> ${quest.reward}</p>
-                <p><strong>Description:</strong> ${quest.description || 'No description available.'}</p>
-                <p><strong>Status:</strong> ${completedQuestIdSet.has(questId) ? 'Completed' : 'Available'}</p>
-            `;
-            openModal('quest-details-modal');
-        } catch (err) {
-            console.error('Error showing quest details:', err);
-            alert(`Error: ${err.message}`);
-        }
-    }
-
-    // --- Withdrawal Functions ---
-    function openWithdrawalModal() {
-        openModal('withdrawal-modal');
-    }
-
-    async function confirmWithdrawal() {
-        const amount = document.getElementById('withdrawal-amount').value;
-        if (!amount || amount <= 0) {
-            alert('Please enter a valid amount.');
-            return;
         }
 
-        showLoadingOverlay("Processing withdrawal...");
-
-        try {
-            const response = await fetch(`/withdraw`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, amount })
-            });
-            const result = await response.json();
-
-            if (!response.ok) throw new Error(result.error || 'Withdrawal failed');
-
-            document.getElementById('redeemable-code-input').value = result.code;
-            closeModal('withdrawal-modal');
-            openModal('withdrawal-success-modal');
-            await refreshAllUI();
-        } catch (err) {
-            console.error('Withdrawal error:', err);
-            alert(`Error: ${err.message}`);
-        } finally {
-            hideLoadingOverlay();
-        }
-    }
-
-    // --- Redeem Codes Functions ---
-    async function openRedeemModal() {
-        try {
-            const response = await fetch(`/redeem-codes?userId=${encodeURIComponent(userId)}`);
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || 'Failed to fetch codes');
-
-            const codesList = document.getElementById('redeem-codes-list');
-            codesList.innerHTML = data.codes.length ? data.codes.map(code => `
-                <div style="margin-bottom: 1rem;">
-                    <input type="text" value="${code.code}" readonly class="referral-input">
-                    <button class="copy-btn" onclick="copyText('${code.code}')"><i class="fas fa-copy"></i> Copy</button>
-                </div>
-            `).join('') : '<p>No redeemable codes available.</p>';
-
-            openModal('redeem-codes-modal');
-        } catch (err) {
-            console.error('Error fetching redeem codes:', err);
-            alert(`Error: ${err.message}`);
-        }
-    }
-
-    // --- Copy Functions ---
-    function copyText(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            alert('Copied to clipboard!');
-        }).catch(err => {
-            console.error('Copy failed:', err);
-            alert('Failed to copy.');
-        });
-    }
-
-    function copyCompletionLink() {
-        copyText(document.getElementById('referral-link').value);
-    }
-
-    function copyRedeemableCode() {
-        copyText(document.getElementById('redeemable-code-input').value);
-    }
-
-    // --- Scroll to History ---
-    function scrollToHistory() {
-        document.getElementById('history-section').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    // --- Logout ---
-    async function logout() {
-        try {
-            const response = await fetch('/logout', { method: 'POST' });
-            if (response.ok) {
-                window.location.href = 'auth.html';
-            } else {
-                throw new Error('Logout failed');
-            }
-        } catch (err) {
-            console.error('Logout error:', err);
-            alert('Failed to log out.');
-        }
-    }
-
-    // --- Event Listeners ---
-    function setupEventListeners() {
-        // Quiz navigation
-        document.getElementById('next-btn').addEventListener('click', nextQuestion);
-        document.getElementById('submit-btn').addEventListener('click', submitQuiz);
-
-        // Quest interactions
-        document.getElementById('quest-list').addEventListener('click', async (e) => {
-            const questCard = e.target.closest('.quest-card');
-            if (!questCard) return;
-            const questId = Number(questCard.dataset.questId);
-
-            if (e.target.closest('.start-quiz-btn') && !e.target.closest('.start-quiz-btn').classList.contains('disabled')) {
-                await startQuiz(questId);
-            } else if (e.target.closest('.details-btn')) {
-                await showQuestDetails(questId);
-            }
-        });
-
-        // Carousel navigation
-        document.getElementById('carousel-nav').addEventListener('click', (e) => {
-            const dot = e.target.closest('.carousel-dot');
-            if (dot) {
-                goToSlide(Number(dot.dataset.index));
-            }
-        });
-
-        // Filters and search
-        document.getElementById('quest-search-input').addEventListener('input', () => {
-            currentPage = 1;
-            displayQuests();
-        });
-        document.getElementById('filter-status').addEventListener('change', () => {
-            currentPage = 1;
-            displayQuests();
-        });
-        document.getElementById('sort-reward').addEventListener('change', () => {
-            currentPage = 1;
-            displayQuests();
-        });
-
-        // Withdrawal
-        document.querySelector('.withdraw-btn').addEventListener('click', openWithdrawalModal);
-        document.getElementById('confirm-withdrawal-btn').addEventListener('click', confirmWithdrawal);
-
-        // Auto-slide carousel
-        setInterval(nextSlide, 5000);
-    }
-
-    // --- Mobile Optimization ---
-    function ensureFullScreenMobile() {
-        // Adjust viewport meta tag dynamically if needed
-        const viewportMeta = document.querySelector('meta[name="viewport"]');
-        if (window.innerWidth <= 768) {
-            viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-        }
-
-        // Ensure body and html take full width
-        document.documentElement.style.width = '100vw';
-        document.body.style.width = '100vw';
-        document.body.style.margin = '0';
-        document.body.style.padding = '0';
-        document.body.style.overflowX = 'hidden';
-
-        // Fix mobile nav width
-        const mobileNav = document.querySelector('.mobile-nav');
-        if (mobileNav) {
-            mobileNav.style.width = '100vw';
-            mobileNav.style.left = '0';
-            mobileNav.style.right = '0';
-        }
-
-        // Ensure container takes full width
-        const container = document.querySelector('.container');
-        if (container) {
-            container.style.width = '100%';
-            container.style.maxWidth = '100vw';
-            container.style.padding = '1rem';
-            container.style.margin = '0';
-        }
-    }
-
-    // --- Initialize ---
-    async function init() {
-        if (await checkSession()) {
-            createBackgroundParticles();
-            await refreshAllUI();
-            setupEventListeners();
-            ensureFullScreenMobile();
-
-            // Re-apply mobile fixes on resize
-            window.addEventListener('resize', ensureFullScreenMobile);
-        }
-    }
-
-    // Start the app
-    init();
-</script>
+        // Start the app on window load
+        window.onload = init;
+    </script>
 </body>
 </html>
-completed quests
