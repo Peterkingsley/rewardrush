@@ -25,6 +25,15 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
+(async () => {
+  try {
+    await pool.query('SET search_path TO public');
+    console.log('Search path set to public ✅');
+  } catch (err) {
+    console.error('Failed to set search_path:', err);
+  }
+})();
+
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
@@ -800,3 +809,4 @@ app.use((req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
 });
+const pool
