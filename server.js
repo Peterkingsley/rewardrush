@@ -478,37 +478,102 @@ app.delete('/quests/:questId/questions/:questionId', requireAdmin, async (req, r
     res.status(501).json({ message: "Admin question management not yet implemented with database." });
 });
 
+// === CORRECTED /submit-quiz ENDPOINT ===
 app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
-    const questId = parseInt(req.params.questId);
-    const userId = req.user.id;
+    const questId = parseInt(req.params.questId, 10);
+    const userDbId = req.user.id;
+    const { answers } = req.body;
+
+    if (!answers) {
+        return res.status(400).json({ error: 'No answers provided.' });
+    }
+
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const existingCompletion = await client.query('SELECT 1 FROM user_quests WHERE user_id = $1 AND quest_id = $2', [userId, questId]);
+
+        // 1. Check if quest is already completed
+        const existingCompletion = await client.query(
+            'SELECT 1 FROM user_quests WHERE user_id = $1 AND quest_id = $2',
+            [userDbId, questId]
+        );
         if (existingCompletion.rows.length > 0) {
             await client.query('ROLLBACK');
-            return res.status(400).json({ error: "You have already completed this quest." });
+            return res.status(400).json({ error: 'You have already completed this quest.' });
         }
+
+        // 2. Fetch the quest and its questions with correct answers
         const questResult = await client.query('SELECT * FROM quests WHERE id = $1', [questId]);
         const quest = questResult.rows[0];
         if (!quest) {
             await client.query('ROLLBACK');
-            return res.status(404).json({ error: 'Quest not found' });
+            return res.status(404).json({ error: 'Quest not found.' });
         }
-        const rewardValue = parsePayout(quest.reward);
-        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardValue, userId]);
-        await client.query('INSERT INTO user_quests (user_id, quest_id, completed_at) VALUES ($1, $2, NOW())', [userId, questId]);
-        await logActivity(userId, 'quest_completed', `Completed quest '${quest.title}' for ${quest.reward}`);
-        await client.query('COMMIT');
-        res.json({ message: "Quest completed successfully!", reward: quest.reward });
+
+        const questionsResult = await client.query(
+            'SELECT id, correct_answer FROM quest_questions WHERE quest_id = $1 ORDER BY id ASC',
+            [questId]
+        );
+        const correctAnswers = questionsResult.rows;
+
+        // 3. Score the quiz
+        let score = 0;
+        const totalQuestions = correctAnswers.length;
+
+        for (let i = 0; i < totalQuestions; i++) {
+            const questionId = correctAnswers[i].id;
+            const submittedAnswer = answers[i]; // Assumes answers are sent in order
+            const correctAnswer = correctAnswers[i].correct_answer;
+            
+            if (submittedAnswer && submittedAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+                score++;
+            }
+        }
+        
+        // 4. Check if the user passed (assuming 100% is required)
+        if (score === totalQuestions) {
+            // 5. Award points and mark as complete
+            const rewardValue = parsePayout(quest.reward);
+            await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardValue, userDbId]);
+            await client.query(
+                'INSERT INTO user_quests (user_id, quest_id, completed_at) VALUES ($1, $2, NOW())',
+                [userDbId, questId]
+            );
+            await logActivity(userDbId, 'quest_completed', `Passed quiz '${quest.title}' with score ${score}/${totalQuestions}.`);
+            await client.query('COMMIT');
+
+            const referralLink = `${process.env.BASE_URL || `http://localhost:${PORT}`}/referral?questId=${questId}&referrerId=${encodeURIComponent(req.user.username)}`;
+            
+            res.json({
+                success: true,
+                message: "Quest completed successfully!",
+                reward: quest.reward,
+                score,
+                totalQuestions,
+                referralLink
+            });
+
+        } else {
+            // User failed the quiz
+            await client.query('ROLLBACK');
+            await logActivity(userDbId, 'quest_failed', `Failed quiz '${quest.title}' with score ${score}/${totalQuestions}.`);
+            res.json({
+                success: false,
+                message: "Unfortunately, you did not pass the quiz. Please try again later.",
+                score,
+                totalQuestions
+            });
+        }
+
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Error submitting quiz:', err);
-        res.status(500).json({ error: 'Failed to submit quiz' });
+        res.status(500).json({ error: 'An error occurred while submitting the quiz.' });
     } finally {
         client.release();
     }
 });
+
 
 app.get('/quests/:questId/responses', requireAdmin, async (req, res) => {
     res.json({});
@@ -797,6 +862,21 @@ app.post('/book-founder', requireLogin, async (req, res) => {
 app.post('/founders', requireAdmin, async (req, res) => {
     res.status(501).json({ message: "Admin founder management not yet implemented with database." });
 });
+
+// NEW: Endpoint for Growth Settings
+app.post('/api/users/:userId/settings', requireLogin, async (req, res) => {
+    const { userId } = req.params;
+    const { settings } = req.body;
+
+    if (userId !== req.session.userId) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    
+    console.log(`Received settings for user ${userId}:`, settings);
+    
+    res.json({ success: true, message: 'Settings saved successfully (simulated)!' });
+});
+
 
 app.use((req, res, next) => {
     if (req.session && req.session.userId) {
