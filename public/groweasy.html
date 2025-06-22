@@ -2136,7 +2136,7 @@
         }
         
         // --- Quiz Modal Logic ---
-        function displayQuestion() {
+          function displayQuestion() {
             const question = questions[currentQuestionIndex];
             if (!question) return;
 
@@ -2157,34 +2157,51 @@
 
             const nextBtn = document.getElementById('next-btn');
             const submitBtn = document.getElementById('submit-btn');
-            nextBtn.disabled = true;
+            
+            // --- Start of Fix ---
 
+            // 1. Explicitly manage the state for BOTH buttons
             if (currentQuestionIndex === questions.length - 1) {
+                // Last question: show Submit, hide Next
                 nextBtn.style.display = 'none';
                 submitBtn.style.display = 'flex';
+                submitBtn.disabled = true; // Disable until an answer is chosen
             } else {
+                // Not the last question: show Next, hide Submit
                 nextBtn.style.display = 'flex';
                 submitBtn.style.display = 'none';
+                nextBtn.disabled = true; // Disable until an answer is chosen
             }
 
             const radioInputs = document.querySelectorAll('.quiz-option input');
             radioInputs.forEach(input => {
                 input.addEventListener('change', () => {
                     answers[currentQuestionIndex] = input.value;
-                    nextBtn.disabled = false;
-                    submitBtn.disabled = false;
+                    
+                    // 2. Enable the CORRECT button based on the current question
+                    if (currentQuestionIndex === questions.length - 1) {
+                        submitBtn.disabled = false;
+                    } else {
+                        nextBtn.disabled = false;
+                    }
                 });
             });
 
+            // Re-select answer if user is navigating back/forth (good practice)
             if (answers[currentQuestionIndex]) {
                 radioInputs.forEach(input => {
                     if (input.value === answers[currentQuestionIndex]) {
                         input.checked = true;
-                        nextBtn.disabled = false;
-                        submitBtn.disabled = false;
+                        // Re-enable the correct button
+                        if (currentQuestionIndex === questions.length - 1) {
+                            submitBtn.disabled = false;
+                        } else {
+                            nextBtn.disabled = false;
+                        }
                     }
                 });
             }
+            // --- End of Fix ---
         }
 
         function startTimer() {
@@ -2531,3 +2548,4 @@
     </script>
 </body>
 </html>
+  function displayQuestion
