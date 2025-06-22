@@ -2496,38 +2496,19 @@
             document.querySelector('.withdraw-btn').addEventListener('click', openWithdrawalModal);
             document.getElementById('confirm-withdrawal-btn').addEventListener('click', confirmWithdrawal);
 
+            // --- Start of Fix ---
             // NEW: Settings Listeners
-            document.getElementById('growth-settings-btn').addEventListener('click', openSettingsModal);
-            document.getElementById('settings-form').addEventListener('submit', handleSettingsSubmit);
-        }
-
-        // --- Mobile Optimization ---
-        function ensureFullScreenMobile() {
-            const viewportMeta = document.querySelector('meta[name="viewport"]');
-            if (window.innerWidth <= 768) {
-                viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+            // Add a check to ensure the button exists before adding a listener
+            const growthSettingsBtn = document.getElementById('growth-settings-btn');
+            if (growthSettingsBtn) {
+                growthSettingsBtn.addEventListener('click', openSettingsModal);
             }
-
-            document.documentElement.style.width = '100vw';
-            document.body.style.width = '100vw';
-            document.body.style.margin = '0';
-            document.body.style.padding = '0';
-            document.body.style.overflowX = 'hidden';
-
-            const mobileNav = document.querySelector('.mobile-nav');
-            if (mobileNav) {
-                mobileNav.style.width = '100vw';
-                mobileNav.style.left = '0';
-                mobileNav.style.right = '0';
+            
+            const settingsForm = document.getElementById('settings-form');
+            if (settingsForm) {
+                settingsForm.addEventListener('submit', handleSettingsSubmit);
             }
-
-            const container = document.querySelector('.container');
-            if (container) {
-                container.style.width = '100%';
-                container.style.maxWidth = '100vw';
-                container.style.padding = '1rem';
-                container.style.margin = '0';
-            }
+            // --- End of Fix ---
         }
 
         // --- Initialize ---
@@ -2548,4 +2529,4 @@
     </script>
 </body>
 </html>
-  function displayQuestion
+   function setupEventListeners()
