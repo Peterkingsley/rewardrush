@@ -1411,6 +1411,7 @@
         .delay-1 { animation-delay: 0.1s; }
         .delay-2 { animation-delay: 0.2s; }
         .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
         
         .floating {
             animation: float 3s ease-in-out infinite;
@@ -1492,8 +1493,15 @@
                     <p class="description">Your current daily login streak</p>
                     <button class="card-btn"><i class="fas fa-calendar-alt"></i> View Calendar</button>
                 </div>
+
+                <!-- NEW: Growth Settings Card -->
+                <div class="dashboard-card animate-in delay-4">
+                    <div class="card-header"> <div class="card-icon"><i class="fas fa-chart-line"></i></div> <h3>Growth Settings</h3> </div>
+                     <p class="value" id="growth-focus-value">None</p>
+                    <p class="description">Personalize your growth tasks</p>
+                    <button class="card-btn" id="growth-settings-btn"><i class="fas fa-cog"></i> Configure</button>
+                </div>
             </div>
-            <!-- REMOVED: Carousel navigation dots for a cleaner infinite scroll -->
         </div>
         
         <h2 class="section-title">
@@ -1665,6 +1673,34 @@
         </div>
     </div>
 
+    <!-- NEW: Growth Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-cog"></i> Growth Settings</h3>
+            <form id="settings-form">
+                 <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div class="control-group">
+                        <label for="focus-area">Primary Focus</label>
+                        <select id="focus-area" name="focus-area">
+                            <option>Community Building</option>
+                            <option>Social Media Growth</option>
+                            <option>Content Creation</option>
+                            <option>User Acquisition</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                       <label for="weekly-goal">Weekly Task Goal</label>
+                       <input type="number" id="weekly-goal" name="weekly-goal" value="5">
+                    </div>
+                 </div>
+                 <div class="modal-actions">
+                     <button type="button" class="close-btn" onclick="closeModal('settings-modal')">Cancel</button>
+                     <button type="submit" class="primary-btn" style="background: var(--primary); color: white; border: none; flex: 1; justify-content: center;">Save Settings</button>
+                 </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // --- Global State Variables ---
         let userId = null;
@@ -1672,6 +1708,7 @@
         let completedQuests = [];
         let completedQuestIdSet = new Set();
         let balanceVisible = true;
+        let groweasySettings = {}; // NEW: To store user's growth settings
         
         // --- State for Filtering, Sorting, and Pagination ---
         let currentPage = 1;
@@ -1845,6 +1882,12 @@
                 completedQuests = Array.isArray(data.questsCompleted) ? data.questsCompleted : [];
                 completedQuestIdSet = new Set(completedQuests.map(q => q.quest_id));
                 document.getElementById('quests-completed').textContent = completedQuests.length;
+
+                // NEW: Handle groweasy_settings
+                if (data.groweasy_settings) {
+                    groweasySettings = data.groweasy_settings;
+                    document.getElementById('growth-focus-value').textContent = groweasySettings.focusArea || 'None';
+                }
             } catch (err) {
                 console.error('Failed to fetch dashboard data:', err);
             }
@@ -2359,6 +2402,54 @@
                 alert('Failed to log out.');
             }
         }
+        
+        // --- NEW: Growth Settings Functions ---
+        function openSettingsModal() {
+            // Populate form with current settings
+            if (groweasySettings) {
+                document.getElementById('focus-area').value = groweasySettings.focusArea || 'Community Building';
+                document.getElementById('weekly-goal').value = groweasySettings.weeklyGoal || 5;
+            }
+            openModal('settings-modal');
+        }
+
+        async function handleSettingsSubmit(event) {
+            event.preventDefault();
+            if (!userId) {
+                alert('User not identified. Please refresh.');
+                return;
+            }
+            
+            const settings = {
+                focusArea: document.getElementById('focus-area').value,
+                weeklyGoal: document.getElementById('weekly-goal').value,
+            };
+
+            showLoadingOverlay('Saving settings...');
+
+            try {
+                const response = await fetch(`/api/users/${userId}/settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ settings: settings }),
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Failed to save settings.');
+
+                alert('Settings saved successfully!');
+                groweasySettings = settings; // Update local state
+                document.getElementById('growth-focus-value').textContent = groweasySettings.focusArea || 'None';
+                closeModal('settings-modal');
+
+            } catch(err) {
+                console.error('Error saving settings:', err);
+                alert(`Error: ${err.message}`);
+            } finally {
+                hideLoadingOverlay();
+            }
+        }
+
 
         // --- Event Listeners ---
         function setupEventListeners() {
@@ -2396,6 +2487,10 @@
             // Withdrawal
             document.querySelector('.withdraw-btn').addEventListener('click', openWithdrawalModal);
             document.getElementById('confirm-withdrawal-btn').addEventListener('click', confirmWithdrawal);
+
+            // NEW: Settings Listeners
+            document.getElementById('growth-settings-btn').addEventListener('click', openSettingsModal);
+            document.getElementById('settings-form').addEventListener('submit', handleSettingsSubmit);
         }
 
         // --- Mobile Optimization ---

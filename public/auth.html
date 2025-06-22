@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --primary: #6c5ce7;
@@ -21,6 +22,7 @@
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            overflow-x: hidden;
         }
 
         .auth-container {
@@ -32,9 +34,11 @@
         }
 
         .auth-panel {
-            background-color: rgba(45, 52, 54, 0.7);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(108, 92, 231, 0.2);
+            background: rgba(45, 52, 54, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
 
         #reward-canvas {
@@ -44,10 +48,13 @@
             width: 100%;
             height: 100%;
             z-index: 0;
+            opacity: 0.7;
         }
 
         .form-toggle-bg {
-            background-color: rgba(30, 39, 46, 0.8);
+            background: rgba(30, 39, 46, 0.9);
+            border-radius: 9999px;
+            padding: 0.25rem;
         }
 
         .form-toggle-label::after {
@@ -57,7 +64,7 @@
             left: 0.25rem;
             width: 50%;
             height: calc(100% - 0.5rem);
-            background-color: var(--primary);
+            background: var(--primary);
             border-radius: 9999px;
             transition: transform 0.3s ease;
         }
@@ -65,47 +72,196 @@
         .form-toggle-input:checked + .form-toggle-label::after {
             transform: translateX(calc(100% - 0.5rem));
         }
-        
+
         .form-group-container {
             transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in-out 0.2s;
             max-height: 0;
             opacity: 0;
             overflow: hidden;
         }
+
         .form-group-container.active {
-            max-height: 500px; /* Adjusted to ensure content fits */
+            max-height: 500px;
             opacity: 1;
         }
-        
+
         .error-message {
             color: var(--danger);
-            font-size: 0.8rem;
-            padding-left: 0.25rem;
+            font-size: 0.75rem;
+            padding-left: 0.5rem;
             margin-top: 0.25rem;
             display: none;
         }
+
         .toast-notification {
-            transform: translateX(calc(100% + 1.25rem)); /* Start off-screen */
+            transform: translateX(calc(100% + 1.25rem));
+            transition: transform 0.3s ease-in-out;
         }
+
         .toast-notification.show {
             transform: translateX(0);
+        }
+
+        /* Desktop-specific styles */
+        @media (min-width: 1024px) {
+            .auth-panel {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                max-width: 80rem;
+                margin: 0 auto;
+            }
+
+            .hero-section {
+                padding: 3rem;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                position: relative;
+                overflow: hidden;
+                border-radius: 1.5rem 0 0 1.5rem;
+            }
+
+            .form-section {
+                padding: 3rem;
+                background: rgba(30, 39, 46, 0.95);
+                border-radius: 0 1.5rem 1.5rem 0;
+            }
+
+            .form-toggle-container {
+                max-width: 16rem;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .input-container {
+                background: rgba(45, 52, 54, 0.8);
+                border-radius: 0.75rem;
+                border: 2px solid transparent;
+                transition: border-color 0.3s ease;
+            }
+
+            .input-container:focus-within {
+                border-color: var(--primary);
+            }
+
+            .submit-btn {
+                background: linear-gradient(90deg, var(--primary), var(--primary-light));
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .submit-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba(108, 92, 231, 0.4);
+            }
+
+            .social-btn {
+                background: rgba(45, 52, 54, 0.8);
+                transition: background 0.3s ease, transform 0.3s ease;
+            }
+
+            .social-btn:hover {
+                background: rgba(45, 52, 54, 1);
+                transform: translateY(-2px);
+            }
+
+            .benefit-item {
+                background: rgba(255, 255, 255, 0.05);
+                padding: 1rem;
+                border-radius: 0.75rem;
+                backdrop-filter: blur(5px);
+            }
+        }
+
+        /* Mobile-specific styles */
+        @media (max-width: 1023px) {
+            .auth-panel {
+                max-width: 90%;
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .hero-section {
+                padding: 2rem 1.5rem;
+                text-align: center;
+                position: relative;
+                border-radius: 1.5rem 1.5rem 0 0;
+            }
+
+            .form-section {
+                padding: 2rem 1.5rem;
+                background: rgba(30, 39, 46, 0.95);
+                border-radius: 0 0 1.5rem 1.5rem;
+            }
+
+            .form-toggle-container {
+                max-width: 100%;
+                padding: 0.5rem;
+            }
+
+            .form-toggle-btn {
+                padding: 0.75rem;
+                font-size: 1rem;
+            }
+
+            .input-container {
+                background: rgba(45, 52, 54, 0.8);
+                border-radius: 0.5rem;
+                border: 1px solid rgba(108, 92, 231, 0.2);
+            }
+
+            .input-field {
+                padding: 1rem 3rem;
+                font-size: 1rem;
+            }
+
+            .submit-btn {
+                padding: 1rem;
+                font-size: 1.125rem;
+                border-radius: 0.5rem;
+                background: var(--primary);
+                transition: background 0.3s ease;
+            }
+
+            .submit-btn:hover {
+                background: var(--primary-light);
+            }
+
+            .social-btn {
+                padding: 1rem;
+                font-size: 1rem;
+                border-radius: 0.5rem;
+                background: rgba(45, 52, 54, 0.8);
+            }
+
+            .benefit-item {
+                padding: 1rem;
+                border-radius: 0.5rem;
+                background: rgba(255, 255, 255, 0.05);
+            }
+
+            .form-title {
+                font-size: 1.75rem;
+            }
+
+            .form-subtitle {
+                font-size: 0.875rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="auth-container">
-        <div class="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 rounded-2xl shadow-2xl overflow-hidden auth-panel">
-            
-            <div class="relative p-8 md:p-12 text-white flex flex-col justify-center order-last lg:order-first">
+        <div class="auth-panel">
+            <!-- Hero Section -->
+            <div class="hero-section text-white">
                 <canvas id="reward-canvas"></canvas>
-                <div class="relative z-10 text-center lg:text-left">
-                    <h1 class="text-4xl md:text-5xl font-bold leading-tight">Join the Rush.</h1>
-                    <h2 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-secondary leading-tight mb-6">Unlock Your Crypto Potential.</h2>
-                    
-                    <div id="benefits-carousel" class="relative h-24">
-                        </div>
-
-                    <div class="mt-12 text-center">
+                <div class="relative z-10">
+                    <h1 class="text-3xl lg:text-5xl font-bold leading-tight">Join the Rush.</h1>
+                    <h2 class="text-2xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-secondary leading-tight mb-6">Unlock Your Crypto Potential.</h2>
+                    <div id="benefits-carousel" class="relative h-24 lg:h-32">
+                    </div>
+                    <div class="mt-8 lg:mt-12 text-center">
                         <a href="#" class="text-sm text-gray-400 hover:text-secondary transition-colors">
                             Are you a Project or an Expert? <span class="font-semibold underline">Partner with RewardRush</span>
                         </a>
@@ -113,86 +269,79 @@
                 </div>
             </div>
 
-            <div class="p-8 md:p-12 bg-darker/50">
+            <!-- Form Section -->
+            <div class="form-section">
                 <div class="max-w-md mx-auto">
-                    <div id="form-toggle-container" class="form-toggle-bg p-1 rounded-full flex justify-between items-center mb-8 relative">
+                    <div id="form-toggle-container" class="form-toggle-bg flex justify-between items-center mb-8 relative">
                         <input type="checkbox" id="form-toggle" class="hidden form-toggle-input">
                         <label for="form-toggle" class="form-toggle-label absolute inset-0 cursor-pointer"></label>
-                        <button id="login-toggle-btn" class="w-1/2 text-center z-10 py-2 rounded-full font-semibold text-white transition-colors">Log In</button>
-                        <button id="signup-toggle-btn" class="w-1/2 text-center z-10 py-2 rounded-full font-semibold text-gray-400 transition-colors">Sign Up</button>
+                        <button id="login-toggle-btn" class="form-toggle-btn w-1/2 text-center z-10 py-2 rounded-full font-semibold text-white transition-colors">Log In</button>
+                        <button id="signup-toggle-btn" class="form-toggle-btn w-1/2 text-center z-10 py-2 rounded-full font-semibold text-gray-400 transition-colors">Sign Up</button>
                     </div>
 
-                    <h2 id="form-title" class="text-3xl font-bold text-white mb-2 text-center">Welcome Back to RewardRush</h2>
-                    <p id="form-subtitle" class="text-gray-400 mb-8 text-center">Log in to continue your journey.</p>
+                    <h2 id="form-title" class="form-title text-2xl lg:text-3xl font-bold text-white mb-2 text-center">Welcome Back to RewardRush</h2>
+                    <p id="form-subtitle" class="form-subtitle text-gray-400 mb-8 text-center">Log in to continue your journey.</p>
 
                     <form id="auth-form" class="space-y-4">
                         <div id="fullName-container" class="form-group-container">
                             <label for="fullName" class="text-sm font-medium text-gray-300 sr-only">Full Name</label>
-                            <div class="relative">
+                            <div class="input-container relative">
                                 <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                                <input type="text" id="fullName" name="fullName" placeholder="Full Name" class="w-full bg-[#2d3436] py-3 pl-12 pr-4 rounded-lg border-2 border-transparent focus:border-[#6c5ce7] focus:outline-none transition-colors text-white">
+                                <input type="text" id="fullName" name="fullName" placeholder="Full Name" class="input-field w-full bg-transparent py-3 pl-12 pr-4 text-white focus:outline-none">
                             </div>
                             <p id="fullName-error" class="error-message"></p>
                         </div>
                         <div class="form-group-container active">
                             <label for="username" class="text-sm font-medium text-gray-300 sr-only">Username</label>
-                             <div class="relative">
+                            <div class="input-container relative">
                                 <i class="fas fa-at absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                                <input type="text" id="username" name="username" placeholder="Username" class="w-full bg-[#2d3436] py-3 pl-12 pr-4 rounded-lg border-2 border-transparent focus:border-[#6c5ce7] focus:outline-none transition-colors text-white" required>
+                                <input type="text" id="username" name="username" placeholder="Username" class="input-field w-full bg-transparent py-3 pl-12 pr-4 text-white focus:outline-none" required>
                             </div>
                             <p id="username-error" class="error-message"></p>
                         </div>
                         <div id="email-container" class="form-group-container">
                             <label for="email" class="text-sm font-medium text-gray-300 sr-only">Email</label>
-                            <div class="relative">
+                            <div class="input-container relative">
                                 <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                                <input type="email" id="email" name="email" placeholder="Email Address" class="w-full bg-[#2d3436] py-3 pl-12 pr-4 rounded-lg border-2 border-transparent focus:border-[#6c5ce7] focus:outline-none transition-colors text-white">
+                                <input type="email" id="email" name="email" placeholder="Email Address" class="input-field w-full bg-transparent py-3 pl-12 pr-4 text-white focus:outline-none">
                             </div>
                             <p id="email-error" class="error-message"></p>
                         </div>
                         <div class="form-group-container active">
                             <label for="password" class="text-sm font-medium text-gray-300 sr-only">Password</label>
-                            <div class="relative">
+                            <div class="input-container relative">
                                 <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                                <input type="password" id="password" name="password" placeholder="Password" class="w-full bg-[#2d3436] py-3 pl-12 pr-12 rounded-lg border-2 border-transparent focus:border-[#6c5ce7] focus:outline-none transition-colors text-white" required>
+                                <input type="password" id="password" name="password" placeholder="Password" class="input-field w-full bg-transparent py-3 pl-12 pr-12 text-white focus:outline-none" required>
                                 <button type="button" id="password-toggle" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-primary-light">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
-                             <p id="password-error" class="error-message"></p>
+                            <p id="password-error" class="error-message"></p>
                         </div>
-                        
-                        
                         <div class="text-right -mt-2">
                             <a href="#" id="forgot-password-link" class="text-sm text-gray-300 hover:text-white transition-colors">Forgot Password?</a>
                         </div>
-                        
                         <p id="form-error" class="error-message text-center"></p>
-
-                        <button type="submit" id="submit-btn" class="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-indigo-500 transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
-                           <span id="submit-btn-text">Log In</span>
-                           <i id="submit-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                        <button type="submit" id="submit-btn" class="submit-btn w-full text-white font-bold py-3 rounded-lg flex items-center justify-center">
+                            <span id="submit-btn-text">Log In</span>
+                            <i id="submit-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
                         </button>
                     </form>
 
-                    
                     <form id="forgot-password-form" class="space-y-4" style="display: none;">
                         <div>
                             <label for="forgot-email" class="text-sm font-medium text-gray-300 sr-only">Email</label>
-                            <div class="relative">
+                            <div class="input-container relative">
                                 <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                                <input type="email" id="forgot-email" name="forgot-email" placeholder="Enter your Email Address" class="w-full bg-[#2d3436] py-3 pl-12 pr-4 rounded-lg border-2 border-transparent focus:border-[#6c5ce7] focus:outline-none transition-colors text-white" required>
+                                <input type="email" id="forgot-email" name="forgot-email" placeholder="Enter your Email Address" class="input-field w-full bg-transparent py-3 pl-12 pr-4 text-white focus:outline-none" required>
                             </div>
                         </div>
-                        
                         <p id="forgot-message" class="text-sm text-center py-2"></p>
-
-                        <button type="submit" id="forgot-submit-btn" class="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-indigo-500 transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
-                           <span>Send Reset Link</span>
+                        <button type="submit" id="forgot-submit-btn" class="submit-btn w-full text-white font-bold py-3 rounded-lg flex items-center justify-center">
+                            <span>Send Reset Link</span>
                         </button>
-
                         <div class="text-center">
-                            <a href="#" id="back-to-login-link" class="text-sm text-gray-300 hover:text-white transition-colors"> &larr; Back to Login</a>
+                            <a href="#" id="back-to-login-link" class="text-sm text-gray-300 hover:text-white transition-colors"> ← Back to Login</a>
                         </div>
                     </form>
 
@@ -201,416 +350,380 @@
                         <span class="flex-shrink mx-4 text-gray-500 text-sm">Or continue with</span>
                         <div class="flex-grow border-t border-gray-700"></div>
                     </div>
-                    
+
                     <div id="social-buttons" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <button type="button" id="google-login-btn" class="relative overflow-hidden w-full bg-gray-800 text-white font-semibold py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
-                            <div class="absolute -top-1 -right-1 bg-secondary text-white text-xs font-bold px-2 py-0.5 rounded-bl-lg">
-                                SOON
-                            </div>
-                            <i class="fab fa-google"></i>
-                            <span>Google</span>
+                        <button type="button" id="google-login-btn" class="social-btn relative overflow-hidden w-full text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2">
+                            <div class="absolute -top-1 -right-1 bg-secondary text-white text-xs font-bold px-2 py-0.5 rounded-bl-lg">SOON</div>
+                            <img src="./logos/googlelogo.png" alt="Google Logo" width="28" height="28">
+                            <!-- <span>Google</span> -->
                         </button>
-                        <button type="button" id="twitter-login-btn" class="relative overflow-hidden w-full bg-gray-800 text-white font-semibold py-3 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2">
-                            <div class="absolute -top-1 -right-1 bg-secondary text-white text-xs font-bold px-2 py-0.5 rounded-bl-lg">
-                                SOON
-                            </div>
-                            <i class="fab fa-twitter"></i>
-                            <span>Twitter</span>
+                        <button type="button" id="twitter-login-btn" class="social-btn relative overflow-hidden w-full text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2">
+                            <div class="absolute -top-1 -right-1 bg-secondary text-white text-xs font-bold px-2 py-0.5 rounded-bl-lg">SOON</div>
+                            <img src="./logos/X_icon.svg.png" alt="X Logo" width="24" height="24">
+                            <!-- <span>Twitter</span> -->
                         </button>
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="toast-notification" class="fixed top-5 right-5 bg-secondary text-white py-3 px-5 rounded-lg shadow-lg toast-notification transition-transform duration-300 ease-in-out">
+    <div id="toast-notification" class="fixed top-5 right-5 bg-secondary text-white py-3 px-5 rounded-lg shadow-lg toast-notification">
         <p class="font-semibold">Coming Soon!</p>
         <p class="text-sm -mt-1">This feature is under development.</p>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Canvas Animation
+            const canvas = document.getElementById('reward-canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let animationFrameId;
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
+            const center = { x: 0, y: 0, radius: 10 };
 
-    // --- Canvas Animation ---
-    // (Canvas animation code remains unchanged...)
-    const canvas = document.getElementById('reward-canvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    let animationFrameId;
+            function resizeCanvas() {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                center.x = canvas.width / 2;
+                center.y = canvas.height / 2;
+                initParticles();
+            }
 
-    const center = { x: 0, y: 0, radius: 10 };
-
-    function resizeCanvas() {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-        center.x = canvas.width / 2;
-        center.y = canvas.height / 2;
-        initParticles();
-    }
-
-    class Orb {
-        constructor() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            this.vx = (Math.random() - 0.5) * 0.5;
-            this.vy = (Math.random() - 0.5) * 0.5;
-            this.radius = Math.random() * 2 + 1;
-            this.color = Math.random() > 0.5 ? 'rgba(108, 92, 231, 0.7)' : 'rgba(0, 206, 201, 0.7)';
-        }
-        
-        draw() {
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-            ctx.fillStyle = this.color;
-            ctx.fill();
-        }
-
-        update() {
-            this.x += this.vx;
-            this.y += this.vy;
-
-            if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-            if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-        }
-    }
-
-    function initParticles() {
-        particles = [];
-        for (let i = 0; i < 100; i++) {
-            particles.push(new Orb());
-        }
-    }
-
-    function connect() {
-        let opacityValue = 1;
-        for (let a = 0; a < particles.length; a++) {
-            for (let b = a; b < particles.length; b++) {
-                let distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x)) +
-                                 ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
-
-                if (distance < (canvas.width / 7) * (canvas.height / 7)) {
-                    opacityValue = 1 - (distance / 20000);
-                    ctx.strokeStyle = `rgba(162, 155, 254, ${opacityValue})`;
-                    ctx.lineWidth = 1;
+            class Orb {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.radius = Math.random() * 2 + 1;
+                    this.color = Math.random() > 0.5 ? 'rgba(108, 92, 231, 0.7)' : 'rgba(0, 206, 201, 0.7)';
+                }
+                
+                draw() {
                     ctx.beginPath();
-                    ctx.moveTo(particles[a].x, particles[a].y);
-                    ctx.lineTo(particles[b].x, particles[b].y);
-                    ctx.stroke();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
                 }
             }
-        }
-    }
 
-    function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (const particle of particles) {
-            particle.update();
-            particle.draw();
-        }
-        connect();
-        animationFrameId = requestAnimationFrame(animate);
-    }
-    
-    resizeCanvas();
-    animate();
-    window.addEventListener('resize', () => {
-        cancelAnimationFrame(animationFrameId);
-        resizeCanvas();
-        animate();
-    });
-
-
-    // --- Benefits Carousel ---
-    const benefits = [
-        { icon: 'fa-graduation-cap', text: "Complete quests, master new skills, and earn crypto rewards. Your journey into web3 starts here." },
-        { icon: 'fa-users', text: "Our platform is built on community. Refer friends, build your network, and earn commissions as they succeed." },
-        { icon: 'fa-globe', text: "Connect with pioneering web3 founders, access exclusive affiliate programs, and get a head start on the future of decentralization." }
-    ];
-    let currentBenefit = 0;
-    const carouselContainer = document.getElementById('benefits-carousel');
-    
-    function showBenefit(index) {
-        const benefit = benefits[index];
-        const benefitHTML = `
-            <div class="absolute inset-0 flex items-center gap-4 animate-fade-in">
-                <i class="fas ${benefit.icon} text-3xl text-secondary"></i>
-                <p class="text-gray-300">${benefit.text}</p>
-            </div>
-        `;
-        carouselContainer.innerHTML = benefitHTML;
-    }
-
-    function nextBenefit() {
-        currentBenefit = (currentBenefit + 1) % benefits.length;
-        showBenefit(currentBenefit);
-    }
-    
-    showBenefit(currentBenefit);
-    setInterval(nextBenefit, 5000);
-
-    // --- Form Logic ---
-    const formToggle = document.getElementById('form-toggle');
-    const loginBtn = document.getElementById('login-toggle-btn');
-    const signupBtn = document.getElementById('signup-toggle-btn');
-    const formTitle = document.getElementById('form-title');
-    const formSubtitle = document.getElementById('form-subtitle');
-    const fullNameContainer = document.getElementById('fullName-container');
-    const emailContainer = document.getElementById('email-container');
-    const submitBtnText = document.getElementById('submit-btn-text');
-    const authForm = document.getElementById('auth-form');
-    let isSignUp = false;
-    
-    // --- NEW: Get references to new elements for forgot password flow ---
-    const forgotPasswordForm = document.getElementById('forgot-password-form');
-    const forgotPasswordLink = document.getElementById('forgot-password-link');
-    const backToLoginLink = document.getElementById('back-to-login-link');
-    const formToggleContainer = document.getElementById('form-toggle-container');
-    const socialLoginContainer = document.getElementById('social-login-container');
-    const socialButtons = document.getElementById('social-buttons');
-
-
-    function setFormState(signUp) {
-        isSignUp = signUp;
-        formToggle.checked = isSignUp;
-        document.querySelectorAll('.error-message').forEach(el => {
-            el.textContent = '';
-            el.style.display = 'none';
-        });
-        
-        // --- MODIFIED: Updated text content for both states ---
-        if (isSignUp) {
-            loginBtn.classList.replace('text-white', 'text-gray-400');
-            signupBtn.classList.replace('text-gray-400', 'text-white');
-            formTitle.textContent = 'Join RewardRush Today';
-            formSubtitle.textContent = 'Create your account to start earning rewards.';
-            fullNameContainer.classList.add('active');
-            emailContainer.classList.add('active');
-            submitBtnText.textContent = 'Create Account';
-            // NEW: Hide forgot password link on sign up form
-            forgotPasswordLink.parentElement.style.display = 'none';
-        } else {
-            loginBtn.classList.replace('text-gray-400', 'text-white');
-            signupBtn.classList.replace('text-white', 'text-gray-400');
-            formTitle.textContent = 'Welcome Back to RewardRush';
-            formSubtitle.textContent = 'Log in to continue your journey.';
-            fullNameContainer.classList.remove('active');
-            emailContainer.classList.remove('active');
-            submitBtnText.textContent = 'Log In';
-            // NEW: Show forgot password link on login form
-            forgotPasswordLink.parentElement.style.display = 'block';
-        }
-    }
-
-    formToggle.addEventListener('change', () => setFormState(formToggle.checked));
-    loginBtn.addEventListener('click', () => setFormState(false));
-    signupBtn.addEventListener('click', () => setFormState(true));
-    
-    // NEW: Initialize the form state on load
-    setFormState(false);
-
-    const passwordInput = document.getElementById('password');
-    const passwordToggle = document.getElementById('password-toggle');
-    passwordToggle.addEventListener('click', () => {
-        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-        passwordInput.setAttribute('type', type);
-        passwordToggle.querySelector('i').classList.toggle('fa-eye');
-        passwordToggle.querySelector('i').classList.toggle('fa-eye-slash');
-    });
-
-    authForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const submitBtn = document.getElementById('submit-btn');
-        const spinner = document.getElementById('submit-spinner');
-        submitBtnText.style.display = 'none';
-        spinner.style.display = 'inline-block';
-        submitBtn.disabled = true;
-
-        document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
-
-        const fullName = document.getElementById('fullName').value;
-        const username = document.getElementById('username').value;
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-
-        let hasError = false;
-        if (!username) {
-             document.getElementById('username-error').textContent = 'Username is required.';
-             document.getElementById('username-error').style.display = 'block';
-             hasError = true;
-        }
-        if (!password) {
-            document.getElementById('password-error').textContent = 'Password is required.';
-            document.getElementById('password-error').style.display = 'block';
-            hasError = true;
-        } else if (password.length < 6) {
-             document.getElementById('password-error').textContent = 'Password must be at least 6 characters.';
-             document.getElementById('password-error').style.display = 'block';
-             hasError = true;
-        }
-        
-        if (isSignUp) {
-            if (!fullName) {
-                document.getElementById('fullName-error').textContent = 'Full name is required.';
-                document.getElementById('fullName-error').style.display = 'block';
-                hasError = true;
+            function initParticles() {
+                particles = [];
+                for (let i = 0; i < 100; i++) {
+                    particles.push(new Orb());
+                }
             }
-            if (!email) {
-                document.getElementById('email-error').textContent = 'Email is required.';
-                document.getElementById('email-error').style.display = 'block';
-                hasError = true;
-            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                 document.getElementById('email-error').textContent = 'Please enter a valid email.';
-                 document.getElementById('email-error').style.display = 'block';
-                 hasError = true;
+
+            function connect() {
+                let opacityValue = 1;
+                for (let a = 0; a < particles.length; a++) {
+                    for (let b = a; b < particles.length; b++) {
+                        let distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x)) +
+                                       ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
+                        if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+                            opacityValue = 1 - (distance / 20000);
+                            ctx.strokeStyle = `rgba(162, 155, 254, ${opacityValue})`;
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[a].x, particles[a].y);
+                            ctx.lineTo(particles[b].x, particles[b].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
             }
-        }
 
-        if (hasError) {
-            submitBtnText.style.display = 'inline-block';
-            spinner.style.display = 'none';
-            submitBtn.disabled = false;
-            return;
-        }
-        
-        const API_BASE_URL = '';
-        const endpoint = isSignUp ? `${API_BASE_URL}/signup` : `${API_BASE_URL}/login`;
-        const body = isSignUp ? { fullName, username, email, password } : { username, password };
-        
-        try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            const data = await response.json();
-
-            if (response.ok) {
-                window.location.href = data.isAdmin ? '/admin.html' : '/groweasy.html';
-            } else {
-                document.getElementById('form-error').textContent = data.error || 'An unexpected error occurred.';
-                document.getElementById('form-error').style.display = 'block';
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (const particle of particles) {
+                    particle.update();
+                    particle.draw();
+                }
+                connect();
+                animationFrameId = requestAnimationFrame(animate);
             }
-        } catch (err) {
-            console.error('Auth error:', err);
-            document.getElementById('form-error').textContent = 'Could not connect to the server. Please try again later.';
-            document.getElementById('form-error').style.display = 'block';
-        } finally {
-            submitBtnText.style.display = 'inline-block';
-            spinner.style.display = 'none';
-            submitBtn.disabled = false;
-        }
-    });
-
-    // --- NEW: Event Listeners for Forgot Password Flow ---
-    forgotPasswordLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        // Hide the main form and its related elements
-        authForm.style.display = 'none';
-        formToggleContainer.style.display = 'none';
-        socialLoginContainer.style.display = 'none';
-        socialButtons.style.display = 'none';
-
-        // Show the forgot password form
-        forgotPasswordForm.style.display = 'block';
-        formTitle.textContent = 'Reset Password';
-        formSubtitle.textContent = 'Enter your email to receive a password reset link.';
-    });
-
-    backToLoginLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        // Hide the forgot password form
-        forgotPasswordForm.style.display = 'none';
-        document.getElementById('forgot-message').textContent = '';
-
-        // Show the main form and its related elements
-        authForm.style.display = 'block';
-        formToggleContainer.style.display = 'flex';
-        socialLoginContainer.style.display = 'flex';
-        socialButtons.style.display = 'grid';
-
-        // Restore the title and subtitle to the login state
-        setFormState(false); 
-    });
-
-    forgotPasswordForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const emailInput = document.getElementById('forgot-email');
-        const messageEl = document.getElementById('forgot-message');
-        const email = emailInput.value;
-
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            messageEl.textContent = 'Please enter a valid email address.';
-            messageEl.className = 'error-message text-center';
-            messageEl.style.display = 'block';
-            return;
-        }
-        
-        // This endpoint will be created in server2.js
-        const API_ENDPOINT = '/forgot-password'; 
-
-        try {
-            const response = await fetch(API_ENDPOINT, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email })
-            });
-            const data = await response.json();
             
-            // Always show a generic success message to prevent email enumeration attacks
-            messageEl.textContent = data.message || 'If an account exists for this email, a reset link will be sent.';
-            messageEl.className = 'text-sm text-center text-green-400';
-            messageEl.style.display = 'block';
-            emailInput.value = '';
+            resizeCanvas();
+            animate();
+            window.addEventListener('resize', () => {
+                cancelAnimationFrame(animationFrameId);
+                resizeCanvas();
+                animate();
+            });
 
-        } catch (error) {
-            console.error("Forgot Password Error:", error);
-            messageEl.textContent = 'An error occurred. Please try again later.';
-            messageEl.className = 'error-message text-center';
-            messageEl.style.display = 'block';
-        }
-    });
+            // Benefits Carousel
+            const benefits = [
+                { icon: 'fa-graduation-cap', text: "Complete quests, master new skills, and earn crypto rewards. Your journey into web3 starts here." },
+                { icon: 'fa-users', text: "Our platform is built on community. Refer friends, build your network, and earn commissions as they succeed." },
+                { icon: 'fa-globe', text: "Connect with pioneering web3 founders, access exclusive affiliate programs, and get a head start on the future of decentralization." }
+            ];
+            let currentBenefit = 0;
+            const carouselContainer = document.getElementById('benefits-carousel');
+            
+            function showBenefit(index) {
+                const benefit = benefits[index];
+                const benefitHTML = `
+                    <div class="benefit-item absolute inset-0 flex items-center gap-4 animate-fade-in">
+                        <i class="fas ${benefit.icon} text-2xl lg:text-3xl text-secondary"></i>
+                        <p class="text-gray-300 text-sm lg:text-base">${benefit.text}</p>
+                    </div>
+                `;
+                carouselContainer.innerHTML = benefitHTML;
+            }
 
+            function nextBenefit() {
+                currentBenefit = (currentBenefit + 1) % benefits.length;
+                showBenefit(currentBenefit);
+            }
+            
+            showBenefit(currentBenefit);
+            setInterval(nextBenefit, 5000);
 
-    // --- "Coming Soon" Toast Logic ---
-    const googleBtn = document.getElementById('google-login-btn');
-    const twitterBtn = document.getElementById('twitter-login-btn');
-    const toast = document.getElementById('toast-notification');
-    let toastTimeout;
+            // Form Logic
+            const formToggle = document.getElementById('form-toggle');
+            const loginBtn = document.getElementById('login-toggle-btn');
+            const signupBtn = document.getElementById('signup-toggle-btn');
+            const formTitle = document.getElementById('form-title');
+            const formSubtitle = document.getElementById('form-subtitle');
+            const fullNameContainer = document.getElementById('fullName-container');
+            const emailContainer = document.getElementById('email-container');
+            const submitBtnText = document.getElementById('submit-btn-text');
+            const authForm = document.getElementById('auth-form');
+            let isSignUp = false;
+            
+            const forgotPasswordForm = document.getElementById('forgot-password-form');
+            const forgotPasswordLink = document.getElementById('forgot-password-link');
+            const backToLoginLink = document.getElementById('back-to-login-link');
+            const formToggleContainer = document.getElementById('form-toggle-container');
+            const socialLoginContainer = document.getElementById('social-login-container');
+            const socialButtons = document.getElementById('social-buttons');
 
-    const showToast = () => {
-        if (toastTimeout) clearTimeout(toastTimeout);
-        toast.classList.add('show');
-        toastTimeout = setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3000);
-    };
+            function setFormState(signUp) {
+                isSignUp = signUp;
+                formToggle.checked = isSignUp;
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.textContent = '';
+                    el.style.display = 'none';
+                });
+                
+                if (isSignUp) {
+                    loginBtn.classList.replace('text-white', 'text-gray-400');
+                    signupBtn.classList.replace('text-gray-400', 'text-white');
+                    formTitle.textContent = 'Join RewardRush Today';
+                    formSubtitle.textContent = 'Create your account to start earning rewards.';
+                    fullNameContainer.classList.add('active');
+                    emailContainer.classList.add('active');
+                    submitBtnText.textContent = 'Create Account';
+                    forgotPasswordLink.parentElement.style.display = 'none';
+                } else {
+                    loginBtn.classList.replace('text-gray-400', 'text-white');
+                    signupBtn.classList.replace('text-white', 'text-gray-400');
+                    formTitle.textContent = 'Welcome Back to RewardRush';
+                    formSubtitle.textContent = 'Log in to continue your journey.';
+                    fullNameContainer.classList.remove('active');
+                    emailContainer.classList.remove('active');
+                    submitBtnText.textContent = 'Log In';
+                    forgotPasswordLink.parentElement.style.display = 'block';
+                }
+            }
 
-    googleBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        showToast();
-    });
+            formToggle.addEventListener('change', () => setFormState(formToggle.checked));
+            loginBtn.addEventListener('click', () => setFormState(false));
+            signupBtn.addEventListener('click', () => setFormState(true));
+            setFormState(false);
 
-    twitterBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        showToast();
-    });
-    
-    // Add keyframes for carousel
-    const styleSheet = document.createElement("style");
-    styleSheet.type = "text/css";
-    styleSheet.innerText = `
-        @keyframes animate-fade-in {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in { animation: animate-fade-in 0.5s ease forwards; }
-    `;
-    document.head.appendChild(styleSheet);
-});
-</script>
+            const passwordInput = document.getElementById('password');
+            const passwordToggle = document.getElementById('password-toggle');
+            passwordToggle.addEventListener('click', () => {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                passwordToggle.querySelector('i').classList.toggle('fa-eye');
+                passwordToggle.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+
+            authForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const submitBtn = document.getElementById('submit-btn');
+                const spinner = document.getElementById('submit-spinner');
+                submitBtnText.style.display = 'none';
+                spinner.style.display = 'inline-block';
+                submitBtn.disabled = true;
+
+                document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+
+                const fullName = document.getElementById('fullName').value;
+                const username = document.getElementById('username').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                let hasError = false;
+                if (!username) {
+                    document.getElementById('username-error').textContent = 'Username is required.';
+                    document.getElementById('username-error').style.display = 'block';
+                    hasError = true;
+                }
+                if (!password) {
+                    document.getElementById('password-error').textContent = 'Password is required.';
+                    document.getElementById('password-error').style.display = 'block';
+                    hasError = true;
+                } else if (password.length < 6) {
+                    document.getElementById('password-error').textContent = 'Password must be at least 6 characters.';
+                    document.getElementById('password-error').style.display = 'block';
+                    hasError = true;
+                }
+                
+                if (isSignUp) {
+                    if (!fullName) {
+                        document.getElementById('fullName-error').textContent = 'Full name is required.';
+                        document.getElementById('fullName-error').style.display = 'block';
+                        hasError = true;
+                    }
+                    if (!email) {
+                        document.getElementById('email-error').textContent = 'Email is required.';
+                        document.getElementById('email-error').style.display = 'block';
+                        hasError = true;
+                    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                        document.getElementById('email-error').textContent = 'Please enter a valid email.';
+                        document.getElementById('email-error').style.display = 'block';
+                        hasError = true;
+                    }
+                }
+
+                if (hasError) {
+                    submitBtnText.style.display = 'inline-block';
+                    spinner.style.display = 'none';
+                    submitBtn.disabled = false;
+                    return;
+                }
+                
+                const API_BASE_URL = '';
+                const endpoint = isSignUp ? `${API_BASE_URL}/signup` : `${API_BASE_URL}/login`;
+                const body = isSignUp ? { fullName, username, email, password } : { username, password };
+                
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        window.location.href = data.isAdmin ? '/admin.html' : '/groweasy.html';
+                    } else {
+                        document.getElementById('form-error').textContent = data.error || 'An unexpected error occurred.';
+                        document.getElementById('form-error').style.display = 'block';
+                    }
+                } catch (err) {
+                    console.error('Auth error:', err);
+                    document.getElementById('form-error').textContent = 'Could not connect to the server. Please try again later.';
+                    document.getElementById('form-error').style.display = 'block';
+                } finally {
+                    submitBtnText.style.display = 'inline-block';
+                    spinner.style.display = 'none';
+                    submitBtn.disabled = false;
+                }
+            });
+
+            forgotPasswordLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                authForm.style.display = 'none';
+                formToggleContainer.style.display = 'none';
+                socialLoginContainer.style.display = 'none';
+                socialButtons.style.display = 'none';
+                forgotPasswordForm.style.display = 'block';
+                formTitle.textContent = 'Reset Password';
+                formSubtitle.textContent = 'Enter your email to receive a password reset link.';
+            });
+
+            backToLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                forgotPasswordForm.style.display = 'none';
+                document.getElementById('forgot-message').textContent = '';
+                authForm.style.display = 'block';
+                formToggleContainer.style.display = 'flex';
+                socialLoginContainer.style.display = 'flex';
+                socialButtons.style.display = 'grid';
+                setFormState(false);
+            });
+
+            forgotPasswordForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const emailInput = document.getElementById('forgot-email');
+                const messageEl = document.getElementById('forgot-message');
+                const email = emailInput.value;
+
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    messageEl.textContent = 'Please enter a valid email address.';
+                    messageEl.className = 'error-message text-center';
+                    messageEl.style.display = 'block';
+                    return;
+                }
+                
+                const API_ENDPOINT = '/forgot-password';
+                try {
+                    const response = await fetch(API_ENDPOINT, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    });
+                    const data = await response.json();
+                    messageEl.textContent = data.message || 'If an account exists for this email, a reset link will be sent.';
+                    messageEl.className = 'text-sm text-center text-green-400';
+                    messageEl.style.display = 'block';
+                    emailInput.value = '';
+                } catch (error) {
+                    console.error("Forgot Password Error:", error);
+                    messageEl.textContent = 'An error occurred. Please try again later.';
+                    messageEl.className = 'error-message text-center';
+                    messageEl.style.display = 'block';
+                }
+            });
+
+            const googleBtn = document.getElementById('google-login-btn');
+            const twitterBtn = document.getElementById('twitter-login-btn');
+            const toast = document.getElementById('toast-notification');
+            let toastTimeout;
+
+            const showToast = () => {
+                if (toastTimeout) clearTimeout(toastTimeout);
+                toast.classList.add('show');
+                toastTimeout = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            };
+
+            googleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                showToast();
+            });
+
+            twitterBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                showToast();
+            });
+            
+            const styleSheet = document.createElement("style");
+            styleSheet.type = "text/css";
+            styleSheet.innerText = `
+                @keyframes animate-fade-in {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fade-in { animation: animate-fade-in 0.5s ease forwards; }
+            `;
+            document.head.appendChild(styleSheet);
+        });
+    </script>
 </body>
 </html>
-const API_BASE_URL
