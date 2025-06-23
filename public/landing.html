@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RewardRush - Beyond the Grind</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.js"></script>
+    
+    <style>
+        /* Custom styles to apply the Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Custom gradient for hero section and other elements */
+        .gradient-bg {
+            background-image: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(to right, #3b82f6, #14b8a6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Animation for feature cards on hover */
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Simple animation for hero CTA */
+        .cta-pulse:hover {
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased">
+
+    <!-- Navigation Bar -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold gradient-text">
+                RewardRush
+            </div>
+            <div class="hidden lg:flex items-center space-x-8 font-medium">
+                <a href="#quests" class="text-gray-600 hover:text-blue-500 transition-colors">Quests</a>
+                <a href="#gigs" class="text-gray-600 hover:text-blue-500 transition-colors">Gigs</a>
+                <a href="#learn" class="text-gray-600 hover:text-blue-500 transition-colors">Learn</a>
+                <a href="#build" class="text-gray-600 hover:text-blue-500 transition-colors">Build</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="#" class="text-gray-600 hover:text-blue-500 font-medium hidden sm:block">Log In</a>
+                <a href="#" class="bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-md hover:bg-blue-600 transition-all cta-pulse">
+                    Get Started
+                </a>
+            </div>
+             <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="lg:hidden text-gray-700 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden lg:hidden px-6 pb-4">
+             <a href="#quests" class="block py-2 text-gray-600 hover:text-blue-500 transition-colors">Quests</a>
+             <a href="#gigs" class="block py-2 text-gray-600 hover:text-blue-500 transition-colors">Gigs</a>
+             <a href="#learn" class="block py-2 text-gray-600 hover:text-blue-500 transition-colors">Learn</a>
+             <a href="#build" class="block py-2 text-gray-600 hover:text-blue-500 transition-colors">Build</a>
+             <a href="#" class="block pt-4 text-gray-600 font-medium">Log In</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="relative py-20 md:py-32">
+             <div class="absolute inset-0 gradient-bg opacity-20"></div>
+            <div class="container mx-auto px-6 text-center relative">
+                <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight">
+                    Stop Chasing Tasks. Start <span class="gradient-text">Living Your Results.</span>
+                </h1>
+                <p class="mt-6 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+                    RewardRush is where your passion meets purpose. Earn, learn, build, and connect on a platform that values your results, not your resume.
+                </p>
+                <div class="mt-10 flex justify-center items-center flex-wrap gap-4">
+                    <a href="#" class="bg-blue-500 text-white font-bold text-lg px-8 py-4 rounded-xl shadow-lg hover:bg-blue-600 transition-all cta-pulse">
+                        Unlock Your Potential
+                    </a>
+                    <a href="#learn" class="bg-white text-blue-500 font-bold text-lg px-8 py-4 rounded-xl shadow-lg hover:bg-gray-100 transition-all border border-gray-200">
+                        See How It Works
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section (The Four Pillars) -->
+        <section id="features" class="py-24 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900">One Platform, Endless Paths to Success</h2>
+                    <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">Whether you're here to play, work, learn, or build, your journey starts now.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <!-- Quest Card -->
+                    <div id="quests" class="feature-card bg-gray-50 p-8 rounded-2xl shadow-sm transition-all duration-300">
+                        <div class="bg-teal-100 text-teal-600 rounded-full w-14 h-14 flex items-center justify-center mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/><path d="m12 20 4-4"/></svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">Engage & Earn</h3>
+                        <p class="text-gray-600">Connect with the brands you love through fun quests. Share your voice, influence their future, and get rewarded for your passion.</p>
+                    </div>
+
+                    <!-- Affiliate/Gigs Card -->
+                    <div id="gigs" class="feature-card bg-gray-50 p-8 rounded-2xl shadow-sm transition-all duration-300">
+                        <div class="bg-blue-100 text-blue-600 rounded-full w-14 h-14 flex items-center justify-center mb-6">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">Deliver & Dominate</h3>
+                        <p class="text-gray-600">Forget interviews. Find flexible gigs where your skill is the only thing that matters. Deliver results, build your portfolio, and get paid.</p>
+                    </div>
+                    
+                    <!-- Education Card -->
+                    <div id="learn" class="feature-card bg-gray-50 p-8 rounded-2xl shadow-sm transition-all duration-300">
+                        <div class="bg-purple-100 text-purple-600 rounded-full w-14 h-14 flex items-center justify-center mb-6">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">Learn from Legends</h3>
+                        <p class="text-gray-600">Go from novice to pro with courses taught by industry experts. Gain real-world skills you can apply immediately. Monetize your own expertise.</p>
+                    </div>
+                    
+                    <!-- Founder Card -->
+                    <div id="build" class="feature-card bg-gray-50 p-8 rounded-2xl shadow-sm transition-all duration-300">
+                        <div class="bg-yellow-100 text-yellow-600 rounded-full w-14 h-14 flex items-center justify-center mb-6">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.042 21.672L13.684 16.6s.402-3.128 3.232-4.416c2.827-1.284 5.46-1.92 6.401-2.016.944-.096 1.44-.24 1.44-.24l-2.016 3.024-2.112 3.168-3.6 2.544z"/><path d="M3 21h12"/><path d="M3 3v18h12"/><path d="M15 3a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V3zM9 12v4M6 12v4M12 12v4"/></svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">Build Your Vision</h3>
+                        <p class="text-gray-600">Your startup journey, simplified. Access everything you need—from partners to playbooks—to launch, manage, and scale your brand.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- For Brands Section -->
+        <section class="py-24 bg-gray-50">
+            <div class="container mx-auto px-6">
+                <div class="flex flex-col lg:flex-row items-center gap-12">
+                    <div class="lg:w-1/2">
+                        <img src="https://placehold.co/600x400/818cf8/ffffff?text=For+Brands" alt="Team collaborating" class="rounded-2xl shadow-2xl w-full">
+                    </div>
+                    <div class="lg:w-1/2">
+                         <span class="text-blue-500 font-semibold">POWERING GROWTH</span>
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-2">Tap into a World of Talent</h2>
+                        <p class="mt-4 text-lg text-gray-600">Stop spending on recruitment cycles that don't deliver. With RewardRush, you only pay for delivered results. Post tasks, find skilled professionals, and get work done efficiently. It's the future of agile workforce management.</p>
+                        <ul class="mt-6 space-y-4">
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-teal-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span><strong class="text-gray-800">Pay for Performance:</strong> Eliminate risk and ensure you get the quality you need.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-teal-500 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span><strong class="text-gray-800">Engage Authentically:</strong> Use Quests to build genuine connections and gather priceless feedback from your community.</span>
+                            </li>
+                        </ul>
+                         <a href="#" class="inline-block mt-8 bg-indigo-500 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-indigo-600 transition-all">
+                            Post a Gig
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section class="py-24 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900">From the Community</h2>
+                    <p class="mt-4 text-lg text-gray-600">See what our users are achieving.</p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Testimonial 1 -->
+                    <div class="bg-gray-50 p-8 rounded-2xl shadow-sm">
+                        <p class="text-gray-700 text-lg italic">"RewardRush completely changed how I approach side hustles. I'm using skills I love and getting paid for my actual work, not for how well I write a cover letter. It’s liberating."</p>
+                        <div class="flex items-center mt-6">
+                            <img src="https://placehold.co/48x48/d1d5db/374151?text=A" alt="User" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <p class="font-bold text-gray-900">Aisha Bello</p>
+                                <p class="text-gray-600">Graphic Designer</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Testimonial 2 -->
+                    <div class="bg-gray-50 p-8 rounded-2xl shadow-sm">
+                        <p class="text-gray-700 text-lg italic">"The education section is a goldmine. I learned more about product management in a 3-week course here than in a year of reading blogs. The expert was legit, and the content was pure value."</p>
+                        <div class="flex items-center mt-6">
+                            <img src="https://placehold.co/48x48/d1d5db/374151?text=C" alt="User" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <p class="font-bold text-gray-900">Chike Okafor</p>
+                                <p class="text-gray-600">Aspiring PM</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Testimonial 3 -->
+                    <div class="bg-gray-50 p-8 rounded-2xl shadow-sm">
+                        <p class="text-gray-700 text-lg italic">"As a founder, the 'Build' section was my launchpad. Finding a co-founder with complementary skills felt impossible before RewardRush. We connected here and are now scaling our vision."</p>
+                        <div class="flex items-center mt-6">
+                            <img src="https://placehold.co/48x48/d1d5db/374151?text=F" alt="User" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <p class="font-bold text-gray-900">Fatima Diallo</p>
+                                <p class="text-gray-600">Startup Founder</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA Section -->
+        <section class="gradient-bg">
+            <div class="container mx-auto px-6 py-20 text-center">
+                 <h2 class="text-3xl md:text-4xl font-bold text-white">Your Future is a Result, Not a Plan</h2>
+                 <p class="mt-4 text-lg text-white/90 max-w-2xl mx-auto">Join a community that celebrates action and rewards achievement. Your next big step is just a click away.</p>
+                 <a href="#" class="mt-8 inline-block bg-white text-blue-500 font-bold text-lg px-8 py-4 rounded-xl shadow-lg hover:bg-gray-100 transition-all cta-pulse">
+                    Sign Up Free
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+                <div class="col-span-full lg:col-span-1 mb-8 lg:mb-0">
+                    <h3 class="text-2xl font-bold">RewardRush</h3>
+                    <p class="mt-2 text-gray-400">Redefining work, learning, and growth.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-200">Platform</h4>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#quests" class="text-gray-400 hover:text-white">Quests</a></li>
+                        <li><a href="#gigs" class="text-gray-400 hover:text-white">Gigs</a></li>
+                        <li><a href="#learn" class="text-gray-400 hover:text-white">Learn</a></li>
+                        <li><a href="#build" class="text-gray-400 hover:text-white">Build</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-200">Company</h4>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">For Brands</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-200">Support</h4>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Help Center</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Terms of Service</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                 <div>
+                    <h4 class="font-semibold text-gray-200">Connect</h4>
+                    <ul class="mt-4 space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Twitter</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">LinkedIn</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-12 border-t border-gray-700 pt-8 text-center text-gray-400">
+                &copy; 2024 RewardRush. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Simple script for mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>
