@@ -5,18 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RewardRush - Beyond the Grind</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts: Orbitron (for headers) and Roboto (for body) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     
-    <!-- Three.js for Particle Animation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.js"></script>
     
     <style>
@@ -119,12 +115,10 @@
 </head>
 <body class="bg-dark-bg text-gray-200 antialiased">
 
-    <!-- 3D Particle Background -->
     <canvas id="bg-canvas"></canvas>
 
-    <!-- Navigation Bar -->
     <header class="glass-nav sticky top-0 z-50">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
             <div class="text-2xl md:text-3xl font-bold font-orbitron">
                 <a href="#" class="gradient-text">RewardRush</a>
             </div>
@@ -140,12 +134,10 @@
                     Get Started
                 </a>
             </div>
-            <!-- Mobile Menu Button -->
             <button id="mobile-menu-button" class="lg:hidden text-gray-300 focus:outline-none">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
             </button>
         </nav>
-        <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden lg:hidden px-6 pb-4 font-orbitron text-sm">
              <a href="#quests" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow transition-colors">Quests</a>
              <a href="#gigs" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow transition-colors">Gigs</a>
@@ -159,8 +151,7 @@
     </header>
 
     <main class="relative z-10">
-        <!-- Hero Section -->
-        <section class="relative min-h-screen flex items-center justify-center text-center overflow-hidden py-20 px-4">
+        <section class="relative min-h-screen flex items-center justify-center text-center overflow-hidden py-16 px-4">
             <div class="container mx-auto">
                 <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-100 leading-tight font-orbitron reveal">
                     Stop Chasing Tasks. Start <span class="gradient-text">Living Your Results.</span>
@@ -168,7 +159,7 @@
                 <p class="mt-6 text-base sm:text-lg md:text-xl text-gray-400 max-w-3xl mx-auto font-roboto reveal" style="transition-delay: 200ms;">
                     RewardRush is where your passion meets purpose. Earn, learn, build, and connect on a platform that values your results, not your resume.
                 </p>
-                <div class="mt-10 sm:mt-12 flex justify-center items-center flex-col sm:flex-row gap-6 reveal" style="transition-delay: 400ms;">
+                <div class="mt-10 flex justify-center items-center flex-col sm:flex-row gap-6 reveal" style="transition-delay: 400ms;">
                     <a href="#" class="w-full sm:w-auto neon-button text-white font-bold text-base sm:text-lg px-8 py-4 rounded-lg shadow-lg transition-all">
                         Unlock Your Potential
                     </a>
@@ -179,46 +170,41 @@
             </div>
         </section>
 
-        <!-- Features Section (The Four Pillars) -->
-        <section id="features" class="py-20 md:py-24">
+        <section id="features" class="py-16 md:py-20">
             <div class="container mx-auto px-6">
-                <div class="text-center mb-12 md:mb-16 reveal">
+                <div class="text-center mb-10 md:mb-12 reveal">
                     <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-100">One Platform, Endless Paths to Success</h2>
                     <p class="mt-4 text-base md:text-lg text-gray-400 max-w-2xl mx-auto font-roboto">Whether you're here to play, work, learn, or build, your journey starts now.</p>
                 </div>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-                    <!-- Quest Card -->
-                    <div id="quests" class="feature-card p-6 md:p-8 rounded-2xl reveal">
-                        <div class="mb-4 md:mb-6">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow md:w-12 md:h-12"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/><path d="M12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                    <div id="quests" class="feature-card p-6 rounded-2xl reveal">
+                        <div class="mb-4">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/><path d="M12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
                         </div>
                         <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-3">Engage & Earn</h3>
                         <p class="text-sm md:text-base text-gray-400 font-roboto">Connect with the brands you love through fun quests. Share your voice, influence their future, and get rewarded for your passion.</p>
                     </div>
 
-                    <!-- Gigs Card -->
-                    <div id="gigs" class="feature-card p-6 md:p-8 rounded-2xl reveal" style="transition-delay: 200ms;">
-                         <div class="mb-4 md:mb-6">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow md:w-12 md:h-12"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    <div id="gigs" class="feature-card p-6 rounded-2xl reveal" style="transition-delay: 200ms;">
+                         <div class="mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                         </div>
                         <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-3">Deliver & Dominate</h3>
                         <p class="text-sm md:text-base text-gray-400 font-roboto">Forget interviews. Find flexible gigs where your skill is the only thing that matters. Deliver results, build your portfolio, and get paid.</p>
                     </div>
                     
-                    <!-- Education Card -->
-                    <div id="learn" class="feature-card p-6 md:p-8 rounded-2xl reveal" style="transition-delay: 400ms;">
-                        <div class="mb-4 md:mb-6">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow md:w-12 md:h-12"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><circle cx="12" cy="12" r="3"/><path d="M12 12h.01"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m4.93 19.07 1.41-1.41"/><path d="m17.66 6.34 1.41-1.41"/></svg>
+                    <div id="learn" class="feature-card p-6 rounded-2xl reveal" style="transition-delay: 400ms;">
+                        <div class="mb-4">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><circle cx="12" cy="12" r="3"/><path d="M12 12h.01"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m4.93 19.07 1.41-1.41"/><path d="m17.66 6.34 1.41-1.41"/></svg>
                         </div>
                         <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-3">Learn from Legends</h3>
                         <p class="text-sm md:text-base text-gray-400 font-roboto">Go from novice to pro with courses taught by industry experts. Gain real-world skills you can apply immediately. Monetize your own expertise.</p>
                     </div>
                     
-                    <!-- Founder Card -->
-                    <div id="build" class="feature-card p-6 md:p-8 rounded-2xl reveal" style="transition-delay: 600ms;">
-                        <div class="mb-4 md:mb-6">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow md:w-12 md:h-12"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    <div id="build" class="feature-card p-6 rounded-2xl reveal" style="transition-delay: 600ms;">
+                        <div class="mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                         </div>
                         <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-3">Build Your Vision</h3>
                         <p class="text-sm md:text-base text-gray-400 font-roboto">Your startup journey, simplified. Access everything you need—from partners to playbooks—to launch, manage, and scale your brand.</p>
@@ -227,13 +213,11 @@
             </div>
         </section>
 
-        <!-- For Brands Section -->
-        <section class="py-20 md:py-24">
+        <section class="py-16 md:py-20">
             <div class="container mx-auto px-6">
-                <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-24 reveal">
+                <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-16 reveal">
                     <div class="lg:w-1/2 w-full">
                         <div class="bg-mid-bg p-2 rounded-2xl shadow-2xl border border-primary-glow/20">
-                            <!-- Placeholder for a dynamic visualization -->
                             <div class="aspect-w-16 aspect-h-9 bg-dark-bg rounded-lg flex items-center justify-center min-h-[200px] sm:min-h-[300px]">
                                <p class="text-primary-glow font-orbitron text-center text-sm sm:text-base">AI TALENT CORE [VISUALIZATION]</p>
                             </div>
@@ -261,47 +245,43 @@
             </div>
         </section>
 
-        <!-- Testimonials Section -->
-        <section class="py-20 md:py-24">
+        <section class="py-16 md:py-20">
             <div class="container mx-auto px-6">
-                <div class="text-center mb-12 md:mb-16 reveal">
+                <div class="text-center mb-10 md:mb-12 reveal">
                     <h2 class="text-3xl md:text-5xl font-bold text-gray-100">From the Community</h2>
                     <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">See what our users are achieving.</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <!-- Testimonial 1 -->
-                    <div class="feature-card p-6 md:p-8 rounded-2xl reveal">
+                    <div class="feature-card p-6 rounded-2xl reveal">
                         <div class="absolute top-4 right-4 bg-primary-glow/10 text-primary-glow text-xs font-bold px-3 py-1 rounded-full border border-primary-glow/30">Result-Verified</div>
-                        <p class="text-gray-300 text-base md:text-lg italic font-roboto">"RewardRush completely changed how I approach side hustles. I'm using skills I love and getting paid for my actual work, not for how well I write a cover letter. It’s liberating."</p>
+                        <p class="text-gray-300 text-base italic font-roboto">"RewardRush completely changed how I approach side hustles. I'm using skills I love and getting paid for my actual work, not for how well I write a cover letter. It’s liberating."</p>
                         <div class="flex items-center mt-6">
-                            <img src="https://placehold.co/48x48/1a1a2e/39ff14?text=A" alt="User" class="w-10 h-10 md:w-12 md:h-12 rounded-full mr-4 border-2 border-primary-glow/50">
+                            <img src="https://placehold.co/48x48/1a1a2e/39ff14?text=A" alt="User" class="w-12 h-12 rounded-full mr-4 border-2 border-primary-glow/50">
                             <div>
-                                <p class="font-bold text-gray-100 font-orbitron text-sm md:text-base">Aisha Bello</p>
-                                <p class="text-gray-400 font-roboto text-xs md:text-sm">Graphic Designer</p>
+                                <p class="font-bold text-gray-100 font-orbitron text-sm">Aisha Bello</p>
+                                <p class="text-gray-400 font-roboto text-xs">Graphic Designer</p>
                             </div>
                         </div>
                     </div>
-                    <!-- Testimonial 2 -->
-                    <div class="feature-card p-6 md:p-8 rounded-2xl reveal" style="transition-delay: 200ms;">
+                    <div class="feature-card p-6 rounded-2xl reveal" style="transition-delay: 200ms;">
                         <div class="absolute top-4 right-4 bg-primary-glow/10 text-primary-glow text-xs font-bold px-3 py-1 rounded-full border border-primary-glow/30">Result-Verified</div>
-                        <p class="text-gray-300 text-base md:text-lg italic font-roboto">"The education section is a goldmine. I learned more about product management in a 3-week course here than in a year of reading blogs. The expert was legit, and the content was pure value."</p>
+                        <p class="text-gray-300 text-base italic font-roboto">"The education section is a goldmine. I learned more about product management in a 3-week course here than in a year of reading blogs. The expert was legit, and the content was pure value."</p>
                         <div class="flex items-center mt-6">
-                            <img src="https://placehold.co/48x48/1a1a2e/39ff14?text=C" alt="User" class="w-10 h-10 md:w-12 md:h-12 rounded-full mr-4 border-2 border-primary-glow/50">
+                            <img src="https://placehold.co/48x48/1a1a2e/39ff14?text=C" alt="User" class="w-12 h-12 rounded-full mr-4 border-2 border-primary-glow/50">
                             <div>
-                                <p class="font-bold text-gray-100 font-orbitron text-sm md:text-base">Chike Okafor</p>
-                                <p class="text-gray-400 font-roboto text-xs md:text-sm">Aspiring PM</p>
+                                <p class="font-bold text-gray-100 font-orbitron text-sm">Chike Okafor</p>
+                                <p class="text-gray-400 font-roboto text-xs">Aspiring PM</p>
                             </div>
                         </div>
                     </div>
-                    <!-- Testimonial 3 -->
-                    <div class="feature-card p-6 md:p-8 rounded-2xl reveal" style="transition-delay: 400ms;">
+                    <div class="feature-card p-6 rounded-2xl reveal" style="transition-delay: 400ms;">
                         <div class="absolute top-4 right-4 bg-primary-glow/10 text-primary-glow text-xs font-bold px-3 py-1 rounded-full border border-primary-glow/30">Result-Verified</div>
-                        <p class="text-gray-300 text-base md:text-lg italic font-roboto">"As a founder, the 'Build' section was my launchpad. Finding a co-founder with complementary skills felt impossible before RewardRush. We connected here and are now scaling our vision."</p>
+                        <p class="text-gray-300 text-base italic font-roboto">"As a founder, the 'Build' section was my launchpad. Finding a co-founder with complementary skills felt impossible before RewardRush. We connected here and are now scaling our vision."</p>
                         <div class="flex items-center mt-6">
-                            <img src="https://placehold.co/48x48/1a1a2e/39ff14?text=F" alt="User" class="w-10 h-10 md:w-12 md:h-12 rounded-full mr-4 border-2 border-primary-glow/50">
+                            <img src="https://placehold.co/48x48/1a1a2e/39ff14?text=F" alt="User" class="w-12 h-12 rounded-full mr-4 border-2 border-primary-glow/50">
                             <div>
-                                <p class="font-bold text-gray-100 font-orbitron text-sm md:text-base">Fatima Diallo</p>
-                                <p class="text-gray-400 font-roboto text-xs md:text-sm">Startup Founder</p>
+                                <p class="font-bold text-gray-100 font-orbitron text-sm">Fatima Diallo</p>
+                                <p class="text-gray-400 font-roboto text-xs">Startup Founder</p>
                             </div>
                         </div>
                     </div>
@@ -309,8 +289,7 @@
             </div>
         </section>
 
-        <!-- Final CTA Section -->
-        <section class="py-20 md:py-24">
+        <section class="py-16 md:py-20">
             <div class="container mx-auto px-6 text-center reveal">
                  <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-100">Your Future is a <span class="gradient-text">Result</span>, Not a Plan</h2>
                  <p class="mt-4 text-base md:text-lg text-gray-400 max-w-2xl mx-auto font-roboto">Join a community that celebrates action and rewards achievement. Your next big step is just a click away.</p>
@@ -321,11 +300,10 @@
         </section>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-dark-bg border-t border-primary-glow/20 mt-20">
-        <div class="container mx-auto px-6 py-12">
+    <footer class="bg-dark-bg border-t border-primary-glow/20 mt-16">
+        <div class="container mx-auto px-6 py-10">
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
-                <div class="col-span-full md:col-span-1 mb-8 md:mb-0">
+                <div class="col-span-full md:col-span-1 mb-6 md:mb-0">
                     <h3 class="text-2xl font-bold font-orbitron gradient-text">RewardRush</h3>
                     <p class="mt-2 text-gray-500 font-roboto text-sm">Redefining work, learning, and growth.</p>
                 </div>
@@ -364,7 +342,7 @@
                     </ul>
                 </div>
             </div>
-            <div class="mt-12 border-t border-primary-glow/20 pt-8 text-center text-gray-500 font-roboto text-sm">
+            <div class="mt-10 border-t border-primary-glow/20 pt-6 text-center text-gray-500 font-roboto text-sm">
                 &copy; 2024 RewardRush. All rights reserved.
             </div>
         </div>
