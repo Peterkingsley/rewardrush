@@ -46,7 +46,6 @@
             position: relative;
         }
 
-        /* Animated background elements */
         .bg-particle {
             position: fixed;
             border-radius: 50%;
@@ -56,7 +55,6 @@
             animation: float 15s infinite ease-in-out;
         }
 
-        /* Navigation */
         nav {
             background: rgba(30, 39, 46, 0.9);
             backdrop-filter: blur(10px);
@@ -166,7 +164,6 @@
             padding: 2rem;
         }
         
-        /* Dashboard Header */
         .dashboard-header {
             display: flex;
             justify-content: space-between;
@@ -184,7 +181,6 @@
             letter-spacing: 1px;
         }
 
-        /* Balance Toggle */
         .balance-toggle {
             display: flex;
             align-items: center;
@@ -198,7 +194,6 @@
             font-size: 1.2rem;
         }
         
-        /* Dashboard Cards - Sliding Carousel */
         .dashboard-carousel {
             position: relative;
             width: 100%;
@@ -228,7 +223,7 @@
             position: relative;
             overflow: hidden;
             min-width: 280px;
-            flex: 0 0 calc(25% - 1.125rem); /* 4 cards visible at once with gap */
+            flex: 0 0 calc(25% - 1.125rem);
         }
         
         .dashboard-card::before {
@@ -309,7 +304,6 @@
             transform: translateY(-2px);
         }
 
-        /* Carousel Navigation */
         .carousel-nav {
             display: flex;
             justify-content: center;
@@ -331,7 +325,6 @@
             transform: scale(1.2);
         }
         
-        /* Quest List */
         .section-title {
             font-size: 1.5rem;
             margin: 2rem 0 1.5rem;
@@ -354,7 +347,6 @@
             color: var(--primary);
         }
 
-        /* Filter & Sort Controls */
         .quest-controls {
             display: flex;
             flex-wrap: wrap;
@@ -575,7 +567,6 @@
             transform: translateY(-2px);
         }
         
-        /* Pagination */
         .pagination {
             display: flex;
             justify-content: center;
@@ -617,7 +608,6 @@
             cursor: not-allowed;
         }
 
-        /* Empty State */
         .empty-state {
             display: none; 
             flex-direction: column;
@@ -643,7 +633,6 @@
             margin-bottom: 0.5rem;
         }
         
-        /* Skeleton Loader */
         .skeleton-card {
             background-color: rgba(45, 52, 54, 0.7);
             padding: 1.5rem;
@@ -672,7 +661,6 @@
             50% { opacity: 0.5; }
         }
 
-        /* History Table */
         .history-table {
             width: 100%;
             border-collapse: collapse;
@@ -718,7 +706,6 @@
             color: var(--success);
         }
         
-        /* Modal Styles */
         .modal { 
             display: none; 
             position: fixed; 
@@ -803,7 +790,6 @@
             transform: translateY(-2px); 
         }
         
-        /* --- START: REDESIGNED QUIZ MODAL STYLES --- */
         #quiz-modal .modal-content {
             max-width: 700px;
             padding: 0;
@@ -1053,7 +1039,6 @@
             background: var(--secondary-light);
         }
 
-        /* Quiz completion animation */
         @keyframes confetti {
             0% { transform: translateY(0) rotate(0deg); opacity: 1; }
             100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
@@ -1068,9 +1053,6 @@
             animation: confetti 3s ease-out forwards;
         }
 
-        /* --- END: REDESIGNED QUIZ MODAL STYLES --- */
-
-        /* Loading Animation */
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -1206,22 +1188,20 @@
             box-shadow: 0 5px 15px rgba(0, 206, 201, 0.3);
         }
         
-        /* Responsive Adjustments */
         @media (max-width: 1200px) {
             .dashboard-card {
-                flex: 0 0 calc(33.333% - 1rem); /* 3 cards */
+                flex: 0 0 calc(33.333% - 1rem);
             }
         }
 
         @media (max-width: 900px) {
             .dashboard-card {
-                flex: 0 0 calc(50% - 0.75rem); /* 2 cards */
+                flex: 0 0 calc(50% - 0.75rem);
             }
         }
 
         @media (max-width: 768px) {
             .container { padding: 1.5rem; }
-            .dashboard-grid { grid-template-columns: 1fr; }
             .quest-list { grid-template-columns: 1fr; }
             .quest-controls { flex-direction: column; }
             .nav-menu { position: fixed; top: 0; right: -100%; width: 280px; height: 100vh; background: var(--darker); flex-direction: column; padding: 2rem; gap: 1.5rem; transition: right 0.3s ease; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.2); }
@@ -1260,11 +1240,10 @@
 
         @media (max-width: 600px) {
             .dashboard-card {
-                flex: 0 0 100%; /* 1 card */
+                flex: 0 0 100%;
             }
         }
         
-        /* Animations */
         @keyframes fadeIn { 
             from { opacity: 0; transform: translateY(10px); } 
             to { opacity: 1; transform: translateY(0); } 
@@ -1274,16 +1253,6 @@
             0% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(-100%); }
-            to { transform: translateX(0); }
-        }
-
-        @keyframes slideOut {
-            from { transform: translateX(0); }
-            to { transform: translateX(100%); }
         }
         
         .animate-in { animation: fadeIn 0.5s ease forwards; }
@@ -1297,10 +1266,8 @@
     </style>
 </head>
 <body>
-    <!-- Background particles -->
     <div id="bg-particles"></div>
 
-    <!-- Loading overlay -->
     <div class="loading-overlay" id="loading-overlay">
         <div class="loading-spinner"></div>
         <div class="loading-text">Loading Quest...</div>
@@ -1332,13 +1299,8 @@
     <div class="container">
         <div class="dashboard-header">
             <h2>Dashboard Overview</h2>
-            <div class="balance-toggle" onclick="toggleBalanceVisibility()">
-                <i class="fas fa-eye-slash" id="balance-toggle-icon"></i>
-                <span>Hide Balance</span>
-            </div>
         </div>
         
-        <!-- Dashboard Cards Carousel -->
         <div class="dashboard-carousel">
             <div class="dashboard-track" id="dashboard-track">
                 <div class="dashboard-card animate-in">
@@ -1368,12 +1330,6 @@
                     <p class="description">Your current daily login streak</p>
                     <button class="card-btn"><i class="fas fa-calendar-alt"></i> View Calendar</button>
                 </div>
-            </div>
-            <div class="carousel-nav" id="carousel-nav">
-                <div class="carousel-dot active" data-index="0"></div>
-                <div class="carousel-dot" data-index="1"></div>
-                <div class="carousel-dot" data-index="2"></div>
-                <div class="carousel-dot" data-index="3"></div>
             </div>
         </div>
         
@@ -1409,7 +1365,6 @@
         </div>
         
         <div class="quest-list" id="quest-list">
-            <!-- Skeletons will be shown here initially -->
         </div>
 
         <div class="empty-state" id="empty-state">
@@ -1419,7 +1374,6 @@
         </div>
 
         <div class="pagination" id="pagination-container">
-            <!-- Pagination buttons will be generated here -->
         </div>
         
         <h2 class="section-title" id="history-section">
@@ -1437,12 +1391,10 @@
                 </tr>
             </thead>
             <tbody id="history-table-body">
-                <!-- History rows will be generated here -->
             </tbody>
         </table>
     </div>
     
-    <!-- Modals -->
     <div class="modal" id="quiz-modal">
         <div class="modal-content">
             <div id="quiz-header">
@@ -1544,29 +1496,21 @@
     <script>
         // --- Global State Variables ---
         let userId = null;
-        let allQuests = []; // Use one consistent variable for the master list of quests
+        let allQuests = [];
         let completedQuests = [];
         let completedQuestIdSet = new Set();
         let balanceVisible = true;
         
-        // --- State for Filtering, Sorting, and Pagination ---
         let currentPage = 1;
         const questsPerPage = 6;
 
-        // --- Quiz State ---
         let currentQuestId = null;
         let currentQuestionIndex = 0;
         let questions = [];
         let answers = {};
         let timerInterval;
-        let timeLeft = 150; // 2.5 minutes in seconds
+        let timeLeft = 150;
 
-        // --- Carousel State ---
-        let currentSlide = 0;
-        const slideCount = 4; // Number of dashboard cards
-        let isTransitioning = false;
-
-        // --- Skeleton Loader ---
         function showSkeletons() {
             const list = document.getElementById('quest-list');
             list.innerHTML = '';
@@ -1586,7 +1530,6 @@
             }
         }
 
-        // --- Background Animation ---
         function createBackgroundParticles() {
             const container = document.getElementById('bg-particles');
             const particleCount = Math.floor(window.innerWidth / 20);
@@ -1595,7 +1538,6 @@
                 const particle = document.createElement('div');
                 particle.classList.add('bg-particle');
                 
-                // Random properties
                 const size = Math.random() * 5 + 1;
                 const posX = Math.random() * window.innerWidth;
                 const posY = Math.random() * window.innerHeight;
@@ -1615,84 +1557,6 @@
             }
         }
 
-        // --- Carousel Functions ---
-        function updateCarousel() {
-            if (isTransitioning) return;
-            
-            const track = document.getElementById('dashboard-track');
-            const dots = document.querySelectorAll('.carousel-dot');
-            const cards = document.querySelectorAll('.dashboard-card');
-            const cardWidth = cards[0].offsetWidth + 24; // width + gap
-            
-            // Clone cards for infinite loop
-            if (currentSlide >= slideCount) {
-                currentSlide = 0;
-            } else if (currentSlide < 0) {
-                currentSlide = slideCount - 1;
-            }
-            
-            track.style.transition = 'transform 0.5s ease';
-            track.style.transform = `translateX(-${currentSlide * cardWidth}px)`;
-            
-            dots.forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentSlide);
-            });
-            
-            // Reset position after transition ends for infinite loop
-            track.addEventListener('transitionend', () => {
-                if (currentSlide === 0 || currentSlide === slideCount - 1) {
-                    track.style.transition = 'none';
-                    track.style.transform = `translateX(-${currentSlide * cardWidth}px)`;
-                    // Force reflow
-                    track.offsetHeight;
-                }
-                isTransitioning = false;
-            }, { once: true });
-            
-            isTransitioning = true;
-        }
-
-        function nextSlide() {
-            currentSlide = (currentSlide + 1) % slideCount;
-            updateCarousel();
-        }
-
-        function prevSlide() {
-            currentSlide = (currentSlide - 1 + slideCount) % slideCount;
-            updateCarousel();
-        }
-
-        function goToSlide(index) {
-            currentSlide = index;
-            updateCarousel();
-        }
-
-        // --- Balance Visibility Toggle ---
-        function toggleBalanceVisibility() {
-            balanceVisible = !balanceVisible;
-            const toggleIcon = document.getElementById('balance-toggle-icon');
-            const toggleText = document.querySelector('.balance-toggle span');
-            const valueElements = document.querySelectorAll('.value');
-            
-            if (balanceVisible) {
-                toggleIcon.className = 'fas fa-eye-slash';
-                toggleText.textContent = 'Hide Balance';
-                valueElements.forEach(el => {
-                    if (el.dataset.originalValue) {
-                        el.textContent = el.dataset.originalValue;
-                    }
-                });
-            } else {
-                toggleIcon.className = 'fas fa-eye';
-                toggleText.textContent = 'Show Balance';
-                valueElements.forEach(el => {
-                    el.dataset.originalValue = el.textContent;
-                    el.textContent = '****';
-                });
-            }
-        }
-
-        // --- Loading Overlay ---
         function showLoadingOverlay(message = "Loading...") {
             const overlay = document.getElementById('loading-overlay');
             const loadingText = overlay.querySelector('.loading-text');
@@ -1705,7 +1569,6 @@
             document.getElementById('loading-overlay').classList.remove('active');
         }
 
-        // --- Authentication ---
         async function checkSession() {
             try {
                 const response = await fetch('/check-session');
@@ -1724,7 +1587,6 @@
             }
         }
 
-        // --- Data Fetching ---
         async function fetchDashboardData() {
             if (!userId) return;
             try {
@@ -1736,6 +1598,7 @@
                 completedQuests = Array.isArray(data.questsCompleted) ? data.questsCompleted : [];
                 completedQuestIdSet = new Set(completedQuests.map(q => q.quest_id));
                 document.getElementById('quests-completed').textContent = completedQuests.length;
+
             } catch (err) {
                 console.error('Failed to fetch dashboard data:', err);
             }
@@ -1746,7 +1609,7 @@
             try {
                 const response = await fetch('/quests');
                 const data = await response.json();
-                allQuests = data.quests || []; // Assign to the global 'allQuests' array
+                allQuests = data.quests || [];
             } catch (err) {
                 console.error('Failed to load quests:', err);
                 const questList = document.getElementById('quest-list');
@@ -1755,7 +1618,6 @@
             }
         }
         
-        // --- Core Rendering and UI Logic ---
         function displayQuests() {
             const list = document.getElementById('quest-list');
             const paginationContainer = document.getElementById('pagination-container');
@@ -1808,7 +1670,7 @@
             }
 
             const totalPages = Math.ceil(questsToDisplay.length / questsPerPage);
-            currentPage = Math.min(currentPage, totalPages); // Ensure currentPage is valid
+            currentPage = Math.min(currentPage, totalPages);
             const startIndex = (currentPage - 1) * questsPerPage;
             const endIndex = startIndex + questsPerPage;
             const paginatedQuests = questsToDisplay.slice(startIndex, endIndex);
@@ -1816,7 +1678,6 @@
             list.innerHTML = paginatedQuests.map((quest, index) => {
                 const isCompleted = completedQuestIdSet.has(quest.id);
                 
-                // **FIXED AVAILABILITY LOGIC**
                 const now = new Date();
                 const startTime = quest.start_time ? new Date(quest.start_time) : null;
                 const endTime = quest.end_time ? new Date(quest.end_time) : null;
@@ -1872,16 +1733,15 @@
             paginationContainer.innerHTML = '';
 
             const prevButton = document.createElement('button');
-            prevButton.innerHTML = '&laquo; Prev';
+            prevButton.innerHTML = '«';
             prevButton.disabled = currentPage === 1;
             prevButton.onclick = () => {
                 if (currentPage > 1) { currentPage--; displayQuests(); }
             };
             paginationContainer.appendChild(prevButton);
 
-            // Simple pagination logic for many pages
-            let startPage = Math.max(1, currentPage - 2);
-            let endPage = Math.min(totalPages, currentPage + 2);
+            let startPage = Math.max(1, currentPage - 1);
+            let endPage = Math.min(totalPages, currentPage + 1);
 
             if (startPage > 1) {
                 const firstBtn = document.createElement('button');
@@ -1908,7 +1768,7 @@
             }
 
             const nextButton = document.createElement('button');
-            nextButton.innerHTML = 'Next &raquo;';
+            nextButton.innerHTML = '»';
             nextButton.disabled = currentPage === totalPages;
             nextButton.onclick = () => {
                 if (currentPage < totalPages) { currentPage++; displayQuests(); }
@@ -1950,14 +1810,13 @@
         }
         
         async function refreshAllUI() {
-            showSkeletons(); // Show loading state immediately
+            showSkeletons();
             await Promise.all([fetchDashboardData(), fetchAllQuests()]);
             currentPage = 1;
             displayQuests();
             populateHistory();
         }
 
-        // **FIXED** function to find quest by numeric ID and start it
         async function startQuiz(questId) {
             showLoadingOverlay("An Extra Dollar");
             
@@ -1971,18 +1830,15 @@
                     throw new Error(data.error || 'No questions found for this quest.');
                 }
                 
-                // Simulate loading for 2 seconds
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Shorter delay
                 
                 questions = data.questions;
                 currentQuestId = questId;
                 currentQuestionIndex = 0;
                 answers = {};
-                timeLeft = 150; // Reset timer to 2.5 minutes
+                timeLeft = 150;
                 
                 document.getElementById('quiz-title').innerText = quest.title;
-                document.getElementById('quiz-progress-text').textContent = `Question 1 of ${questions.length}`;
-                document.getElementById('quiz-progress-bar').style.width = '0%';
                 
                 displayQuestion();
                 startTimer();
@@ -1996,359 +1852,309 @@
             }
         }
         
-        // --- Quiz Modal Logic ---
+        // --- START: CORRECTED QUIZ LOGIC ---
         function displayQuestion() {
             const question = questions[currentQuestionIndex];
-            if (!question) return;
 
-            // Update progress
-            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
-            document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
-            document.getElementById('quiz-progress-text').textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
-
-            // Display question
-            document.getElementById('quiz-question-text').textContent = question.question_text;
-            
-            // Display options
-            let optionsHtml = '';
-            if (question.question_type === 'multiple-choice') {
-                const options = (typeof question.options === 'string') ? JSON.parse(question.options) : question.options;
-                optionsHtml = (options || []).map((option, idx) => {
-                    const optionId = `option-${currentQuestionIndex}-${idx}`;
-                    return `
-                        <label class="quiz-option" for="${optionId}">
-                            <input type="radio" id="${optionId}" name="question-${question.question_id}" value="${option}">
-                            <span class="option-radio"></span>
-                            <span class="option-text">${option}</span>
-                        </label>`;
-                }).join('');
-            } else {
-                optionsHtml = `
-                    <div class="quiz-option" style="padding: 0;">
-                        <textarea id="text-answer" class="control-group" name="ans-${question.question_id}" 
-                                  placeholder="Type your answer here..." style="width: 100%; min-height: 120px; border: none; background: transparent; color: white;"></textarea>
-                    </div>`;
+            if (!question) {
+                console.error("Quiz Error: Question not found at index", currentQuestionIndex);
+                closeModal('quiz-modal');
+                alert("An error occurred while loading the quiz. Please try again.");
+                return;
             }
 
-            document.getElementById('quiz-options').innerHTML = optionsHtml;
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById('quiz-progress-text').textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+            document.getElementById('quiz-progress-bar').style.width = `${progress}%`;
+            document.getElementById('quiz-question-text').textContent = question.question_text;
+
+            const optionsContainer = document.getElementById('quiz-options');
             
-            // Set up event listeners for answer selection
-            const inputs = document.querySelectorAll(`input[name="question-${question.question_id}"], #text-answer`);
-            inputs.forEach(input => {
-                const eventType = input.type === 'radio' ? 'change' : 'input';
-                input.addEventListener(eventType, () => {
-                    document.getElementById('next-btn').disabled = false;
-                    document.getElementById('submit-btn').disabled = false;
+            // Check for valid options to prevent the '.map' error
+            if (!Array.isArray(question.options)) {
+                console.error("Quiz Error: Invalid or missing options for question", question);
+                optionsContainer.innerHTML = `<p style="color: var(--danger);">This question's options could not be loaded.</p>`;
+            } else {
+                 optionsContainer.innerHTML = question.options.map((option, index) => `
+                    <label class="quiz-option">
+                        <input type="radio" name="quiz-option" value="${option}" data-index="${index}">
+                        <span class="option-radio"></span>
+                        <span class="option-text">${option}</span>
+                    </label>
+                `).join('');
+            }
+            
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+
+            // Robustly manage Next/Submit button visibility and state
+            if (currentQuestionIndex === questions.length - 1) {
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'flex';
+                submitBtn.disabled = true;
+            } else {
+                nextBtn.style.display = 'flex';
+                submitBtn.style.display = 'none';
+                nextBtn.disabled = true;
+            }
+
+            // Add listeners to the new radio buttons to enable the correct button
+            const radioInputs = document.querySelectorAll('.quiz-option input');
+            radioInputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    answers[currentQuestionIndex] = input.value;
+                    if (currentQuestionIndex === questions.length - 1) {
+                        submitBtn.disabled = false;
+                    } else {
+                        nextBtn.disabled = false;
+                    }
                 });
             });
-
-            // Update navigation buttons
-            document.getElementById('next-btn').style.display = currentQuestionIndex < questions.length - 1 ? 'flex' : 'none';
-            document.getElementById('submit-btn').style.display = currentQuestionIndex === questions.length - 1 ? 'flex' : 'none';
-            document.getElementById('next-btn').disabled = true;
-            document.getElementById('submit-btn').disabled = true;
         }
-        
+
+        function nextQuestion() {
+            // Save answer before proceeding if needed (optional)
+            // saveAnswer(); 
+
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+            }
+        }
+        // --- END: CORRECTED QUIZ LOGIC ---
+
         function startTimer() {
             clearInterval(timerInterval);
-            updateTimerDisplay();
-            
+            document.getElementById('timer-text').textContent = formatTime(timeLeft);
             timerInterval = setInterval(() => {
                 timeLeft--;
-                updateTimerDisplay();
-                
+                document.getElementById('timer-text').textContent = formatTime(timeLeft);
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     submitQuiz();
                 }
             }, 1000);
         }
-        
-        function updateTimerDisplay() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            document.getElementById('timer-text').textContent = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} remaining`;
-                
-            // Change color when time is running low
-            if (timeLeft <= 30) {
-                document.getElementById('quiz-timer').style.color = 'var(--danger)';
-                document.getElementById('quiz-timer').style.borderColor = 'rgba(214, 48, 49, 0.3)';
-                document.getElementById('quiz-timer').style.background = 'rgba(214, 48, 49, 0.1)';
-            } else if (timeLeft <= 60) {
-                document.getElementById('quiz-timer').style.color = 'var(--warning)';
-                document.getElementById('quiz-timer').style.borderColor = 'rgba(253, 203, 110, 0.3)';
-                document.getElementById('quiz-timer').style.background = 'rgba(253, 203, 110, 0.1)';
-            }
-        }
-        
-        function saveAnswer() {
-            const question = questions[currentQuestionIndex];
-            if (!question) return;
-            
-            if (question.question_type === 'multiple-choice') {
-                const selectedOption = document.querySelector(`input[name="question-${question.question_id}"]:checked`);
-                if (selectedOption) {
-                    answers[question.question_id] = selectedOption.value;
-                }
-            } else {
-                const textAnswer = document.getElementById('text-answer');
-                if (textAnswer && textAnswer.value.trim()) {
-                    answers[question.question_id] = textAnswer.value;
-                }
-            }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')} remaining`;
         }
 
-        function nextQuestion() {
-            saveAnswer();
-            if (currentQuestionIndex < questions.length - 1) { 
-                currentQuestionIndex++; 
-                displayQuestion(); 
-            }
-        }
-        
-        function createConfetti() {
-            const colors = ['#6c5ce7', '#00cec9', '#fd79a8', '#fdcb6e', '#00b894'];
-            const modalContent = document.querySelector('#completion-modal .modal-content');
-            
-            for (let i = 0; i < 100; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + '%';
-                confetti.style.top = '100%';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.animationDelay = Math.random() * 3 + 's';
-                confetti.style.width = Math.random() * 10 + 5 + 'px';
-                confetti.style.height = Math.random() * 10 + 5 + 'px';
-                modalContent.appendChild(confetti);
-                
-                // Remove confetti after animation completes
-                setTimeout(() => {
-                    confetti.remove();
-                }, 3000);
-            }
-        }
-        
         async function submitQuiz() {
-            saveAnswer();
             clearInterval(timerInterval);
+            showLoadingOverlay("Submitting your answers...");
+
             try {
                 const response = await fetch(`/submit-quiz/${currentQuestId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ answers })
+                    body: JSON.stringify({ userId, answers })
                 });
                 const result = await response.json();
-                if (!response.ok) throw new Error(result.error);
-                
-                closeModal('quiz-modal');
-                const referralResponse = await fetch(`/generate-referral-link?questId=${currentQuestId}`);
-                const referralData = await referralResponse.json();
-                
-                document.getElementById('completion-message').textContent = `You've earned ${result.reward}!`;
-                document.getElementById('referral-link').value = referralData.referralLink || 'No referral link available.';
-                
-                createConfetti();
-                openModal('completion-modal');
-                await refreshAllUI();
+
+                if (!response.ok) throw new Error(result.error || 'Failed to submit quiz');
+
+                if (result.success) {
+                    completedQuests.push({ quest_id: currentQuestId, completed_at: new Date().toISOString() });
+                    completedQuestIdSet.add(currentQuestId);
+
+                    document.getElementById('completion-message').textContent = `You've earned ${result.reward}!`;
+                    document.getElementById('referral-link').value = result.referralLink || `https://rewardrush.com/invite/${userId}`;
+                    
+                    await refreshAllUI();
+                    closeModal('quiz-modal');
+                    openModal('completion-modal');
+
+                } else {
+                    alert(`Quiz not passed. Score: ${result.score}/${questions.length}. Try again later!`);
+                    closeModal('quiz-modal');
+                }
             } catch (err) {
-                alert(err.message || 'Failed to submit quiz.');
+                console.error('Quiz submission error:', err);
+                alert(`Error: ${err.message}`);
+            } finally {
+                hideLoadingOverlay();
             }
         }
         
-        function showQuestDetails(questId) {
-            const quest = allQuests.find(q => Number(q.id) === questId);
-            if (!quest) return;
-            document.getElementById('quest-details-title').innerText = quest.title;
-            const content = `
-                <p><strong>Reward:</strong> ${quest.reward || 'N/A'}</p>
-                <p><strong>Status:</strong> ${quest.status || 'N/A'}</p>
-                <p><strong>Starts:</strong> ${quest.start_time ? new Date(quest.start_time).toLocaleString() : 'N/A'}</p>
-                <p><strong>Ends:</strong> ${quest.end_time ? new Date(quest.end_time).toLocaleString() : 'N/A'}</p>
-                <hr style="margin: 1rem 0; border-color: rgba(255,255,255,0.1);">
-                <p>${quest.description || 'No further details available.'}</p>
-            `;
-            document.getElementById('quest-details-content').innerHTML = content;
-            openModal('quest-details-modal');
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
         }
 
-        // --- Utility & Modal Functions ---
-        function openModal(modalId) { 
-            document.getElementById(modalId).classList.add('open'); 
-            document.body.style.overflow = 'hidden'; 
-        }
-        
-        function closeModal(modalId) { 
-            document.getElementById(modalId).classList.remove('open'); 
-            document.body.style.overflow = ''; 
-            if (modalId === 'quiz-modal') clearInterval(timerInterval); 
-        }
-        
-        function copyCompletionLink() { 
-            const l = document.getElementById('referral-link'); 
-            l.select(); 
-            document.execCommand('copy'); 
-            
-            // Show feedback
-            const copyBtn = document.querySelector('.completion-modal .copy-btn');
-            const originalText = copyBtn.innerHTML;
-            copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-            setTimeout(() => {
-                copyBtn.innerHTML = originalText;
-            }, 2000);
-        }
-        
-        function scrollToHistory() { 
-            document.getElementById('history-section').scrollIntoView({ behavior: 'smooth' }); 
-        }
-        
-        async function logout() { 
-            await fetch('/logout'); 
-            window.location.href = 'auth.html'; 
-        }
-        
-        function toggleMenu() { 
-            document.getElementById('nav-menu').classList.toggle('open'); 
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if(modal) {
+                modal.classList.remove('open');
+                document.body.style.overflow = 'auto';
+                if (modalId === 'quiz-modal') {
+                    clearInterval(timerInterval);
+                }
+            }
         }
 
-        function openWithdrawModal() { openModal('withdrawal-modal'); }
-        
-        async function withdraw() {
-            const amountInput = document.getElementById('withdrawal-amount');
-            const amount = parseFloat(amountInput.value);
+        async function showQuestDetails(questId) {
+            try {
+                const quest = allQuests.find(q => Number(q.id) === questId);
+                if (!quest) throw new Error('Quest not found');
 
+                document.getElementById('quest-details-title').textContent = quest.title;
+                document.getElementById('quest-details-content').innerHTML = `
+                    <p><strong>Reward:</strong> ${quest.reward}</p>
+                    <p><strong>Description:</strong> ${quest.description || 'No description available.'}</p>
+                    <p><strong>Status:</strong> ${completedQuestIdSet.has(questId) ? 'Completed' : 'Available'}</p>
+                `;
+                openModal('quest-details-modal');
+            } catch (err) {
+                console.error('Error showing quest details:', err);
+                alert(`Error: ${err.message}`);
+            }
+        }
+
+        function openWithdrawalModal() {
+            openModal('withdrawal-modal');
+        }
+
+        async function confirmWithdrawal() {
+            const amount = document.getElementById('withdrawal-amount').value;
             if (!amount || amount <= 0) {
                 alert('Please enter a valid amount.');
                 return;
             }
-            
-            const totalEarningsEl = document.getElementById('total-earnings');
-            const currentBalance = parseFloat(totalEarningsEl.textContent.replace('$', ''));
-
-            if (amount > currentBalance) {
-                alert('Withdrawal amount cannot be greater than your total earnings.');
-                return;
-            }
-
+            showLoadingOverlay("Processing withdrawal...");
             try {
-                const response = await fetch('/withdraw', {
+                const response = await fetch(`/withdraw`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: amount, userId: userId }) // Ensure userId is being sent
+                    body: JSON.stringify({ userId, amount })
                 });
-
                 const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.error || 'Withdrawal failed due to a server error.');
-                }
-
-                // Check if the redeemable code exists in the response
-                if (result.code) {
-                    closeModal('withdrawal-modal');
-                    
-                    // Optimistically update the balance on the client side for immediate feedback
-                    const newBalance = currentBalance - amount;
-                    totalEarningsEl.textContent = `$${newBalance.toFixed(2)}`;
-                    
-                    document.getElementById('redeemable-code-input').value = result.code;
-                    openModal('withdrawal-success-modal');
-                    
-                    // Clear the input field for the next transaction
-                    amountInput.value = '';
-
-                    // Refresh all data from the server to ensure consistency
-                    await refreshAllUI();
-                } else {
-                    // This is the new, more informative error handling
-                    alert('Your withdrawal was processed, but there was an issue generating your redeemable code. Please contact support.');
-                    console.error('Server response was successful but did not contain a redeemable code.', result);
-                }
+                if (!response.ok) throw new Error(result.error || 'Withdrawal failed');
+                document.getElementById('redeemable-code-input').value = result.code;
+                closeModal('withdrawal-modal');
+                openModal('withdrawal-success-modal');
+                await refreshAllUI();
             } catch (err) {
-                alert(err.message || 'An unexpected error occurred during withdrawal.');
-                console.error('Withdrawal function error:', err);
+                console.error('Withdrawal error:', err);
+                alert(`Error: ${err.message}`);
+            } finally {
+                hideLoadingOverlay();
             }
-        }
-
-        function copyRedeemableCode() {
-            const codeInput = document.getElementById('redeemable-code-input');
-            codeInput.select();
-            document.execCommand('copy');
-            
-            // Show feedback
-            const copyBtn = document.querySelector('#withdrawal-success-modal .copy-btn');
-            const originalText = copyBtn.innerHTML;
-            copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-            setTimeout(() => {
-                copyBtn.innerHTML = originalText;
-            }, 2000);
         }
 
         async function openRedeemModal() {
             try {
-                const response = await fetch(`/redeemable-codes?userId=${encodeURIComponent(userId)}`);
+                const response = await fetch(`/redeem-codes?userId=${encodeURIComponent(userId)}`);
                 const data = await response.json();
-                const list = document.getElementById('redeem-codes-list');
-                list.innerHTML = '';
-                if (data.codes && data.codes.length > 0) {
-                    data.codes.forEach(code => {
-                        list.innerHTML += `<div class="referral-input">${code.code} - $${Number(code.amount).toFixed(2)}</div>`;
-                    });
-                } else {
-                    list.innerHTML = '<p>No redeemable codes found.</p>';
-                }
+                if (!response.ok) throw new Error(data.error || 'Failed to fetch codes');
+
+                const codesList = document.getElementById('redeem-codes-list');
+                codesList.innerHTML = data.codes.length ? data.codes.map(code => `
+                    <div style="margin-bottom: 1rem;">
+                        <input type="text" value="${code.code}" readonly class="referral-input">
+                        <button class="copy-btn" onclick="copyText('${code.code}')"><i class="fas fa-copy"></i> Copy</button>
+                    </div>
+                `).join('') : '<p>No redeemable codes available.</p>';
                 openModal('redeem-codes-modal');
             } catch (err) {
-                console.error('Failed to fetch redeemable codes:', err);
-                alert('Could not fetch redeemable codes.');
+                console.error('Error fetching redeem codes:', err);
+                alert(`Error: ${err.message}`);
             }
         }
 
-        // --- Initial Load & Event Listeners ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Create background particles
-            createBackgroundParticles();
-            
-            if (await checkSession()) {
-                await refreshAllUI();
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            }).catch(err => {
+                console.error('Copy failed:', err);
+                alert('Failed to copy.');
+            });
+        }
 
-                // Clone cards for infinite loop
-                const track = document.getElementById('dashboard-track');
-                const cards = document.querySelectorAll('.dashboard-card');
-                cards.forEach(card => {
-                    const clone = card.cloneNode(true);
-                    track.appendChild(clone);
-                });
+        function copyCompletionLink() {
+            copyText(document.getElementById('referral-link').value);
+        }
 
-                // Set up carousel navigation
-                document.querySelectorAll('.carousel-dot').forEach(dot => {
-                    dot.addEventListener('click', () => {
-                        goToSlide(parseInt(dot.dataset.index));
-                    });
-                });
+        function copyRedeemableCode() {
+            copyText(document.getElementById('redeemable-code-input').value);
+        }
 
-                // Auto-advance carousel
-                setInterval(nextSlide, 5000);
+        function scrollToHistory() {
+            document.getElementById('history-section').scrollIntoView({ behavior: 'smooth' });
+        }
 
-                document.querySelector('.withdraw-btn').addEventListener('click', openWithdrawModal);
-                document.getElementById('confirm-withdrawal-btn').addEventListener('click', withdraw);
-
-                document.getElementById('quest-search-input').addEventListener('input', () => { currentPage = 1; displayQuests(); });
-                document.getElementById('filter-status').addEventListener('change', () => { currentPage = 1; displayQuests(); });
-                document.getElementById('sort-reward').addEventListener('change', () => { currentPage = 1; displayQuests(); });
-
-                document.getElementById('quest-list').addEventListener('click', e => {
-                    const card = e.target.closest('.quest-card');
-                    if (!card) return;
-                    const questId = parseInt(card.dataset.questId, 10);
-                    if (e.target.closest('.start-quiz-btn:not(.disabled)')) startQuiz(questId);
-                    if (e.target.closest('.details-btn')) showQuestDetails(questId);
-                });
-
-                document.getElementById('next-btn').addEventListener('click', nextQuestion);
-                document.getElementById('submit-btn').addEventListener('click', submitQuiz);
+        async function logout() {
+            try {
+                const response = await fetch('/logout', { method: 'POST' });
+                if (response.ok) {
+                    window.location.href = 'auth.html';
+                } else {
+                    throw new Error('Logout failed');
+                }
+            } catch (err) {
+                console.error('Logout error:', err);
+                alert('Failed to log out.');
             }
-        });
+        }
+
+        function toggleMenu() {
+            document.getElementById('nav-menu').classList.toggle('open');
+        }
+
+        // --- Event Listeners & Initializer ---
+        function setupEventListeners() {
+            document.getElementById('next-btn').addEventListener('click', nextQuestion);
+            document.getElementById('submit-btn').addEventListener('click', submitQuiz);
+
+            document.getElementById('quest-list').addEventListener('click', (e) => {
+                const questCard = e.target.closest('.quest-card');
+                if (!questCard) return;
+                const questId = Number(questCard.dataset.questId);
+
+                if (e.target.closest('.start-quiz-btn') && !e.target.closest('.start-quiz-btn').classList.contains('disabled')) {
+                    startQuiz(questId);
+                } else if (e.target.closest('.details-btn')) {
+                    showQuestDetails(questId);
+                }
+            });
+
+            document.getElementById('quest-search-input').addEventListener('input', () => {
+                currentPage = 1;
+                displayQuests();
+            });
+            document.getElementById('filter-status').addEventListener('change', () => {
+                currentPage = 1;
+                displayQuests();
+            });
+            document.getElementById('sort-reward').addEventListener('change', () => {
+                currentPage = 1;
+                displayQuests();
+            });
+
+            const withdrawBtn = document.querySelector('.withdraw-btn');
+            if (withdrawBtn) {
+                 withdrawBtn.addEventListener('click', openWithdrawalModal);
+            }
+            const confirmWithdrawalBtn = document.getElementById('confirm-withdrawal-btn');
+            if(confirmWithdrawalBtn){
+                confirmWithdrawalBtn.addEventListener('click', confirmWithdrawal);
+            }
+        }
+
+        async function init() {
+            if (await checkSession()) {
+                createBackgroundParticles();
+                await refreshAllUI();
+                setupEventListeners();
+            }
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
