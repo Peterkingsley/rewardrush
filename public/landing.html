@@ -734,7 +734,7 @@
             
             const material = new THREE.PointsMaterial({
                 size: 1.5,
-                color: 0x39ff14,
+                color: 0x4D8B00FF,
                 transparent: true,
                 opacity: 0.7,
                 blending: THREE.AdditiveBlending
@@ -801,7 +801,8 @@
                 top: `${e.clientY}px`
             }, { duration: 500, fill: "forwards" });
         });
-
+init();
+        animate();
         // Make cursor interactive with clickable elements
         document.querySelectorAll('a, button, input, .feature-card').forEach(el => {
             el.addEventListener('mouseenter', () => {
