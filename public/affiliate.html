@@ -833,7 +833,7 @@
         </div>
         <div class="nav-menu" id="nav-menu">
             <a href="groweasy.html"><i class="fas fa-tasks"></i> Quests</a>
-            <a href="affiliate.html" class="active"><i class="fas fa-users"></i> Jobs</a>
+            <a href="affiliate.html" class="active"><i class="fas fa-users"></i> Affiliate</a>
             <a href="education.html"><i class="fas fa-graduation-cap"></i> Education</a>
             <a href="founder.html"><i class="fas fa-user-tie"></i> Founder</a>
             <a href="profile.html" class="profile-btn">
@@ -856,13 +856,13 @@
 
     <div class="container">
         <div class="dashboard-header">
-            <h2>Job Stats</h2>
-            <!-- <div class="date-filter-container">
+            <h2>Affiliate Stats</h2>
+            <div class="date-filter-container">
                 <button class="date-filter-btn" data-range="7days">7 Days</button>
                 <button class="date-filter-btn" data-range="30days">30 Days</button>
                 <button class="date-filter-btn active" data-range="all">All Time</button>
             </div>
-        </div> -->
+        </div>
 
         <div class="dashboard-carousel">
             <div class="dashboard-track" id="dashboard-track">
@@ -895,12 +895,20 @@
                     <p class="value" id="total-conversions">0</p>
                     <p class="description">Successful signups & tasks</p>
                 </div>
+                <div class="dashboard-card animate-in delay-3">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-percentage"></i></div>
+                        <h3>Conversion Rate</h3>
+                    </div>
+                    <p class="value" id="conversion-rate">0%</p>
+                    <p class="description">Ratio of clicks to conversions</p>
+                </div>
             </div>
         </div>
 
-        <h2 class="section-title"><i class="fas fa-bullhorn"></i> Job Offers</h2>
+        <h2 class="section-title"><i class="fas fa-bullhorn"></i> Affiliate Programs</h2>
         <div class="search-container">
-            <input type="text" class="search-input" id="programs-search" placeholder="Search for jobs by name...">
+            <input type="text" class="search-input" id="programs-search" placeholder="Search for programs by name...">
             <button class="search-btn"><i class="fas fa-search"></i></button>
         </div>
         <div id="program-sections"></div>
@@ -963,8 +971,7 @@
                 container.appendChild(particle);
             }
         }
-init();
-        animate();
+
         // --- Infinite Carousel ---
         function setupInfiniteDashboardCarousel() {
             const track = document.getElementById('dashboard-track');
