@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RewardRush - Affiliate Hub</title>
+    <title>RewardRush - Job Hub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -833,7 +833,7 @@
         </div>
         <div class="nav-menu" id="nav-menu">
             <a href="groweasy.html"><i class="fas fa-tasks"></i> Quests</a>
-            <a href="affiliate.html" class="active"><i class="fas fa-users"></i> Affiliate</a>
+            <a href="affiliate.html" class="active"><i class="fas fa-users"></i> Jobs</a>
             <a href="education.html"><i class="fas fa-graduation-cap"></i> Education</a>
             <a href="founder.html"><i class="fas fa-user-tie"></i> Founder</a>
             <a href="profile.html" class="profile-btn">
@@ -856,13 +856,13 @@
 
     <div class="container">
         <div class="dashboard-header">
-            <h2>Affiliate Stats</h2>
-            <div class="date-filter-container">
+            <h2>Job Stats</h2>
+            <!-- <div class="date-filter-container">
                 <button class="date-filter-btn" data-range="7days">7 Days</button>
                 <button class="date-filter-btn" data-range="30days">30 Days</button>
                 <button class="date-filter-btn active" data-range="all">All Time</button>
             </div>
-        </div>
+        </div> -->
 
         <div class="dashboard-carousel">
             <div class="dashboard-track" id="dashboard-track">
@@ -906,7 +906,7 @@
             </div>
         </div>
 
-        <h2 class="section-title"><i class="fas fa-bullhorn"></i> Affiliate Programs</h2>
+        <h2 class="section-title"><i class="fas fa-bullhorn"></i> Job Offers</h2>
         <div class="search-container">
             <input type="text" class="search-input" id="programs-search" placeholder="Search for programs by name...">
             <button class="search-btn"><i class="fas fa-search"></i></button>
@@ -971,7 +971,8 @@
                 container.appendChild(particle);
             }
         }
-
+init();
+        animate();
         // --- Infinite Carousel ---
         function setupInfiniteDashboardCarousel() {
             const track = document.getElementById('dashboard-track');
