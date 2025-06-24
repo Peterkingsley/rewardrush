@@ -190,15 +190,15 @@
             letter-spacing: 1px;
         }
 
-        .date-filter-container {
+        /* .date-filter-container {
             display: flex;
             gap: 0.5rem;
             background: rgba(30, 39, 46, 0.8);
             padding: 0.5rem;
             border-radius: 2rem;
-        }
+        } */
         
-        .date-filter-btn {
+        /* .date-filter-btn {
             background: transparent;
             color: rgba(255, 255, 255, 0.7);
             border: none;
@@ -208,13 +208,13 @@
             transition: all 0.3s ease;
             font-weight: 500;
             font-size: 0.9rem;
-        }
+        } */
         
-        .date-filter-btn.active, .date-filter-btn:hover {
+        /* .date-filter-btn.active, .date-filter-btn:hover {
             background: var(--primary);
             color: white;
             box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
-        }
+        } */
 
         /* Balance Toggle */
         .balance-toggle {
@@ -825,6 +825,7 @@
 </head>
 <body>
     <div id="bg-particles"></div>
+    <canvas id="bg-canvas"></canvas>
     
     <nav>
         <div class="logo">
@@ -833,7 +834,7 @@
         </div>
         <div class="nav-menu" id="nav-menu">
             <a href="groweasy.html"><i class="fas fa-tasks"></i> Quests</a>
-            <a href="affiliate.html" class="active"><i class="fas fa-users"></i> Affiliate</a>
+            <a href="affiliate.html" class="active"><i class="fas fa-users"></i> Jobs</a>
             <a href="education.html"><i class="fas fa-graduation-cap"></i> Education</a>
             <a href="founder.html"><i class="fas fa-user-tie"></i> Founder</a>
             <a href="profile.html" class="profile-btn">
@@ -857,11 +858,11 @@
     <div class="container">
         <div class="dashboard-header">
             <h2>Affiliate Stats</h2>
-            <div class="date-filter-container">
+            <!-- <div class="date-filter-container">
                 <button class="date-filter-btn" data-range="7days">7 Days</button>
                 <button class="date-filter-btn" data-range="30days">30 Days</button>
                 <button class="date-filter-btn active" data-range="all">All Time</button>
-            </div>
+            </div> -->
         </div>
 
         <div class="dashboard-carousel">
