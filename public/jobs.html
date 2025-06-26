@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RewardRush Jobs - The Future of Work</title>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-T43CPCK2WV"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-  gtag('config', 'G-T43CPCK2WV');
-</script>
+      gtag('config', 'G-T43CPCK2WV');
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,6 +70,8 @@
             background: linear-gradient(45deg, var(--primary-glow), var(--secondary-glow));
             box-shadow: 0 0 15px rgba(139, 0, 255, 0.4), 0 0 25px rgba(0, 240, 255, 0.3);
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
         .neon-button:hover {
             transform: translateY(-3px);
@@ -136,10 +138,21 @@
             transform: scaleX(1);
             transform-origin: bottom left;
         }
-        
-        .mockup-content {
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary-glow) transparent;
+
+        .contract-card {
+            background: rgba(10, 10, 21, 0.7);
+            border: 1px solid rgba(139, 0, 255, 0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        .terminal-header {
+            background: #1e1e3e;
+            border-bottom: 1px solid rgba(139, 0, 255, 0.3);
+        }
+
+        .terminal-body {
+            font-family: 'Roboto Mono', monospace;
         }
 
         @media (max-width: 768px) {
@@ -159,19 +172,19 @@
     <header class="sticky top-0 z-50 bg-dark-bg/80 backdrop-blur-md border-b border-primary-glow/20">
         <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
             <div class="text-2xl md:text-3xl font-bold font-orbitron flex items-center">
-                <a href="./landing.html" class="gradient-text flex items-center">
+                <a href="landing.html" class="gradient-text flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
                     RewardRush
                 </a>
             </div>
             <div class="hidden lg:flex items-center space-x-8 font-orbitron text-sm">
-                <a href="./quest.html" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Quests</a>
-                <a href="./jobs.html" class="tracking-wider text-primary-glow transition-colors duration-300 underline-animation active-link">Jobs</a>
-                <a href="./learn.html" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Learn</a>
-                <a href="./landing.html#build" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Build</a>
+                <a href="quest.html" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Quests</a>
+                <a href="jobs.html" class="tracking-wider text-primary-glow transition-colors duration-300 underline-animation active-link">Jobs</a>
+                <a href="learn.html" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Learn</a>
+                <a href="build.html" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Build</a>
             </div>
             <div class="hidden sm:flex items-center space-x-4">
-                <a href="./landing.html#signup" class="neon-button text-white font-orbitron text-sm font-bold px-6 py-2.5 rounded-md">
+                <a href="./waitlist.html" class="neon-button text-white font-orbitron text-sm font-bold px-6 py-2.5 rounded-md">
                     Start Earning
                 </a>
             </div>
@@ -180,11 +193,11 @@
             </button>
         </nav>
         <div id="mobile-menu" class="hidden lg:hidden px-6 pb-4 font-orbitron text-sm">
-             <a href="./quest.html" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Quests</a>
-             <a href="./jobs.html" class="block py-2 tracking-wider text-primary-glow">Jobs</a>
-             <a href="./learn.html" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Learn</a>
-             <a href="./landing.html#build" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Build</a>
-             <a href="./landing.html#signup" class="block mt-2 neon-button text-white font-orbitron text-sm text-center font-bold px-6 py-2.5 rounded-md">
+             <a href="quest.html" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Quests</a>
+             <a href="jobs.html" class="block py-2 tracking-wider text-primary-glow">Jobs</a>
+             <a href="learn.html" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Learn</a>
+             <a href="build.html" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Build</a>
+             <a href="./waitlist.html" class="block mt-2 neon-button text-white font-orbitron text-sm text-center font-bold px-6 py-2.5 rounded-md">
                     Start Earning
              </a>
         </div>
@@ -194,23 +207,92 @@
         <section class="relative text-center overflow-hidden py-20 md:py-32 px-4">
             <div class="container mx-auto px-4">
                 <div class="max-w-4xl mx-auto">
-                    <div class="inline-flex items-center bg-primary-glow/10 text-primary-glow font-orbitron text-xs sm:text-sm px-4 py-2 rounded-full mb-6 border border-primary-glow/30 reveal">
-                       <span>FORGET THE CV, FOCUS ON RESULTS</span>
+                    <div class="inline-flex items-center bg-accent-glow/10 text-accent-glow font-orbitron text-xs sm:text-sm px-4 py-2 rounded-full mb-6 border border-accent-glow/30 reveal">
+                       <span>FORGET RESUMES. DELIVER RESULTS.</span>
                     </div>
                     
                     <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-100 leading-tight font-orbitron reveal">
-                        Your Work Speaks Louder<br> 
-                        <span class="gradient-text"> Than a Resume</span>
+                        Stop Applying. <br> 
+                        <span class="gradient-text">Start Delivering.</span>
                     </h1>
                     
                     <p class="mt-6 text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto font-roboto reveal" style="transition-delay: 200ms;">
-                        Tired of missed opportunities due to a poorly written CV? RewardRush is a new world of work where you accept contracts, deliver results, and get paid. No applications, no interviews, just pure performance.
+                        Your skills are your only resume here. Pick a contract, deliver the work, and get paid. It's time to let your results do the talking.
                     </p>
                     
-                    <div class="mt-10 max-w-2xl mx-auto reveal" style="transition-delay: 400ms;">
-                        <a href="#available-jobs" class="inline-block neon-button text-white font-bold text-lg px-10 py-4 rounded-lg">
-                            Browse Available Jobs
+                    <div class="mt-10 flex justify-center items-center flex-col sm:flex-row gap-6 reveal" style="transition-delay: 400ms;">
+                        <a href="./waitlist.html" class="w-full sm:w-auto neon-button text-white font-bold text-base sm:text-lg px-8 py-4 rounded-lg shadow-lg transition-all flex items-center justify-center">
+                            <span>Browse Live Contracts</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
                         </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contracts" class="py-16 md:py-24">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16 reveal">
+                    <span class="font-orbitron text-secondary-glow font-semibold tracking-widest text-sm">WORK ON YOUR OWN TERMS</span>
+                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-100 mt-2">The Job Board is Dead.<br/>Welcome to the <span class="gradient-text">Contract Board.</span></h2>
+                    <p class="mt-4 text-base md:text-lg text-gray-400 max-w-3xl mx-auto font-roboto">No applications, no interviews. See the goal, see the reward. If you can deliver, the job is yours. Here’s how it looks.</p>
+                </div>
+                
+                <div class="flex flex-col lg:flex-row gap-8 items-stretch">
+                    <div class="w-full lg:w-3/5 reveal">
+                        <div class="contract-card rounded-xl h-full flex flex-col">
+                            <div class="terminal-header p-3 flex items-center gap-2">
+                                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <p class="ml-auto text-xs font-orbitron text-gray-400">CONTRACT_ID: #8A4F9E</p>
+                            </div>
+                            <div class="terminal-body p-6 text-sm flex-grow">
+                                <p class="mb-2"><span class="text-secondary-glow">> INIT CONTRACT</span></p>
+                                <p class="mb-2"><span class="text-gray-400">BRAND:</span> <span class="text-white">Zenith DeFi</span></p>
+                                <p class="mb-4"><span class="text-gray-400">STATUS:</span> <span class="text-accent-glow">ACTIVE</span></p>
+                                
+                                <p class="mb-2"><span class="text-secondary-glow">> OBJECTIVE</span></p>
+                                <p class="mb-4 text-white">Drive 1,000 new wallet connections that execute at least one swap on our platform.</p>
+
+                                <p class="mb-2"><span class="text-secondary-glow">> KPIs & PAYOUT TIERS</span></p>
+                                <ul class="list-disc list-inside text-gray-300 space-y-1">
+                                    <li><span class="text-white">Tier 1 (0-250 Signups):</span> 10 USDT per qualifying signup.</li>
+                                    <li><span class="text-white">Tier 2 (251-750 Signups):</span> 12 USDT per qualifying signup.</li>
+                                    <li><span class="text-white">Tier 3 (751-1000 Signups):</span> 15 USDT per qualifying signup.</li>
+                                    <li><span class="text-accent-glow">Completion Bonus:</span> 5,000 USDT upon hitting 1,000 signups.</li>
+                                </ul>
+
+                                <p class="mt-4 mb-2"><span class="text-secondary-glow">> TIMEFRAME</span></p>
+                                <p class="mb-4 text-white">30 Days from acceptance.</p>
+
+                                <p class="mt-4 mb-2 text-yellow-400">> EXECUTE_AGREEMENT? (Y/N)</p>
+                                <div class="w-full mt-6">
+                                     <button class="w-full neon-button text-white font-bold py-3 rounded-lg">Accept Contract</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full lg:w-2/5 reveal" style="transition-delay: 200ms;">
+                        <div class="contract-card rounded-xl h-full flex flex-col">
+                           <div class="terminal-header p-3 flex items-center gap-2">
+                                <p class="font-orbitron text-gray-300">PAYOUT_SIMULATOR</p>
+                            </div>
+                            <div class="p-6 flex-grow flex flex-col justify-center items-center text-center">
+                                <p class="font-orbitron text-accent-glow text-sm">DELIVERABLES MET: 850 SIGNUPS</p>
+                                <h3 class="text-6xl md:text-7xl font-orbitron font-bold my-4">
+                                    <span class="gradient-text">10,200</span>
+                                </h3>
+                                <p class="font-orbitron text-2xl text-gray-300">USDT</p>
+                                <div class="w-full h-px bg-primary-glow/30 my-6"></div>
+                                <p class="text-xs text-gray-400">PAYOUT BREAKDOWN</p>
+                                <p class="text-sm text-gray-200">850 Signups x 12 USDT (Tier 2 Rate)</p>
+                                <p class="mt-4 font-roboto text-gray-300">Payment is settled instantly to your connected wallet upon validation of results. No invoices. No delays.</p>
+                                 <div class="mt-6 w-full">
+                                    <a href="./waitlist.html" class="w-full neon-button font-semibold px-4 py-2 rounded-md text-sm block">Learn About Payouts</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -218,194 +300,91 @@
 
         <section class="py-16 md:py-24 bg-gradient-to-b from-dark-bg to-mid-bg/50">
             <div class="container mx-auto px-6">
-                <div class="text-center mb-16 reveal">
-                    <span class="font-orbitron text-primary-glow font-semibold tracking-widest text-sm">A NEW WAY TO WORK</span>
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-100 mt-2">The Future of Job Hunting is Here</h2>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-                    <div class="feature-card p-8 rounded-2xl reveal">
-                        <div class="flex items-center justify-center w-20 h-20 bg-primary-glow/10 rounded-full mb-6 mx-auto border border-primary-glow/30">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
-                        </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-4 text-center">1. Browse & Choose</h3>
-                        <p class="text-sm md:text-base text-gray-400 font-roboto text-center">Explore a list of available jobs. If you like the offer and believe you can deliver, accept the contract.</p>
+                 <div class="flex flex-col lg:flex-row-reverse items-center gap-12 lg:gap-20 reveal">
+                    <div class="lg:w-1/2 w-full text-center lg:text-left">
+                        <span class="font-orbitron text-primary-glow font-semibold tracking-widest text-sm">THE OLD WAY IS BROKEN</span>
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-100 mt-2">Ever Felt Your Skills<span class="gradient-text"> Were Overlooked?</span></h2>
+                        <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">You're a top-tier performer, but you're tired of the endless cycle of applications, interviews, and ghosting. You know you can deliver, if only someone would give you the chance.</p>
+                        <ul class="mt-6 space-y-4 font-roboto text-left">
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-accent-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v10"></path></svg>
+                                <span><strong class="text-gray-100">The Black Hole of Resumes:</strong> Your CV disappears into an abyss, never to be seen again.</span>
+                            </li>
+                            <li class="flex items-start">
+                               <svg class="w-6 h-6 text-accent-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v10"></path></svg>
+                                <span><strong class="text-gray-100">The "Sell Yourself" Pressure:</strong> You're a doer, not a salesperson, but interviews demand a perfect pitch.</span>
+                            </li>
+                             <li class="flex items-start">
+                               <svg class="w-6 h-6 text-accent-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v10"></path></svg>
+                                <span><strong class="text-gray-100">The Waiting Game:</strong> Weeks turn into months with no clear feedback or decision.</span>
+                            </li>
+                        </ul>
                     </div>
-                    
-                    <div class="feature-card p-8 rounded-2xl reveal" style="transition-delay: 200ms;">
-                        <div class="flex items-center justify-center w-20 h-20 bg-primary-glow/10 rounded-full mb-6 mx-auto border border-primary-glow/30">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-                        </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-4 text-center">2. Deliver Results</h3>
-                        <p class="text-sm md:text-base text-gray-400 font-roboto text-center">Once you accept, you begin working immediately. Focus on delivering high-quality results as outlined in the contract.</p>
-                    </div>
-                    
-                    <div class="feature-card p-8 rounded-2xl reveal" style="transition-delay: 400ms;">
-                        <div class="flex items-center justify-center w-20 h-20 bg-primary-glow/10 rounded-full mb-6 mx-auto border border-primary-glow/30">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z"></path></svg>
-                        </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-4 text-center">3. Get Paid Instantly</h3>
-                        <p class="text-sm md:text-base text-gray-400 font-roboto text-center">Upon successful delivery, your payment in USDT is released instantly. No more waiting for invoices to be paid.</p>
+                    <div class="lg:w-1/2 w-full">
+                       <div class="grid grid-cols-1 gap-6 reveal" style="transition-delay: 200ms;">
+                           <div class="glass-card p-6 rounded-xl">
+                               <h3 class="text-2xl font-orbitron gradient-text">90%</h3>
+                               <p class="mt-2 text-gray-400 text-sm font-roboto">Of professionals feel their true skills aren't reflected on their resume.</p>
+                           </div>
+                           <div class="glass-card p-6 rounded-xl">
+                               <h3 class="text-2xl font-orbitron gradient-text">90%</h3>
+                               <p class="mt-2 text-gray-400 text-sm font-roboto">Of professionals feel their true skills aren't reflected on their resume.</p>
+                           </div>
+                           
+                           <div class="glass-card p-6 rounded-xl">
+                               <h3 class="text-2xl font-orbitron gradient-text">75%</h3>
+                               <p class="mt-2 text-gray-400 text-sm font-roboto">Of applicants never hear back after applying for a job.</p>
+                           </div>
+                       </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="available-jobs" class="py-16 md:py-24">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-16 reveal">
-                    <span class="font-orbitron text-secondary-glow font-semibold tracking-widest text-sm">FOR THE DOERS</span>
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-100 mt-2">Your Skills, Your Terms, <span class="gradient-text">Your Success</span></h2>
-                    <p class="mt-4 text-base md:text-lg text-gray-400 max-w-2xl mx-auto font-roboto">RewardRush empowers you to take control of your career. Say goodbye to endless job applications and hello to a world of opportunity.</p>
-                </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 items-start">
-                    <div class="feature-card p-6 rounded-2xl reveal text-center">
-                        <h3 class="text-xl font-bold text-gray-100 mb-4">iOS</h3>
-                        <div class="relative mx-auto border-gray-800 dark:border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[600px] w-[300px] shadow-xl">
-                            <div class="w-[148px] h-[18px] bg-gray-800 top-0 rounded-b-[1rem] left-1/2 -translate-x-1/2 absolute"></div>
-                            <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[124px] rounded-l-lg"></div>
-                            <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[178px] rounded-l-lg"></div>
-                            <div class="h-[64px] w-[3px] bg-gray-800 absolute -right-[17px] top-[142px] rounded-r-lg"></div>
-                            <div class="rounded-[2rem] overflow-hidden w-full h-full bg-dark-bg">
-                                <div class="w-full h-full flex flex-col p-4 mockup-content overflow-y-auto">
-                                    <h3 class="text-lg font-orbitron text-center text-white mb-4 flex-shrink-0">Available Gigs</h3>
-                                    <div class="flex-grow overflow-y-auto pr-2">
-                                        <div class="glass-card p-3 rounded-lg mb-3 text-left">
-                                            <h4 class="font-bold text-white text-sm">Social Media Content Creation</h4>
-                                            <p class="text-sm font-bold text-accent-glow">500 USDT</p>
-                                            <p class="text-xs text-gray-400 mt-1">Skills: Graphic Design, Copywriting</p>
-                                            <div class="flex flex-wrap gap-1 mt-2">
-                                                <span class="text-xs bg-primary-glow/20 text-primary-glow px-2 py-0.5 rounded-full">#Content</span>
-                                                <span class="text-xs bg-primary-glow/20 text-primary-glow px-2 py-0.5 rounded-full">#Solana</span>
-                                            </div>
-                                        </div>
-                                        <div class="glass-card p-3 rounded-lg mb-3 text-left">
-                                            <h4 class="font-bold text-white text-sm">Drive 1,000 Sign-ups</h4>
-                                            <p class="text-sm font-bold text-accent-glow">2,000 USDT</p>
-                                            <p class="text-xs text-gray-400 mt-1">Skills: Affiliate Marketing</p>
-                                            <div class="flex flex-wrap gap-1 mt-2">
-                                                <span class="text-xs bg-primary-glow/20 text-primary-glow px-2 py-0.5 rounded-full">#Marketing</span>
-                                                <span class="text-xs bg-primary-glow/20 text-primary-glow px-2 py-0.5 rounded-full">#Phantom</span>
-                                            </div>
-                                        </div>
-                                        <div class="glass-card p-3 rounded-lg mb-3 text-left">
-                                            <h4 class="font-bold text-white text-sm">Beta Test New Jupiter Feature</h4>
-                                            <p class="text-sm font-bold text-accent-glow">250 USDT</p>
-                                            <p class="text-xs text-gray-400 mt-1">Skills: QA, DeFi Knowledge</p>
-                                            <div class="flex flex-wrap gap-1 mt-2">
-                                                <span class="text-xs bg-primary-glow/20 text-primary-glow px-2 py-0.5 rounded-full">#Testing</span>
-                                                <span class="text-xs bg-primary-glow/20 text-primary-glow px-2 py-0.5 rounded-full">#Jupiter</span>
-                                            </div>
-                                        </div>
-                                         <div class="glass-card p-3 rounded-lg text-left">
-                                            <h4 class="font-bold text-white text-sm">Community Moderator</h4>
-                                            <p class="text-sm font-bold text-accent-glow">700 USDT / month</p>
-                                            <p class="text-xs text-gray-400 mt-1">Skills: Communication, Discord</p>
-                                            <div class="flex flex-wrap gap-1 mt-2">
-                                                <span class="text-xs bg-primary-glow/20 text-primary-glow px-2 py-0.5 rounded-full">#Community</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                     <div class="feature-card p-6 rounded-2xl reveal text-center" style="transition-delay: 200ms;">
-                        <h3 class="text-xl font-bold text-gray-100 mb-4">Android</h3>
-                        <div class="relative mx-auto border-gray-800 dark:border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] h-[600px] w-[300px] shadow-xl">
-                            <div class="w-[148px] h-[18px] bg-gray-800 top-0 rounded-b-[1rem] left-1/2 -translate-x-1/2 absolute"></div>
-                            <div class="h-[32px] w-[3px] bg-gray-800 absolute -left-[17px] top-[70px] rounded-l-lg"></div>
-                            <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[124px] rounded-l-lg"></div>
-                            <div class="h-[46px] w-[3px] bg-gray-800 absolute -left-[17px] top-[178px] rounded-l-lg"></div>
-                            <div class="h-[64px] w-[3px] bg-gray-800 absolute -right-[17px] top-[142px] rounded-r-lg"></div>
-                            <div class="rounded-[2rem] overflow-hidden w-full h-full bg-dark-bg">
-                               <div class="w-full h-full flex flex-col p-4 text-left mockup-content overflow-y-auto">
-                                    <h3 class="text-lg font-orbitron text-center text-white mb-4 flex-shrink-0">Contract Details</h3>
-                                    <div class="flex-grow overflow-y-auto pr-2">
-                                        <div class="mb-3">
-                                            <p class="text-xs text-secondary-glow font-orbitron">CLIENT</p>
-                                            <p class="text-white">Solana Foundation</p>
-                                        </div>
-                                        <div class="mb-3">
-                                            <p class="text-xs text-secondary-glow font-orbitron">REWARD</p>
-                                            <p class="text-accent-glow font-bold text-lg">500 USDT</p>
-                                        </div>
-                                        <div class="mb-4">
-                                            <p class="text-xs text-secondary-glow font-orbitron">DELIVERABLES</p>
-                                            <ol class="text-white text-sm list-decimal list-inside space-y-2 mt-1 font-roboto">
-                                                <li>Design 5 high-quality infographics.</li>
-                                                <li>Write 5 engaging Twitter threads.</li>
-                                                <li>Schedule and post content over 5 days.</li>
-                                            </ol>
-                                        </div>
-                                         <div class="mb-4">
-                                            <p class="text-xs text-secondary-glow font-orbitron">DEADLINE</p>
-                                            <p class="text-white">7 Days from Acceptance</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-xs text-secondary-glow font-orbitron">PAYOUT TERMS</p>
-                                            <p class="text-gray-300 text-sm font-roboto">Payment is released to your wallet upon successful review and approval of deliverables.</p>
-                                        </div>
-                                    </div>
-                                    <div class="mt-4 flex-shrink-0">
-                                        <button class="w-full neon-button text-white font-orbitron text-sm font-bold py-2.5 rounded-md">Accept Contract</button>
-                                    </div>
-                               </div>
-                            </div>
-                        </div>
-                    </div>
-                     <!-- <div class="feature-card p-6 rounded-2xl reveal text-center" style="transition-delay: 400ms;">
-                        <h3 class="text-xl font-bold text-gray-100 mb-4">Desktop</h3>
-                        <div class="relative mx-auto border-gray-800 dark:border-gray-800 bg-gray-800 border-[8px] rounded-t-xl h-[400px] max-w-full shadow-xl">
-                            <div class="rounded-lg overflow-hidden h-full bg-dark-bg">
-                                <div class="w-full h-full flex flex-col items-center justify-center p-6 text-center">
-                                    <div class="w-16 h-16 bg-accent-glow/10 rounded-full flex items-center justify-center border-2 border-accent-glow/30 mb-4">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-accent-glow" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                    </div>
-                                    <h3 class="text-2xl font-orbitron text-white">Payment Received</h3>
-                                    <p class="text-5xl font-orbitron gradient-text my-3">+500.00 USDT</p>
-                                    <div class="text-sm font-roboto border-t border-primary-glow/20 w-full max-w-xs mx-auto pt-4 mt-4">
-                                        <div class="flex justify-between">
-                                            <span class="text-gray-400">From:</span>
-                                            <span class="text-white">Solana Foundation</span>
-                                        </div>
-                                        <div class="flex justify-between mt-1">
-                                            <span class="text-gray-400">Tx ID:</span>
-                                            <span class="text-white truncate">0xAbc...123</span>
-                                        </div>
-                                         <div class="flex justify-between mt-1">
-                                            <span class="text-gray-400">Status:</span>
-                                            <span class="text-accent-glow">Confirmed</span>
-                                        </div>
-                                    </div>
-                                     <div class="mt-6">
-                                        <button class="neon-button text-white font-orbitron text-sm font-bold px-6 py-2 rounded-md">Find Next Gig</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="relative mx-auto bg-gray-900 dark:bg-gray-700 rounded-b-xl h-[24px] max-w-full">
-                            <div class="absolute left-1/2 top-0 -translate-x-1/2 rounded-b-xl w-[56px] h-[5px] md:w-[96px] bg-gray-800"></div>
-                        </div> -->
-                    </div>
-                </div>
-            </div>
-        </section>
+        
 
         <section class="py-16 md:py-24 bg-mid-bg/50">
             <div class="container mx-auto px-6">
-                <div class="glass-card rounded-2xl p-8 md:p-12 flex flex-col lg:flex-row items-center justify-between gap-8 reveal">
-                    <div class="lg:w-2/3 text-center lg:text-left">
-                         <h2 class="text-3xl md:text-4xl font-bold text-gray-100">Tired of Hiring Headaches? <span class="gradient-text">Pay for Performance.</span></h2>
-                         <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">Stop wasting time and money on lengthy recruitment processes. With RewardRush, you only pay for delivered results. Access a global talent pool of skilled professionals who are ready to deliver.</p>
+                <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 reveal">
+                    <div class="lg:w-1/2 w-full text-center lg:text-left">
+                        <span class="font-orbitron text-secondary-glow font-semibold tracking-widest text-sm">FOR BRANDS</span>
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-100 mt-2">Stop Hiring for Resumes.<br> <span class="gradient-text">Start Paying for Results.</span></h2>
+                        <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">Why spend months on hiring cycles with no guaranteed outcome? On RewardRush, you define the result, and our global network of skilled professionals delivers. You only pay for what gets done.</p>
+                        <ul class="mt-6 space-y-4 font-roboto text-left">
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-primary-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span><strong class="text-gray-100">Zero-Risk Recruitment:</strong> You only pay when your specific KPIs are met. No result, no cost.</span>
+                            </li>
+                            <li class="flex items-start">
+                               <svg class="w-6 h-6 text-primary-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span><strong class="text-gray-100">Access a Global Talent Pool:</strong> Instantly tap into a motivated, skilled workforce ready to execute.</span>
+                            </li>
+                             <li class="flex items-start">
+                               <svg class="w-6 h-6 text-primary-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span><strong class="text-gray-100">Scale Your Growth:</strong> Drive sign-ups, transaction volume, social engagement, and more with unparalleled efficiency.</span>
+                            </li>
+                        </ul>
+                         <div class="mt-8">
+                            <a href="./waitlist.html" class="neon-button text-white font-semibold px-6 py-3 rounded-md text-center">
+                                Create Your First Contract
+                            </a>
+                        </div>
                     </div>
-                    <div class="lg:w-1/3 text-center lg:text-right flex-shrink-0">
-                        <a href="#" class="neon-button text-white font-bold text-base sm:text-lg px-8 py-4 rounded-lg shadow-lg transition-all inline-block">
-                            Post a Job
-                        </a>
+                     <div class="lg:w-1/2 w-full">
+                       <div class="glass-card p-8 rounded-xl text-center reveal" style="transition-delay: 200ms;">
+                           <h3 class="text-4xl font-orbitron gradient-text">40x</h3>
+                           <p class="mt-2 text-gray-300 text-lg font-roboto">Higher ROI than traditional marketing spend.</p>
+                           <div class="w-full h-px bg-primary-glow/30 my-6"></div>
+                            <h3 class="text-4xl font-orbitron gradient-text">95%</h3>
+                           <p class="mt-2 text-gray-300 text-lg font-roboto">Reduction in hiring time and costs.</p>
+                       </div>
+                       <div class="glass-card p-8 rounded-xl text-center reveal" style="transition-delay: 200ms;">
+                           <h3 class="text-4xl font-orbitron gradient-text">40x</h3>
+                           <p class="mt-2 text-gray-300 text-lg font-roboto">Higher ROI than traditional marketing spend.</p>
+                           <div class="w-full h-px bg-primary-glow/30 my-6"></div>
+                            <h3 class="text-4xl font-orbitron gradient-text">95%</h3>
+                           <p class="mt-2 text-gray-300 text-lg font-roboto">Reduction in hiring time and costs.</p>
+                       </div>
                     </div>
                 </div>
             </div>
@@ -414,12 +393,12 @@
         <section id="signup" class="py-16 md:py-24">
             <div class="container mx-auto px-6 text-center reveal">
                 <div class="max-w-3xl mx-auto">
-                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-100 mt-2">Ready to Redefine <span class="gradient-text">Your Career?</span></h2>
-                    <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">Your next opportunity is waiting. Stop searching, start doing. Join RewardRush and let your work speak for itself.</p>
+                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-100 mt-2">Your Work is Your Worth. <br/><span class="gradient-text">Prove It.</span></h2>
+                    <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">Step into a world where your ability to deliver is the only thing that matters. The best opportunities are waiting for those who can execute.</p>
             
                     <div class="mt-10">
-                        <a href="./landing.html#signup" class="inline-block neon-button text-white font-bold text-lg px-10 py-4 rounded-lg">
-                            Find Your First Job Now
+                        <a href="./waitlist.html" class="inline-block neon-button text-white font-bold text-lg px-10 py-4 rounded-lg">
+                            Accept Your First Contract
                         </a>
                     </div>
                 </div>
@@ -427,7 +406,7 @@
         </section>
     </main>
 
-    <footer class="bg-dark-bg border-t border-primary-glow/20">
+       <footer class="bg-dark-bg border-t border-primary-glow/20">
         <div class="container mx-auto px-6 py-12">
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
                 <div class="col-span-full md:col-span-1 mb-6 md:mb-0">
@@ -457,9 +436,9 @@
                     <h4 class="font-semibold font-orbitron text-gray-200">Platform</h4>
                     <ul class="mt-4 space-y-2 font-roboto text-sm">
                         <li><a href="./quest.html" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Quests</a></li>
-                        <li><a href="./jobs.html" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Jobs</a></li>
+                        <li><a href="./jobs.html" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Gigs</a></li>
                         <li><a href="./learn.html" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Learn</a></li>
-                        <li><a href="./landing.html#build" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Build</a></li>
+                        <li><a href="./build.html" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Build</a></li>
                     </ul>
                 </div>
                 
@@ -500,6 +479,8 @@
         </div>
     </footer>
 
+
+
     <script>
         // Mobile menu toggle
         const mobileMenuButton = document.getElementById('mobile-menu-button');
@@ -537,7 +518,7 @@
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
             camera.position.z = 1000;
 
-            const particleCount = 3000;
+            const particleCount = 4000;
             const particlesGeometry = new THREE.BufferGeometry();
             const posArray = new Float32Array(particleCount * 3);
             
@@ -582,11 +563,7 @@
             camera.position.y += (-mouseY - camera.position.y) * 0.03;
             camera.lookAt(scene.position);
             
-            const positions = particles.geometry.attributes.position.array;
-            for(let i = 0; i < positions.length; i+= 3) {
-                 positions[i+1] += Math.sin(time + i) * 0.2;
-            }
-            particles.geometry.attributes.position.needsUpdate = true;
+            particles.rotation.y = time * 0.15;
 
             renderer.render(scene, camera);
         }
