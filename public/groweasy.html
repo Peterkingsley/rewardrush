@@ -20,7 +20,7 @@
         /* Custom styles to complement Tailwind */
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f0f2f5; /* Lighter gray background */
+            background-color: #f0f2f5;
         }
         .font-montserrat {
             font-family: 'Montserrat', sans-serif;
@@ -61,11 +61,33 @@
         .toast-in {
             animation: toast-in 0.5s ease-out forwards;
         }
+
+        /* Loading Spinner */
+        #loading-overlay {
+            z-index: 100;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #6c5ce7;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <div id="app-container" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center">
+        <div class="spinner"></div>
+    </div>
+
+    <div id="app-container" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 opacity-0 transition-opacity duration-500">
 
         <!-- Header Section -->
         <header class="bg-white shadow-md rounded-2xl p-4 mb-8 flex flex-wrap items-center justify-between">
@@ -73,20 +95,20 @@
                 <i class="fas fa-leaf text-3xl text-green-500 mr-3"></i>
                 <h1 class="text-2xl font-bold font-montserrat text-gray-700">GrowEasy</h1>
             </div>
-            <div id="user-profile" class="flex items-center mt-4 sm:mt-0">
+             <a href="profile.html" id="user-profile-link" class="flex items-center mt-4 sm:mt-0 cursor-pointer group">
                 <div class="text-right mr-4">
-                    <p class="font-semibold" id="user-name">John Doe</p>
+                    <p class="font-semibold" id="user-name">User</p>
                     <p class="text-sm text-gray-500" id="user-balance">$0.00</p>
                 </div>
-                <img src="https://placehold.co/40x40/6c5ce7/white?text=JD" id="user-avatar" alt="User Avatar" class="w-10 h-10 rounded-full">
-            </div>
+                <img src="https://placehold.co/40x40/6c5ce7/white?text=U" id="user-avatar" alt="User Avatar" class="w-10 h-10 rounded-full group-hover:ring-2 group-hover:ring-purple-400 transition">
+            </a>
         </header>
 
         <!-- Main Content -->
         <main>
             <!-- Carousel Section -->
             <div class="relative mb-8 shadow-lg rounded-2xl overflow-hidden">
-                <div id="carousel" class="relative w-full h-64">
+                <div id="carousel" class="relative w-full h-56 sm:h-64">
                     <!-- Carousel items will be injected by JS -->
                 </div>
                 <div id="carousel-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
@@ -95,7 +117,7 @@
             </div>
 
             <!-- Dashboard Overview -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white p-6 rounded-2xl shadow-md flex items-center justify-between">
                     <div>
                         <p class="text-gray-500">Quests Completed</p>
@@ -110,6 +132,9 @@
                     </div>
                     <i class="fas fa-coins text-yellow-500 text-4xl opacity-50"></i>
                 </div>
+                <button id="quest-history-btn" class="bg-white p-6 rounded-2xl shadow-md flex items-center justify-center text-lg font-bold transition-transform transform hover:scale-105 hover:bg-gray-50">
+                    View History <i class="fas fa-history ml-3 text-gray-500"></i>
+                </button>
                 <button class="withdraw-btn bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg flex items-center justify-center text-xl font-bold transition-transform transform hover:scale-105">
                     Withdraw Funds <i class="fas fa-wallet ml-3"></i>
                 </button>
@@ -149,16 +174,18 @@
 
     <!-- Modal for Quiz -->
     <div id="quiz-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 transform transition-transform scale-95">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6 sm:p-8 transform transition-transform scale-95 max-h-[90vh] flex flex-col">
             <h2 id="quiz-title" class="text-2xl font-bold mb-2">Quiz Title</h2>
             <p id="quiz-description" class="text-gray-600 mb-6">Answer the questions below.</p>
-            <div id="quiz-content">
-                <!-- Question will be injected here -->
+            <div class="flex-grow overflow-y-auto pr-2">
+                 <div id="quiz-content">
+                    <!-- Question will be injected here -->
+                </div>
+                <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
+                     <!-- Options will be injected here -->
+                </div>
             </div>
-            <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
-                 <!-- Options will be injected here -->
-            </div>
-            <div class="flex justify-between items-center mt-6">
+            <div class="flex-shrink-0 flex justify-between items-center mt-6 pt-4 border-t">
                  <p id="quiz-progress" class="text-gray-500 font-semibold"></p>
                  <div>
                     <button id="next-btn" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition">Next</button>
@@ -172,7 +199,7 @@
     <div id="withdraw-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-transform scale-95">
              <h2 class="text-2xl font-bold mb-4">Withdraw Funds</h2>
-             <p class="mb-4">Enter the amount you wish to withdraw. Your current balance is <span id="withdraw-balance" class="font-bold">$0.00</span>.</p>
+             <p class="mb-4">Enter the amount to withdraw. Balance: <span id="withdraw-balance" class="font-bold">$0.00</span>.</p>
              <input type="number" id="withdraw-amount" placeholder="0.00" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-purple-500">
              <div class="flex justify-end space-x-4">
                  <button id="cancel-withdrawal-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Cancel</button>
@@ -181,6 +208,19 @@
         </div>
     </div>
     
+    <!-- Modal for Quest History -->
+    <div id="history-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 transform transition-transform scale-95 max-h-[90vh] flex flex-col">
+             <div class="flex-shrink-0 flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Quest History</h2>
+                <button id="close-history-btn" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+             </div>
+             <div id="history-list" class="flex-grow overflow-y-auto pr-2 space-y-4">
+                <!-- History items will be injected here -->
+             </div>
+        </div>
+    </div>
+
     <!-- Custom Notification/Toast -->
     <div id="notification-toast" class="fixed bottom-8 right-8 bg-gray-800 text-white py-3 px-6 rounded-lg shadow-xl z-50 hidden">
         <p id="notification-message">Notification message</p>
@@ -189,37 +229,21 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
-            // Encapsulate all logic in an App object to avoid global scope pollution
             const App = {
-                // --- STATE ---
-                user: {
-                    name: 'John Doe',
-                    balance: 15.75,
-                    completedQuests: [1],
-                },
-                quests: [
-                    { id: 1, title: 'Crypto Basics', description: 'Learn the fundamentals of cryptocurrency.', reward: 5.00, status: 'completed' },
-                    { id: 2, title: 'DeFi Introduction', description: 'What is Decentralized Finance?', reward: 7.50, status: 'not-started' },
-                    { id: 3, title: 'NFTs Explained', description: 'Explore the world of Non-Fungible Tokens.', reward: 6.00, status: 'not-started' },
-                    { id: 4, title: 'Blockchain Technology', description: 'Understand the core technology behind crypto.', reward: 8.00, status: 'not-started' },
-                    { id: 5, title: 'Smart Contracts 101', description: 'Learn how smart contracts work.', reward: 10.00, status: 'not-started' },
-                    { id: 6, title: 'Web3 Gaming', description: 'Discover the future of gaming.', reward: 7.00, status: 'not-started' }
-                ],
-                quizData: {
-                    2: { title: 'DeFi Introduction', description: 'Test your knowledge on DeFi.', questions: [{ question: "What does DeFi stand for?", options: ["Decentralized Finance", "Digital Finance", "Distributed Funding"], answer: "Decentralized Finance" }, { question: "Which is a common DeFi application?", options: ["Lending", "Gaming", "Social Media"], answer: "Lending" }] },
-                    3: { title: 'NFTs Explained', description: 'Test your knowledge on NFTs.', questions: [{ question: "What does NFT stand for?", options: ["Non-Fungible Token", "New Financial Technology", "Nominal Fiat Token"], answer: "Non-Fungible Token" }, { question: "NFTs are primarily built on which blockchain?", options: ["Bitcoin", "Ethereum", "Ripple"], answer: "Ethereum" }] }
-                    // Add other quizzes here...
-                },
-                
-                // --- PAGINATION & QUIZ STATE ---
+                // --- CONFIG & STATE ---
+                apiBaseUrl: '', // Assuming same origin; adjust if API is elsewhere
+                user: {},
+                quests: [],
+                completedQuestIds: [],
                 currentPage: 1,
                 itemsPerPage: 6,
                 currentQuiz: null,
                 currentQuestionIndex: 0,
                 userAnswers: [],
 
-                // --- UI ELEMENTS ---
                 elements: {
+                    loadingOverlay: document.getElementById('loading-overlay'),
+                    appContainer: document.getElementById('app-container'),
                     userName: document.getElementById('user-name'),
                     userBalance: document.getElementById('user-balance'),
                     userAvatar: document.getElementById('user-avatar'),
@@ -233,74 +257,88 @@
                     withdrawBtns: document.querySelectorAll('.withdraw-btn'),
                     quizModal: document.getElementById('quiz-modal'),
                     withdrawModal: document.getElementById('withdraw-modal'),
+                    historyModal: document.getElementById('history-modal'),
                     notificationToast: document.getElementById('notification-toast'),
                     notificationMessage: document.getElementById('notification-message'),
                     carousel: document.getElementById('carousel'),
                     carouselDots: document.getElementById('carousel-dots'),
+                    questHistoryBtn: document.getElementById('quest-history-btn'),
+                    closeHistoryBtn: document.getElementById('close-history-btn'),
+                    historyList: document.getElementById('history-list'),
                 },
                 
-                // --- METHODS ---
-                
-                /**
-                 * Initializes the application, sets up event listeners and renders initial data.
-                 */
-                init() {
-                    // Update header with user data
-                    this.updateHeader();
-                    // Display initial set of quests
-                    this.displayQuests();
-                    // Initialize the carousel
-                    this.initCarousel();
-                    // Attach all event listeners
-                    this.bindEvents();
+                async init() {
+                    try {
+                        this.showLoading();
+                        await this.loadUserData();
+                        await this.loadQuests();
+                        this.updateHeader();
+                        this.displayQuests();
+                        this.initCarousel();
+                        this.bindEvents();
+                    } catch (error) {
+                        console.error("Initialization failed:", error);
+                        this.showNotification("Failed to load application data. Please refresh.", "error");
+                    } finally {
+                        this.hideLoading();
+                    }
                 },
 
-                /**
-                 * Updates the header with current user information.
-                 */
+                async loadUserData() {
+                    // Simulate getting a logged-in user's ID
+                    const userId = 'sampleUser'; // In a real app, this would come from a session
+                    const response = await fetch(`${this.apiBaseUrl}/api/profile/${userId}`);
+                    if (!response.ok) throw new Error('Failed to fetch user profile.');
+                    this.user = await response.json();
+                    
+                    const overviewResponse = await fetch(`${this.apiBaseUrl}/quest-overview?userId=${userId}`);
+                    if (!overviewResponse.ok) throw new Error('Failed to fetch quest overview.');
+                    const overviewData = await overviewResponse.json();
+                    this.completedQuestIds = overviewData.questsCompleted.map(q => q.quest_id);
+                },
+
+                async loadQuests() {
+                    const response = await fetch(`${this.apiBaseUrl}/quests`);
+                    if (!response.ok) throw new Error('Failed to fetch quests.');
+                    const data = await response.json();
+                    this.quests = data.quests.map(q => ({
+                        ...q,
+                        status: this.completedQuestIds.includes(q.id) ? 'completed' : 'not-started'
+                    }));
+                },
+
                 updateHeader() {
-                    this.elements.userName.textContent = this.user.name;
-                    this.elements.userBalance.textContent = `$${this.user.balance.toFixed(2)}`;
-                    this.elements.userAvatar.src = `https://placehold.co/40x40/6c5ce7/white?text=${this.user.name.charAt(0)}`;
-                    
-                    const completedCount = this.quests.filter(q => q.status === 'completed').length;
-                    const totalEarnings = this.quests.filter(q => q.status === 'completed').reduce((sum, q) => sum + q.reward, 0);
-                    
-                    this.elements.questsCompleted.textContent = completedCount;
-                    this.elements.totalEarnings.textContent = `$${totalEarnings.toFixed(2)}`;
+                    this.elements.userName.textContent = this.user.fullName || 'User';
+                    this.elements.userBalance.textContent = `$${(this.user.totalEarnings || 0).toFixed(2)}`;
+                    this.elements.userAvatar.src = this.user.avatar || `https://placehold.co/40x40/6c5ce7/white?text=${(this.user.fullName || 'U').charAt(0)}`;
+                    this.elements.questsCompleted.textContent = this.completedQuestIds.length;
+                    this.elements.totalEarnings.textContent = `$${(this.user.totalEarnings || 0).toFixed(2)}`;
                 },
                 
-                /**
-                 * Filters, sorts, and displays quests based on UI controls.
-                 * Uses safe DOM manipulation to prevent XSS.
-                 */
                 displayQuests() {
-                    this.elements.questList.innerHTML = ''; // Clear previous list
+                    this.elements.questList.innerHTML = '';
                     
                     const searchTerm = this.elements.searchInput.value.toLowerCase();
                     const statusFilter = this.elements.statusFilter.value;
                     const sortOrder = this.elements.sortFilter.value;
                     
-                    // 1. Filter
                     let filteredQuests = this.quests.filter(quest => {
                         const matchesSearch = quest.title.toLowerCase().includes(searchTerm) || quest.description.toLowerCase().includes(searchTerm);
                         const matchesStatus = (statusFilter === 'all') || (quest.status === statusFilter);
                         return matchesSearch && matchesStatus;
                     });
                     
-                    // 2. Sort
+                    const parseReward = (rewardStr) => parseFloat(String(rewardStr).replace(/[^0-9.]/g, ''));
+
                     if (sortOrder === 'high-to-low') {
-                        filteredQuests.sort((a, b) => b.reward - a.reward);
+                        filteredQuests.sort((a, b) => parseReward(b.reward) - parseReward(a.reward));
                     } else if (sortOrder === 'low-to-high') {
-                        filteredQuests.sort((a, b) => a.reward - b.reward);
+                        filteredQuests.sort((a, b) => parseReward(a.reward) - parseReward(b.reward));
                     }
                     
-                    // 3. Paginate
                     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-                    const endIndex = startIndex + this.itemsPerPage;
-                    const paginatedQuests = filteredQuests.slice(startIndex, endIndex);
+                    const paginatedQuests = filteredQuests.slice(startIndex, startIndex + this.itemsPerPage);
 
-                    // 4. Render
                     if (paginatedQuests.length === 0) {
                         this.elements.questList.innerHTML = `<p class="text-gray-500 md:col-span-2 lg:col-span-3 text-center">No quests found.</p>`;
                     } else {
@@ -313,11 +351,6 @@
                     this.renderPagination(filteredQuests.length);
                 },
 
-                /**
-                 * Creates a quest card element safely.
-                 * @param {object} quest - The quest data object.
-                 * @returns {HTMLElement} - The quest card element.
-                 */
                 createQuestCard(quest) {
                     const card = document.createElement('div');
                     card.className = 'quest-card bg-gray-50 border border-gray-200 rounded-xl p-6 flex flex-col justify-between transition-shadow hover:shadow-lg';
@@ -325,25 +358,23 @@
                     
                     const isCompleted = quest.status === 'completed';
                     
-                    let statusBadge;
-                    if (isCompleted) {
-                        statusBadge = `<span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Completed</span>`;
-                    } else {
-                         statusBadge = `<span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Available</span>`;
-                    }
+                    const statusBadge = isCompleted 
+                        ? `<span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Completed</span>`
+                        : `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Available</span>`;
 
-                    // Using template literals but setting properties safely, not with innerHTML.
-                    const cardContent = `
+                    const rewardValue = String(quest.reward).startsWith('$') ? quest.reward : `$${parseFloat(quest.reward).toFixed(2)}`;
+                    
+                    card.innerHTML = `
                         <div class="flex-grow">
                             <div class="flex justify-between items-start mb-2">
-                                <h3 class="text-lg font-bold text-gray-800">${quest.title}</h3>
+                                <h3 class="text-lg font-bold text-gray-800 pr-2">${quest.title}</h3>
                                 ${statusBadge}
                             </div>
                             <p class="text-gray-600 mb-4 text-sm">${quest.description}</p>
                         </div>
                         <div class="mt-4 pt-4 border-t border-gray-200">
                              <div class="flex justify-between items-center mb-4">
-                                <p class="font-bold text-green-600 text-lg">$${quest.reward.toFixed(2)}</p>
+                                <p class="font-bold text-green-600 text-lg">${rewardValue}</p>
                                 <button class="details-btn text-purple-600 hover:underline text-sm font-semibold">View Details</button>
                             </div>
                             <button class="start-quiz-btn w-full py-2 px-4 rounded-lg font-semibold transition ${isCompleted ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}" ${isCompleted ? 'disabled' : ''}>
@@ -351,17 +382,13 @@
                             </button>
                         </div>
                     `;
-                    card.innerHTML = cardContent; // Safe here because content is controlled
                     return card;
                 },
 
-                /**
-                 * Renders pagination controls.
-                 * @param {number} totalItems - Total number of items to paginate.
-                 */
                 renderPagination(totalItems) {
                     this.elements.pagination.innerHTML = '';
                     const pageCount = Math.ceil(totalItems / this.itemsPerPage);
+                    if (pageCount <= 1) return;
 
                     for (let i = 1; i <= pageCount; i++) {
                         const pageLink = document.createElement('button');
@@ -375,19 +402,37 @@
                     }
                 },
 
-                // --- QUIZ LOGIC ---
-                startQuiz(questId) {
-                    this.currentQuiz = this.quizData[questId];
-                    if (!this.currentQuiz) {
-                        this.showNotification('Quiz not available for this quest yet.', 'error');
-                        return;
+                async startQuiz(questId) {
+                    try {
+                        this.showLoading();
+                        const response = await fetch(`${this.apiBaseUrl}/quests/${questId}/questions`);
+                        if (!response.ok) throw new Error('Failed to load quiz questions.');
+                        const data = await response.json();
+                        
+                        if (!data.questions || data.questions.length === 0) {
+                            this.showNotification('Quiz not available for this quest yet.', 'error');
+                            return;
+                        }
+                        
+                        this.currentQuiz = {
+                            id: questId,
+                            title: this.quests.find(q => q.id === questId).title,
+                            description: 'Test your knowledge to complete the quest.',
+                            questions: data.questions
+                        };
+
+                        this.currentQuestionIndex = 0;
+                        this.userAnswers = [];
+                        document.getElementById('quiz-title').textContent = this.currentQuiz.title;
+                        document.getElementById('quiz-description').textContent = this.currentQuiz.description;
+                        this.showQuestion();
+                        this.openModal(this.elements.quizModal);
+                    } catch (error) {
+                        console.error("Error starting quiz:", error);
+                        this.showNotification(error.message, "error");
+                    } finally {
+                        this.hideLoading();
                     }
-                    this.currentQuestionIndex = 0;
-                    this.userAnswers = [];
-                    document.getElementById('quiz-title').textContent = this.currentQuiz.title;
-                    document.getElementById('quiz-description').textContent = this.currentQuiz.description;
-                    this.showQuestion();
-                    this.openModal(this.elements.quizModal);
                 },
 
                 showQuestion() {
@@ -397,14 +442,14 @@
                     quizContent.innerHTML = `<p class="text-lg font-semibold">${question.question}</p>`;
                     quizOptions.innerHTML = '';
 
-                    question.options.forEach(option => {
+                    const options = Array.isArray(question.options) ? question.options : JSON.parse(question.options);
+
+                    options.forEach(option => {
                         const optionButton = document.createElement('button');
                         optionButton.textContent = option;
                         optionButton.className = 'w-full text-left p-4 border rounded-lg hover:bg-purple-100 hover:border-purple-500 transition';
                         optionButton.addEventListener('click', () => {
-                            // Store answer and go to next question
                             this.userAnswers[this.currentQuestionIndex] = option;
-                            // Visual feedback
                             Array.from(quizOptions.children).forEach(btn => btn.classList.remove('bg-purple-200', 'border-purple-600'));
                             optionButton.classList.add('bg-purple-200', 'border-purple-600');
                         });
@@ -431,36 +476,79 @@
                     this.showQuestion();
                 },
 
-                submitQuiz() {
+                async submitQuiz() {
                     if (this.userAnswers[this.currentQuestionIndex] === undefined) {
                         this.showNotification('Please select an answer.', 'error');
                         return;
                     }
                     
-                    let score = 0;
-                    this.currentQuiz.questions.forEach((q, index) => {
-                        if (q.answer === this.userAnswers[index]) {
-                            score++;
+                    this.showLoading();
+                    try {
+                        const response = await fetch(`${this.apiBaseUrl}/submit-quiz/${this.currentQuiz.id}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ answers: this.userAnswers })
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            this.showNotification(`Quiz passed! ${result.reward} added to your balance.`, 'success');
+                            await this.loadUserData(); // Refresh user data
+                            await this.loadQuests(); // Refresh quest statuses
+                            this.updateHeader();
+                            this.displayQuests();
+                        } else {
+                            this.showNotification(result.message || 'Quiz failed. Please try again.', 'error');
                         }
-                    });
-                    
-                    const questId = Object.keys(this.quizData).find(key => this.quizData[key] === this.currentQuiz);
-                    const quest = this.quests.find(q => q.id == questId);
-                    
-                    if (score === this.currentQuiz.questions.length) {
-                        this.user.balance += quest.reward;
-                        quest.status = 'completed';
-                        this.showNotification(`Quiz passed! $${quest.reward.toFixed(2)} added to your balance.`, 'success');
-                    } else {
-                        this.showNotification('Quiz failed. Please try again later.', 'error');
+                    } catch (error) {
+                        this.showNotification('An error occurred while submitting the quiz.', 'error');
+                    } finally {
+                        this.closeModal(this.elements.quizModal);
+                        this.hideLoading();
                     }
-                    
-                    this.updateHeader();
-                    this.displayQuests();
-                    this.closeModal(this.elements.quizModal);
+                },
+                
+                async showQuestHistory() {
+                    this.showLoading();
+                    try {
+                        const userId = 'sampleUser'; // In a real app, this comes from session
+                        const response = await fetch(`${this.apiBaseUrl}/quest-overview?userId=${userId}`);
+                        if(!response.ok) throw new Error('Could not load history.');
+                        const data = await response.json();
+                        
+                        this.elements.historyList.innerHTML = ''; // Clear previous
+                        
+                        if (data.questsCompleted && data.questsCompleted.length > 0) {
+                            data.questsCompleted.forEach(item => {
+                                const quest = this.quests.find(q => q.id === item.quest_id);
+                                if (!quest) return;
+
+                                const historyItem = document.createElement('div');
+                                historyItem.className = 'p-4 bg-gray-50 rounded-lg border flex justify-between items-center';
+                                const completionDate = new Date(item.completed_at).toLocaleDateString();
+                                const rewardValue = String(quest.reward).startsWith('$') ? quest.reward : `$${parseFloat(quest.reward).toFixed(2)}`;
+
+                                historyItem.innerHTML = `
+                                    <div>
+                                        <p class="font-semibold">${quest.title}</p>
+                                        <p class="text-sm text-gray-500">Completed on: ${completionDate}</p>
+                                    </div>
+                                    <p class="font-bold text-green-600">${rewardValue}</p>
+                                `;
+                                this.elements.historyList.appendChild(historyItem);
+                            });
+                        } else {
+                            this.elements.historyList.innerHTML = `<p class="text-gray-500 text-center">No completed quests yet.</p>`;
+                        }
+                        this.openModal(this.elements.historyModal);
+                    } catch (error) {
+                        this.showNotification(error.message, 'error');
+                    } finally {
+                        this.hideLoading();
+                    }
                 },
 
-                // --- MODAL & NOTIFICATION LOGIC ---
                 openModal(modal) {
                     modal.classList.remove('hidden');
                     modal.classList.add('flex');
@@ -488,7 +576,6 @@
                     }, 3000);
                 },
                 
-                // --- CAROUSEL LOGIC ---
                 initCarousel() {
                     const carouselItems = [
                         { img: 'https://placehold.co/800x400/6c5ce7/white?text=Learn+and+Earn', title: 'Learn & Earn', subtitle: 'Complete quests to gain knowledge and rewards.'},
@@ -500,11 +587,10 @@
                     this.elements.carouselDots.innerHTML = '';
                     
                     carouselItems.forEach((item, index) => {
-                        // Create item
                         const itemDiv = document.createElement('div');
                         itemDiv.className = `carousel-item absolute w-full h-full ${index === 0 ? 'active' : ''}`;
                         itemDiv.innerHTML = `
-                            <img src="${item.img}" class="w-full h-full object-cover">
+                            <img src="${item.img}" class="w-full h-full object-cover" alt="${item.title}">
                             <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-white p-4 text-center">
                                 <h2 class="text-3xl md:text-4xl font-bold font-montserrat">${item.title}</h2>
                                 <p class="mt-2 text-lg">${item.subtitle}</p>
@@ -512,7 +598,6 @@
                         `;
                         this.elements.carousel.appendChild(itemDiv);
                         
-                        // Create dot
                         const dot = document.createElement('button');
                         dot.className = `carousel-dot w-3 h-3 rounded-full transition ${index === 0 ? 'bg-white' : 'bg-white/50'}`;
                         dot.dataset.index = index;
@@ -531,76 +616,85 @@
                         dots[slideIndex].classList.replace('bg-white/50', 'bg-white');
                     };
                     
-                    const nextSlide = () => showSlide(slideIndex + 1);
-                    
                     this.elements.carouselDots.addEventListener('click', (e) => {
                         if (e.target.matches('.carousel-dot')) {
                             showSlide(parseInt(e.target.dataset.index));
                         }
                     });
 
-                    setInterval(nextSlide, 5000);
+                    setInterval(() => showSlide(slideIndex + 1), 5000);
                 },
 
-                // --- EVENT BINDINGS ---
+                showLoading() {
+                    this.elements.loadingOverlay.classList.remove('hidden');
+                    this.elements.appContainer.classList.add('opacity-0');
+                },
+
+                hideLoading() {
+                    this.elements.loadingOverlay.classList.add('hidden');
+                    this.elements.appContainer.classList.remove('opacity-0');
+                },
+
                 bindEvents() {
-                    // Filter and Sort listeners
                     this.elements.searchInput.addEventListener('input', () => { this.currentPage = 1; this.displayQuests(); });
                     this.elements.statusFilter.addEventListener('change', () => { this.currentPage = 1; this.displayQuests(); });
                     this.elements.sortFilter.addEventListener('change', () => { this.currentPage = 1; this.displayQuests(); });
                     
-                    // Event delegation for quest cards
                     this.elements.questList.addEventListener('click', e => {
                         const card = e.target.closest('.quest-card');
                         if (!card) return;
-                        
                         const questId = parseInt(card.dataset.questId, 10);
-                        
-                        if (e.target.closest('.start-quiz-btn:not([disabled])')) {
-                            this.startQuiz(questId);
-                        } else if (e.target.closest('.details-btn')) {
-                            this.showNotification('Quest details page is a work in progress!', 'info');
-                        }
+                        if (e.target.closest('.start-quiz-btn:not([disabled])')) this.startQuiz(questId);
                     });
 
-                    // Quiz modal controls
                     document.getElementById('next-btn').addEventListener('click', () => this.nextQuestion());
                     document.getElementById('submit-btn').addEventListener('click', () => this.submitQuiz());
                     this.elements.quizModal.addEventListener('click', (e) => {
                        if (e.target === this.elements.quizModal) this.closeModal(this.elements.quizModal);
                     });
 
-                    // Withdrawal modal controls
                     this.elements.withdrawBtns.forEach(btn => {
                         btn.addEventListener('click', () => {
-                             document.getElementById('withdraw-balance').textContent = `$${this.user.balance.toFixed(2)}`;
+                             document.getElementById('withdraw-balance').textContent = `$${(this.user.totalEarnings || 0).toFixed(2)}`;
                              this.openModal(this.elements.withdrawModal);
                         });
                     });
                     
-                    document.getElementById('confirm-withdrawal-btn').addEventListener('click', () => {
+                    document.getElementById('confirm-withdrawal-btn').addEventListener('click', async () => {
                         const amount = parseFloat(document.getElementById('withdraw-amount').value);
-                        if (isNaN(amount) || amount <= 0) {
-                            this.showNotification('Please enter a valid amount.', 'error');
-                            return;
+                        if (isNaN(amount) || amount <= 0) return this.showNotification('Please enter a valid amount.', 'error');
+                        if (amount > this.user.totalEarnings) return this.showNotification('Insufficient funds.', 'error');
+                        
+                        this.showLoading();
+                        try {
+                            const response = await fetch(`${this.apiBaseUrl}/withdraw`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ amount })
+                            });
+                            const result = await response.json();
+                            if (!response.ok) throw new Error(result.error || 'Withdrawal failed.');
+                            
+                            this.showNotification(`Withdrawal successful! Your code: ${result.code}`, 'success');
+                            await this.loadUserData();
+                            this.updateHeader();
+                            this.closeModal(this.elements.withdrawModal);
+                        } catch(error) {
+                            this.showNotification(error.message, 'error');
+                        } finally {
+                            this.hideLoading();
                         }
-                        if (amount > this.user.balance) {
-                             this.showNotification('Insufficient funds.', 'error');
-                             return;
-                        }
-                        this.user.balance -= amount;
-                        this.updateHeader();
-                        this.showNotification(`$${amount.toFixed(2)} withdrawn successfully.`, 'success');
-                        this.closeModal(this.elements.withdrawModal);
                     });
                      document.getElementById('cancel-withdrawal-btn').addEventListener('click', () => this.closeModal(this.elements.withdrawModal));
-                     this.elements.withdrawModal.addEventListener('click', (e) => {
-                       if (e.target === this.elements.withdrawModal) this.closeModal(this.elements.withdrawModal);
+
+                     this.elements.questHistoryBtn.addEventListener('click', () => this.showQuestHistory());
+                     this.elements.closeHistoryBtn.addEventListener('click', () => this.closeModal(this.elements.historyModal));
+                     this.elements.historyModal.addEventListener('click', (e) => {
+                       if (e.target === this.elements.historyModal) this.closeModal(this.elements.historyModal);
                     });
                 }
             };
 
-            // Start the application
             App.init();
         });
     </script>
