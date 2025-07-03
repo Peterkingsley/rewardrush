@@ -83,7 +83,7 @@
             backdrop-filter: blur(8px);
             transition: all 0.4s ease;
             position: relative;
-            overflow: hidden;
+            /* overflow: hidden; */ /* <-- THIS LINE HAS BEEN REMOVED TO FIX THE IMAGE CLIPPING */
         }
         
         .feature-card:hover {
@@ -147,7 +147,6 @@
 
     <canvas id="bg-canvas"></canvas>
 
-    <!-- Header -->
     <header class="sticky top-0 z-50 bg-dark-bg/80 backdrop-blur-md border-b border-primary-glow/20">
         <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
             <div class="text-2xl md:text-3xl font-bold font-orbitron flex items-center">
@@ -183,7 +182,6 @@
     </header>
 
     <main class="relative z-10">
-        <!-- Hero Section -->
         <section class="relative text-center overflow-hidden py-20 md:py-32 px-4">
             <div class="container mx-auto px-4">
                 <div class="max-w-4xl mx-auto">
@@ -210,7 +208,6 @@
             </div>
         </section>
 
-        <!-- The Problem Section (Reworked) -->
         <section class="py-16 md:py-24 bg-gradient-to-b from-dark-bg to-mid-bg/50">
             <div class="container mx-auto px-6">
                 <div class="text-center mb-12 reveal">
@@ -244,7 +241,6 @@
             </div>
         </section>
 
-        <!-- The Solution: Playbooks Section (Reworked) -->
         <section id="playbooks" class="py-16 md:py-24">
             <div class="container mx-auto px-6">
                 <div class="text-center mb-16 reveal">
@@ -254,13 +250,11 @@
                 </div>
                 
                 <div class="flex flex-col md:flex-row gap-8 items-center">
-                    <!-- Left Side Image/Graphic -->
                     <div class="w-full md:w-1/2 lg:w-2/5 reveal">
                         <div class="glass-card rounded-2xl p-4">
                             <img src="https://placehold.co/600x700/1a1a2e/8b00ff?text=Blueprint+Visual" alt="Product Blueprint Visualization" class="rounded-xl w-full h-auto object-cover">
                         </div>
                     </div>
-                    <!-- Right Side Content -->
                     <div class="w-full md:w-1/2 lg:w-3/5 space-y-6 reveal" style="transition-delay: 200ms;">
                          <div class="feature-card p-6 rounded-2xl">
                             <h3 class="text-xl md:text-2xl font-bold text-gray-100">DEX Launchpad</h3>
@@ -283,7 +277,6 @@
             </div>
         </section>
 
-        <!-- Founder Calls Section -->
         <section class="py-16 md:py-24 bg-mid-bg/50">
             <div class="container mx-auto px-6">
                 <div class="text-center mb-16 reveal">
@@ -293,35 +286,31 @@
                 </div>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 pt-16">
-                    <!-- Founder Card 1 -->
                     <div class="feature-card p-6 rounded-2xl reveal text-center">
                         <img src="https://media.licdn.com/dms/image/v2/D4E03AQHPJtX6G68_QQ/profile-displayphoto-shrink_200_200/B4EZUo_D3jGYAY-/0/1740149374917?e=1756944000&v=beta&t=rX4J9gHrkmtMuZIFsVEnB3n33N4uBCa5-CncXRGSrRM" alt="Founder 1" class="w-32 h-32 rounded-full mx-auto border-4 border-accent-glow/40 -mt-20 mb-4 object-cover">
                         <h3 class="text-xl font-bold text-gray-100">Max Yamp</h3>
-                        <p class="text-sm text-accent-glow font-orbitron mb-3">Founder, OneClick.Fi</p>
-                        <p class="text-xs text-gray-400 font-roboto mb-4">Building and innovating in web3 & AI tech. </p>
+                        <p class="text-sm text-accent-glow font-orbitron mb-3">Founder & CEO, OneClick.Fi</p>
+                        <p class="text-xs text-gray-400 font-roboto mb-4">Building the liquidity OS for DeFi | Infra for yield and incentive coordination. </p>
                         <button class="w-full neon-button font-semibold px-4 py-2 rounded-md text-sm">Book a Call</button>
                     </div>
-                     <!-- Founder Card 2 -->
-                    <div class="feature-card p-6 rounded-2xl reveal text-center" style="transition-delay: 200ms;">
+                     <div class="feature-card p-6 rounded-2xl reveal text-center" style="transition-delay: 200ms;">
                         <img src="https://media.licdn.com/dms/image/v2/C5603AQEAjWhQPk3_Wg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1517035272628?e=1756944000&v=beta&t=JAFESaGEXlb1Hftz4s4k-s1ToHYL0igxi4eHLjVqHfY" alt="Founder 2" class="w-32 h-32 rounded-full mx-auto border-4 border-accent-glow/40 -mt-20 mb-4 object-cover">
                         <h3 class="text-xl font-bold text-gray-100">Martin Masser</h3>
                         <p class="text-sm text-accent-glow font-orbitron mb-3">Head of growth, TON Foundation</p>
                         <p class="text-xs text-gray-400 font-roboto mb-4">CBDO in Crypto and previously a UX designer with over ten years experience.</p>
                         <button class="w-full neon-button font-semibold px-4 py-2 rounded-md text-sm">Book a Call</button>
                     </div>
-                     <!-- Founder Card 3 -->
-                    <div class="feature-card p-6 rounded-2xl reveal text-center" style="transition-delay: 400ms;">
+                     <div class="feature-card p-6 rounded-2xl reveal text-center" style="transition-delay: 400ms;">
                         <img src="https://media.licdn.com/dms/image/v2/C4D03AQGmvtIF0RIXBg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1656596674797?e=1756944000&v=beta&t=RJlsc_Cl1NjW2RTdBPYWNuuHAVKC9BschEqKkXftTLM" alt="Founder 3" class="w-32 h-32 rounded-full mx-auto border-4 border-accent-glow/40 -mt-20 mb-4 object-cover">
-                        <h3 class="text-xl font-bold text-gray-100">Leonid Bashlykov</h3>
+                        <h3 class="text-xl font-bold text-gray-100">Leonid Bashly</h3>
                         <p class="text-sm text-accent-glow font-orbitron mb-3">Head of Product, Revolut</p>
                         <p class="text-xs text-gray-400 font-roboto mb-4">Tech leader with 10 years experience in FinTech, VC and EdTech domains.</p>
                         <button class="w-full neon-button font-semibold px-4 py-2 rounded-md text-sm">Book a Call</button>
                     </div>
-                     <!-- Founder Card 4 -->
-                    <div class="feature-card p-6 rounded-2xl reveal text-center" style="transition-delay: 600ms;">
-                        <img src="https://media.licdn.com/dms/image/v2/D4E03AQHXFx3sNrSjxQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1679964581525?e=1756944000&v=beta&t=x31r7YHq9xqG6wBPkDVCbipnx2GQHwA2bCDfXWMcJiA" alt="Founder 4" class="w-32 h-32 rounded-full mx-auto border-4 border-accent-glow/40 -mt-20 mb-4 object-cover">
-                        <h3 class="text-xl font-bold text-gray-100">Diego Yanez</h3>
-                        <p class="text-sm text-accent-glow font-orbitron mb-3">Founder/CEO, alfred</p>
+                     <div class="feature-card p-6 rounded-2xl reveal text-center" style="transition-delay: 600ms;">
+                        <img src="https://media.licdn.com/dms/image/v2/D5603AQHQou6QloI77w/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1719496503748?e=1756944000&v=beta&t=0rbpWvVI1pZ4aNRj-S86qYaQfzlcY6q6e0Ycnw2ZSJY" alt="Founder 4" class="w-32 h-32 rounded-full mx-auto border-4 border-accent-glow/40 -mt-20 mb-4 object-cover">
+                        <h3 class="text-xl font-bold text-gray-100">Jeremy K.</h3>
+                        <p class="text-sm text-accent-glow font-orbitron mb-3">Co-Founder, Afterprime.</p>
                         <p class="text-xs text-gray-400 font-roboto mb-4">Navigated complex regulatory hurdles across multiple continents.</p>
                         <button class="w-full neon-button font-semibold px-4 py-2 rounded-md text-sm">Book a Call</button>
                     </div>
@@ -329,7 +318,6 @@
             </div>
         </section>
 
-        <!-- Final CTA -->
         <section id="signup" class="py-16 md:py-24">
             <div class="container mx-auto px-6 text-center reveal">
                 <div class="max-w-3xl mx-auto">
@@ -346,8 +334,7 @@
         </section>
     </main>
 
-    <!-- Footer -->
-        <footer class="bg-dark-bg border-t border-primary-glow/20">
+    <footer class="bg-dark-bg border-t border-primary-glow/20">
         <div class="container mx-auto px-6 py-12">
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
                 <div class="col-span-full md:col-span-1 mb-6 md:mb-0">
