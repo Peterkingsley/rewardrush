@@ -81,21 +81,17 @@
     <div id="app-container" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24">
 
         <!-- Header Section -->
-        <header class="bg-white shadow-md rounded-2xl p-4 mb-6 flex flex-wrap items-center justify-between">
+        <header class="bg-white shadow-md rounded-2xl p-4 mb-6 flex items-center justify-center">
             <div class="text-xl md:text-2xl font-semibold flex items-center">
                 <a href="/" class="gradient-text flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
                     RewardRush
                 </a>
             </div>
-            <div id="user-profile" class="flex items-center mt-4 sm:mt-0">
-                <div class="text-right mr-3">
-                    <p class="font-medium text-sm" id="user-name">John Doe</p>
-                    <p class="text-xs text-gray-500" id="user-balance">$0.00</p>
-                </div>
-                <img src="https://placehold.co/40x40/6c5ce7/white?text=JD" id="user-avatar" alt="User Avatar" class="w-9 h-9 rounded-full">
-            </div>
         </header>
+
+        <!-- Time-based Greeting -->
+        <div id="time-based-greeting" class="text-2xl font-bold text-gray-900 mb-6 px-2 font-montserrat"></div>
 
         <!-- Main Content -->
         <main>
@@ -259,9 +255,7 @@
 
                 // --- UI ELEMENTS ---
                 elements: {
-                    userName: document.getElementById('user-name'),
-                    userBalance: document.getElementById('user-balance'),
-                    userAvatar: document.getElementById('user-avatar'),
+                    greeting: document.getElementById('time-based-greeting'),
                     questsCompleted: document.getElementById('quests-completed'),
                     totalEarnings: document.getElementById('total-earnings'),
                     questList: document.getElementById('quest-list'),
@@ -284,24 +278,36 @@
                  * Initializes the application, sets up event listeners and renders initial data.
                  */
                 init() {
-                    // Update header with user data
+                    this.displayGreeting();
                     this.updateHeader();
-                    // Display initial set of quests
                     this.displayQuests();
-                    // Initialize the carousel
                     this.initCarousel();
-                    // Attach all event listeners
                     this.bindEvents();
+                },
+
+                /**
+                 * Displays a greeting message based on the time of day.
+                 */
+                displayGreeting() {
+                    const hour = new Date().getHours();
+                    const name = this.user.name.split(' ')[0]; // Get first name
+                    let greetingText = '';
+
+                    if (hour < 12) {
+                        greetingText = `Good morning, ${name}`;
+                    } else if (hour < 18) {
+                        greetingText = `Good afternoon, ${name}`;
+                    } else {
+                        greetingText = `Good evening, ${name}`;
+                    }
+
+                    this.elements.greeting.innerHTML = greetingText;
                 },
 
                 /**
                  * Updates the header with current user information.
                  */
                 updateHeader() {
-                    this.elements.userName.textContent = this.user.name;
-                    this.elements.userBalance.textContent = `$${this.user.balance.toFixed(2)}`;
-                    this.elements.userAvatar.src = `https://placehold.co/40x40/6c5ce7/white?text=${this.user.name.charAt(0)}`;
-                    
                     const completedCount = this.quests.filter(q => q.status === 'completed').length;
                     const totalEarnings = this.quests.filter(q => q.status === 'completed').reduce((sum, q) => sum + q.reward, 0);
                     
