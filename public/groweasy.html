@@ -170,7 +170,7 @@
                         <p class="text-base font-semibold">&nbsp;</p>
                     </div>
                     <!-- Card 2: History -->
-                    <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                    <div id="history-btn" class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center cursor-pointer">
                         <i class="fas fa-history text-yellow-500 text-xl mb-1"></i>
                         <p class="text-gray-500 text-xs font-medium">History</p>
                         <p class="text-base font-semibold">&nbsp;</p>
@@ -211,6 +211,14 @@
                     <nav id="pagination" class="flex justify-center items-center mt-6 space-x-2">
                         <!-- Pagination controls will be dynamically inserted here -->
                     </nav>
+                </div>
+
+                <!-- History Section -->
+                <div id="history-section" class="bg-white rounded-2xl shadow-md p-5 mt-6">
+                    <h2 class="text-lg font-bold mb-4">Quest History</h2>
+                    <div id="history-list">
+                        <!-- History items will be dynamically inserted here -->
+                    </div>
                 </div>
             </main>
         </div>
@@ -293,12 +301,12 @@
                     isBalanceVisible: true,
                 },
                 quests: [
-                    { id: 1, title: 'Crypto Basics', description: 'Learn the fundamentals of cryptocurrency.', reward: 5.00, status: 'completed' },
-                    { id: 2, title: 'DeFi Introduction', description: 'What is Decentralized Finance?', reward: 7.50, status: 'not-started' },
-                    { id: 3, title: 'NFTs Explained', description: 'Explore the world of Non-Fungible Tokens.', reward: 6.00, status: 'not-started' },
-                    { id: 4, title: 'Blockchain Technology', description: 'Understand the core technology behind crypto.', reward: 8.00, status: 'not-started' },
-                    { id: 5, title: 'Smart Contracts 101', description: 'Learn how smart contracts work.', reward: 10.00, status: 'not-started' },
-                    { id: 6, title: 'Web3 Gaming', description: 'Discover the future of gaming.', reward: 7.00, status: 'not-started' }
+                    { id: 1, title: 'Crypto Basics', description: 'Learn the fundamentals of cryptocurrency.', reward: 5.00, status: 'completed', completionDate: '2024-07-04' },
+                    { id: 2, title: 'DeFi Introduction', description: 'What is Decentralized Finance?', reward: 7.50, status: 'not-started', completionDate: null },
+                    { id: 3, title: 'NFTs Explained', description: 'Explore the world of Non-Fungible Tokens.', reward: 6.00, status: 'not-started', completionDate: null },
+                    { id: 4, title: 'Blockchain Technology', description: 'Understand the core technology behind crypto.', reward: 8.00, status: 'not-started', completionDate: null },
+                    { id: 5, title: 'Smart Contracts 101', description: 'Learn how smart contracts work.', reward: 10.00, status: 'completed', completionDate: '2024-07-02' },
+                    { id: 6, title: 'Web3 Gaming', description: 'Discover the future of gaming.', reward: 7.00, status: 'not-started', completionDate: null }
                 ],
                 quizData: {
                     2: { title: 'DeFi Introduction', description: 'Test your knowledge on DeFi.', questions: [{ question: "What does DeFi stand for?", options: ["Decentralized Finance", "Digital Finance", "Distributed Funding"], answer: "Decentralized Finance" }, { question: "Which is a common DeFi application?", options: ["Lending", "Gaming", "Social Media"], answer: "Lending" }] },
@@ -331,6 +339,9 @@
                     carousel: document.getElementById('carousel'),
                     carouselDots: document.getElementById('carousel-dots'),
                     sidebarToggleBtn: document.getElementById('sidebar-toggle'),
+                    historyBtn: document.getElementById('history-btn'),
+                    historySection: document.getElementById('history-section'),
+                    historyList: document.getElementById('history-list'),
                 },
                 
                 // --- METHODS ---
@@ -342,6 +353,7 @@
                     this.displayGreeting();
                     this.updateHeader();
                     this.displayQuests();
+                    this.displayHistory();
                     this.initCarousel();
                     this.bindEvents();
                     this.bindSidebarToggle();
@@ -437,6 +449,36 @@
                     }
                     
                     this.renderPagination(filteredQuests.length);
+                },
+
+                /**
+                 * Displays the list of completed quests in the history section.
+                 */
+                displayHistory() {
+                    this.elements.historyList.innerHTML = ''; // Clear previous list
+                    const completedQuests = this.quests.filter(quest => quest.status === 'completed');
+
+                    if (completedQuests.length === 0) {
+                        this.elements.historyList.innerHTML = `<p class="text-gray-500 text-center py-4">No completed quests yet.</p>`;
+                    } else {
+                        completedQuests.forEach(quest => {
+                            const historyItem = document.createElement('div');
+                            historyItem.className = 'flex justify-between items-center p-3 border-b border-gray-200 last:border-b-0';
+                            
+                            const formattedDate = new Date(quest.completionDate).toLocaleDateString('en-US', {
+                                year: 'numeric', month: 'long', day: 'numeric'
+                            });
+
+                            historyItem.innerHTML = `
+                                <div>
+                                    <p class="font-semibold text-gray-800">${quest.title}</p>
+                                    <p class="text-xs text-gray-500">Completed on ${formattedDate}</p>
+                                </div>
+                                <p class="font-semibold text-green-600">+$${quest.reward.toFixed(2)}</p>
+                            `;
+                            this.elements.historyList.appendChild(historyItem);
+                        });
+                    }
                 },
 
                 /**
@@ -585,6 +627,7 @@
                     
                     this.updateHeader();
                     this.displayQuests();
+                    this.displayHistory();
                     this.closeModal(this.elements.quizModal);
                 },
 
@@ -677,6 +720,11 @@
                     this.elements.toggleBalanceBtn.addEventListener('click', () => {
                         this.state.isBalanceVisible = !this.state.isBalanceVisible;
                         this.updateBalanceDisplay();
+                    });
+
+                    // History button listener
+                    this.elements.historyBtn.addEventListener('click', () => {
+                        this.elements.historySection.scrollIntoView({ behavior: 'smooth' });
                     });
 
                     // Event delegation for quest cards
