@@ -162,11 +162,11 @@
         <!-- Navigation -->
         <nav class="flex-grow p-4">
             <ul>
-                <li class="mb-2"><a href="groweasy.html" class="nav-link flex items-center text-lg text-purple-600 font-semibold py-3 px-4 rounded-lg bg-purple-50"><i class="fas fa-compass w-6 text-center mr-3"></i><span class="sidebar-text">Quests</span></a></li>
-                <li class="mb-2"><a href="affiliate.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-briefcase w-6 text-center mr-3"></i><span class="sidebar-text">Jobs</span></a></li>
-                <li class="mb-2"><a href="education.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-book-open w-6 text-center mr-3"></i><span class="sidebar-text">Learn</span></a></li>
-                <li class="mb-2"><a href="founder.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-tools w-6 text-center mr-3"></i><span class="sidebar-text">Build</span></a></li>
-                <li class="mb-2"><a href="profile.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-user w-6 text-center mr-3"></i><span class="sidebar-text">Profile</span></a></li>
+                <li class="mb-2"><a href="#" class="nav-link flex items-center text-lg text-purple-600 font-semibold py-3 px-4 rounded-lg bg-purple-50"><i class="fas fa-compass w-6 text-center mr-3"></i><span class="sidebar-text">Quests</span></a></li>
+                <li class="mb-2"><a href="#" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-briefcase w-6 text-center mr-3"></i><span class="sidebar-text">Jobs</span></a></li>
+                <li class="mb-2"><a href="#" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-book-open w-6 text-center mr-3"></i><span class="sidebar-text">Learn</span></a></li>
+                <li class="mb-2"><a href="#" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-tools w-6 text-center mr-3"></i><span class="sidebar-text">Build</span></a></li>
+                <li class="mb-2"><a href="#" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-user w-6 text-center mr-3"></i><span class="sidebar-text">Profile</span></a></li>
             </ul>
         </nav>
     </aside>
@@ -174,22 +174,22 @@
     <!-- Main Content Wrapper -->
     <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
         
-        <!-- App Container -->
-        <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 pt-6 md:pt-8">
-
-            <!-- Header Section (Mobile Only, Sticky) -->
-            <div class="md:hidden sticky top-0 z-30 -mx-4">
-                <div class="p-4 bg-transparent">
-                     <header class="bg-white shadow-md p-4 flex items-center justify-center rounded-2xl">
-                        <div class="text-xl font-semibold flex items-center">
-                            <a href="/" class="gradient-text flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
-                                RewardRush
-                            </a>
-                        </div>
-                    </header>
-                </div>
+        <!-- Header Section (Mobile Only, Sticky) -->
+        <div class="md:hidden sticky top-0 z-30 bg-gray-100/80 backdrop-blur-sm pt-4">
+             <div class="px-4">
+                <header class="bg-white shadow-md p-4 flex items-center justify-center rounded-2xl">
+                    <div class="text-xl font-semibold flex items-center">
+                        <a href="/" class="gradient-text flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                            RewardRush
+                        </a>
+                    </div>
+                </header>
             </div>
+        </div>
+
+        <!-- App Container -->
+        <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 md:pt-8">
 
             <!-- Time-based Greeting -->
             <div id="time-based-greeting" class="text-2xl font-bold text-gray-900 mb-6 px-2 font-montserrat reveal"></div>
@@ -219,22 +219,19 @@
                 <!-- Dashboard Overview -->
                 <div class="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-6 mb-6 reveal">
                     <!-- Card 1: Invite -->
-                    <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
-                        <i class="fas fa-user-plus text-purple-500 text-xl mb-1"></i>
+                    <div class="bg-white py-3 px-2 rounded-lg shadow-md flex flex-col items-center justify-center text-center">
+                        <i class="fas fa-user-plus text-purple-500 text-lg mb-1"></i>
                         <p class="text-gray-500 text-xs font-medium">Invite</p>
-                        <p class="text-base font-semibold">&nbsp;</p>
                     </div>
                     <!-- Card 2: History -->
-                    <div id="history-btn" class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center cursor-pointer">
-                        <i class="fas fa-history text-yellow-500 text-xl mb-1"></i>
+                    <div id="history-btn" class="bg-white py-3 px-2 rounded-lg shadow-md flex flex-col items-center justify-center text-center cursor-pointer">
+                        <i class="fas fa-history text-yellow-500 text-lg mb-1"></i>
                         <p class="text-gray-500 text-xs font-medium">History</p>
-                        <p class="text-base font-semibold">&nbsp;</p>
                     </div>
                     <!-- Card 3: Withdraw -->
-                    <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center cursor-pointer withdraw-btn hover:bg-gray-50 transition-colors">
-                        <i class="fas fa-wallet text-green-500 text-xl mb-1"></i>
+                    <div class="bg-white py-3 px-2 rounded-lg shadow-md flex flex-col items-center justify-center text-center cursor-pointer withdraw-btn hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-wallet text-green-500 text-lg mb-1"></i>
                         <p class="text-gray-500 text-xs font-medium">Withdraw</p>
-                        <p class="text-base font-semibold">&nbsp;</p> <!-- Placeholder for alignment -->
                     </div>
                 </div>
                 
@@ -275,6 +272,9 @@
                         <!-- History items will be dynamically inserted here -->
                     </div>
                 </div>
+
+                <!-- Spacer for mobile footer -->
+                <div class="h-20 md:hidden"></div>
             </main>
         </div>
     </div>
@@ -321,23 +321,23 @@
     <!-- Bottom Navigation Bar (Mobile Only) -->
     <footer class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-t-md p-2 z-40">
         <div class="flex justify-around items-center">
-            <a href="groweasy.html" class="flex flex-col items-center text-purple-600 w-1/5">
+            <a href="#" class="flex flex-col items-center text-purple-600 w-1/5">
                 <i class="fas fa-compass text-lg"></i>
                 <span class="text-xs font-semibold mt-1">Quests</span>
             </a>
-            <a href="affiliate.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
+            <a href="#" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
                 <i class="fas fa-briefcase text-lg"></i>
                 <span class="text-xs mt-1">Jobs</span>
             </a>
-            <a href="education.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
+            <a href="#" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
                 <i class="fas fa-book-open text-lg"></i>
                 <span class="text-xs mt-1">Learn</span>
             </a>
-            <a href="founder.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
+            <a href="#" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
                 <i class="fas fa-tools text-lg"></i>
                 <span class="text-xs mt-1">Build</span>
             </a>
-            <a href="profile.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
+            <a href="#" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
                 <i class="fas fa-user text-lg"></i>
                 <span class="text-xs mt-1">Profile</span>
             </a>
