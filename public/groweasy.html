@@ -73,90 +73,137 @@
         .shadow-t-md {
             box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1), 0 -2px 4px -2px rgb(0 0 0 / 0.1);
         }
+        /* Sidebar collapsed state styles */
+        .sidebar-collapsed #desktop-sidebar {
+            width: 5.5rem; /* 88px */
+        }
+        .sidebar-collapsed #main-content-wrapper {
+            margin-left: 5.5rem;
+        }
+        .sidebar-collapsed .sidebar-text {
+            display: none;
+        }
+        .sidebar-collapsed #sidebar-toggle i {
+            transform: rotate(180deg);
+        }
+        .sidebar-collapsed .nav-link {
+            justify-content: center;
+        }
+        .sidebar-collapsed .nav-link i {
+            margin-right: 0;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <!-- Add padding-bottom to the main container to avoid content being hidden by the nav bar -->
-    <div id="app-container" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24">
-
-        <!-- Header Section -->
-        <header class="bg-white shadow-md rounded-2xl p-4 mb-6 flex items-center justify-center">
-            <div class="text-xl md:text-2xl font-semibold flex items-center">
-                <a href="/" class="gradient-text flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
-                    RewardRush
-                </a>
+    <!-- Sidebar (Desktop Only) -->
+    <aside id="desktop-sidebar" class="hidden md:flex flex-col justify-between w-64 bg-white shadow-lg fixed top-0 left-0 h-full z-40 p-4 transition-all duration-300">
+        <div>
+            <div class="text-2xl font-semibold flex items-center mb-10 text-gray-800 px-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                <span class="sidebar-text ml-2">RewardRush</span>
             </div>
-        </header>
+            <nav>
+                <ul>
+                    <li class="mb-2"><a href="#" class="nav-link flex items-center text-lg text-purple-600 font-semibold py-3 px-4 rounded-lg bg-purple-50"><i class="fas fa-compass w-6 text-center mr-3"></i><span class="sidebar-text">Quests</span></a></li>
+                    <li class="mb-2"><a href="#" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-briefcase w-6 text-center mr-3"></i><span class="sidebar-text">Jobs</span></a></li>
+                    <li class="mb-2"><a href="#" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-book-open w-6 text-center mr-3"></i><span class="sidebar-text">Learn</span></a></li>
+                    <li class="mb-2"><a href="#" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-tools w-6 text-center mr-3"></i><span class="sidebar-text">Build</span></a></li>
+                    <li class="mb-2"><a href="#" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-user w-6 text-center mr-3"></i><span class="sidebar-text">Profile</span></a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="border-t pt-4">
+             <button id="sidebar-toggle" class="w-full flex items-center justify-center text-gray-600 hover:bg-gray-100 py-3 px-4 rounded-lg">
+                <i class="fas fa-chevron-left transition-transform duration-300"></i>
+                <span class="sidebar-text ml-3">Collapse</span>
+            </button>
+        </div>
+    </aside>
 
-        <!-- Time-based Greeting -->
-        <div id="time-based-greeting" class="text-2xl font-bold text-gray-900 mb-6 px-2 font-montserrat"></div>
+    <!-- Main Content Wrapper -->
+    <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
+        <!-- Add padding-bottom to the main container to avoid content being hidden by the nav bar -->
+        <div id="app-container" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24">
 
-        <!-- Main Content -->
-        <main>
-            <!-- Carousel Section -->
-            <div class="relative mb-6 shadow-lg rounded-2xl overflow-hidden">
-                <div id="carousel" class="relative w-full h-48 md:h-64">
-                    <!-- Carousel items will be injected by JS -->
+            <!-- Header Section (Mobile Only) -->
+            <header class="bg-white shadow-md rounded-2xl p-4 mb-6 flex items-center justify-center md:hidden">
+                <div class="text-xl md:text-2xl font-semibold flex items-center">
+                    <a href="/" class="gradient-text flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                        RewardRush
+                    </a>
                 </div>
-                <div id="carousel-dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2">
-                    <!-- Carousel dots will be injected by JS -->
-                </div>
-            </div>
+            </header>
 
-            <!-- Dashboard Overview -->
-            <div class="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-6 mb-6">
-                <!-- Card 1: Earn -->
-                <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
-                    <i class="fas fa-tasks text-purple-500 text-xl mb-1"></i>
-                    <p class="text-gray-500 text-xs font-medium">Earn</p>
-                    <p class="text-base font-semibold" id="quests-completed">0</p>
+            <!-- Time-based Greeting -->
+            <div id="time-based-greeting" class="text-2xl font-bold text-gray-900 mb-6 px-2 font-montserrat"></div>
+
+            <!-- Main Content -->
+            <main>
+                <!-- Carousel Section -->
+                <div class="relative mb-6 shadow-lg rounded-2xl overflow-hidden">
+                    <div id="carousel" class="relative w-full h-48 md:h-64">
+                        <!-- Carousel items will be injected by JS -->
+                    </div>
+                    <div id="carousel-dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2">
+                        <!-- Carousel dots will be injected by JS -->
+                    </div>
                 </div>
-                <!-- Card 2: Earned -->
-                <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
-                    <i class="fas fa-coins text-yellow-500 text-xl mb-1"></i>
-                    <p class="text-gray-500 text-xs font-medium">Earned</p>
-                    <p class="text-base font-semibold" id="total-earnings">$0.00</p>
+
+                <!-- Dashboard Overview -->
+                <div class="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-6 mb-6">
+                    <!-- Card 1: Earn -->
+                    <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                        <i class="fas fa-tasks text-purple-500 text-xl mb-1"></i>
+                        <p class="text-gray-500 text-xs font-medium">Earn</p>
+                        <p class="text-base font-semibold" id="quests-completed">0</p>
+                    </div>
+                    <!-- Card 2: Earned -->
+                    <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                        <i class="fas fa-coins text-yellow-500 text-xl mb-1"></i>
+                        <p class="text-gray-500 text-xs font-medium">Earned</p>
+                        <p class="text-base font-semibold" id="total-earnings">$0.00</p>
+                    </div>
+                    <!-- Card 3: Withdraw -->
+                    <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center cursor-pointer withdraw-btn hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-wallet text-green-500 text-xl mb-1"></i>
+                        <p class="text-gray-500 text-xs font-medium">Withdraw</p>
+                        <p class="text-base font-semibold">&nbsp;</p> <!-- Placeholder for alignment -->
+                    </div>
                 </div>
-                <!-- Card 3: Withdraw -->
-                <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center cursor-pointer withdraw-btn hover:bg-gray-50 transition-colors">
-                    <i class="fas fa-wallet text-green-500 text-xl mb-1"></i>
-                    <p class="text-gray-500 text-xs font-medium">Withdraw</p>
-                    <p class="text-base font-semibold">&nbsp;</p> <!-- Placeholder for alignment -->
-                </div>
-            </div>
-            
-            <!-- Quests Section -->
-            <div class="bg-white rounded-2xl shadow-md p-5">
-                <h2 class="text-lg font-bold mb-4">Available Quests</h2>
                 
-                <!-- Filters -->
-                <div class="grid grid-cols-3 gap-2 md:gap-4 mb-4">
-                    <input type="text" id="quest-search-input" placeholder="Search quests..." class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    <select id="filter-status" class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <option value="all">All Statuses</option>
-                        <option value="not-started">Not Started</option>
-                        <option value="completed">Completed</option>
-                    </select>
-                    <select id="sort-reward" class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <option value="default">Sort by Reward</option>
-                        <option value="high-to-low">High to Low</option>
-                        <option value="low-to-high">Low to High</option>
-                    </select>
-                </div>
+                <!-- Quests Section -->
+                <div class="bg-white rounded-2xl shadow-md p-5">
+                    <h2 class="text-lg font-bold mb-4">Available Quests</h2>
+                    
+                    <!-- Filters -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-4 mb-4">
+                        <input type="text" id="quest-search-input" placeholder="Search quests..." class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent sm:col-span-1">
+                        <select id="filter-status" class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent sm:col-span-1">
+                            <option value="all">All Statuses</option>
+                            <option value="not-started">Not Started</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        <select id="sort-reward" class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent sm:col-span-1">
+                            <option value="default">Sort by Reward</option>
+                            <option value="high-to-low">High to Low</option>
+                            <option value="low-to-high">Low to High</option>
+                        </select>
+                    </div>
 
-                <!-- Quest List -->
-                <div id="quest-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Quest cards will be dynamically inserted here -->
-                </div>
+                    <!-- Quest List -->
+                    <div id="quest-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Quest cards will be dynamically inserted here -->
+                    </div>
 
-                <!-- Pagination -->
-                <nav id="pagination" class="flex justify-center items-center mt-6 space-x-2">
-                    <!-- Pagination controls will be dynamically inserted here -->
-                </nav>
-            </div>
-        </main>
+                    <!-- Pagination -->
+                    <nav id="pagination" class="flex justify-center items-center mt-6 space-x-2">
+                        <!-- Pagination controls will be dynamically inserted here -->
+                    </nav>
+                </div>
+            </main>
+        </div>
     </div>
 
     <!-- Modal for Quiz -->
@@ -270,6 +317,7 @@
                     notificationMessage: document.getElementById('notification-message'),
                     carousel: document.getElementById('carousel'),
                     carouselDots: document.getElementById('carousel-dots'),
+                    sidebarToggleBtn: document.getElementById('sidebar-toggle'),
                 },
                 
                 // --- METHODS ---
@@ -283,6 +331,18 @@
                     this.displayQuests();
                     this.initCarousel();
                     this.bindEvents();
+                    this.bindSidebarToggle();
+                },
+
+                /**
+                 * Binds the click event for the sidebar toggle button.
+                 */
+                bindSidebarToggle() {
+                    if (!this.elements.sidebarToggleBtn) return; // Guard clause for mobile view
+
+                    this.elements.sidebarToggleBtn.addEventListener('click', () => {
+                        document.body.classList.toggle('sidebar-collapsed');
+                    });
                 },
 
                 /**
