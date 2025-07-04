@@ -90,6 +90,8 @@
             </div>
             <div id="user-profile" class="flex items-center mt-4 sm:mt-0">
                 <div class="text-right mr-3">
+                    <p class="font-medium text-sm" id="user-name">John Doe</p>
+                    <p class="text-xs text-gray-500" id="user-balance">$0.00</p>
                 </div>
                 <img src="https://placehold.co/40x40/6c5ce7/white?text=JD" id="user-avatar" alt="User Avatar" class="w-9 h-9 rounded-full">
             </div>
@@ -257,6 +259,8 @@
 
                 // --- UI ELEMENTS ---
                 elements: {
+                    userName: document.getElementById('user-name'),
+                    userBalance: document.getElementById('user-balance'),
                     userAvatar: document.getElementById('user-avatar'),
                     questsCompleted: document.getElementById('quests-completed'),
                     totalEarnings: document.getElementById('total-earnings'),
