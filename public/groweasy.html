@@ -17,7 +17,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
 
     <style>
-
          :root {
             --primary-glow: #8b00ff;
             --secondary-glow: #00f0ff;
@@ -27,7 +26,6 @@
             --light-bg: #2a2a3e;
         }
         /* Custom styles to complement Tailwind */
-
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f0f2f5; /* Lighter gray background */
@@ -71,11 +69,16 @@
         .toast-in {
             animation: toast-in 0.5s ease-out forwards;
         }
+        /* Custom shadow for the top of an element */
+        .shadow-t-md {
+            box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1), 0 -2px 4px -2px rgb(0 0 0 / 0.1);
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <div id="app-container" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+    <!-- Add padding-bottom to the main container to avoid content being hidden by the nav bar -->
+    <div id="app-container" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24">
 
         <!-- Header Section -->
         <header class="bg-white shadow-md rounded-2xl p-4 mb-8 flex flex-wrap items-center justify-between">
@@ -111,20 +114,20 @@
                 <!-- Card 1: Earn -->
                 <div class="bg-white p-4 rounded-2xl shadow-md flex flex-col items-center justify-center text-center">
                     <i class="fas fa-tasks text-purple-500 text-2xl mb-2"></i>
-                    <p class="text-gray-500 text-sm font-semibold">Earn</p>
-                    <p class="text-xl font-bold" id="quests-completed">0</p>
+                    <p class="text-gray-500 text-xs sm:text-sm font-semibold">Earn</p>
+                    <p class="text-lg sm:text-xl font-bold" id="quests-completed">0</p>
                 </div>
                 <!-- Card 2: Earned -->
                 <div class="bg-white p-4 rounded-2xl shadow-md flex flex-col items-center justify-center text-center">
                     <i class="fas fa-coins text-yellow-500 text-2xl mb-2"></i>
-                    <p class="text-gray-500 text-sm font-semibold">Earned</p>
-                    <p class="text-xl font-bold" id="total-earnings">$0.00</p>
+                    <p class="text-gray-500 text-xs sm:text-sm font-semibold">Earned</p>
+                    <p class="text-lg sm:text-xl font-bold" id="total-earnings">$0.00</p>
                 </div>
                 <!-- Card 3: Withdraw -->
                 <div class="bg-white p-4 rounded-2xl shadow-md flex flex-col items-center justify-center text-center cursor-pointer withdraw-btn hover:bg-gray-50 transition-colors">
                     <i class="fas fa-wallet text-green-500 text-2xl mb-2"></i>
-                    <p class="text-gray-500 text-sm font-semibold">Withdraw</p>
-                    <p class="text-xl font-bold">&nbsp;</p> <!-- Placeholder for alignment -->
+                    <p class="text-gray-500 text-xs sm:text-sm font-semibold">Withdraw</p>
+                    <p class="text-lg sm:text-xl font-bold">&nbsp;</p> <!-- Placeholder for alignment -->
                 </div>
             </div>
             
@@ -198,6 +201,29 @@
     <div id="notification-toast" class="fixed bottom-8 right-8 bg-gray-800 text-white py-3 px-6 rounded-lg shadow-xl z-50 hidden">
         <p id="notification-message">Notification message</p>
     </div>
+
+    <!-- Bottom Navigation Bar (Mobile Only) -->
+    <footer class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-t-md p-2 z-40">
+        <div class="flex justify-around items-center">
+            <a href="#" class="flex flex-col items-center text-purple-600 w-1/4">
+                <i class="fas fa-home text-xl"></i>
+                <span class="text-xs font-semibold mt-1">Home</span>
+            </a>
+            <a href="#" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/4">
+                <i class="fas fa-compass text-xl"></i>
+                <span class="text-xs mt-1">Quests</span>
+            </a>
+            <a href="#" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/4">
+                <i class="fas fa-wallet text-xl"></i>
+                <span class="text-xs mt-1">Wallet</span>
+            </a>
+            <a href="#" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/4">
+                <i class="fas fa-user text-xl"></i>
+                <span class="text-xs mt-1">Profile</span>
+            </a>
+        </div>
+    </footer>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
