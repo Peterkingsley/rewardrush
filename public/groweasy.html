@@ -107,24 +107,25 @@
             </div>
 
             <!-- Dashboard Overview -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-2xl shadow-md flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-500">Quests Completed</p>
-                        <p class="text-3xl font-bold" id="quests-completed">0</p>
-                    </div>
-                    <i class="fas fa-check-circle text-green-500 text-4xl opacity-50"></i>
+            <div class="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-6 mb-8">
+                <!-- Card 1: Earn -->
+                <div class="bg-white p-4 rounded-2xl shadow-md flex flex-col items-center justify-center text-center">
+                    <i class="fas fa-tasks text-purple-500 text-2xl mb-2"></i>
+                    <p class="text-gray-500 text-sm font-semibold">Earn</p>
+                    <p class="text-xl font-bold" id="quests-completed">0</p>
                 </div>
-                <div class="bg-white p-6 rounded-2xl shadow-md flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-500">Total Earnings</p>
-                        <p class="text-3xl font-bold" id="total-earnings">$0.00</p>
-                    </div>
-                    <i class="fas fa-coins text-yellow-500 text-4xl opacity-50"></i>
+                <!-- Card 2: Earned -->
+                <div class="bg-white p-4 rounded-2xl shadow-md flex flex-col items-center justify-center text-center">
+                    <i class="fas fa-coins text-yellow-500 text-2xl mb-2"></i>
+                    <p class="text-gray-500 text-sm font-semibold">Earned</p>
+                    <p class="text-xl font-bold" id="total-earnings">$0.00</p>
                 </div>
-                <button class="withdraw-btn bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg flex items-center justify-center text-xl font-bold transition-transform transform hover:scale-105">
-                    Withdraw Funds <i class="fas fa-wallet ml-3"></i>
-                </button>
+                <!-- Card 3: Withdraw -->
+                <div class="bg-white p-4 rounded-2xl shadow-md flex flex-col items-center justify-center text-center cursor-pointer withdraw-btn hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-wallet text-green-500 text-2xl mb-2"></i>
+                    <p class="text-gray-500 text-sm font-semibold">Withdraw</p>
+                    <p class="text-xl font-bold">&nbsp;</p> <!-- Placeholder for alignment -->
+                </div>
             </div>
             
             <!-- Quests Section -->
