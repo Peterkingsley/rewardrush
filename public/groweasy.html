@@ -8,6 +8,9 @@
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Three.js for Particle Background -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -29,6 +32,7 @@
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f0f2f5; /* Lighter gray background */
+            cursor: none; /* Hide the default cursor */
         }
         .font-montserrat {
             font-family: 'Montserrat', sans-serif;
@@ -92,9 +96,56 @@
         .sidebar-collapsed .nav-link i {
             margin-right: 0;
         }
+        /* Particle background canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        /* Custom Cursor Styles */
+        .cursor-dot, .cursor-outline {
+            pointer-events: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            border-radius: 50%;
+            opacity: 1;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-glow);
+            z-index: 10001;
+        }
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(139, 0, 255, 0.2);
+            z-index: 10000;
+        }
+        /* Scroll Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
+    
+    <!-- Background Canvas and Custom Cursor -->
+    <canvas id="bg-canvas"></canvas>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
 
     <!-- Sidebar (Desktop Only) -->
     <aside id="desktop-sidebar" class="hidden md:flex flex-col w-64 bg-white shadow-lg fixed top-0 left-0 h-full z-40 transition-all duration-300">
@@ -137,12 +188,12 @@
             </header>
 
             <!-- Time-based Greeting -->
-            <div id="time-based-greeting" class="text-2xl font-bold text-gray-900 mb-6 px-2 font-montserrat"></div>
+            <div id="time-based-greeting" class="text-2xl font-bold text-gray-900 mb-6 px-2 font-montserrat reveal"></div>
 
             <!-- Main Content -->
             <main>
                 <!-- Carousel Section with Balance Overlay -->
-                <div class="relative mb-6 shadow-lg rounded-2xl overflow-hidden">
+                <div class="relative mb-6 shadow-lg rounded-2xl overflow-hidden reveal">
                     <div id="carousel" class="relative w-full h-48 md:h-64">
                         <!-- Carousel items will be injected by JS -->
                     </div>
@@ -162,7 +213,7 @@
                 </div>
 
                 <!-- Dashboard Overview -->
-                <div class="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-6 mb-6">
+                <div class="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-6 mb-6 reveal">
                     <!-- Card 1: Invite -->
                     <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
                         <i class="fas fa-user-plus text-purple-500 text-xl mb-1"></i>
@@ -184,7 +235,7 @@
                 </div>
                 
                 <!-- Quests Section -->
-                <div class="bg-white rounded-2xl shadow-md p-5">
+                <div class="bg-white rounded-2xl shadow-md p-5 reveal">
                     <h2 class="text-lg font-bold mb-4">Available Quests</h2>
                     
                     <!-- Filters -->
@@ -214,7 +265,7 @@
                 </div>
 
                 <!-- History Section -->
-                <div id="history-section" class="bg-white rounded-2xl shadow-md p-5 mt-6">
+                <div id="history-section" class="bg-white rounded-2xl shadow-md p-5 mt-6 reveal">
                     <h2 class="text-lg font-bold mb-4">Quest History</h2>
                     <div id="history-list">
                         <!-- History items will be dynamically inserted here -->
@@ -780,6 +831,130 @@
 
             // Start the application
             App.init();
+
+            // --- Additional Animations ---
+
+            // Scroll reveal animation
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            document.querySelectorAll('.reveal').forEach(el => {
+                observer.observe(el);
+            });
+
+            // Three.js Particle Background
+            let scene, camera, renderer, particles, mouseX = 0, mouseY = 0;
+            let windowHalfX = window.innerWidth / 2;
+            let windowHalfY = window.innerHeight / 2;
+
+            function initThreeJs() {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+                camera.position.z = 1000;
+
+                const particleCount = 2000;
+                const particlesGeometry = new THREE.BufferGeometry();
+                const posArray = new Float32Array(particleCount * 3);
+                
+                for (let i = 0; i < particleCount * 3; i++) {
+                    posArray[i] = (Math.random() - 0.5) * (Math.random() * 2000);
+                }
+                particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+                
+                const material = new THREE.PointsMaterial({
+                    size: 1.5,
+                    color: 0x8b00ff,
+                    transparent: true,
+                    opacity: 0.7,
+                    blending: THREE.AdditiveBlending
+                });
+
+                particles = new THREE.Points(particlesGeometry, material);
+                scene.add(particles);
+
+                renderer = new THREE.WebGLRenderer({
+                    canvas: document.getElementById('bg-canvas'),
+                    alpha: true
+                });
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setClearColor(0x000000, 0);
+
+                document.body.addEventListener('pointermove', onDocumentMouseMove, false);
+                window.addEventListener('resize', onWindowResize, false);
+            }
+
+            function animateThreeJs() {
+                requestAnimationFrame(animateThreeJs);
+                renderThreeJs();
+            }
+
+            function renderThreeJs() {
+                const time = Date.now() * 0.00005;
+                camera.position.x += (mouseX - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                
+                particles.rotation.x = time * 0.1;
+                particles.rotation.y = time * 0.2;
+
+                renderer.render(scene, camera);
+            }
+
+            function onDocumentMouseMove(event) {
+                mouseX = event.clientX - windowHalfX;
+                mouseY = event.clientY - windowHalfY;
+            }
+
+            function onWindowResize() {
+                windowHalfX = window.innerWidth / 2;
+                windowHalfY = window.innerHeight / 2;
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+            
+            // Custom cursor
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorOutline = document.querySelector('.cursor-outline');
+
+            window.addEventListener('mousemove', (e) => {
+                const posX = e.clientX;
+                const posY = e.clientY;
+
+                cursorDot.style.left = `${posX}px`;
+                cursorDot.style.top = `${posY}px`;
+                
+                cursorOutline.animate({
+                    left: `${posX}px`,
+                    top: `${posY}px`
+                }, { duration: 500, fill: "forwards" });
+            });
+            
+            document.querySelectorAll('a, button, input, .quest-card, .withdraw-btn, #history-btn').forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursorDot.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                    cursorDot.style.backgroundColor = 'var(--secondary-glow)';
+                    cursorOutline.style.transform = 'translate(-50%, -50%) scale(1.2)';
+                });
+                
+                el.addEventListener('mouseleave', () => {
+                    cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
+                    cursorDot.style.backgroundColor = 'var(--accent-glow)';
+                    cursorOutline.style.transform = 'translate(-50%, -50%) scale(1)';
+                });
+            });
+
+            // Initialize Three.js
+            initThreeJs();
+            animateThreeJs();
         });
     </script>
 </body>
