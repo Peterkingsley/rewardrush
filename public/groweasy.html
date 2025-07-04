@@ -113,18 +113,20 @@
                 </ul>
             </nav>
         </div>
-        <div class="border-t pt-4">
-             <button id="sidebar-toggle" class="w-full flex items-center justify-center text-gray-600 hover:bg-gray-100 py-3 px-4 rounded-lg">
-                <i class="fas fa-chevron-left transition-transform duration-300"></i>
-                <span class="sidebar-text ml-3">Collapse</span>
-            </button>
-        </div>
     </aside>
 
     <!-- Main Content Wrapper -->
     <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
-        <!-- Add padding-bottom to the main container to avoid content being hidden by the nav bar -->
-        <div id="app-container" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24">
+        
+        <!-- Top Bar for Desktop -->
+        <div class="hidden md:flex items-center p-4">
+            <button id="sidebar-toggle" class="text-gray-500 hover:text-gray-800 focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- App Container -->
+        <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
 
             <!-- Header Section (Mobile Only) -->
             <header class="bg-white shadow-md rounded-2xl p-4 mb-6 flex items-center justify-center md:hidden">
@@ -178,14 +180,14 @@
                     <h2 class="text-lg font-bold mb-4">Available Quests</h2>
                     
                     <!-- Filters -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-4 mb-4">
-                        <input type="text" id="quest-search-input" placeholder="Search quests..." class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent sm:col-span-1">
-                        <select id="filter-status" class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent sm:col-span-1">
+                    <div class="grid grid-cols-3 gap-2 md:gap-4 mb-4">
+                        <input type="text" id="quest-search-input" placeholder="Search quests..." class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <select id="filter-status" class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                             <option value="all">All Statuses</option>
                             <option value="not-started">Not Started</option>
                             <option value="completed">Completed</option>
                         </select>
-                        <select id="sort-reward" class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent sm:col-span-1">
+                        <select id="sort-reward" class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                             <option value="default">Sort by Reward</option>
                             <option value="high-to-low">High to Low</option>
                             <option value="low-to-high">Low to High</option>
@@ -248,23 +250,19 @@
     <!-- Bottom Navigation Bar (Mobile Only) -->
     <footer class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-t-md p-2 z-40">
         <div class="flex justify-around items-center">
-            <a href="groweasy.html" class="flex flex-col items-center text-purple-600 w-1/4">
-                <i class="fas fa-compass w-6 text-center mr-3"></i>
-                <span class="text-xs font-semibold mt-1">Quest</span>
+            <a href="#" class="flex flex-col items-center text-purple-600 w-1/4">
+                <i class="fas fa-home text-lg"></i>
+                <span class="text-xs font-semibold mt-1">Home</span>
             </a>
-            <a href="affiliate.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/4">
-                <i class="fas fa-briefcase w-6 text-center mr-3"></i>
-                <span class="text-xs mt-1">Jobs</span>
+            <a href="#" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/4">
+                <i class="fas fa-compass text-lg"></i>
+                <span class="text-xs mt-1">Quests</span>
             </a>
-            <a href="education.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/4">
-                <i class="fas fa-book-open w-6 text-center mr-3"></i>
-                <span class="text-xs mt-1">Learn</span>
+            <a href="#" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/4">
+                <i class="fas fa-wallet text-lg"></i>
+                <span class="text-xs mt-1">Wallet</span>
             </a>
-            <a href="founder.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/4">
-                <i class="fas fa-tools w-6 text-center mr-3"></i>
-                <span class="text-xs mt-1">Build</span>
-            </a>
-            <a href="founder.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/4">
+            <a href="#" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/4">
                 <i class="fas fa-user text-lg"></i>
                 <span class="text-xs mt-1">Profile</span>
             </a>
