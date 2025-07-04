@@ -81,69 +81,69 @@
     <div id="app-container" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24">
 
         <!-- Header Section -->
-        <header class="bg-white shadow-md rounded-2xl p-4 mb-8 flex flex-wrap items-center justify-between">
-            <div class="text-2xl md:text-3xl font-bold font-orbitron flex items-center">
+        <header class="bg-white shadow-md rounded-2xl p-4 mb-6 flex flex-wrap items-center justify-between">
+            <div class="text-xl md:text-2xl font-semibold flex items-center">
                 <a href="/" class="gradient-text flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
                     RewardRush
                 </a>
             </div>
             <div id="user-profile" class="flex items-center mt-4 sm:mt-0">
-                <div class="text-right mr-4">
-                    <p class="font-semibold" id="user-name">John Doe</p>
-                    <p class="text-sm text-gray-500" id="user-balance">$0.00</p>
+                <div class="text-right mr-3">
+                    <p class="font-medium text-sm" id="user-name">John Doe</p>
+                    <p class="text-xs text-gray-500" id="user-balance">$0.00</p>
                 </div>
-                <img src="https://placehold.co/40x40/6c5ce7/white?text=JD" id="user-avatar" alt="User Avatar" class="w-10 h-10 rounded-full">
+                <img src="https://placehold.co/40x40/6c5ce7/white?text=JD" id="user-avatar" alt="User Avatar" class="w-9 h-9 rounded-full">
             </div>
         </header>
 
         <!-- Main Content -->
         <main>
             <!-- Carousel Section -->
-            <div class="relative mb-8 shadow-lg rounded-2xl overflow-hidden">
-                <div id="carousel" class="relative w-full h-64">
+            <div class="relative mb-6 shadow-lg rounded-2xl overflow-hidden">
+                <div id="carousel" class="relative w-full h-48 md:h-64">
                     <!-- Carousel items will be injected by JS -->
                 </div>
-                <div id="carousel-dots" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                <div id="carousel-dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2">
                     <!-- Carousel dots will be injected by JS -->
                 </div>
             </div>
 
             <!-- Dashboard Overview -->
-            <div class="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-6 mb-8">
+            <div class="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-6 mb-6">
                 <!-- Card 1: Earn -->
-                <div class="bg-white p-4 rounded-2xl shadow-md flex flex-col items-center justify-center text-center">
-                    <i class="fas fa-tasks text-purple-500 text-2xl mb-2"></i>
-                    <p class="text-gray-500 text-xs sm:text-sm font-semibold">Earn</p>
-                    <p class="text-lg sm:text-xl font-bold" id="quests-completed">0</p>
+                <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                    <i class="fas fa-tasks text-purple-500 text-xl mb-1"></i>
+                    <p class="text-gray-500 text-xs font-medium">Earn</p>
+                    <p class="text-base font-semibold" id="quests-completed">0</p>
                 </div>
                 <!-- Card 2: Earned -->
-                <div class="bg-white p-4 rounded-2xl shadow-md flex flex-col items-center justify-center text-center">
-                    <i class="fas fa-coins text-yellow-500 text-2xl mb-2"></i>
-                    <p class="text-gray-500 text-xs sm:text-sm font-semibold">Earned</p>
-                    <p class="text-lg sm:text-xl font-bold" id="total-earnings">$0.00</p>
+                <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                    <i class="fas fa-coins text-yellow-500 text-xl mb-1"></i>
+                    <p class="text-gray-500 text-xs font-medium">Earned</p>
+                    <p class="text-base font-semibold" id="total-earnings">$0.00</p>
                 </div>
                 <!-- Card 3: Withdraw -->
-                <div class="bg-white p-4 rounded-2xl shadow-md flex flex-col items-center justify-center text-center cursor-pointer withdraw-btn hover:bg-gray-50 transition-colors">
-                    <i class="fas fa-wallet text-green-500 text-2xl mb-2"></i>
-                    <p class="text-gray-500 text-xs sm:text-sm font-semibold">Withdraw</p>
-                    <p class="text-lg sm:text-xl font-bold">&nbsp;</p> <!-- Placeholder for alignment -->
+                <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center cursor-pointer withdraw-btn hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-wallet text-green-500 text-xl mb-1"></i>
+                    <p class="text-gray-500 text-xs font-medium">Withdraw</p>
+                    <p class="text-base font-semibold">&nbsp;</p> <!-- Placeholder for alignment -->
                 </div>
             </div>
             
             <!-- Quests Section -->
-            <div class="bg-white rounded-2xl shadow-md p-6">
-                <h2 class="text-2xl font-bold mb-6">Available Quests</h2>
+            <div class="bg-white rounded-2xl shadow-md p-5">
+                <h2 class="text-lg font-bold mb-4">Available Quests</h2>
                 
                 <!-- Filters -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <input type="text" id="quest-search-input" placeholder="Search quests..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    <select id="filter-status" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <input type="text" id="quest-search-input" placeholder="Search quests..." class="w-full p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <select id="filter-status" class="w-full p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                         <option value="all">All Statuses</option>
                         <option value="not-started">Not Started</option>
                         <option value="completed">Completed</option>
                     </select>
-                    <select id="sort-reward" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <select id="sort-reward" class="w-full p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                         <option value="default">Sort by Reward</option>
                         <option value="high-to-low">High to Low</option>
                         <option value="low-to-high">Low to High</option>
@@ -151,12 +151,12 @@
                 </div>
 
                 <!-- Quest List -->
-                <div id="quest-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div id="quest-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <!-- Quest cards will be dynamically inserted here -->
                 </div>
 
                 <!-- Pagination -->
-                <nav id="pagination" class="flex justify-center items-center mt-8 space-x-2">
+                <nav id="pagination" class="flex justify-center items-center mt-6 space-x-2">
                     <!-- Pagination controls will be dynamically inserted here -->
                 </nav>
             </div>
@@ -166,7 +166,7 @@
     <!-- Modal for Quiz -->
     <div id="quiz-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 transform transition-transform scale-95">
-            <h2 id="quiz-title" class="text-2xl font-bold mb-2">Quiz Title</h2>
+            <h2 id="quiz-title" class="text-xl font-bold mb-2">Quiz Title</h2>
             <p id="quiz-description" class="text-gray-600 mb-6">Answer the questions below.</p>
             <div id="quiz-content">
                 <!-- Question will be injected here -->
@@ -187,8 +187,8 @@
     <!-- Modal for Withdrawal -->
     <div id="withdraw-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-transform scale-95">
-             <h2 class="text-2xl font-bold mb-4">Withdraw Funds</h2>
-             <p class="mb-4">Enter the amount you wish to withdraw. Your current balance is <span id="withdraw-balance" class="font-bold">$0.00</span>.</p>
+             <h2 class="text-xl font-bold mb-4">Withdraw Funds</h2>
+             <p class="mb-4 text-sm">Enter the amount you wish to withdraw. Your current balance is <span id="withdraw-balance" class="font-bold">$0.00</span>.</p>
              <input type="number" id="withdraw-amount" placeholder="0.00" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-purple-500">
              <div class="flex justify-end space-x-4">
                  <button id="cancel-withdrawal-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Cancel</button>
@@ -206,19 +206,19 @@
     <footer class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-t-md p-2 z-40">
         <div class="flex justify-around items-center">
             <a href="#" class="flex flex-col items-center text-purple-600 w-1/4">
-                <i class="fas fa-home text-xl"></i>
+                <i class="fas fa-home text-lg"></i>
                 <span class="text-xs font-semibold mt-1">Home</span>
             </a>
             <a href="#" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/4">
-                <i class="fas fa-compass text-xl"></i>
+                <i class="fas fa-compass text-lg"></i>
                 <span class="text-xs mt-1">Quests</span>
             </a>
             <a href="#" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/4">
-                <i class="fas fa-wallet text-xl"></i>
+                <i class="fas fa-wallet text-lg"></i>
                 <span class="text-xs mt-1">Wallet</span>
             </a>
             <a href="#" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/4">
-                <i class="fas fa-user text-xl"></i>
+                <i class="fas fa-user text-lg"></i>
                 <span class="text-xs mt-1">Profile</span>
             </a>
         </div>
@@ -341,7 +341,7 @@
 
                     // 4. Render
                     if (paginatedQuests.length === 0) {
-                        this.elements.questList.innerHTML = `<p class="text-gray-500 md:col-span-2 lg:col-span-3 text-center">No quests found.</p>`;
+                        this.elements.questList.innerHTML = `<p class="text-gray-500 md:col-span-2 lg:col-span-3 text-center py-8">No quests found.</p>`;
                     } else {
                         paginatedQuests.forEach(quest => {
                             const card = this.createQuestCard(quest);
@@ -359,33 +359,33 @@
                  */
                 createQuestCard(quest) {
                     const card = document.createElement('div');
-                    card.className = 'quest-card bg-gray-50 border border-gray-200 rounded-xl p-6 flex flex-col justify-between transition-shadow hover:shadow-lg';
+                    card.className = 'quest-card bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col justify-between transition-shadow hover:shadow-md';
                     card.dataset.questId = quest.id;
                     
                     const isCompleted = quest.status === 'completed';
                     
                     let statusBadge;
                     if (isCompleted) {
-                        statusBadge = `<span class="bg-green-100 text-green-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Completed</span>`;
+                        statusBadge = `<span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full">Completed</span>`;
                     } else {
-                         statusBadge = `<span class="bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded-full">Available</span>`;
+                         statusBadge = `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">Available</span>`;
                     }
 
                     // Using template literals but setting properties safely, not with innerHTML.
                     const cardContent = `
                         <div class="flex-grow">
                             <div class="flex justify-between items-start mb-2">
-                                <h3 class="text-lg font-bold text-gray-800">${quest.title}</h3>
+                                <h3 class="text-base font-bold text-gray-800">${quest.title}</h3>
                                 ${statusBadge}
                             </div>
-                            <p class="text-gray-600 mb-4 text-sm">${quest.description}</p>
+                            <p class="text-gray-600 mb-3 text-xs">${quest.description}</p>
                         </div>
-                        <div class="mt-4 pt-4 border-t border-gray-200">
-                             <div class="flex justify-between items-center mb-4">
-                                <p class="font-bold text-green-600 text-lg">$${quest.reward.toFixed(2)}</p>
-                                <button class="details-btn text-purple-600 hover:underline text-sm font-semibold">View Details</button>
+                        <div class="mt-3 pt-3 border-t border-gray-200">
+                             <div class="flex justify-between items-center mb-3">
+                                <p class="font-bold text-green-600 text-base">$${quest.reward.toFixed(2)}</p>
+                                <button class="details-btn text-purple-600 hover:underline text-xs font-semibold">View Details</button>
                             </div>
-                            <button class="start-quiz-btn w-full py-2 px-4 rounded-lg font-semibold transition ${isCompleted ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}" ${isCompleted ? 'disabled' : ''}>
+                            <button class="start-quiz-btn w-full py-2 px-4 rounded-lg text-sm font-semibold transition ${isCompleted ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}" ${isCompleted ? 'disabled' : ''}>
                                 ${isCompleted ? 'Completed' : 'Start Quiz'}
                             </button>
                         </div>
@@ -402,10 +402,12 @@
                     this.elements.pagination.innerHTML = '';
                     const pageCount = Math.ceil(totalItems / this.itemsPerPage);
 
+                    if (pageCount <= 1) return; // Don't show pagination if only one page
+
                     for (let i = 1; i <= pageCount; i++) {
                         const pageLink = document.createElement('button');
                         pageLink.textContent = i;
-                        pageLink.className = `px-4 py-2 rounded-md font-semibold transition ${this.currentPage === i ? 'bg-purple-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-200'}`;
+                        pageLink.className = `px-3 py-1 text-sm rounded-md font-semibold transition ${this.currentPage === i ? 'bg-purple-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-200'}`;
                         pageLink.addEventListener('click', () => {
                             this.currentPage = i;
                             this.displayQuests();
@@ -433,13 +435,13 @@
                     const question = this.currentQuiz.questions[this.currentQuestionIndex];
                     const quizContent = document.getElementById('quiz-content');
                     const quizOptions = document.getElementById('quiz-options');
-                    quizContent.innerHTML = `<p class="text-lg font-semibold">${question.question}</p>`;
+                    quizContent.innerHTML = `<p class="text-base font-semibold">${question.question}</p>`;
                     quizOptions.innerHTML = '';
 
                     question.options.forEach(option => {
                         const optionButton = document.createElement('button');
                         optionButton.textContent = option;
-                        optionButton.className = 'w-full text-left p-4 border rounded-lg hover:bg-purple-100 hover:border-purple-500 transition';
+                        optionButton.className = 'w-full text-left p-3 border rounded-lg hover:bg-purple-100 hover:border-purple-500 transition text-sm';
                         optionButton.addEventListener('click', () => {
                             // Store answer and go to next question
                             this.userAnswers[this.currentQuestionIndex] = option;
@@ -518,7 +520,7 @@
                     this.elements.notificationMessage.textContent = message;
                     
                     const toast = this.elements.notificationToast;
-                    toast.className = `fixed bottom-8 right-8 text-white py-3 px-6 rounded-lg shadow-xl z-50 toast-in ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+                    toast.className = `fixed bottom-24 md:bottom-8 right-8 text-white py-3 px-6 rounded-lg shadow-xl z-50 toast-in ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
                     
                     toast.classList.remove('hidden');
                     
@@ -544,16 +546,16 @@
                         itemDiv.className = `carousel-item absolute w-full h-full ${index === 0 ? 'active' : ''}`;
                         itemDiv.innerHTML = `
                             <img src="${item.img}" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-white p-4 text-center">
-                                <h2 class="text-3xl md:text-4xl font-bold font-montserrat">${item.title}</h2>
-                                <p class="mt-2 text-lg">${item.subtitle}</p>
+                            <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-center items-center text-white p-4 text-center">
+                                <h2 class="text-2xl md:text-3xl font-bold font-montserrat">${item.title}</h2>
+                                <p class="mt-1 text-sm md:text-base">${item.subtitle}</p>
                             </div>
                         `;
                         this.elements.carousel.appendChild(itemDiv);
                         
                         // Create dot
                         const dot = document.createElement('button');
-                        dot.className = `carousel-dot w-3 h-3 rounded-full transition ${index === 0 ? 'bg-white' : 'bg-white/50'}`;
+                        dot.className = `carousel-dot w-2.5 h-2.5 rounded-full transition ${index === 0 ? 'bg-white' : 'bg-white/50'}`;
                         dot.dataset.index = index;
                         this.elements.carouselDots.appendChild(dot);
                     });
