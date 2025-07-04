@@ -434,7 +434,7 @@
                                 question: "What does DeFi stand for?", 
                                 options: ["Decentralized Finance", "Digital Finance", "Distributed Funding"], 
                                 answer: "Decentralized Finance",
-                                background: "https://videos.pexels.com/video-files/853875/853875-hd.mp4"
+                                background: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4"
                             }, 
                             { 
                                 question: "Which is a common DeFi application?", 
@@ -452,7 +452,7 @@
                                 question: "What does NFT stand for?", 
                                 options: ["Non-Fungible Token", "New Financial Technology", "Nominal Fiat Token"], 
                                 answer: "Non-Fungible Token",
-                                background: "https://videos.pexels.com/video-files/7578540/7578540-hd.mp4"
+                                background: "https://test-videos.co.uk/vids/elephantsdream/mp4/h264/360/Elephants_Dream_360_10s_1MB.mp4"
                             }, 
                             { 
                                 question: "NFTs are primarily built on which blockchain?", 
@@ -768,7 +768,14 @@
                             video.autoplay = true;
                             video.loop = true;
                             video.muted = true;
+                            video.playsInline = true;
                             quizBackground.appendChild(video);
+                            const playPromise = video.play();
+                            if (playPromise !== undefined) {
+                                playPromise.catch(error => {
+                                    console.error("Video autoplay was prevented:", error);
+                                });
+                            }
                         } else {
                             const img = document.createElement('img');
                             img.src = question.background;
