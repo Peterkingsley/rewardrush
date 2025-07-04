@@ -141,29 +141,39 @@
 
             <!-- Main Content -->
             <main>
-                <!-- Carousel Section -->
+                <!-- Carousel Section with Balance Overlay -->
                 <div class="relative mb-6 shadow-lg rounded-2xl overflow-hidden">
                     <div id="carousel" class="relative w-full h-48 md:h-64">
                         <!-- Carousel items will be injected by JS -->
                     </div>
-                    <div id="carousel-dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2">
+                    <div id="carousel-dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
                         <!-- Carousel dots will be injected by JS -->
+                    </div>
+                    <!-- Static Balance Overlay -->
+                    <div class="absolute inset-0 flex flex-col justify-center items-center z-10 bg-black bg-opacity-50 text-white">
+                        <div class="flex items-center text-sm text-gray-200">
+                            <span>Total Balance</span>
+                            <button id="toggle-balance-btn" class="ml-2 text-lg">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <p id="carousel-balance" class="text-4xl font-bold font-montserrat mt-1">$0.00</p>
                     </div>
                 </div>
 
                 <!-- Dashboard Overview -->
                 <div class="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-6 mb-6">
-                    <!-- Card 1: Earn -->
+                    <!-- Card 1: Invite -->
                     <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
-                        <i class="fas fa-tasks text-purple-500 text-xl mb-1"></i>
-                        <p class="text-gray-500 text-xs font-medium">Earn</p>
-                        <p class="text-base font-semibold" id="quests-completed">0</p>
+                        <i class="fas fa-user-plus text-purple-500 text-xl mb-1"></i>
+                        <p class="text-gray-500 text-xs font-medium">Invite</p>
+                        <p class="text-base font-semibold">&nbsp;</p>
                     </div>
-                    <!-- Card 2: Earned -->
+                    <!-- Card 2: History -->
                     <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
-                        <i class="fas fa-coins text-yellow-500 text-xl mb-1"></i>
-                        <p class="text-gray-500 text-xs font-medium">Earned</p>
-                        <p class="text-base font-semibold" id="total-earnings">$0.00</p>
+                        <i class="fas fa-history text-yellow-500 text-xl mb-1"></i>
+                        <p class="text-gray-500 text-xs font-medium">History</p>
+                        <p class="text-base font-semibold">&nbsp;</p>
                     </div>
                     <!-- Card 3: Withdraw -->
                     <div class="bg-white p-3 rounded-xl shadow-md flex flex-col items-center justify-center text-center cursor-pointer withdraw-btn hover:bg-gray-50 transition-colors">
@@ -279,6 +289,9 @@
                     balance: 15.75,
                     completedQuests: [1],
                 },
+                state: {
+                    isBalanceVisible: true,
+                },
                 quests: [
                     { id: 1, title: 'Crypto Basics', description: 'Learn the fundamentals of cryptocurrency.', reward: 5.00, status: 'completed' },
                     { id: 2, title: 'DeFi Introduction', description: 'What is Decentralized Finance?', reward: 7.50, status: 'not-started' },
@@ -303,8 +316,8 @@
                 // --- UI ELEMENTS ---
                 elements: {
                     greeting: document.getElementById('time-based-greeting'),
-                    questsCompleted: document.getElementById('quests-completed'),
-                    totalEarnings: document.getElementById('total-earnings'),
+                    carouselBalance: document.getElementById('carousel-balance'),
+                    toggleBalanceBtn: document.getElementById('toggle-balance-btn'),
                     questList: document.getElementById('quest-list'),
                     pagination: document.getElementById('pagination'),
                     searchInput: document.getElementById('quest-search-input'),
@@ -368,16 +381,24 @@
                  * Updates the header with current user information.
                  */
                 updateHeader() {
-                    const completedCount = this.quests.filter(q => q.status === 'completed').length;
-                    const totalEarnings = this.quests.filter(q => q.status === 'completed').reduce((sum, q) => sum + q.reward, 0);
-                    
-                    this.elements.questsCompleted.textContent = completedCount;
-                    this.elements.totalEarnings.textContent = `$${totalEarnings.toFixed(2)}`;
+                    this.updateBalanceDisplay();
+                },
+
+                /**
+                 * Updates the balance display based on visibility state.
+                 */
+                updateBalanceDisplay() {
+                    if (this.state.isBalanceVisible) {
+                        this.elements.carouselBalance.textContent = `$${this.user.balance.toFixed(2)}`;
+                        this.elements.toggleBalanceBtn.innerHTML = `<i class="fas fa-eye"></i>`;
+                    } else {
+                        this.elements.carouselBalance.textContent = '$****.**';
+                        this.elements.toggleBalanceBtn.innerHTML = `<i class="fas fa-eye-slash"></i>`;
+                    }
                 },
                 
                 /**
                  * Filters, sorts, and displays quests based on UI controls.
-                 * Uses safe DOM manipulation to prevent XSS.
                  */
                 displayQuests() {
                     this.elements.questList.innerHTML = ''; // Clear previous list
@@ -598,9 +619,9 @@
                 // --- CAROUSEL LOGIC ---
                 initCarousel() {
                     const carouselItems = [
-                        { img: 'https://placehold.co/800x400/6c5ce7/white?text=Learn+and+Earn', title: 'Learn & Earn', subtitle: 'Complete quests to gain knowledge and rewards.'},
-                        { img: 'https://placehold.co/800x400/00cec9/white?text=Unlock+New+Skills', title: 'Unlock New Skills', subtitle: 'Master topics from DeFi to NFTs.'},
-                        { img: 'https://placehold.co/800x400/fd79a8/white?text=Grow+Your+Portfolio', title: 'Grow Your Portfolio', subtitle: 'Turn your knowledge into real assets.'}
+                        { img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop' },
+                        { img: 'https://images.unsplash.com/photo-1621293925713-1b0b3c5e8a8c?q=80&w=2070&auto=format&fit=crop' },
+                        { img: 'https://images.unsplash.com/photo-1593720213428-28a5b9e94613?q=80&w=2070&auto=format&fit=crop' }
                     ];
                     
                     this.elements.carousel.innerHTML = '';
@@ -612,10 +633,6 @@
                         itemDiv.className = `carousel-item absolute w-full h-full ${index === 0 ? 'active' : ''}`;
                         itemDiv.innerHTML = `
                             <img src="${item.img}" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-center items-center text-white p-4 text-center">
-                                <h2 class="text-2xl md:text-3xl font-bold font-montserrat">${item.title}</h2>
-                                <p class="mt-1 text-sm md:text-base">${item.subtitle}</p>
-                            </div>
                         `;
                         this.elements.carousel.appendChild(itemDiv);
                         
@@ -656,6 +673,12 @@
                     this.elements.statusFilter.addEventListener('change', () => { this.currentPage = 1; this.displayQuests(); });
                     this.elements.sortFilter.addEventListener('change', () => { this.currentPage = 1; this.displayQuests(); });
                     
+                    // Balance toggle listener
+                    this.elements.toggleBalanceBtn.addEventListener('click', () => {
+                        this.state.isBalanceVisible = !this.state.isBalanceVisible;
+                        this.updateBalanceDisplay();
+                    });
+
                     // Event delegation for quest cards
                     this.elements.questList.addEventListener('click', e => {
                         const card = e.target.closest('.quest-card');
