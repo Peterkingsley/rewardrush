@@ -895,8 +895,14 @@
                     quizContent.innerHTML = `<p class="text-lg font-semibold text-white">${question.question_text}</p>`;
                     quizOptions.innerHTML = '';
 
-                    // The server provides options as a single string, e.g., "Option A,Option B,Option C"
-                    const optionsArray = question.options.split(',');
+                    // FIX: Check if question.options is a string before splitting.
+                    // If it's already an array, use it directly. Otherwise, default to an empty array.
+                    let optionsArray = [];
+                    if (typeof question.options === 'string') {
+                        optionsArray = question.options.split(',');
+                    } else if (Array.isArray(question.options)) {
+                        optionsArray = question.options;
+                    }
 
                     optionsArray.forEach(optionText => {
                         const optionButton = document.createElement('button');
