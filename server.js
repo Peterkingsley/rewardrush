@@ -93,22 +93,19 @@ function parsePayout(payoutString) {
     return (match && match[1]) ? parseFloat(match[1]) : 0;
 }
 
-async function logActivity(userId, activityType, details) {
-    try {
-        await pool.query(
-            'INSERT INTO user_activity (user_id, activity_type, details) VALUES ($1, $2, $3)',
-            [userId, activityType, details]
-        );
-    } catch (err) {
-        console.error('Error logging activity:', err);
-    }
-}
+// async function logActivity(userId, activityType, details) {
+//     try {
+//         // This table does not exist in the provided schema, commenting out to prevent errors.
+//         // await pool.query(
+//         //     'INSERT INTO user_activity (user_id, activity_type, details) VALUES ($1, $2, $3)',
+//         //     [userId, activityType, details]
+//         // );
+//     } catch (err) {
+//         console.error('Error logging activity:', err);
+//     }
+// }
 
 // --- Routes ---
-
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'home.html'));
-});
 
 app.get('/home.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'home.html')));
 
@@ -142,7 +139,7 @@ app.post('/signup', async (req, res) => {
         const newUserResult = await pool.query(newUserQuery, [username, email, passwordHash, fullName]);
         const { id, username: newUsername } = newUserResult.rows[0];
 
-        await logActivity(id, 'account_created', 'Welcome to RewardRush!');
+        // await logActivity(id, 'account_created', 'Welcome to RewardRush!');
 
         req.session.userId = newUsername;
         req.session.isAdmin = false;
@@ -269,7 +266,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         const activeQuestsResult = await pool.query('SELECT COUNT(*) FROM quests WHERE status = $1 AND id NOT IN (SELECT quest_id FROM user_quests WHERE user_id = $2)', ['Available', user.id]);
         const referralsResult = await pool.query('SELECT COUNT(*) FROM conversions WHERE affiliate_username = $1', [user.username]);
         const referralEarningsResult = await pool.query('SELECT SUM(payout_amount) as total FROM conversions WHERE affiliate_username = $1', [user.username]);
-        const recentActivityResult = await pool.query('SELECT * FROM user_activity WHERE user_id = $1 ORDER BY created_at DESC LIMIT 5', [user.id]);
+        // const recentActivityResult = await pool.query('SELECT * FROM user_activity WHERE user_id = $1 ORDER BY created_at DESC LIMIT 5', [user.id]);
 
         const earningsHistoryResult = await pool.query(`
             SELECT TO_CHAR(date_trunc('day', d), 'Mon DD') AS label, COALESCE(SUM(amount), 0) AS value
@@ -298,7 +295,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
                 labels: earningsHistoryResult.rows.map(r => r.label),
                 data: earningsHistoryResult.rows.map(r => r.value),
             },
-            recentActivity: recentActivityResult.rows
+            recentActivity: [] // recentActivityResult.rows
         });
     } catch (err) {
         console.error('Error fetching profile data:', err);
@@ -412,7 +409,7 @@ app.post('/withdraw', requireLogin, async (req, res) => {
             [userDbId, code, withdrawalAmount]
         );
 
-        await logActivity(userDbId, 'withdrawal', `Withdrew ${withdrawalAmount.toFixed(2)}. Code: ${code}`);
+        // await logActivity(userDbId, 'withdrawal', `Withdrew ${withdrawalAmount.toFixed(2)}. Code: ${code}`);
 
         await client.query('COMMIT');
         res.json({ message: 'Withdrawal successful!', code });
@@ -527,7 +524,7 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
                 'INSERT INTO user_quests (user_id, quest_id, completed_at) VALUES ($1, $2, NOW())',
                 [userDbId, questId]
             );
-            await logActivity(userDbId, 'quest_completed', `Completed survey for '${quest.title}'.`);
+            // await logActivity(userDbId, 'quest_completed', `Completed survey for '${quest.title}'.`);
             await client.query('COMMIT');
 
             const referralLink = `${process.env.BASE_URL || `http://localhost:${PORT}`}/referral?questId=${questId}&referrerId=${encodeURIComponent(req.user.username)}`;
@@ -542,7 +539,7 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
         } else {
             // User did not answer all questions
             await client.query('ROLLBACK');
-            await logActivity(userDbId, 'quest_failed', `Did not complete all questions for survey '${quest.title}'.`);
+            // await logActivity(userDbId, 'quest_failed', `Did not complete all questions for survey '${quest.title}'.`);
             res.json({
                 success: false,
                 message: "Please answer all questions to complete the quest."
@@ -698,7 +695,7 @@ app.post('/api/affiliate/conversion', async (req, res) => {
             [programId, affiliateId, conversionValue || 0, payoutAmount]
         );
         await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [payoutAmount, affiliateDbId]);
-        await logActivity(affiliateDbId, 'new_referral', `New referral for '${program.title}' earned $${payoutAmount.toFixed(2)}`);
+        // await logActivity(affiliateDbId, 'new_referral', `New referral for '${program.title}' earned $${payoutAmount.toFixed(2)}`);
         await client.query('COMMIT');
         res.status(201).json({ message: 'Conversion recorded successfully.' });
     } catch(err) {
