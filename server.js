@@ -57,6 +57,10 @@ app.use(session({
 // Middleware functions (requireLogin, requireAdmin, etc.)
 const requireLogin = async (req, res, next) => {
     if (!req.session.userId) {
+        // If the request is for an HTML page, redirect. Otherwise, send JSON error.
+        if (req.headers.accept && req.headers.accept.includes('text/html')) {
+            return res.redirect('/auth.html');
+        }
         return res.status(401).json({ error: 'Unauthorized, please log in' });
     }
     if (req.session.isAdmin) {
@@ -107,9 +111,9 @@ function parsePayout(payoutString) {
 
 // --- Routes ---
 
-// FIX: Explicitly set index.html as the default page for the root URL
+// FIX: Explicitly set auth.html as the default page for the root URL
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'auth.html'));
 });
 
 app.get('/check-session', (req, res) => {
@@ -821,7 +825,7 @@ app.get('/founder/:id', async (req, res) => {
         const { id } = req.params;
         const result = await pool.query("SELECT * FROM professionals WHERE id = $1 AND type = 'founder'", [id]);
         const founder = result.rows[0];
-        if (!founder) return res.status(404).json({ error: 'Founder not found' });
+        if (!founder) return res.status(404).json({ error: 'Expert not found' });
         res.json(founder);
     } catch (err) {
         console.error('Error fetching founder:', err);
