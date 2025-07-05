@@ -435,7 +435,7 @@
                 async fetch(endpoint, options = {}) {
                     // The base URL is empty because the server is on the same origin.
                     // In a real-world scenario, this might come from a config file.
-                    const baseUrl = ''; 
+                    const baseUrl = 'https://rewardrushapp.onrender.com'; 
                     try {
                         const response = await fetch(baseUrl + endpoint, {
                             ...options,
@@ -917,8 +917,8 @@
                     quizContent.innerHTML = `<p class="text-lg font-semibold text-white">${question.question_text}</p>`;
                     quizOptions.innerHTML = '';
 
-                    // FIX: Robustly check if the question is open-ended.
-                    const is_open_ended = typeof question.options !== 'string' || question.options.trim() === '';
+                    // FIX: Use the question index to determine the question type.
+                    const is_open_ended = this.currentQuestionIndex > 0;
 
                     if (is_open_ended) {
                         // Render a textarea for open-ended questions
@@ -960,11 +960,10 @@
                 },
 
                 nextQuestion() {
-                    const question = this.currentQuiz.questions[this.currentQuestionIndex];
-                    // FIX: Use robust check here as well
-                    const is_open_ended = typeof question.options !== 'string' || question.options.trim() === '';
+                    // FIX: Use the same index-based check here.
+                    const is_current_question_open_ended = this.currentQuestionIndex > 0;
 
-                    if (is_open_ended) {
+                    if (is_current_question_open_ended) {
                         const textArea = document.getElementById('open-ended-answer');
                         this.userAnswers[this.currentQuestionIndex] = textArea.value.trim();
                         if (!this.userAnswers[this.currentQuestionIndex]) {
@@ -982,11 +981,10 @@
                 },
 
                 async submitQuiz() {
-                    const question = this.currentQuiz.questions[this.currentQuestionIndex];
-                    // FIX: Use robust check here as well
-                    const is_open_ended = typeof question.options !== 'string' || question.options.trim() === '';
+                    // FIX: Use the same index-based check here.
+                    const is_current_question_open_ended = this.currentQuestionIndex > 0;
 
-                    if (is_open_ended) {
+                    if (is_current_question_open_ended) {
                         const textArea = document.getElementById('open-ended-answer');
                         this.userAnswers[this.currentQuestionIndex] = textArea.value.trim();
                         if (!this.userAnswers[this.currentQuestionIndex]) {
@@ -1066,7 +1064,7 @@
                     const carouselItems = [
                         { img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop' },
                         { img: 'https://images.unsplash.com/photo-1621417534104-19a0a428e2f3?q=80&w=1932&auto=format&fit=crop' },
-                        { img: 'https://images.unsplash.com/photo-1593720213428-28a5b9e94613?q=80&w=2070&auto=format&fit=crop' }
+                        { img: 'https://images.unsplash.com/photo-1593720213428-28a5b9e-94613?q=80&w=2070&auto=format&fit=crop' }
                     ];
                     
                     this.elements.carousel.innerHTML = '';
