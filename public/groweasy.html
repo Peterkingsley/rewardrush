@@ -917,8 +917,8 @@
                     quizContent.innerHTML = `<p class="text-lg font-semibold text-white">${question.question_text}</p>`;
                     quizOptions.innerHTML = '';
 
-                    // FIX: Use the question index to determine the question type.
-                    const is_open_ended = this.currentQuestionIndex > 0;
+                    // FIX: Check the question_type field directly from the data.
+                    const is_open_ended = question.question_type === 'open-ended';
 
                     if (is_open_ended) {
                         // Render a textarea for open-ended questions
@@ -933,7 +933,9 @@
                     } else {
                         // Render buttons for multiple-choice questions
                         quizOptions.className = 'grid grid-cols-1 sm:grid-cols-2 gap-4 my-6';
-                        const optionsArray = question.options.split(',');
+                        
+                        // The 'options' from the DB is a JSONB array of strings.
+                        const optionsArray = question.options; 
 
                         optionsArray.forEach(optionText => {
                             const optionButton = document.createElement('button');
@@ -960,10 +962,11 @@
                 },
 
                 nextQuestion() {
-                    // FIX: Use the same index-based check here.
-                    const is_current_question_open_ended = this.currentQuestionIndex > 0;
+                    const question = this.currentQuiz.questions[this.currentQuestionIndex];
+                    // FIX: Use the same robust check here.
+                    const is_open_ended = question.question_type === 'open-ended';
 
-                    if (is_current_question_open_ended) {
+                    if (is_open_ended) {
                         const textArea = document.getElementById('open-ended-answer');
                         this.userAnswers[this.currentQuestionIndex] = textArea.value.trim();
                         if (!this.userAnswers[this.currentQuestionIndex]) {
@@ -981,10 +984,11 @@
                 },
 
                 async submitQuiz() {
-                    // FIX: Use the same index-based check here.
-                    const is_current_question_open_ended = this.currentQuestionIndex > 0;
+                    const question = this.currentQuiz.questions[this.currentQuestionIndex];
+                    // FIX: Use the same robust check here.
+                    const is_open_ended = question.question_type === 'open-ended';
 
-                    if (is_current_question_open_ended) {
+                    if (is_open_ended) {
                         const textArea = document.getElementById('open-ended-answer');
                         this.userAnswers[this.currentQuestionIndex] = textArea.value.trim();
                         if (!this.userAnswers[this.currentQuestionIndex]) {
