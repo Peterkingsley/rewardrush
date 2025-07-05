@@ -430,131 +430,81 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
+            // --- API Service Layer ---
+            const ApiService = {
+                async fetch(endpoint, options = {}) {
+                    // The base URL is empty because the server is on the same origin.
+                    // In a real-world scenario, this might come from a config file.
+                    const baseUrl = ''; 
+                    try {
+                        const response = await fetch(baseUrl + endpoint, {
+                            ...options,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                ...options.headers,
+                            },
+                        });
+                        const data = await response.json();
+                        if (!response.ok) {
+                            throw new Error(data.error || `HTTP error! status: ${response.status}`);
+                        }
+                        return data;
+                    } catch (error) {
+                        console.error(`API Error on ${endpoint}:`, error);
+                        App.showNotification(error.message, 'error');
+                        if (error.message.toLowerCase().includes('unauthorized')) {
+                            // Redirect to login if not authorized
+                            window.location.href = '/home.html';
+                        }
+                        throw error;
+                    }
+                },
+
+                checkSession() {
+                    return this.fetch('/check-session');
+                },
+
+                getProfile(userId) {
+                    return this.fetch(`/api/profile/${userId}`);
+                },
+
+                getQuests() {
+                    return this.fetch('/quests');
+                },
+
+                getQuestQuestions(questId) {
+                    return this.fetch(`/quests/${questId}/questions`);
+                },
+
+                submitQuiz(questId, answers) {
+                    return this.fetch(`/submit-quiz/${questId}`, {
+                        method: 'POST',
+                        body: JSON.stringify({ answers }),
+                    });
+                },
+
+                withdraw(amount) {
+                    return this.fetch('/withdraw', {
+                        method: 'POST',
+                        body: JSON.stringify({ amount }),
+                    });
+                }
+            };
+
             // Encapsulate all logic in an App object to avoid global scope pollution
             const App = {
                 // --- STATE ---
                 user: {
-                    name: 'John Doe',
+                    name: '',
                     balance: 0.00,
                     completedQuests: [],
+                    recentActivity: [],
                 },
                 state: {
+                    userId: null,
                     isBalanceVisible: true,
                 },
-                quests: [
-                    { id: 1, title: 'Crypto Basics', description: 'Learn the fundamentals of cryptocurrency.', reward: 5.00, status: 'not-started', completionDate: null },
-                    { id: 2, title: 'DeFi Introduction', description: 'What is Decentralized Finance?', reward: 7.50, status: 'not-started', completionDate: null },
-                    { id: 3, title: 'NFTs Explained', description: 'Explore the world of Non-Fungible Tokens.', reward: 6.00, status: 'not-started', completionDate: null },
-                    { id: 4, title: 'Blockchain Technology', description: 'Understand the core technology behind crypto.', reward: 8.00, status: 'not-started', completionDate: null },
-                    { id: 5, title: 'Smart Contracts 101', description: 'Learn how smart contracts work.', reward: 10.00, status: 'not-started', completionDate: null },
-                    { id: 6, title: 'Web3 Gaming', description: 'Discover the future of gaming.', reward: 7.00, status: 'not-started', completionDate: null },
-                    { id: 7, title: 'Yield Farming 101', description: 'An introduction to yield farming strategies.', reward: 9.00, status: 'not-started', completionDate: null },
-                    { id: 8, title: 'Understanding DAOs', description: 'Learn about Decentralized Autonomous Organizations.', reward: 6.50, status: 'not-started', completionDate: null },
-                    { id: 9, title: 'Layer 2 Scaling', description: 'Explore solutions for scaling blockchains.', reward: 8.50, status: 'not-started', completionDate: null },
-                    { id: 10, title: 'Crypto Security', description: 'Best practices for keeping your assets safe.', reward: 5.50, status: 'not-started', completionDate: null }
-                ],
-                quizData: {
-                    1: {
-                        title: 'Crypto Basics',
-                        description: 'Test your knowledge on the fundamentals of crypto.',
-                        questions: [
-                            { question: "What is the most well-known cryptocurrency?", options: ["Ethereum", "Bitcoin", "Ripple"], answer: "Bitcoin", background: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4" },
-                            { question: "What technology underlies most cryptocurrencies?", options: ["Blockchain", "AI", "Cloud Computing"], answer: "Blockchain", background: "https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
-                        ]
-                    },
-                    2: { 
-                        title: 'DeFi Introduction', 
-                        description: 'Test your knowledge on DeFi.', 
-                        questions: [
-                            { 
-                                question: "What does DeFi stand for?", 
-                                options: ["Decentralized Finance", "Digital Finance", "Distributed Funding"], 
-                                answer: "Decentralized Finance",
-                                background: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4"
-                            }, 
-                            { 
-                                question: "Which is a common DeFi application?", 
-                                options: ["Lending", "Gaming", "Social Media"], 
-                                answer: "Lending",
-                                background: "https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                            }
-                        ] 
-                    },
-                    3: { 
-                        title: 'NFTs Explained', 
-                        description: 'Test your knowledge on NFTs.', 
-                        questions: [
-                            { 
-                                question: "What does NFT stand for?", 
-                                options: ["Non-Fungible Token", "New Financial Technology", "Nominal Fiat Token"], 
-                                answer: "Non-Fungible Token",
-                                background: "https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4"
-                            }, 
-                            { 
-                                question: "NFTs are primarily built on which blockchain?", 
-                                options: ["Bitcoin", "Ethereum", "Ripple"], 
-                                answer: "Ethereum",
-                                background: "https://images.pexels.com/photos/12993933/pexels-photo-12993933.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-                            }
-                        ] 
-                    },
-                    4: {
-                        title: 'Blockchain Technology',
-                        description: 'Test your understanding of blockchain.',
-                        questions: [
-                            { question: "What is a 'block' in a blockchain?", options: ["A type of cryptocurrency", "A record of transactions", "A security protocol"], answer: "A record of transactions", background: "logos/reward.mp4" },
-                            { question: "Is a blockchain centralized or decentralized?", options: ["Centralized", "Decentralized"], answer: "Decentralized", background: "https://images.pexels.com/photos/5935791/pexels-photo-5935791.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
-                        ]
-                    },
-                    5: {
-                        title: 'Smart Contracts 101',
-                        description: 'Learn the basics of smart contracts.',
-                        questions: [
-                            { question: "Smart contracts are self-executing contracts with the terms of the agreement directly written into code.", options: ["True", "False"], answer: "True", background: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4" },
-                            { question: "Which platform is most known for popularizing smart contracts?", options: ["Bitcoin", "Ethereum", "Cardano"], answer: "Ethereum", background: "https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
-                        ]
-                    },
-                    6: {
-                        title: 'Web3 Gaming',
-                        description: 'Explore the future of gaming.',
-                        questions: [
-                            { question: "What is a key feature of Web3 games?", options: ["Player ownership of in-game assets", "Better graphics", "Offline gameplay"], answer: "Player ownership of in-game assets", background: "https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4" },
-                            { question: "What does 'Play-to-Earn' mean?", options: ["Players pay to win", "Players can earn real-world value", "A marketing slogan"], answer: "Players can earn real-world value", background: "https://images.pexels.com/photos/7915424/pexels-photo-7915424.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
-                        ]
-                    },
-                    7: {
-                        title: 'Yield Farming 101',
-                        description: 'An introduction to yield farming strategies.',
-                        questions: [
-                            { question: "What is yield farming?", options: ["A type of crypto mining", "Lending or staking crypto to generate rewards", "A new video game"], answer: "Lending or staking crypto to generate rewards", background: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4" },
-                            { question: "What is a potential risk of yield farming?", options: ["Low returns", "Impermanent Loss", "Slow transactions"], answer: "Impermanent Loss", background: "https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
-                        ]
-                    },
-                    8: {
-                        title: 'Understanding DAOs',
-                        description: 'Learn about Decentralized Autonomous Organizations.',
-                        questions: [
-                            { question: "What does DAO stand for?", options: ["Digital Asset Organization", "Decentralized Autonomous Organization", "Data Access Object"], answer: "Decentralized Autonomous Organization", background: "https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4" },
-                            { question: "How are decisions typically made in a DAO?", options: ["By a CEO", "Through voting by token holders", "By the developers"], answer: "Through voting by token holders", background: "https://images.pexels.com/photos/12993933/pexels-photo-12993933.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
-                        ]
-                    },
-                    9: {
-                        title: 'Layer 2 Scaling',
-                        description: 'Explore solutions for scaling blockchains.',
-                        questions: [
-                            { question: "What is the primary purpose of Layer 2 solutions?", options: ["To increase security", "To improve scalability and reduce fees", "To create new cryptocurrencies"], answer: "To improve scalability and reduce fees", background: "logos/reward.mp4" },
-                            { question: "Which of these is a Layer 2 scaling solution?", options: ["Polygon", "Solana", "Cardano"], answer: "Polygon", background: "https://images.pexels.com/photos/5935791/pexels-photo-5935791.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
-                        ]
-                    },
-                    10: {
-                        title: 'Crypto Security',
-                        description: 'Best practices for keeping your assets safe.',
-                        questions: [
-                            { question: "What is a 'cold wallet'?", options: ["A wallet connected to the internet", "A physical hardware wallet", "A mobile wallet app"], answer: "A physical hardware wallet", background: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4" },
-                            { question: "What should you never share with anyone?", options: ["Your public wallet address", "Your private key or seed phrase", "Your favorite cryptocurrency"], answer: "Your private key or seed phrase", background: "https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
-                        ]
-                    }
-                },
+                quests: [],
                 
                 // --- PAGINATION & QUIZ STATE ---
                 currentPage: 1,
@@ -599,15 +549,54 @@
                 /**
                  * Initializes the application, sets up event listeners and renders initial data.
                  */
-                init() {
+                async init() {
                     this.initTheme();
-                    this.displayGreeting();
-                    this.updateHeader();
-                    this.displayQuests();
-                    this.displayHistory();
-                    this.initCarousel();
                     this.bindEvents();
                     this.bindSidebarToggle();
+                    this.initCarousel();
+                    
+                    try {
+                        const sessionData = await ApiService.checkSession();
+                        if (!sessionData.loggedIn) {
+                            window.location.href = '/home.html';
+                            return;
+                        }
+                        this.state.userId = sessionData.userId;
+
+                        const [profileData, questsData] = await Promise.all([
+                            ApiService.getProfile(this.state.userId),
+                            ApiService.getQuests()
+                        ]);
+                        
+                        // Populate user data
+                        this.user.name = profileData.fullName;
+                        this.user.balance = profileData.totalEarnings;
+                        this.user.recentActivity = profileData.recentActivity;
+                        // Get completed quest IDs from profile's recent activity for 'quest_completed' type
+                        this.user.completedQuests = profileData.recentActivity
+                            .filter(activity => activity.activity_type === 'quest_completed')
+                            .map(activity => {
+                                // Extract quest title from details, e.g., "Passed quiz 'Crypto Basics'..."
+                                const match = activity.details.match(/'([^']+)'/);
+                                return match ? match[1] : null;
+                            }).filter(Boolean);
+
+
+                        // Populate quests
+                        this.quests = questsData.quests.map(quest => {
+                            const isCompleted = this.user.completedQuests.includes(quest.title);
+                            return { ...quest, status: isCompleted ? 'completed' : 'not-started' };
+                        });
+
+                        this.displayGreeting();
+                        this.updateHeader();
+                        this.displayQuests();
+                        this.displayHistory();
+
+                    } catch (error) {
+                        console.error("Initialization failed:", error);
+                        // The ApiService will show a notification
+                    }
                 },
 
                 /**
@@ -717,10 +706,16 @@
                     });
                     
                     // 2. Sort
+                    const parseReward = (rewardString) => {
+                         if (typeof rewardString !== 'string') return 0;
+                         const match = rewardString.match(/\$?(\d+(\.\d+)?)/);
+                         return (match && match[1]) ? parseFloat(match[1]) : 0;
+                    }
+
                     if (sortOrder === 'high-to-low') {
-                        filteredQuests.sort((a, b) => b.reward - a.reward);
+                        filteredQuests.sort((a, b) => parseReward(b.reward) - parseReward(a.reward));
                     } else if (sortOrder === 'low-to-high') {
-                        filteredQuests.sort((a, b) => a.reward - b.reward);
+                        filteredQuests.sort((a, b) => parseReward(a.reward) - parseReward(b.reward));
                     }
                     
                     // 3. Paginate
@@ -746,25 +741,38 @@
                  */
                 displayHistory() {
                     this.elements.historyList.innerHTML = ''; // Clear previous list
-                    const completedQuests = this.quests.filter(quest => quest.status === 'completed');
-
-                    if (completedQuests.length === 0) {
-                        this.elements.historyList.innerHTML = `<p class="text-gray-500 text-center py-4">No completed quests yet.</p>`;
+                    
+                    if (this.user.recentActivity.length === 0) {
+                        this.elements.historyList.innerHTML = `<p class="text-gray-500 text-center py-4">No recent activity yet.</p>`;
                     } else {
-                        completedQuests.forEach(quest => {
+                        this.user.recentActivity.forEach(activity => {
                             const historyItem = document.createElement('div');
                             historyItem.className = 'flex justify-between items-center p-3 border-b border-gray-200 last:border-b-0';
                             
-                            const formattedDate = new Date(quest.completionDate).toLocaleDateString('en-US', {
+                            const formattedDate = new Date(activity.created_at).toLocaleDateString('en-US', {
                                 year: 'numeric', month: 'long', day: 'numeric'
                             });
 
+                            let amountHtml = '';
+                            if (activity.activity_type === 'quest_completed' || activity.activity_type === 'new_referral') {
+                                // Extract amount from details, e.g., "...earned $5.00"
+                                const amountMatch = activity.details.match(/\$(\d+\.\d+)/);
+                                if (amountMatch) {
+                                    amountHtml = `<p class="font-semibold text-green-600">+$${parseFloat(amountMatch[1]).toFixed(2)}</p>`;
+                                }
+                            } else if (activity.activity_type === 'withdrawal') {
+                                const amountMatch = activity.details.match(/(\d+\.\d+)/);
+                                 if (amountMatch) {
+                                    amountHtml = `<p class="font-semibold text-red-600">-$${parseFloat(amountMatch[1]).toFixed(2)}</p>`;
+                                }
+                            }
+
                             historyItem.innerHTML = `
                                 <div>
-                                    <p class="font-semibold text-gray-800">${quest.title}</p>
-                                    <p class="text-xs text-gray-500">Completed on ${formattedDate}</p>
+                                    <p class="font-semibold text-gray-800">${activity.details}</p>
+                                    <p class="text-xs text-gray-500">${formattedDate}</p>
                                 </div>
-                                <p class="font-semibold text-green-600">+$${quest.reward.toFixed(2)}</p>
+                                ${amountHtml}
                             `;
                             this.elements.historyList.appendChild(historyItem);
                         });
@@ -790,7 +798,6 @@
                          statusBadge = `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">Available</span>`;
                     }
 
-                    // Using template literals but setting properties safely, not with innerHTML.
                     const cardContent = `
                         <div class="flex-grow">
                             <div class="flex justify-between items-start mb-2">
@@ -801,7 +808,7 @@
                         </div>
                         <div class="mt-3 pt-3 border-t border-gray-200">
                              <div class="flex justify-between items-center mb-3">
-                                <p class="font-bold text-green-600 text-base">$${quest.reward.toFixed(2)}</p>
+                                <p class="font-bold text-green-600 text-base">${quest.reward}</p>
                                 <button class="details-btn text-purple-600 hover:underline text-xs font-semibold">View Details</button>
                             </div>
                             <button class="start-quiz-btn w-full py-2 px-4 rounded-lg text-sm font-semibold transition ${isCompleted ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}" ${isCompleted ? 'disabled' : ''}>
@@ -809,7 +816,7 @@
                             </button>
                         </div>
                     `;
-                    card.innerHTML = cardContent; // Safe here because content is controlled
+                    card.innerHTML = cardContent;
                     return card;
                 },
 
@@ -836,18 +843,32 @@
                 },
 
                 // --- QUIZ LOGIC ---
-                startQuiz(questId) {
-                    this.currentQuiz = this.quizData[questId];
-                    if (!this.currentQuiz) {
-                        this.showNotification('Quiz not available for this quest yet.', 'error');
-                        return;
+                async startQuiz(questId) {
+                    try {
+                        const questData = this.quests.find(q => q.id === questId);
+                        const questionsData = await ApiService.getQuestQuestions(questId);
+
+                        if (!questionsData || !questionsData.questions || questionsData.questions.length === 0) {
+                            this.showNotification('Quiz not available for this quest yet.', 'error');
+                            return;
+                        }
+                        
+                        this.currentQuiz = {
+                            id: questId,
+                            title: questData.title,
+                            description: questData.description,
+                            questions: questionsData.questions
+                        };
+
+                        this.currentQuestionIndex = 0;
+                        this.userAnswers = [];
+                        document.getElementById('quiz-title').textContent = this.currentQuiz.title;
+                        document.getElementById('quiz-description').textContent = this.currentQuiz.description;
+                        this.showQuestion();
+                        this.openModal(this.elements.quizModal);
+                    } catch (error) {
+                        console.error("Failed to start quiz:", error);
                     }
-                    this.currentQuestionIndex = 0;
-                    this.userAnswers = [];
-                    document.getElementById('quiz-title').textContent = this.currentQuiz.title;
-                    document.getElementById('quiz-description').textContent = this.currentQuiz.description;
-                    this.showQuestion();
-                    this.openModal(this.elements.quizModal);
                 },
 
                 showQuestion() {
@@ -856,43 +877,24 @@
                     const quizOptions = document.getElementById('quiz-options');
                     const quizBackground = document.getElementById('quiz-background');
 
-                    // Set background media
-                    quizBackground.innerHTML = ''; // Clear previous background
-                    if (question.background) {
-                        if (question.background.endsWith('.mp4') || question.background.endsWith('.webm')) {
-                            const video = document.createElement('video');
-                            video.src = question.background;
-                            video.className = 'absolute inset-0 w-full h-full object-cover';
-                            video.autoplay = true;
-                            video.loop = true;
-                            video.muted = true;
-                            video.playsInline = true;
-                            quizBackground.appendChild(video);
-                            const playPromise = video.play();
-                            if (playPromise !== undefined) {
-                                playPromise.catch(error => {
-                                    console.error("Video autoplay was prevented:", error);
-                                });
-                            }
-                        } else {
-                            const img = document.createElement('img');
-                            img.src = question.background;
-                            img.className = 'absolute inset-0 w-full h-full object-cover';
-                            quizBackground.appendChild(img);
-                        }
-                    }
+                    quizBackground.innerHTML = '';
+                    // Note: The server.js doesn't provide background media per question.
+                    // This part is kept for potential future enhancements.
+                    // A default background could be set here if desired.
+                    quizBackground.style.backgroundColor = '#1a1a2e';
 
-                    // Set question and options
-                    quizContent.innerHTML = `<p class="text-lg font-semibold text-white">${question.question}</p>`;
+                    quizContent.innerHTML = `<p class="text-lg font-semibold text-white">${question.question_text}</p>`;
                     quizOptions.innerHTML = '';
 
-                    question.options.forEach(option => {
+                    // The server provides options as a single string, e.g., "Option A,Option B,Option C"
+                    const optionsArray = question.options.split(',');
+
+                    optionsArray.forEach(optionText => {
                         const optionButton = document.createElement('button');
-                        optionButton.textContent = option;
+                        optionButton.textContent = optionText.trim();
                         optionButton.className = 'w-full text-left p-4 border border-white/30 rounded-lg bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm transition';
                         optionButton.addEventListener('click', () => {
-                            this.userAnswers[this.currentQuestionIndex] = option;
-                            // Visual feedback
+                            this.userAnswers[this.currentQuestionIndex] = optionText.trim();
                             Array.from(quizOptions.children).forEach(btn => btn.classList.remove('bg-white/30', 'border-purple-400'));
                             optionButton.classList.add('bg-white/30', 'border-purple-400');
                         });
@@ -919,44 +921,38 @@
                     this.showQuestion();
                 },
 
-                submitQuiz() {
+                async submitQuiz() {
                     if (this.userAnswers[this.currentQuestionIndex] === undefined) {
                         this.showNotification('Please select an answer.', 'error');
                         return;
                     }
                     
-                    let score = 0;
-                    this.currentQuiz.questions.forEach((q, index) => {
-                        if (q.answer === this.userAnswers[index]) {
-                            score++;
+                    try {
+                        const result = await ApiService.submitQuiz(this.currentQuiz.id, this.userAnswers);
+                        this.closeModal(this.elements.quizModal);
+
+                        if (result.success) {
+                            const quest = this.quests.find(q => q.id === this.currentQuiz.id);
+                            this.showQuestCompletion(quest, result.referralLink);
+                            // Refresh data to reflect completion and new balance
+                            this.init(); 
+                        } else {
+                            this.showNotification(result.message || 'Quiz failed. Please try again later.', 'error');
                         }
-                    });
-                    
-                    const questId = Object.keys(this.quizData).find(key => this.quizData[key] === this.currentQuiz);
-                    const quest = this.quests.find(q => q.id == questId);
-                    
-                    if (score === this.currentQuiz.questions.length) {
-                        this.user.balance += quest.reward;
-                        quest.status = 'completed';
-                        quest.completionDate = new Date().toISOString().split('T')[0];
-                        this.showQuestCompletion(quest);
-                    } else {
-                        this.showNotification('Quiz failed. Please try again later.', 'error');
+                    } catch (error) {
+                        console.error("Error submitting quiz:", error);
                     }
-                    
-                    this.updateHeader();
-                    this.displayQuests();
-                    this.displayHistory();
-                    this.closeModal(this.elements.quizModal);
                 },
 
                 /**
                  * Shows the quest completion modal with referral options.
                  * @param {object} quest - The completed quest object.
+                 * @param {string} referralLink - The referral link from the server.
                  */
-                showQuestCompletion(quest) {
+                showQuestCompletion(quest, referralLink) {
                     this.elements.completionTitle.textContent = `Quest Complete: ${quest.title}`;
-                    this.elements.completionReward.textContent = `You've earned $${quest.reward.toFixed(2)}!`;
+                    this.elements.completionReward.textContent = `You've earned ${quest.reward}!`;
+                    this.elements.referralLinkInput.value = referralLink;
                     this.openModal(this.elements.questCompleteModal);
                 },
 
@@ -974,7 +970,6 @@
                         modal.classList.remove('flex');
                      }, 200);
 
-                     // If it's the quiz modal, clear the background
                      if (modal.id === 'quiz-modal') {
                          document.getElementById('quiz-background').innerHTML = '';
                      }
@@ -997,7 +992,7 @@
                 initCarousel() {
                     const carouselItems = [
                         { img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop' },
-                        { img: 'logos/reward.mp4' },
+                        { img: 'https://images.unsplash.com/photo-1621417534104-19a0a428e2f3?q=80&w=1932&auto=format&fit=crop' },
                         { img: 'https://images.unsplash.com/photo-1593720213428-28a5b9e94613?q=80&w=2070&auto=format&fit=crop' }
                     ];
                     
@@ -1005,15 +1000,11 @@
                     this.elements.carouselDots.innerHTML = '';
                     
                     carouselItems.forEach((item, index) => {
-                        // Create item
                         const itemDiv = document.createElement('div');
                         itemDiv.className = `carousel-item absolute w-full h-full ${index === 0 ? 'active' : ''}`;
-                        itemDiv.innerHTML = `
-                            <img src="${item.img}" class="w-full h-full object-cover">
-                        `;
+                        itemDiv.innerHTML = `<img src="${item.img}" class="w-full h-full object-cover">`;
                         this.elements.carousel.appendChild(itemDiv);
                         
-                        // Create dot
                         const dot = document.createElement('button');
                         dot.className = `carousel-dot w-2.5 h-2.5 rounded-full transition ${index === 0 ? 'bg-white' : 'bg-white/50'}`;
                         dot.dataset.index = index;
@@ -1090,8 +1081,9 @@
                         });
                     });
                     
-                    document.getElementById('confirm-withdrawal-btn').addEventListener('click', () => {
-                        const amount = parseFloat(document.getElementById('withdraw-amount').value);
+                    document.getElementById('confirm-withdrawal-btn').addEventListener('click', async () => {
+                        const amountInput = document.getElementById('withdraw-amount');
+                        const amount = parseFloat(amountInput.value);
                         if (isNaN(amount) || amount <= 0) {
                             this.showNotification('Please enter a valid amount.', 'error');
                             return;
@@ -1100,10 +1092,17 @@
                              this.showNotification('Insufficient funds.', 'error');
                              return;
                         }
-                        this.user.balance -= amount;
-                        this.updateHeader();
-                        this.showNotification(`$${amount.toFixed(2)} withdrawn successfully.`, 'success');
-                        this.closeModal(this.elements.withdrawModal);
+                        
+                        try {
+                            const result = await ApiService.withdraw(amount);
+                            this.showNotification(`Withdrawal successful! Your code is: ${result.code}`, 'success');
+                            this.closeModal(this.elements.withdrawModal);
+                            amountInput.value = '';
+                            // Refresh user data
+                            this.init();
+                        } catch (error) {
+                            console.error("Withdrawal failed:", error);
+                        }
                     });
                      document.getElementById('cancel-withdrawal-btn').addEventListener('click', () => this.closeModal(this.elements.withdrawModal));
                      this.elements.withdrawModal.addEventListener('click', (e) => {
@@ -1188,7 +1187,9 @@
                 renderThreeJs();
             }
 
+
             function renderThreeJs() {
+                if (!renderer) return;
                 const time = Date.now() * 0.00005;
                 camera.position.x += (mouseX - camera.position.x) * 0.05;
                 camera.position.y += (-mouseY - camera.position.y) * 0.05;
@@ -1206,6 +1207,7 @@
             }
 
             function onWindowResize() {
+                if (!renderer) return;
                 windowHalfX = window.innerWidth / 2;
                 windowHalfY = window.innerHeight / 2;
                 camera.aspect = window.innerWidth / window.innerHeight;
