@@ -107,7 +107,10 @@ function parsePayout(payoutString) {
 
 // --- Routes ---
 
-app.get('/index.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+// FIX: Explicitly set index.html as the default page for the root URL
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 app.get('/check-session', (req, res) => {
     if (req.session.userId) {
