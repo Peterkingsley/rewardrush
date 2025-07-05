@@ -111,9 +111,9 @@ function parsePayout(payoutString) {
 
 // --- Routes ---
 
-// FIX: Explicitly set auth.html as the default page for the root URL
+// FIX: Explicitly set index.html as the default page for the root URL
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'auth.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/check-session', (req, res) => {
@@ -875,4 +875,4 @@ app.use((req, res, next) => {
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
-});
+})
