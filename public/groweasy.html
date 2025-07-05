@@ -454,7 +454,7 @@
                         App.showNotification(error.message, 'error');
                         if (error.message.toLowerCase().includes('unauthorized')) {
                             // Redirect to login if not authorized
-                            window.location.href = '/home.html';
+                            window.location.href = '/auth.html';
                         }
                         throw error;
                     }
@@ -558,7 +558,7 @@
                     try {
                         const sessionData = await ApiService.checkSession();
                         if (!sessionData.loggedIn) {
-                            window.location.href = '/home.html';
+                            window.location.href = '/auth.html';
                             return;
                         }
                         this.state.userId = sessionData.userId;

@@ -5,16 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GrowEasy - Gamified Learning & Rewards</title>
     
-    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Three.js for Particle Background -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Fonts using <link> for better performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
@@ -175,15 +171,12 @@
 </head>
 <body class="text-gray-800">
     
-    <!-- Background Canvas and Custom Cursor -->
     <canvas id="bg-canvas"></canvas>
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
 
-    <!-- Sidebar (Desktop Only) -->
     <aside id="desktop-sidebar" class="hidden md:flex flex-col justify-between w-64 bg-white fixed top-0 left-0 h-full z-40 transition-all duration-300">
         <div>
-            <!-- Sidebar Header -->
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
                 <div class="flex items-center text-2xl font-semibold text-gray-800">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
@@ -193,7 +186,6 @@
                     <i class="fas fa-chevron-left transition-transform duration-300"></i>
                 </button>
             </div>
-            <!-- Navigation -->
             <nav class="p-4">
                 <ul>
                     <li class="mb-4"><a href="groweasy.html" class="nav-link flex items-center text-lg font-semibold py-3 px-4 rounded-lg active-nav"><i class="fas fa-compass w-6 text-center mr-4"></i><span class="sidebar-text">Quests</span></a></li>
@@ -204,7 +196,6 @@
                 </ul>
             </nav>
         </div>
-        <!-- Social & Theme Toggle -->
         <div class="p-4">
             <div class="sidebar-text border-t border-gray-200 pt-4">
                 <h3 class="text-xs uppercase text-gray-500 font-bold mb-4">Follow Us</h3>
@@ -223,10 +214,8 @@
         </div>
     </aside>
 
-    <!-- Main Content Wrapper -->
     <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
         
-        <!-- Header Section (Mobile Only, Sticky) -->
         <div class="md:hidden sticky top-0 z-30 bg-gray-100/80 backdrop-blur-sm pt-4">
              <div class="px-4">
                 <header class="bg-white shadow-md p-4 flex items-center justify-center rounded-2xl">
@@ -240,23 +229,16 @@
             </div>
         </div>
 
-        <!-- App Container -->
         <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 md:pt-8">
 
-            <!-- Time-based Greeting -->
             <div id="time-based-greeting" class="text-2xl font-bold text-gray-900 mb-6 px-2 font-montserrat reveal"></div>
 
-            <!-- Main Content -->
             <main>
-                <!-- Carousel Section with Balance Overlay -->
                 <div class="relative mb-6 shadow-lg rounded-2xl overflow-hidden reveal">
                     <div id="carousel" class="relative w-full h-48 md:h-64">
-                        <!-- Carousel items will be injected by JS -->
-                    </div>
+                        </div>
                     <div id="carousel-dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
-                        <!-- Carousel dots will be injected by JS -->
-                    </div>
-                    <!-- Static Balance Overlay -->
+                        </div>
                     <div class="absolute inset-0 flex flex-col justify-center items-center z-10 bg-black bg-opacity-50 text-white">
                         <div class="flex items-center text-sm text-gray-200">
                             <span>Total Balance</span>
@@ -268,30 +250,24 @@
                     </div>
                 </div>
 
-                <!-- Dashboard Overview -->
                 <div class="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-6 mb-6 reveal">
-                    <!-- Card 1: Invite -->
                     <div class="bg-white py-3 px-2 rounded-lg shadow-md flex flex-col items-center justify-center text-center">
                         <i class="fas fa-user-plus text-purple-500 text-lg mb-1"></i>
                         <p class="text-gray-500 text-xs font-medium">Invite</p>
                     </div>
-                    <!-- Card 2: History -->
                     <div id="history-btn" class="bg-white py-3 px-2 rounded-lg shadow-md flex flex-col items-center justify-center text-center cursor-pointer">
                         <i class="fas fa-history text-yellow-500 text-lg mb-1"></i>
                         <p class="text-gray-500 text-xs font-medium">History</p>
                     </div>
-                    <!-- Card 3: Withdraw -->
                     <div class="bg-white py-3 px-2 rounded-lg shadow-md flex flex-col items-center justify-center text-center cursor-pointer withdraw-btn hover:bg-gray-50 transition-colors">
                         <i class="fas fa-wallet text-green-500 text-lg mb-1"></i>
                         <p class="text-gray-500 text-xs font-medium">Withdraw</p>
                     </div>
                 </div>
                 
-                <!-- Quests Section -->
                 <div class="bg-white rounded-2xl shadow-md p-5 reveal">
                     <h2 class="text-lg font-bold mb-4">Available Quests</h2>
                     
-                    <!-- Filters -->
                     <div class="grid grid-cols-3 gap-2 md:gap-4 mb-4">
                         <input type="text" id="quest-search-input" placeholder="Search quests..." class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                         <select id="filter-status" class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
@@ -306,50 +282,37 @@
                         </select>
                     </div>
 
-                    <!-- Quest List -->
                     <div id="quest-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Quest cards will be dynamically inserted here -->
-                    </div>
+                        </div>
 
-                    <!-- Pagination -->
                     <nav id="pagination" class="flex justify-center items-center mt-6 space-x-2">
-                        <!-- Pagination controls will be dynamically inserted here -->
-                    </nav>
+                        </nav>
                 </div>
 
-                <!-- History Section -->
                 <div id="history-section" class="bg-white rounded-2xl shadow-md p-5 mt-6 reveal">
                     <h2 class="text-lg font-bold mb-4">Quest History</h2>
                     <div id="history-list">
-                        <!-- History items will be dynamically inserted here -->
-                    </div>
+                        </div>
                     <div id="history-footer" class="mt-2 text-center">
-                        <!-- "See More" button will be injected here -->
-                    </div>
+                        </div>
                 </div>
 
-                <!-- Spacer for mobile footer -->
                 <div class="h-20 md:hidden"></div>
             </main>
         </div>
     </div>
 
-    <!-- Modal for Quiz -->
     <div id="quiz-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="modal-content-wrapper relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-transform scale-95">
-            <!-- Background Media Container -->
             <div id="quiz-background" class="absolute inset-0 w-full h-full z-0"></div>
             
-            <!-- Content Overlay -->
             <div class="relative z-10 bg-black/50 p-8 text-white">
                 <h2 id="quiz-title" class="text-2xl font-bold mb-2">Quiz Title</h2>
                 <p id="quiz-description" class="text-gray-300 mb-6">Answer the questions below.</p>
                 <div id="quiz-content" class="text-white">
-                    <!-- Question will be injected here -->
-                </div>
+                    </div>
                 <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
-                     <!-- Options will be injected here -->
-                </div>
+                     </div>
                 <div class="flex justify-between items-center mt-6">
                      <p id="quiz-progress" class="text-gray-300 font-semibold"></p>
                      <div>
@@ -361,7 +324,6 @@
         </div>
     </div>
     
-    <!-- Modal for Withdrawal -->
     <div id="withdraw-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="modal-content-wrapper bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-transform scale-95">
              <h2 class="text-xl font-bold mb-4">Withdraw Funds</h2>
@@ -374,7 +336,6 @@
         </div>
     </div>
 
-    <!-- Quest Details Modal -->
     <div id="quest-details-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="modal-content-wrapper bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-transform scale-95">
             <div class="flex justify-between items-start">
@@ -393,7 +354,6 @@
         </div>
     </div>
 
-    <!-- Quest Completion Modal -->
     <div id="quest-complete-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="modal-content-wrapper bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-transform scale-95">
              <div class="relative">
@@ -426,12 +386,10 @@
         </div>
     </div>
     
-    <!-- Custom Notification/Toast -->
     <div id="notification-toast" class="fixed bottom-8 right-8 bg-gray-800 text-white py-3 px-6 rounded-lg shadow-xl z-50 hidden">
         <p id="notification-message">Notification message</p>
     </div>
 
-    <!-- Bottom Navigation Bar (Mobile Only) -->
     <footer class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-t-md p-2 z-40">
         <div class="flex justify-around items-center">
             <a href="groweasy.html" class="flex flex-col items-center text-purple-600 w-1/5">
@@ -477,17 +435,23 @@
                         });
                         const data = await response.json();
                         if (!response.ok) {
+                            // **MODIFICATION**: Don't redirect on the landing page for auth errors
+                            if (response.status === 401 || response.status === 403) {
+                                 // We can just log it or show a non-blocking notification for debugging
+                                 console.log('User is not authenticated, but staying on the landing page.');
+                                 // We still throw the error so the calling function knows the request failed
+                                 throw new Error(data.error || 'Unauthorized access attempt.');
+                            }
                             throw new Error(data.error || `HTTP error! status: ${response.status}`);
                         }
                         return data;
                     } catch (error) {
                         console.error(`API Error on ${endpoint}:`, error);
-                        App.showNotification(error.message, 'error');
-                        if (error.message.toLowerCase().includes('unauthorized')) {
-                            // Redirect to login if not authorized
-                            window.location.href = '/home.html';
+                        // Only show user-facing notification if it's not an auth error on this page
+                        if (!error.message.toLowerCase().includes('unauthorized')) {
+                             App.showNotification(error.message, 'error');
                         }
-                        throw error;
+                        throw error; // Re-throw to be caught by the calling function
                     }
                 },
 
@@ -598,45 +562,50 @@
                     
                     try {
                         const sessionData = await ApiService.checkSession();
-                        if (!sessionData.loggedIn) {
-                            window.location.href = '/home.html';
-                            return;
+                        // **MODIFICATION**: Removed the redirect logic.
+                        // The page will now load for everyone.
+                        // If the user is logged in, we'll fetch their data.
+                        if (sessionData.loggedIn) {
+                            this.state.userId = sessionData.userId;
+                            
+                            const [profileData, questsData] = await Promise.all([
+                                ApiService.getProfile(this.state.userId),
+                                ApiService.getQuests()
+                            ]);
+                            
+                            // Populate user data
+                            this.user.name = profileData.fullName;
+                            this.user.balance = profileData.totalEarnings;
+                            this.user.recentActivity = profileData.recentActivity;
+                            this.user.completedQuests = profileData.recentActivity
+                                .filter(activity => activity.activity_type === 'quest_completed')
+                                .map(activity => {
+                                    const match = activity.details.match(/'([^']+)'/);
+                                    return match ? match[1] : null;
+                                }).filter(Boolean);
+
+                            // Populate quests
+                            this.quests = questsData.quests.map(quest => {
+                                const isCompleted = this.user.completedQuests.includes(quest.title);
+                                return { ...quest, status: isCompleted ? 'completed' : 'not-started' };
+                            });
+
+                            this.displayGreeting();
+                            this.updateHeader();
+                            this.displayHistory();
+                        } else {
+                            // User is not logged in, fetch general quest data without user-specific status
+                            const questsData = await ApiService.getQuests();
+                            this.quests = questsData.quests.map(quest => ({ ...quest, status: 'not-started' }));
+                             this.displayGreeting(); // Display a generic greeting
                         }
-                        this.state.userId = sessionData.userId;
-
-                        const [profileData, questsData] = await Promise.all([
-                            ApiService.getProfile(this.state.userId),
-                            ApiService.getQuests()
-                        ]);
                         
-                        // Populate user data
-                        this.user.name = profileData.fullName;
-                        this.user.balance = profileData.totalEarnings;
-                        this.user.recentActivity = profileData.recentActivity;
-                        // Get completed quest IDs from profile's recent activity for 'quest_completed' type
-                        this.user.completedQuests = profileData.recentActivity
-                            .filter(activity => activity.activity_type === 'quest_completed')
-                            .map(activity => {
-                                // Extract quest title from details, e.g., "Passed quiz 'Crypto Basics'..."
-                                const match = activity.details.match(/'([^']+)'/);
-                                return match ? match[1] : null;
-                            }).filter(Boolean);
-
-
-                        // Populate quests
-                        this.quests = questsData.quests.map(quest => {
-                            const isCompleted = this.user.completedQuests.includes(quest.title);
-                            return { ...quest, status: isCompleted ? 'completed' : 'not-started' };
-                        });
-
-                        this.displayGreeting();
-                        this.updateHeader();
+                        // This will now run for both logged-in and guest users
                         this.displayQuests();
-                        this.displayHistory();
 
                     } catch (error) {
                         console.error("Initialization failed:", error);
-                        // The ApiService will show a notification
+                        // Non-blocking error handling is managed in the ApiService
                     }
                 },
 
@@ -695,15 +664,20 @@
                  */
                 displayGreeting() {
                     const hour = new Date().getHours();
-                    const name = this.user.name.split(' ')[0]; // Get first name
                     let greetingText = '';
 
-                    if (hour < 12) {
-                        greetingText = `Good morning, ${name}`;
-                    } else if (hour < 18) {
-                        greetingText = `Good afternoon, ${name}`;
+                    // **MODIFICATION**: Handle greeting for guest users
+                    if (this.user.name) {
+                        const name = this.user.name.split(' ')[0]; // Get first name
+                        if (hour < 12) {
+                            greetingText = `Good morning, ${name}`;
+                        } else if (hour < 18) {
+                            greetingText = `Good afternoon, ${name}`;
+                        } else {
+                            greetingText = `Good evening, ${name}`;
+                        }
                     } else {
-                        greetingText = `Good evening, ${name}`;
+                         greetingText = 'Welcome to RewardRush!';
                     }
 
                     this.elements.greeting.innerHTML = greetingText;
@@ -905,6 +879,14 @@
 
                 // --- QUIZ LOGIC ---
                 async startQuiz(questId) {
+                    // **MODIFICATION**: Check if user is logged in before starting a quiz
+                    if (!this.state.userId) {
+                        this.showNotification('Please log in or sign up to start quests.', 'error');
+                        // Optional: Redirect to login/auth page
+                        // window.location.href = '/auth.html'; 
+                        return;
+                    }
+
                     try {
                         const questData = this.quests.find(q => q.id === questId);
 
@@ -935,8 +917,6 @@
                         this.showQuestion();
                         this.openModal(this.elements.quizModal);
                     } catch (error) {
-                        // The ApiService.fetch method already shows a notification for API errors.
-                        // This catch block will handle other potential errors, but logging is sufficient for debugging.
                         console.error("Failed to start quiz:", error);
                     }
                 },
@@ -950,13 +930,11 @@
                     // --- BACKGROUND VIDEO LOGIC ---
                     quizBackground.innerHTML = ''; // Clear previous background
 
-                    // A placeholder list of videos to cycle through.
                     const backgroundVideos = [
                         'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
                         'https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4',
                         'https://test-videos.co.uk/vids/elephantsdream/mp4/h264/360/Elephants_Dream_360_10s_1MB.mp4'
                     ];
-                    // Use the question index to pick a video, looping if necessary
                     const videoUrl = backgroundVideos[this.currentQuestionIndex % backgroundVideos.length];
 
                     const video = document.createElement('video');
@@ -978,24 +956,19 @@
                     quizContent.innerHTML = `<p class="text-lg font-semibold text-white">${question.question_text}</p>`;
                     quizOptions.innerHTML = '';
 
-                    // FIX: Check the question_type field directly from the data.
                     const is_open_ended = question.question_type === 'open-ended';
 
                     if (is_open_ended) {
-                        // Render a textarea for open-ended questions
                         const textArea = document.createElement('textarea');
                         textArea.id = 'open-ended-answer';
                         textArea.className = 'w-full p-4 border border-white/30 rounded-lg bg-white/10 text-white backdrop-blur-sm transition focus:ring-2 focus:ring-purple-500 focus:border-transparent';
                         textArea.placeholder = 'Type your answer here...';
                         textArea.rows = 4;
                         quizOptions.appendChild(textArea);
-                        // Ensure the container is single-column for the textarea
                         quizOptions.className = 'grid grid-cols-1 gap-4 my-6';
                     } else {
-                        // Render buttons for multiple-choice questions
                         quizOptions.className = 'grid grid-cols-1 sm:grid-cols-2 gap-4 my-6';
                         
-                        // The 'options' from the DB is a JSONB array of strings.
                         const optionsArray = question.options; 
 
                         optionsArray.forEach(optionText => {
@@ -1024,7 +997,6 @@
 
                 nextQuestion() {
                     const question = this.currentQuiz.questions[this.currentQuestionIndex];
-                    // FIX: Use the same robust check here.
                     const is_open_ended = question.question_type === 'open-ended';
 
                     if (is_open_ended) {
@@ -1046,7 +1018,6 @@
 
                 async submitQuiz() {
                     const question = this.currentQuiz.questions[this.currentQuestionIndex];
-                    // FIX: Use the same robust check here.
                     const is_open_ended = question.question_type === 'open-ended';
 
                     if (is_open_ended) {
@@ -1070,7 +1041,6 @@
                         if (result.success) {
                             const quest = this.quests.find(q => q.id === this.currentQuiz.id);
                             this.showQuestCompletion(quest, result.referralLink);
-                            // Refresh data to reflect completion and new balance
                             this.init(); 
                         } else {
                             this.showNotification(result.message || 'Quiz failed. Please try again later.', 'error');
@@ -1232,8 +1202,7 @@
                     // Event delegation for quest cards
                     this.elements.questList.addEventListener('click', e => {
                         let target = e.target;
-                        // If the click target is a text node, use its parent element for `closest()` checks.
-                        if (target.nodeType === 3) { // Node.TEXT_NODE
+                        if (target.nodeType === 3) { 
                             target = target.parentNode;
                         }
 
@@ -1277,6 +1246,11 @@
                     // Withdrawal modal controls
                     this.elements.withdrawBtns.forEach(btn => {
                         btn.addEventListener('click', () => {
+                             // **MODIFICATION**: Require login for withdrawal
+                             if (!this.state.userId) {
+                                 this.showNotification('Please log in to withdraw funds.', 'error');
+                                 return;
+                             }
                              document.getElementById('withdraw-balance').textContent = `$${this.user.balance.toFixed(2)}`;
                              this.openModal(this.elements.withdrawModal);
                         });
@@ -1299,7 +1273,6 @@
                             this.showNotification(`Withdrawal successful! Your code is: ${result.code}`, 'success');
                             this.closeModal(this.elements.withdrawModal);
                             amountInput.value = '';
-                            // Refresh user data
                             this.init();
                         } catch (error) {
                             console.error("Withdrawal failed:", error);
@@ -1326,7 +1299,6 @@
             // --- Additional Animations ---
             window.threeJsInitialized = false;
 
-            // Scroll reveal animation
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -1341,7 +1313,6 @@
                 observer.observe(el);
             });
 
-            // Three.js Particle Background
             let scene, camera, renderer, particles, mouseX = 0, mouseY = 0;
             let windowHalfX = window.innerWidth / 2;
             let windowHalfY = window.innerHeight / 2;
@@ -1416,7 +1387,6 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
             }
             
-            // Custom cursor
             const cursorDot = document.querySelector('.cursor-dot');
             const cursorOutline = document.querySelector('.cursor-outline');
 
