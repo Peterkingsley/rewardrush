@@ -478,14 +478,14 @@ app.delete('/quests/:questId/questions/:questionId', requireAdmin, async (req, r
     res.status(501).json({ message: "Admin question management not yet implemented with database." });
 });
 
-// === CORRECTED /submit-quiz ENDPOINT ===
+// === UPDATED /submit-quiz ENDPOINT (SURVEY LOGIC) ===
 app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
     const questId = parseInt(req.params.questId, 10);
     const userDbId = req.user.id;
     const { answers } = req.body;
 
-    if (!Array.isArray(answers) || answers.length === 0) {
-        return res.status(400).json({ error: 'Invalid or empty answers provided.' });
+    if (!Array.isArray(answers)) {
+        return res.status(400).json({ error: 'Invalid answers format.' });
     }
 
     const client = await pool.connect();
@@ -502,7 +502,7 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
             return res.status(400).json({ error: 'You have already completed this quest.' });
         }
 
-        // 2. Fetch the quest and its questions with correct answers
+        // 2. Fetch quest and its questions
         const questResult = await client.query('SELECT * FROM quests WHERE id = $1', [questId]);
         const quest = questResult.rows[0];
         if (!quest) {
@@ -511,38 +511,23 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
         }
 
         const questionsResult = await client.query(
-            'SELECT id, correct_answer, question_type FROM quest_questions WHERE quest_id = $1 ORDER BY id ASC',
+            'SELECT id FROM quest_questions WHERE quest_id = $1',
             [questId]
         );
-        const correctAnswers = questionsResult.rows;
+        const questions = questionsResult.rows;
 
-        // 3. Score the quiz
-        let score = 0;
-        let scorableQuestions = 0;
-
-        for (let i = 0; i < correctAnswers.length; i++) {
-            const submittedAnswer = answers[i];
-            const questionInfo = correctAnswers[i];
-            
-            // Only score multiple-choice questions
-            if (questionInfo.question_type === 'multiple-choice') {
-                scorableQuestions++;
-                if (submittedAnswer && questionInfo.correct_answer && submittedAnswer.toLowerCase() === questionInfo.correct_answer.toLowerCase()) {
-                    score++;
-                }
-            }
-        }
+        // 3. Check for completion (survey-style) - ensure every question has a non-empty answer
+        const allAnswered = answers.length === questions.length && answers.every(ans => ans !== undefined && ans !== null && ans !== '');
         
-        // 4. Check if the user passed (all scorable questions must be correct)
-        if (score === scorableQuestions) {
-            // 5. Award points and mark as complete
+        if (allAnswered) {
+            // 4. Award points and mark as complete (Success)
             const rewardValue = parsePayout(quest.reward);
             await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardValue, userDbId]);
             await client.query(
                 'INSERT INTO user_quests (user_id, quest_id, completed_at) VALUES ($1, $2, NOW())',
                 [userDbId, questId]
             );
-            await logActivity(userDbId, 'quest_completed', `Passed quiz '${quest.title}'.`);
+            await logActivity(userDbId, 'quest_completed', `Completed survey for '${quest.title}'.`);
             await client.query('COMMIT');
 
             const referralLink = `${process.env.BASE_URL || `http://localhost:${PORT}`}/referral?questId=${questId}&referrerId=${encodeURIComponent(req.user.username)}`;
@@ -555,19 +540,19 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
             });
 
         } else {
-            // User failed the quiz
+            // User did not answer all questions
             await client.query('ROLLBACK');
-            await logActivity(userDbId, 'quest_failed', `Failed quiz '${quest.title}'.`);
+            await logActivity(userDbId, 'quest_failed', `Did not complete all questions for survey '${quest.title}'.`);
             res.json({
                 success: false,
-                message: "Unfortunately, you did not pass the quiz. Please try again later."
+                message: "Please answer all questions to complete the quest."
             });
         }
 
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Error submitting quiz:', err);
-        res.status(500).json({ error: 'An error occurred while submitting the quiz.' });
+        res.status(500).json({ error: 'An error occurred while submitting the quest.' });
     } finally {
         client.release();
     }
