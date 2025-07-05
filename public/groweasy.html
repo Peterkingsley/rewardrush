@@ -370,6 +370,30 @@
              </div>
         </div>
     </div>
+
+    <!-- Quest Completion Modal -->
+    <div id="quest-complete-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="modal-content-wrapper bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center transform transition-transform scale-95">
+             <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check text-green-500 text-3xl"></i>
+             </div>
+             <h2 id="completion-title" class="text-2xl font-bold mb-2">Quest Complete!</h2>
+             <p id="completion-reward" class="text-lg text-gray-600 mb-4">You've earned $5.00!</p>
+             <p class="text-sm text-gray-500 mb-4">Invite more friends to benefit with your referral link.</p>
+             <div class="flex items-center mb-6">
+                <input type="text" id="referral-link" value="https://rewardrush.app/ref/johndoe123" readonly class="w-full p-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm">
+                <button id="copy-link-btn" class="bg-purple-600 text-white p-2 rounded-r-lg hover:bg-purple-700">
+                    <i class="fas fa-copy"></i>
+                </button>
+             </div>
+             <div class="flex justify-center space-x-4 mb-6">
+                <a href="#" class="social-share-btn text-2xl text-blue-600 hover:text-blue-800"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social-share-btn text-2xl text-black hover:text-gray-700"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-share-btn text-2xl text-blue-700 hover:text-blue-900"><i class="fab fa-linkedin-in"></i></a>
+             </div>
+             <button id="close-completion-modal-btn" class="w-full bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Done</button>
+        </div>
+    </div>
     
     <!-- Custom Notification/Toast -->
     <div id="notification-toast" class="fixed bottom-8 right-8 bg-gray-800 text-white py-3 px-6 rounded-lg shadow-xl z-50 hidden">
@@ -446,7 +470,7 @@
                                 question: "What does DeFi stand for?", 
                                 options: ["Decentralized Finance", "Digital Finance", "Distributed Funding"], 
                                 answer: "Decentralized Finance",
-                                background: "logos/reward.mp4"
+                                background: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4"
                             }, 
                             { 
                                 question: "Which is a common DeFi application?", 
@@ -478,7 +502,7 @@
                         title: 'Blockchain Technology',
                         description: 'Test your understanding of blockchain.',
                         questions: [
-                            { question: "What is a 'block' in a blockchain?", options: ["A type of cryptocurrency", "A record of transactions", "A security protocol"], answer: "A record of transactions", background: "logos/reward.mp4" },
+                            { question: "What is a 'block' in a blockchain?", options: ["A type of cryptocurrency", "A record of transactions", "A security protocol"], answer: "A record of transactions", background: "https://test-videos.co.uk/vids/elephantsdream/mp4/h264/360/Elephants_Dream_360_10s_1MB.mp4" },
                             { question: "Is a blockchain centralized or decentralized?", options: ["Centralized", "Decentralized"], answer: "Decentralized", background: "https://images.pexels.com/photos/5935791/pexels-photo-5935791.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
                         ]
                     },
@@ -518,7 +542,7 @@
                         title: 'Layer 2 Scaling',
                         description: 'Explore solutions for scaling blockchains.',
                         questions: [
-                            { question: "What is the primary purpose of Layer 2 solutions?", options: ["To increase security", "To improve scalability and reduce fees", "To create new cryptocurrencies"], answer: "To improve scalability and reduce fees", background: "logos/reward.mp4" },
+                            { question: "What is the primary purpose of Layer 2 solutions?", options: ["To increase security", "To improve scalability and reduce fees", "To create new cryptocurrencies"], answer: "To improve scalability and reduce fees", background: "https://test-videos.co.uk/vids/elephantsdream/mp4/h264/360/Elephants_Dream_360_10s_1MB.mp4" },
                             { question: "Which of these is a Layer 2 scaling solution?", options: ["Polygon", "Solana", "Cardano"], answer: "Polygon", background: "https://images.pexels.com/photos/5935791/pexels-photo-5935791.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
                         ]
                     },
@@ -552,6 +576,7 @@
                     withdrawBtns: document.querySelectorAll('.withdraw-btn'),
                     quizModal: document.getElementById('quiz-modal'),
                     withdrawModal: document.getElementById('withdraw-modal'),
+                    questCompleteModal: document.getElementById('quest-complete-modal'),
                     notificationToast: document.getElementById('notification-toast'),
                     notificationMessage: document.getElementById('notification-message'),
                     carousel: document.getElementById('carousel'),
@@ -562,6 +587,11 @@
                     historyList: document.getElementById('history-list'),
                     themeToggleBtn: document.getElementById('theme-toggle'),
                     themeIcon: document.getElementById('theme-icon'),
+                    completionTitle: document.getElementById('completion-title'),
+                    completionReward: document.getElementById('completion-reward'),
+                    referralLinkInput: document.getElementById('referral-link'),
+                    copyLinkBtn: document.getElementById('copy-link-btn'),
+                    closeCompletionModalBtn: document.getElementById('close-completion-modal-btn'),
                 },
                 
                 // --- METHODS ---
@@ -908,7 +938,8 @@
                     if (score === this.currentQuiz.questions.length) {
                         this.user.balance += quest.reward;
                         quest.status = 'completed';
-                        this.showNotification(`Quiz passed! $${quest.reward.toFixed(2)} added to your balance.`, 'success');
+                        quest.completionDate = new Date().toISOString().split('T')[0];
+                        this.showQuestCompletion(quest);
                     } else {
                         this.showNotification('Quiz failed. Please try again later.', 'error');
                     }
@@ -917,6 +948,16 @@
                     this.displayQuests();
                     this.displayHistory();
                     this.closeModal(this.elements.quizModal);
+                },
+
+                /**
+                 * Shows the quest completion modal with referral options.
+                 * @param {object} quest - The completed quest object.
+                 */
+                showQuestCompletion(quest) {
+                    this.elements.completionTitle.textContent = `Quest Complete: ${quest.title}`;
+                    this.elements.completionReward.textContent = `You've earned $${quest.reward.toFixed(2)}!`;
+                    this.openModal(this.elements.questCompleteModal);
                 },
 
                 // --- MODAL & NOTIFICATION LOGIC ---
@@ -1067,6 +1108,14 @@
                      document.getElementById('cancel-withdrawal-btn').addEventListener('click', () => this.closeModal(this.elements.withdrawModal));
                      this.elements.withdrawModal.addEventListener('click', (e) => {
                        if (e.target === this.elements.withdrawModal) this.closeModal(this.elements.withdrawModal);
+                    });
+
+                    // Completion Modal Controls
+                    this.elements.closeCompletionModalBtn.addEventListener('click', () => this.closeModal(this.elements.questCompleteModal));
+                    this.elements.copyLinkBtn.addEventListener('click', () => {
+                        this.elements.referralLinkInput.select();
+                        document.execCommand('copy');
+                        this.showNotification('Referral link copied!', 'success');
                     });
                 }
             };
