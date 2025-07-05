@@ -292,7 +292,7 @@
                     
                     filteredJobs.forEach(job => {
                         const jobCard = document.createElement('div');
-                        jobCard.className = 'bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col justify-between transition-shadow hover:shadow-md';
+                        jobCard.className = 'job-card bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col justify-between transition-shadow hover:shadow-md';
                         jobCard.dataset.jobId = job.id;
                         jobCard.innerHTML = `
                             <div class="flex-grow">
@@ -505,9 +505,11 @@
                         const btn = e.target.closest('.get-started-btn');
                         if (btn) {
                             const card = btn.closest('.job-card');
-                            const jobId = parseInt(card.dataset.jobId);
-                            const selectedJob = this.state.allJobs.find(j => j.id === jobId);
-                            this.openModal(selectedJob);
+                            if (card) {
+                                const jobId = parseInt(card.dataset.jobId);
+                                const selectedJob = this.state.allJobs.find(j => j.id === jobId);
+                                this.openModal(selectedJob);
+                            }
                         }
                     });
 
