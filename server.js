@@ -107,7 +107,7 @@ function parsePayout(payoutString) {
 
 // --- Routes ---
 
-app.get('/home.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'home.html')));
+app.get('/index.html', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 app.get('/check-session', (req, res) => {
     if (req.session.userId) {
@@ -869,4 +869,3 @@ app.use((req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
 });
-f
