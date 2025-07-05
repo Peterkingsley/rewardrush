@@ -411,21 +411,33 @@
                 // --- STATE ---
                 user: {
                     name: 'John Doe',
-                    balance: 15.75,
-                    completedQuests: [1],
+                    balance: 0.00,
+                    completedQuests: [],
                 },
                 state: {
                     isBalanceVisible: true,
                 },
                 quests: [
-                    { id: 1, title: 'Crypto Basics', description: 'Learn the fundamentals of cryptocurrency.', reward: 5.00, status: 'completed', completionDate: '2024-07-04' },
+                    { id: 1, title: 'Crypto Basics', description: 'Learn the fundamentals of cryptocurrency.', reward: 5.00, status: 'not-started', completionDate: null },
                     { id: 2, title: 'DeFi Introduction', description: 'What is Decentralized Finance?', reward: 7.50, status: 'not-started', completionDate: null },
                     { id: 3, title: 'NFTs Explained', description: 'Explore the world of Non-Fungible Tokens.', reward: 6.00, status: 'not-started', completionDate: null },
                     { id: 4, title: 'Blockchain Technology', description: 'Understand the core technology behind crypto.', reward: 8.00, status: 'not-started', completionDate: null },
-                    { id: 5, title: 'Smart Contracts 101', description: 'Learn how smart contracts work.', reward: 10.00, status: 'completed', completionDate: '2024-07-02' },
-                    { id: 6, title: 'Web3 Gaming', description: 'Discover the future of gaming.', reward: 7.00, status: 'not-started', completionDate: null }
+                    { id: 5, title: 'Smart Contracts 101', description: 'Learn how smart contracts work.', reward: 10.00, status: 'not-started', completionDate: null },
+                    { id: 6, title: 'Web3 Gaming', description: 'Discover the future of gaming.', reward: 7.00, status: 'not-started', completionDate: null },
+                    { id: 7, title: 'Yield Farming 101', description: 'An introduction to yield farming strategies.', reward: 9.00, status: 'not-started', completionDate: null },
+                    { id: 8, title: 'Understanding DAOs', description: 'Learn about Decentralized Autonomous Organizations.', reward: 6.50, status: 'not-started', completionDate: null },
+                    { id: 9, title: 'Layer 2 Scaling', description: 'Explore solutions for scaling blockchains.', reward: 8.50, status: 'not-started', completionDate: null },
+                    { id: 10, title: 'Crypto Security', description: 'Best practices for keeping your assets safe.', reward: 5.50, status: 'not-started', completionDate: null }
                 ],
                 quizData: {
+                    1: {
+                        title: 'Crypto Basics',
+                        description: 'Test your knowledge on the fundamentals of crypto.',
+                        questions: [
+                            { question: "What is the most well-known cryptocurrency?", options: ["Ethereum", "Bitcoin", "Ripple"], answer: "Bitcoin", background: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4" },
+                            { question: "What technology underlies most cryptocurrencies?", options: ["Blockchain", "AI", "Cloud Computing"], answer: "Blockchain", background: "https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
+                        ]
+                    },
                     2: { 
                         title: 'DeFi Introduction', 
                         description: 'Test your knowledge on DeFi.', 
@@ -461,6 +473,62 @@
                                 background: "https://images.pexels.com/photos/12993933/pexels-photo-12993933.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
                             }
                         ] 
+                    },
+                    4: {
+                        title: 'Blockchain Technology',
+                        description: 'Test your understanding of blockchain.',
+                        questions: [
+                            { question: "What is a 'block' in a blockchain?", options: ["A type of cryptocurrency", "A record of transactions", "A security protocol"], answer: "A record of transactions", background: "https://test-videos.co.uk/vids/elephantsdream/mp4/h264/360/Elephants_Dream_360_10s_1MB.mp4" },
+                            { question: "Is a blockchain centralized or decentralized?", options: ["Centralized", "Decentralized"], answer: "Decentralized", background: "https://images.pexels.com/photos/5935791/pexels-photo-5935791.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
+                        ]
+                    },
+                    5: {
+                        title: 'Smart Contracts 101',
+                        description: 'Learn the basics of smart contracts.',
+                        questions: [
+                            { question: "Smart contracts are self-executing contracts with the terms of the agreement directly written into code.", options: ["True", "False"], answer: "True", background: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4" },
+                            { question: "Which platform is most known for popularizing smart contracts?", options: ["Bitcoin", "Ethereum", "Cardano"], answer: "Ethereum", background: "https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
+                        ]
+                    },
+                    6: {
+                        title: 'Web3 Gaming',
+                        description: 'Explore the future of gaming.',
+                        questions: [
+                            { question: "What is a key feature of Web3 games?", options: ["Player ownership of in-game assets", "Better graphics", "Offline gameplay"], answer: "Player ownership of in-game assets", background: "https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4" },
+                            { question: "What does 'Play-to-Earn' mean?", options: ["Players pay to win", "Players can earn real-world value", "A marketing slogan"], answer: "Players can earn real-world value", background: "https://images.pexels.com/photos/7915424/pexels-photo-7915424.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
+                        ]
+                    },
+                    7: {
+                        title: 'Yield Farming 101',
+                        description: 'An introduction to yield farming strategies.',
+                        questions: [
+                            { question: "What is yield farming?", options: ["A type of crypto mining", "Lending or staking crypto to generate rewards", "A new video game"], answer: "Lending or staking crypto to generate rewards", background: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4" },
+                            { question: "What is a potential risk of yield farming?", options: ["Low returns", "Impermanent Loss", "Slow transactions"], answer: "Impermanent Loss", background: "https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
+                        ]
+                    },
+                    8: {
+                        title: 'Understanding DAOs',
+                        description: 'Learn about Decentralized Autonomous Organizations.',
+                        questions: [
+                            { question: "What does DAO stand for?", options: ["Digital Asset Organization", "Decentralized Autonomous Organization", "Data Access Object"], answer: "Decentralized Autonomous Organization", background: "https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4" },
+                            { question: "How are decisions typically made in a DAO?", options: ["By a CEO", "Through voting by token holders", "By the developers"], answer: "Through voting by token holders", background: "https://images.pexels.com/photos/12993933/pexels-photo-12993933.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
+                        ]
+                    },
+                    9: {
+                        title: 'Layer 2 Scaling',
+                        description: 'Explore solutions for scaling blockchains.',
+                        questions: [
+                            { question: "What is the primary purpose of Layer 2 solutions?", options: ["To increase security", "To improve scalability and reduce fees", "To create new cryptocurrencies"], answer: "To improve scalability and reduce fees", background: "https://test-videos.co.uk/vids/elephantsdream/mp4/h264/360/Elephants_Dream_360_10s_1MB.mp4" },
+                            { question: "Which of these is a Layer 2 scaling solution?", options: ["Polygon", "Solana", "Cardano"], answer: "Polygon", background: "https://images.pexels.com/photos/5935791/pexels-photo-5935791.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
+                        ]
+                    },
+                    10: {
+                        title: 'Crypto Security',
+                        description: 'Best practices for keeping your assets safe.',
+                        questions: [
+                            { question: "What is a 'cold wallet'?", options: ["A wallet connected to the internet", "A physical hardware wallet", "A mobile wallet app"], answer: "A physical hardware wallet", background: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4" },
+                            { question: "What should you never share with anyone?", options: ["Your public wallet address", "Your private key or seed phrase", "Your favorite cryptocurrency"], answer: "Your private key or seed phrase", background: "https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" }
+                        ]
                     }
                 },
                 
@@ -888,7 +956,7 @@
                 initCarousel() {
                     const carouselItems = [
                         { img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop' },
-                        { img: 'https://scontent.fabb1-1.fna.fbcdn.net/v/t39.30808-6/513911015_122203715588113031_6623650647133677294_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeG4dX2ZB-3KthTnEHoCfDvkXfrJper-sWdd-sml6v6xZ5W0JuVdTD4vkwgsImfAGnjsc5BOm0tlHQ85HT6ecD9l&_nc_ohc=j9S_c5Y2Yy4Q7kNvwGxxNUb&_nc_oc=AdnFRQY0kUdNmgq32lfdr2Dn8alrV5tIW9JoF5plPaa1fiXvywywQgs1F4YSxBQGp4A&_nc_zt=23&_nc_ht=scontent.fabb1-1.fna&_nc_gid=UgmsANuvfIOxbBIcrPUnZA&oh=00_AfQQ9-mEyzWx81CGk6a_POSOWPSqrZWUr9NGg8a0isQmkA&oe=686E45E8' },
+                        { img: 'https://images.unsplash.com/photo-1621293925713-1b0b3c5e8a8c?q=80&w=2070&auto=format&fit=crop' },
                         { img: 'https://images.unsplash.com/photo-1593720213428-28a5b9e94613?q=80&w=2070&auto=format&fit=crop' }
                     ];
                     
