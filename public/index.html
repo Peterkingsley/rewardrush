@@ -374,6 +374,25 @@
         </div>
     </div>
 
+    <!-- Quest Details Modal -->
+    <div id="quest-details-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="modal-content-wrapper bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-transform scale-95">
+            <div class="flex justify-between items-start">
+                <h2 id="details-title" class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Quest Details</h2>
+                <button id="close-details-modal-btn" class="text-gray-500 hover:text-gray-800 dark:hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div>
+                <p class="mb-2"><strong class="font-semibold text-gray-700 dark:text-gray-300">Description:</strong> <span id="details-description" class="text-gray-600 dark:text-gray-400"></span></p>
+                <p class="mb-2"><strong class="font-semibold text-gray-700 dark:text-gray-300">Reward:</strong> <span id="details-reward" class="font-bold text-green-600"></span></p>
+                <p class="mb-2"><strong class="font-semibold text-gray-700 dark:text-gray-300">Status:</strong> <span id="details-status"></span></p>
+                <p class="mb-4"><strong class="font-semibold text-gray-700 dark:text-gray-300">Participants:</strong> <span id="details-participants" class="text-gray-600 dark:text-gray-400"></span></p>
+            </div>
+            <button id="start-quiz-from-details-btn" class="w-full bg-purple-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-purple-700 transition">Start Quiz</button>
+        </div>
+    </div>
+
     <!-- Quest Completion Modal -->
     <div id="quest-complete-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="modal-content-wrapper bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-transform scale-95">
@@ -540,6 +559,7 @@
                     quizModal: document.getElementById('quiz-modal'),
                     withdrawModal: document.getElementById('withdraw-modal'),
                     questCompleteModal: document.getElementById('quest-complete-modal'),
+                    questDetailsModal: document.getElementById('quest-details-modal'),
                     notificationToast: document.getElementById('notification-toast'),
                     notificationMessage: document.getElementById('notification-message'),
                     carousel: document.getElementById('carousel'),
@@ -556,6 +576,13 @@
                     copyLinkBtn: document.getElementById('copy-link-btn'),
                     closeCompletionModalBtn: document.getElementById('close-completion-modal-btn'),
                     completionVideo: document.getElementById('completion-video'),
+                    closeDetailsModalBtn: document.getElementById('close-details-modal-btn'),
+                    detailsTitle: document.getElementById('details-title'),
+                    detailsDescription: document.getElementById('details-description'),
+                    detailsReward: document.getElementById('details-reward'),
+                    detailsStatus: document.getElementById('details-status'),
+                    detailsParticipants: document.getElementById('details-participants'),
+                    startQuizFromDetailsBtn: document.getElementById('start-quiz-from-details-btn'),
                 },
                 
                 // --- METHODS ---
@@ -1070,6 +1097,35 @@
                     }
                 },
 
+                /**
+                 * Shows the quest details modal.
+                 * @param {object} quest - The quest object to display.
+                 */
+                showQuestDetails(quest) {
+                    this.elements.detailsTitle.textContent = quest.title;
+                    this.elements.detailsDescription.textContent = quest.description;
+                    this.elements.detailsReward.textContent = quest.reward;
+                    this.elements.detailsParticipants.textContent = quest.participants;
+
+                    const statusBadge = this.elements.detailsStatus;
+                    const isCompleted = quest.status === 'completed';
+                    if (isCompleted) {
+                        statusBadge.innerHTML = `<span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full">Completed</span>`;
+                    } else {
+                         statusBadge.innerHTML = `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">Available</span>`;
+                    }
+                    
+                    const startBtn = this.elements.startQuizFromDetailsBtn;
+                    startBtn.disabled = isCompleted;
+                    startBtn.className = `w-full font-bold py-3 px-6 rounded-lg transition ${isCompleted ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}`;
+                    startBtn.onclick = () => {
+                        this.closeModal(this.elements.questDetailsModal);
+                        this.startQuiz(quest.id);
+                    };
+                    
+                    this.openModal(this.elements.questDetailsModal);
+                },
+
                 // --- MODAL & NOTIFICATION LOGIC ---
                 openModal(modal) {
                     modal.classList.remove('hidden');
@@ -1193,7 +1249,14 @@
 
                         const detailsButton = target.closest('.details-btn');
                         if (detailsButton) {
-                            this.showNotification('Quest details page is a work in progress!', 'info');
+                            const card = detailsButton.closest('.quest-card');
+                             if (card) {
+                                const questId = parseInt(card.dataset.questId, 10);
+                                const quest = this.quests.find(q => q.id === questId);
+                                if (quest) {
+                                    this.showQuestDetails(quest);
+                                }
+                            }
                             return;
                         }
                     });
@@ -1203,6 +1266,12 @@
                     document.getElementById('submit-btn').addEventListener('click', () => this.submitQuiz());
                     this.elements.quizModal.addEventListener('click', (e) => {
                        if (e.target === this.elements.quizModal) this.closeModal(this.elements.quizModal);
+                    });
+
+                    // Details modal controls
+                    this.elements.closeDetailsModalBtn.addEventListener('click', () => this.closeModal(this.elements.questDetailsModal));
+                    this.elements.questDetailsModal.addEventListener('click', (e) => {
+                       if (e.target === this.elements.questDetailsModal) this.closeModal(this.elements.questDetailsModal);
                     });
 
                     // Withdrawal modal controls
