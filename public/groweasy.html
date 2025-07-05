@@ -846,6 +846,13 @@
                 async startQuiz(questId) {
                     try {
                         const questData = this.quests.find(q => q.id === questId);
+
+                        if (!questData) {
+                            console.error(`Could not find quest data in the local state for ID: ${questId}`);
+                            this.showNotification('Could not load quest details. Please try refreshing the page.', 'error');
+                            return;
+                        }
+
                         const questionsData = await ApiService.getQuestQuestions(questId);
 
                         if (!questionsData || !questionsData.questions || questionsData.questions.length === 0) {
@@ -867,6 +874,8 @@
                         this.showQuestion();
                         this.openModal(this.elements.quizModal);
                     } catch (error) {
+                        // The ApiService.fetch method already shows a notification for API errors.
+                        // This catch block will handle other potential errors, but logging is sufficient for debugging.
                         console.error("Failed to start quiz:", error);
                     }
                 },
