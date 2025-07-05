@@ -323,6 +323,9 @@
                     <div id="history-list">
                         <!-- History items will be dynamically inserted here -->
                     </div>
+                    <div id="history-footer" class="mt-2 text-center">
+                        <!-- "See More" button will be injected here -->
+                    </div>
                 </div>
 
                 <!-- Spacer for mobile footer -->
@@ -512,6 +515,7 @@
                 state: {
                     userId: null,
                     isBalanceVisible: true,
+                    isHistoryExpanded: false,
                 },
                 quests: [],
                 
@@ -750,43 +754,63 @@
                  * Displays the list of completed quests in the history section.
                  */
                 displayHistory() {
-                    this.elements.historyList.innerHTML = ''; // Clear previous list
-                    
-                    if (this.user.recentActivity.length === 0) {
-                        this.elements.historyList.innerHTML = `<p class="text-gray-500 text-center py-4">No recent activity yet.</p>`;
-                    } else {
-                        this.user.recentActivity.forEach(activity => {
-                            const historyItem = document.createElement('div');
-                            historyItem.className = 'flex justify-between items-center p-3 border-b border-gray-200 last:border-b-0';
-                            
-                            const formattedDate = new Date(activity.created_at).toLocaleDateString('en-US', {
-                                year: 'numeric', month: 'long', day: 'numeric'
-                            });
+                    const historyList = this.elements.historyList;
+                    const historyFooter = document.getElementById('history-footer');
+                    historyList.innerHTML = '';
+                    historyFooter.innerHTML = '';
 
-                            let amountHtml = '';
-                            if (activity.activity_type === 'quest_completed' || activity.activity_type === 'new_referral') {
-                                // Extract amount from details, e.g., "...earned $5.00"
-                                const amountMatch = activity.details.match(/\$(\d+\.\d+)/);
-                                if (amountMatch) {
-                                    amountHtml = `<p class="font-semibold text-green-600">+$${parseFloat(amountMatch[1]).toFixed(2)}</p>`;
-                                }
-                            } else if (activity.activity_type === 'withdrawal') {
-                                const amountMatch = activity.details.match(/(\d+\.\d+)/);
-                                 if (amountMatch) {
-                                    amountHtml = `<p class="font-semibold text-red-600">-$${parseFloat(amountMatch[1]).toFixed(2)}</p>`;
-                                }
-                            }
+                    const activities = this.user.recentActivity;
 
-                            historyItem.innerHTML = `
-                                <div>
-                                    <p class="font-semibold text-gray-800">${activity.details}</p>
-                                    <p class="text-xs text-gray-500">${formattedDate}</p>
-                                </div>
-                                ${amountHtml}
-                            `;
-                            this.elements.historyList.appendChild(historyItem);
-                        });
+                    if (activities.length === 0) {
+                        historyList.innerHTML = `<p class="text-gray-500 text-center py-4">No recent activity yet.</p>`;
+                        return;
                     }
+
+                    const itemsToShow = this.state.isHistoryExpanded ? activities : activities.slice(0, 3);
+
+                    itemsToShow.forEach(activity => {
+                        const historyItem = document.createElement('div');
+                        historyItem.className = 'flex justify-between items-center p-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0';
+                        
+                        const formattedDate = new Date(activity.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric', month: 'long', day: 'numeric'
+                        });
+
+                        let amountHtml = '';
+                        if (activity.activity_type === 'quest_completed' || activity.activity_type === 'new_referral') {
+                            const amountMatch = activity.details.match(/\$(\d+\.\d+)/);
+                            if (amountMatch) {
+                                amountHtml = `<p class="font-semibold text-green-600">+$${parseFloat(amountMatch[1]).toFixed(2)}</p>`;
+                            }
+                        } else if (activity.activity_type === 'withdrawal') {
+                            const amountMatch = activity.details.match(/(\d+\.\d+)/);
+                             if (amountMatch) {
+                                amountHtml = `<p class="font-semibold text-red-600">-$${parseFloat(amountMatch[1]).toFixed(2)}</p>`;
+                            }
+                        }
+
+                        historyItem.innerHTML = `
+                            <div>
+                                <p class="font-semibold text-gray-800 dark:text-gray-200">${activity.details}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">${formattedDate}</p>
+                            </div>
+                            ${amountHtml}
+                        `;
+                        historyList.appendChild(historyItem);
+                    });
+
+                    if (activities.length > 3) {
+                        const seeMoreBtn = document.createElement('button');
+                        seeMoreBtn.textContent = this.state.isHistoryExpanded ? 'See Less' : 'See More';
+                        seeMoreBtn.className = 'text-purple-600 dark:text-purple-400 hover:underline font-semibold py-2 px-4';
+                        seeMoreBtn.addEventListener('click', () => this.toggleHistory());
+                        historyFooter.appendChild(seeMoreBtn);
+                    }
+                },
+
+                toggleHistory() {
+                    this.state.isHistoryExpanded = !this.state.isHistoryExpanded;
+                    this.displayHistory();
                 },
 
                 /**
