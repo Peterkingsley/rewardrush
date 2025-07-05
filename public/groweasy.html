@@ -1063,15 +1063,26 @@
 
                     // Event delegation for quest cards
                     this.elements.questList.addEventListener('click', e => {
-                        const card = e.target.closest('.quest-card');
-                        if (!card) return;
-                        
-                        const questId = parseInt(card.dataset.questId, 10);
-                        
-                        if (e.target.closest('.start-quiz-btn:not([disabled])')) {
-                            this.startQuiz(questId);
-                        } else if (e.target.closest('.details-btn')) {
+                        let target = e.target;
+                        // If the click target is a text node, use its parent element for `closest()` checks.
+                        if (target.nodeType === 3) { // Node.TEXT_NODE
+                            target = target.parentNode;
+                        }
+
+                        const startButton = target.closest('.start-quiz-btn:not([disabled])');
+                        if (startButton) {
+                            const card = startButton.closest('.quest-card');
+                            if (card) {
+                                const questId = parseInt(card.dataset.questId, 10);
+                                this.startQuiz(questId);
+                            }
+                            return; 
+                        }
+
+                        const detailsButton = target.closest('.details-btn');
+                        if (detailsButton) {
                             this.showNotification('Quest details page is a work in progress!', 'info');
+                            return;
                         }
                     });
 
