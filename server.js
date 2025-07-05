@@ -484,8 +484,8 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
     const userDbId = req.user.id;
     const { answers } = req.body;
 
-    if (!answers) {
-        return res.status(400).json({ error: 'No answers provided.' });
+    if (!Array.isArray(answers) || answers.length === 0) {
+        return res.status(400).json({ error: 'Invalid or empty answers provided.' });
     }
 
     const client = await pool.connect();
@@ -511,27 +511,30 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
         }
 
         const questionsResult = await client.query(
-            'SELECT id, correct_answer FROM quest_questions WHERE quest_id = $1 ORDER BY id ASC',
+            'SELECT id, correct_answer, question_type FROM quest_questions WHERE quest_id = $1 ORDER BY id ASC',
             [questId]
         );
         const correctAnswers = questionsResult.rows;
 
         // 3. Score the quiz
         let score = 0;
-        const totalQuestions = correctAnswers.length;
+        let scorableQuestions = 0;
 
-        for (let i = 0; i < totalQuestions; i++) {
-            const questionId = correctAnswers[i].id;
-            const submittedAnswer = answers[i]; // Assumes answers are sent in order
-            const correctAnswer = correctAnswers[i].correct_answer;
+        for (let i = 0; i < correctAnswers.length; i++) {
+            const submittedAnswer = answers[i];
+            const questionInfo = correctAnswers[i];
             
-            if (submittedAnswer && submittedAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
-                score++;
+            // Only score multiple-choice questions
+            if (questionInfo.question_type === 'multiple-choice') {
+                scorableQuestions++;
+                if (submittedAnswer && questionInfo.correct_answer && submittedAnswer.toLowerCase() === questionInfo.correct_answer.toLowerCase()) {
+                    score++;
+                }
             }
         }
         
-        // 4. Check if the user passed (assuming 100% is required)
-        if (score === totalQuestions) {
+        // 4. Check if the user passed (all scorable questions must be correct)
+        if (score === scorableQuestions) {
             // 5. Award points and mark as complete
             const rewardValue = parsePayout(quest.reward);
             await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardValue, userDbId]);
@@ -539,7 +542,7 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
                 'INSERT INTO user_quests (user_id, quest_id, completed_at) VALUES ($1, $2, NOW())',
                 [userDbId, questId]
             );
-            await logActivity(userDbId, 'quest_completed', `Passed quiz '${quest.title}' with score ${score}/${totalQuestions}.`);
+            await logActivity(userDbId, 'quest_completed', `Passed quiz '${quest.title}'.`);
             await client.query('COMMIT');
 
             const referralLink = `${process.env.BASE_URL || `http://localhost:${PORT}`}/referral?questId=${questId}&referrerId=${encodeURIComponent(req.user.username)}`;
@@ -548,20 +551,16 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
                 success: true,
                 message: "Quest completed successfully!",
                 reward: quest.reward,
-                score,
-                totalQuestions,
                 referralLink
             });
 
         } else {
             // User failed the quiz
             await client.query('ROLLBACK');
-            await logActivity(userDbId, 'quest_failed', `Failed quiz '${quest.title}' with score ${score}/${totalQuestions}.`);
+            await logActivity(userDbId, 'quest_failed', `Failed quiz '${quest.title}'.`);
             res.json({
                 success: false,
-                message: "Unfortunately, you did not pass the quiz. Please try again later.",
-                score,
-                totalQuestions
+                message: "Unfortunately, you did not pass the quiz. Please try again later."
             });
         }
 
