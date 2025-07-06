@@ -163,8 +163,18 @@
                         <h1 id="skill-title" class="text-4xl font-bold font-montserrat text-gray-900"></h1>
                         <p class="text-lg text-gray-600 mt-2">Your personalized learning path.</p>
                     </div>
-                    <button class="btn-primary" onclick="openStudyPlanModal()">Create Study Plan</button>
+                    <button id="create-plan-btn" class="btn-primary" onclick="openStudyPlanModal()">Create Study Plan</button>
                 </header>
+                
+                <!-- Study Plan Display -->
+                <div id="study-plan-display" class="hidden glass-card p-6 mb-8">
+                     <h3 class="text-xl font-semibold mb-2 text-gray-800">Your Active Plan</h3>
+                     <p class="text-gray-600 mb-4" id="plan-goal-display"></p>
+                     <div class="text-center">
+                         <p class="text-sm text-gray-500 mb-1">Next study session in:</p>
+                         <div id="countdown-timer" class="text-3xl font-bold text-purple-600"></div>
+                     </div>
+                </div>
 
                 <!-- Progress Section -->
                 <div class="glass-card p-6 mb-8">
@@ -186,15 +196,20 @@
                 <!-- Group Study Section -->
                 <div class="glass-card p-6 mb-8">
                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Group Study</h3>
-                    <p class="text-gray-600 mb-4">Invite friends to learn together and track your team's progress.</p>
                     <div class="flex items-center mb-4">
                         <!-- Avatars for team members -->
                         <img src="https://placehold.co/40x40/8b00ff/white?text=A" class="rounded-full border-2 border-white -mr-2">
                         <img src="https://placehold.co/40x40/00f0ff/white?text=B" class="rounded-full border-2 border-white -mr-2">
                         <img src="https://placehold.co/40x40/39ff14/black?text=C" class="rounded-full border-2 border-white">
-                        <button class="ml-4 bg-gray-200 hover:bg-gray-300 text-gray-600 font-bold w-10 h-10 rounded-full">+</button>
                     </div>
-                    <h4 class="font-semibold mb-2 text-gray-700">Team Progress</h4>
+                     <form id="invite-form" class="flex items-center gap-2 mt-4">
+                        <input type="email" id="invite-email" placeholder="Enter friend's email" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-purple-500 focus:border-transparent" required>
+                        <button type="submit" class="btn-primary py-2 px-4 text-sm">Invite</button>
+                    </form>
+                    <div id="invitation-history" class="mt-6">
+                        <!-- Invitation history will be injected here -->
+                    </div>
+                    <h4 class="font-semibold mb-2 mt-6 text-gray-700">Team Progress</h4>
                     <div class="progress-bar h-4 w-full">
                         <div class="progress-bar-inner h-4" style="width: 40%;"></div>
                     </div>
@@ -204,30 +219,17 @@
                 <!-- Expert Booking Section -->
                 <div class="glass-card p-6">
                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Book Live Calls with Experts</h3>
-                    <div class="space-y-4">
-                        <!-- Expert Card -->
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                            <div class="flex items-center">
-                                <img src="https://placehold.co/50x50/8b00ff/white?text=E" class="rounded-full mr-4">
-                                <div>
-                                    <h4 class="font-semibold text-lg text-gray-800">Expert Name</h4>
-                                    <p class="text-sm text-gray-500">Specialist in UI/UX</p>
-                                </div>
-                            </div>
-                            <button class="btn-primary text-sm py-2 px-4">Book a Call</button>
-                        </div>
-                        <!-- Another Expert Card -->
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                            <div class="flex items-center">
-                                <img src="https://placehold.co/50x50/00f0ff/white?text=F" class="rounded-full mr-4">
-                                <div>
-                                    <h4 class="font-semibold text-lg text-gray-800">Another Expert</h4>
-                                    <p class="text-sm text-gray-500">Branding Guru</p>
-                                </div>
-                            </div>
-                            <button class="btn-primary text-sm py-2 px-4">Book a Call</button>
-                        </div>
+                    <div id="expert-list" class="space-y-4">
+                        <!-- Expert cards will be injected here -->
                     </div>
+                </div>
+                
+                <!-- Booking History Section -->
+                <div id="booking-history-section" class="hidden glass-card p-6 mt-8">
+                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Call Request History</h3>
+                     <div id="booking-history-list" class="space-y-4">
+                         <!-- Booking history will be injected here -->
+                     </div>
                 </div>
             </div>
         </div>
@@ -252,46 +254,142 @@
                 <h2 class="text-2xl font-bold text-gray-800">Create Your Study Plan</h2>
                 <span class="text-2xl cursor-pointer text-gray-500" onclick="closeStudyPlanModal()">&times;</span>
             </div>
-            <form>
+            <form id="study-plan-form">
                 <div class="mb-4">
                     <label for="study-goal" class="block mb-2 text-sm font-medium text-gray-700">What's your goal?</label>
-                    <input type="text" id="study-goal" class="w-full p-3 bg-gray-100 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" placeholder="e.g., Learn Figma in 30 days">
+                    <input type="text" id="study-goal" class="w-full p-3 bg-gray-100 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" placeholder="e.g., Learn Figma in 30 days" required>
                 </div>
                 <div class="mb-4">
                     <label class="block mb-2 text-sm font-medium text-gray-700">When do you want to study?</label>
-                    <div class="grid grid-cols-3 md:grid-cols-7 gap-2">
+                    <div id="day-selector" class="grid grid-cols-3 md:grid-cols-7 gap-2">
                         <!-- Day selection -->
-                        <button type="button" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Mon</button>
-                        <button type="button" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Tue</button>
-                        <button type="button" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg active">Wed</button>
-                        <button type="button" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Thu</button>
-                        <button type="button" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Fri</button>
-                        <button type="button" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Sat</button>
-                        <button type="button" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Sun</button>
+                        <button type="button" data-day="1" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Mon</button>
+                        <button type="button" data-day="2" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Tue</button>
+                        <button type="button" data-day="3" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Wed</button>
+                        <button type="button" data-day="4" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Thu</button>
+                        <button type="button" data-day="5" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Fri</button>
+                        <button type="button" data-day="6" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Sat</button>
+                        <button type="button" data-day="0" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Sun</button>
                     </div>
                 </div>
                 <div class="mb-6">
                     <label for="study-time" class="block mb-2 text-sm font-medium text-gray-700">What time do you want to be reminded?</label>
-                    <input type="time" id="study-time" class="w-full p-3 bg-gray-100 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                    <input type="time" id="study-time" class="w-full p-3 bg-gray-100 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" required>
                 </div>
                 <button type="submit" class="btn-primary w-full">Save Plan</button>
             </form>
         </div>
     </div>
+    
+    <!-- Expert Profile Modal -->
+    <div id="expert-profile-modal" class="modal">
+        <div class="modal-content max-w-2xl">
+            <div class="flex justify-between items-start mb-6">
+                <div class="flex items-center">
+                     <img id="expert-modal-avatar" src="" class="w-24 h-24 rounded-full mr-6 border-4 border-purple-200">
+                     <div>
+                         <h2 id="expert-modal-name" class="text-3xl font-bold text-gray-800"></h2>
+                         <p id="expert-modal-title" class="text-lg text-purple-600 font-semibold"></p>
+                    </div>
+                </div>
+                <span class="text-2xl cursor-pointer text-gray-500" onclick="closeExpertProfileModal()">&times;</span>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-xl font-semibold mb-2 border-b pb-2">About</h3>
+                    <p id="expert-modal-bio" class="text-gray-600"></p>
+                </div>
+                 <div>
+                    <h3 class="text-xl font-semibold mb-2 border-b pb-2">Socials</h3>
+                    <div id="expert-modal-socials" class="flex items-center gap-4"></div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-2 border-b pb-2">Portfolio</h3>
+                    <div id="expert-modal-portfolio" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center">
+                 <button id="expert-profile-book-btn" class="btn-primary w-full sm:w-auto">Book a Call</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="booking-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Book a Call with <span id="booking-expert-name"></span></h2>
+                <span class="text-2xl cursor-pointer text-gray-500" onclick="closeBookingModal()">&times;</span>
+            </div>
+            <form id="booking-form">
+                <div class="mb-4">
+                    <label for="booking-reason" class="block mb-2 text-sm font-medium text-gray-700">Reason for the call</label>
+                    <textarea id="booking-reason" rows="4" class="w-full p-3 bg-gray-100 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" placeholder="What would you like to discuss?" required></textarea>
+                </div>
+                <div class="mb-6">
+                    <label for="booking-datetime" class="block mb-2 text-sm font-medium text-gray-700">Preferred date & time</label>
+                    <input type="datetime-local" id="booking-datetime" class="w-full p-3 bg-gray-100 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" required>
+                </div>
+                <button type="submit" class="btn-primary w-full">Submit Request</button>
+            </form>
+        </div>
+    </div>
+
 
     <script>
+        // --- State Management ---
+        let currentSkillKey = null;
+        let countdownInterval = null;
+        let currentBookingExpertId = null;
+        let bookingHistoryData = [];
+        let invitationHistory = [];
+
         // --- Mock Data ---
         const learningData = {
-            'graphic-design': { title: 'Graphic Design', icon: 'fas fa-palette', color: 'purple', courses: 12, hours: 48, description: 'Master visual communication, from branding to UI/UX design.', materials: [ { title: 'Intro to Design', type: 'video', duration: '15 mins', completed: true }, { title: 'Color Theory', type: 'image', duration: '10 mins', completed: true }, { title: 'Typography', type: 'video', duration: '25 mins', completed: false } ] },
-            'coding': { title: 'Coding', icon: 'fas fa-code', color: 'cyan', courses: 25, hours: 120, description: 'Learn to build websites, apps, and software from scratch.', materials: [ { title: 'HTML & CSS', type: 'video', duration: '2 hours', completed: true }, { title: 'JavaScript', type: 'video', duration: '3 hours', completed: false } ] },
-            'digital-marketing': { title: 'Digital Marketing', icon: 'fas fa-bullhorn', color: 'red', courses: 18, hours: 60, description: 'Grow businesses with SEO, SEM, and social media marketing.', materials: [ { title: 'SEO Fundamentals', type: 'video', duration: '1.5 hours', completed: false } ] },
-            'data-science': { title: 'Data Science', icon: 'fas fa-chart-pie', color: 'amber', courses: 22, hours: 150, description: 'Extract insights and knowledge from data with Python.', materials: [ { title: 'Intro to Python', type: 'video', duration: '3 hours', completed: false } ] },
-            'video-editing': { title: 'Video Editing', icon: 'fas fa-film', color: 'blue', courses: 10, hours: 35, description: 'Tell compelling stories by editing professional videos.', materials: [ { title: 'Premiere Pro Basics', type: 'video', duration: '2 hours', completed: false } ] },
-            'project-management': { title: 'Project Management', icon: 'fas fa-tasks', color: 'green', courses: 15, hours: 55, description: 'Lead projects to success with Agile and Scrum methodologies.', materials: [ { title: 'Intro to Agile', type: 'image', duration: '20 mins', completed: false } ] },
-            'content-writing': { title: 'Content Writing', icon: 'fas fa-pencil-alt', color: 'indigo', courses: 14, hours: 30, description: 'Craft engaging and persuasive content for various platforms.', materials: [ { title: 'Copywriting 101', type: 'video', duration: '1 hour', completed: false } ] },
-            'photography': { title: 'Photography', icon: 'fas fa-camera', color: 'pink', courses: 11, hours: 40, description: 'Capture stunning photos by mastering your camera.', materials: [ { title: 'Composition Rules', type: 'image', duration: '15 mins', completed: false } ] },
-            'music-production': { title: 'Music Production', icon: 'fas fa-music', color: 'teal', courses: 16, hours: 70, description: 'Create professional-quality music from your home studio.', materials: [ { title: 'FL Studio Guide', type: 'video', duration: '2.5 hours', completed: false } ] },
-            '3d-modeling': { title: '3D Modeling', icon: 'fas fa-cube', color: 'rose', courses: 19, hours: 95, description: 'Design and create 3D models for games and animation.', materials: [ { title: 'Blender for Beginners', type: 'video', duration: '4 hours', completed: false } ] }
+            'graphic-design': { title: 'Graphic Design', icon: 'fas fa-palette', color: 'purple', courses: 12, hours: 48, description: 'Master visual communication, from branding to UI/UX design.', materials: [ { id: 1, title: 'Intro to Design', type: 'video', duration: '15 mins', completed: true }, { id: 2, title: 'Color Theory', type: 'image', duration: '10 mins', completed: true }, { id: 3, title: 'Typography', type: 'video', duration: '25 mins', completed: false } ] },
+            'coding': { title: 'Coding', icon: 'fas fa-code', color: 'cyan', courses: 25, hours: 120, description: 'Learn to build websites, apps, and software from scratch.', materials: [ { id: 4, title: 'HTML & CSS', type: 'video', duration: '2 hours', completed: true }, { id: 5, title: 'JavaScript', type: 'video', duration: '3 hours', completed: false } ] },
+            'digital-marketing': { title: 'Digital Marketing', icon: 'fas fa-bullhorn', color: 'red', courses: 18, hours: 60, description: 'Grow businesses with SEO, SEM, and social media marketing.', materials: [ { id: 6, title: 'SEO Fundamentals', type: 'video', duration: '1.5 hours', completed: false } ] },
+            'data-science': { title: 'Data Science', icon: 'fas fa-chart-pie', color: 'amber', courses: 22, hours: 150, description: 'Extract insights and knowledge from data with Python.', materials: [ { id: 7, title: 'Intro to Python', type: 'video', duration: '3 hours', completed: false } ] },
+            'video-editing': { title: 'Video Editing', icon: 'fas fa-film', color: 'blue', courses: 10, hours: 35, description: 'Tell compelling stories by editing professional videos.', materials: [ { id: 8, title: 'Premiere Pro Basics', type: 'video', duration: '2 hours', completed: false } ] },
+            'project-management': { title: 'Project Management', icon: 'fas fa-tasks', color: 'green', courses: 15, hours: 55, description: 'Lead projects to success with Agile and Scrum methodologies.', materials: [ { id: 9, title: 'Intro to Agile', type: 'image', duration: '20 mins', completed: false } ] },
+            'content-writing': { title: 'Content Writing', icon: 'fas fa-pencil-alt', color: 'indigo', courses: 14, hours: 30, description: 'Craft engaging and persuasive content for various platforms.', materials: [ { id: 10, title: 'Copywriting 101', type: 'video', duration: '1 hour', completed: false } ] },
+            'photography': { title: 'Photography', icon: 'fas fa-camera', color: 'pink', courses: 11, hours: 40, description: 'Capture stunning photos by mastering your camera.', materials: [ { id: 11, title: 'Composition Rules', type: 'image', duration: '15 mins', completed: false } ] },
+            'music-production': { title: 'Music Production', icon: 'fas fa-music', color: 'teal', courses: 16, hours: 70, description: 'Create professional-quality music from your home studio.', materials: [ { id: 12, title: 'FL Studio Guide', type: 'video', duration: '2.5 hours', completed: false } ] },
+            '3d-modeling': { title: '3D Modeling', icon: 'fas fa-cube', color: 'rose', courses: 19, hours: 95, description: 'Design and create 3D models for games and animation.', materials: [ { id: 13, title: 'Blender for Beginners', type: 'video', duration: '4 hours', completed: false } ] }
+        };
+
+        const expertsData = {
+            '1': {
+                name: 'Jane Doe',
+                title: 'Specialist in UI/UX',
+                avatar: 'https://placehold.co/100x100/8b00ff/white?text=JD',
+                bio: 'Jane is a passionate UI/UX designer with over 10 years of experience in creating intuitive and beautiful user interfaces for web and mobile applications. She specializes in user-centered design and has a strong portfolio of successful projects.',
+                socials: {
+                    twitter: 'https://twitter.com/janedoe',
+                    linkedin: 'https://linkedin.com/in/janedoe',
+                    dribbble: 'https://dribbble.com/janedoe'
+                },
+                portfolio: [
+                    { title: 'E-commerce App Redesign', description: 'Complete redesign of a major e-commerce platform.' },
+                    { title: 'SaaS Dashboard', description: 'Designed a complex data visualization dashboard.' }
+                ]
+            },
+            '2': {
+                name: 'John Smith',
+                title: 'Branding Guru',
+                avatar: 'https://placehold.co/100x100/00f0ff/black?text=JS',
+                bio: 'John helps businesses build strong and memorable brands. From logo design to complete brand identity systems, he has a knack for creating visuals that resonate with audiences.',
+                socials: {
+                    linkedin: 'https://linkedin.com/in/johnsmith',
+                    website: 'https://johnsmith.design'
+                },
+                portfolio: [
+                    { title: 'Startup Brand Identity', description: 'Created the full brand package for a new tech startup.' },
+                    { title: 'Marketing Campaign', description: 'Designed all visual assets for a national marketing campaign.' }
+                ]
+            }
         };
 
         const colorMap = {
@@ -311,6 +409,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             populateSkillsGrid();
             setupEventListeners();
+            renderExperts();
         });
 
         function populateSkillsGrid(searchTerm = '') {
@@ -341,25 +440,37 @@
             }
         }
 
-        // --- Page Navigation ---
+        // --- Page Navigation & Detail View ---
         const skillsPage = document.getElementById('skills-page');
         const skillDetailPage = document.getElementById('skill-detail-page');
         const skillTitle = document.getElementById('skill-title');
         const learningMaterialsContainer = document.getElementById('learning-materials');
 
         function showSkillDetail(skillKey) {
+            currentSkillKey = skillKey;
             const data = learningData[skillKey];
             if (!data) return;
 
             skillTitle.textContent = data.title;
+            renderLearningMaterials();
+            updateProgress();
 
+            skillsPage.classList.add('hidden');
+            skillDetailPage.classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+        
+        function renderLearningMaterials() {
+            const data = learningData[currentSkillKey];
             learningMaterialsContainer.innerHTML = '';
             data.materials.forEach(material => {
                 const materialEl = document.createElement('div');
                 materialEl.className = `p-4 rounded-lg flex items-center justify-between transition-all ${material.completed ? 'bg-green-100' : 'bg-gray-100'}`;
                 
                 const iconClass = material.type === 'video' ? 'fa-play-circle' : 'fa-image';
-                const statusIcon = material.completed ? '<i class="fas fa-check-circle text-green-500 text-xl"></i>' : '<div class="w-5 h-5 border-2 border-gray-400 rounded-full cursor-pointer"></div>';
+                const statusIcon = material.completed 
+                    ? `<i class="fas fa-check-circle text-green-500 text-xl cursor-pointer" onclick="toggleMaterialComplete(${material.id})"></i>` 
+                    : `<div class="w-5 h-5 border-2 border-gray-400 rounded-full cursor-pointer" onclick="toggleMaterialComplete(${material.id})"></div>`;
 
                 materialEl.innerHTML = `
                     <div class="flex items-center">
@@ -373,24 +484,60 @@
                 `;
                 learningMaterialsContainer.appendChild(materialEl);
             });
-            
-            const completedCount = data.materials.filter(m => m.completed).length;
-            const progress = (completedCount / data.materials.length) * 100;
+        }
+
+        function toggleMaterialComplete(materialId) {
+            const skill = learningData[currentSkillKey];
+            const material = skill.materials.find(m => m.id === materialId);
+            if (material) {
+                material.completed = !material.completed;
+                renderLearningMaterials();
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const skill = learningData[currentSkillKey];
+            const completedCount = skill.materials.filter(m => m.completed).length;
+            const progress = skill.materials.length > 0 ? (completedCount / skill.materials.length) * 100 : 0;
             document.getElementById('skill-progress-bar').style.width = `${progress}%`;
             document.getElementById('skill-progress-text').textContent = `${Math.round(progress)}% Complete`;
-
-            skillsPage.classList.add('hidden');
-            skillDetailPage.classList.remove('hidden');
-            window.scrollTo(0, 0);
         }
 
         function showSkillsGrid() {
+            currentSkillKey = null;
             skillDetailPage.classList.add('hidden');
             skillsPage.classList.remove('hidden');
+            document.getElementById('study-plan-display').classList.add('hidden');
+            if (countdownInterval) clearInterval(countdownInterval);
         }
 
-        // --- Modal Logic ---
+        // --- Expert Logic ---
+        function renderExperts() {
+            const expertList = document.getElementById('expert-list');
+            expertList.innerHTML = '';
+            for(const id in expertsData) {
+                const expert = expertsData[id];
+                const expertCard = document.createElement('div');
+                expertCard.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg';
+                expertCard.innerHTML = `
+                    <div class="flex items-center">
+                        <img src="${expert.avatar.replace('100x100', '50x50')}" class="rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold text-lg text-gray-800">${expert.name}</h4>
+                            <p class="text-sm text-gray-500">${expert.title}</p>
+                        </div>
+                    </div>
+                    <button class="btn-primary text-sm py-2 px-4" onclick="openExpertProfileModal('${id}')">View Profile</button>
+                `;
+                expertList.appendChild(expertCard);
+            }
+        }
+
+        // --- Modal & Form Logic ---
         const studyPlanModal = document.getElementById('study-plan-modal');
+        const expertProfileModal = document.getElementById('expert-profile-modal');
+        const bookingModal = document.getElementById('booking-modal');
 
         function openStudyPlanModal() {
             studyPlanModal.style.display = 'block';
@@ -400,10 +547,276 @@
             studyPlanModal.style.display = 'none';
         }
 
+        function openExpertProfileModal(expertId) {
+            const expert = expertsData[expertId];
+            if (!expert) return;
+
+            document.getElementById('expert-modal-avatar').src = expert.avatar;
+            document.getElementById('expert-modal-name').textContent = expert.name;
+            document.getElementById('expert-modal-title').textContent = expert.title;
+            document.getElementById('expert-modal-bio').textContent = expert.bio;
+            document.getElementById('expert-profile-book-btn').onclick = () => openBookingModal(expertId);
+
+            const socialsContainer = document.getElementById('expert-modal-socials');
+            socialsContainer.innerHTML = '';
+            for(const social in expert.socials) {
+                const icon = social === 'website' ? 'fas fa-globe' : `fab fa-${social}`;
+                socialsContainer.innerHTML += `
+                    <a href="${expert.socials[social]}" target="_blank" class="text-gray-500 hover:text-purple-600 text-2xl">
+                        <i class="${icon}"></i>
+                    </a>
+                `;
+            }
+
+            const portfolioContainer = document.getElementById('expert-modal-portfolio');
+            portfolioContainer.innerHTML = '';
+            expert.portfolio.forEach(item => {
+                portfolioContainer.innerHTML += `
+                    <div class="bg-gray-100 p-3 rounded-lg">
+                        <h4 class="font-semibold text-gray-800">${item.title}</h4>
+                        <p class="text-sm text-gray-600">${item.description}</p>
+                    </div>
+                `;
+            });
+
+            expertProfileModal.style.display = 'block';
+        }
+
+        function closeExpertProfileModal() {
+            expertProfileModal.style.display = 'none';
+        }
+
+        function openBookingModal(expertId) {
+            currentBookingExpertId = expertId;
+            const expert = expertsData[expertId];
+            if (!expert) return;
+            
+            closeExpertProfileModal();
+
+            document.getElementById('booking-expert-name').textContent = expert.name;
+
+            const now = new Date();
+            now.setDate(now.getDate() + 2);
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            const minDateTime = `${year}-${month}-${day}T00:00`;
+            document.getElementById('booking-datetime').min = minDateTime;
+            
+            bookingModal.style.display = 'block';
+        }
+
+        function closeBookingModal() {
+            bookingModal.style.display = 'none';
+        }
+
+        function handleStudyPlanSubmit(event) {
+            event.preventDefault();
+            const goal = document.getElementById('study-goal').value;
+            const time = document.getElementById('study-time').value;
+            const selectedDays = [...document.querySelectorAll('.day-toggle.active')].map(el => parseInt(el.dataset.day));
+
+            if (!goal || !time || selectedDays.length === 0) {
+                alert("Please fill out all fields and select at least one day.");
+                return;
+            }
+            
+            document.getElementById('plan-goal-display').textContent = `Goal: ${goal}`;
+            document.getElementById('study-plan-display').classList.remove('hidden');
+            document.getElementById('create-plan-btn').classList.add('hidden');
+            
+            startCountdown(selectedDays, time);
+            closeStudyPlanModal();
+        }
+
+        function handleInviteSubmit(event) {
+            event.preventDefault();
+            const emailInput = document.getElementById('invite-email');
+            const email = emailInput.value;
+            if (email) {
+                const newInvite = {
+                    id: Date.now(),
+                    email: email,
+                    sentDate: new Date(),
+                    status: 'Pending',
+                    acceptedDate: null
+                };
+                invitationHistory.push(newInvite);
+                renderInvitationHistory();
+                alert(`Invitation sent to ${email}!`);
+                emailInput.value = '';
+
+                // Simulate acceptance after a few seconds for demo purposes
+                setTimeout(() => {
+                    const invite = invitationHistory.find(i => i.id === newInvite.id);
+                    if (invite) {
+                        invite.status = 'Accepted';
+                        invite.acceptedDate = new Date();
+                        renderInvitationHistory();
+                    }
+                }, 5000);
+            }
+        }
+        
+        function renderInvitationHistory() {
+            const historyContainer = document.getElementById('invitation-history');
+            historyContainer.innerHTML = '<h4 class="font-semibold mb-2 text-gray-700">Invitation History</h4>';
+            const list = document.createElement('div');
+            list.className = 'space-y-3';
+
+            const statusStyles = {
+                Pending: 'bg-yellow-100 text-yellow-800',
+                Accepted: 'bg-green-100 text-green-800',
+            };
+
+            invitationHistory.forEach(invite => {
+                const sentDate = invite.sentDate.toLocaleString();
+                const acceptedDateText = invite.acceptedDate ? `Accepted on: ${invite.acceptedDate.toLocaleString()}` : '';
+
+                const item = document.createElement('div');
+                item.className = 'p-3 bg-gray-50 rounded-lg';
+                item.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-medium text-gray-800">${invite.email}</p>
+                            <p class="text-xs text-gray-500">Sent: ${sentDate}</p>
+                        </div>
+                        <span class="text-xs font-semibold px-2 py-1 rounded-full ${statusStyles[invite.status]}">${invite.status}</span>
+                    </div>
+                    ${invite.acceptedDate ? `<p class="text-xs text-green-600 mt-1">${acceptedDateText}</p>` : ''}
+                `;
+                list.appendChild(item);
+            });
+            historyContainer.appendChild(list);
+        }
+
+        function handleBookingSubmit(event) {
+            event.preventDefault();
+            const newBooking = {
+                id: Date.now(),
+                expertId: currentBookingExpertId,
+                expertName: expertsData[currentBookingExpertId].name,
+                requestedDate: document.getElementById('booking-datetime').value,
+                reason: document.getElementById('booking-reason').value,
+                status: 'Pending'
+            };
+            bookingHistoryData.push(newBooking);
+            renderBookingHistory();
+            alert('Booking request submitted!');
+            closeBookingModal();
+        }
+
+        function renderBookingHistory() {
+            const historyContainer = document.getElementById('booking-history-list');
+            const historySection = document.getElementById('booking-history-section');
+            historyContainer.innerHTML = '';
+
+            if (bookingHistoryData.length === 0) {
+                historySection.classList.add('hidden');
+                return;
+            }
+
+            historySection.classList.remove('hidden');
+
+            const statusStyles = {
+                Pending: 'bg-yellow-100 text-yellow-800',
+                Accepted: 'bg-green-100 text-green-800',
+                Declined: 'bg-red-100 text-red-800'
+            };
+
+            bookingHistoryData.forEach(booking => {
+                const date = new Date(booking.requestedDate);
+                const formattedDate = date.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const historyItem = document.createElement('div');
+                historyItem.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg';
+                historyItem.innerHTML = `
+                    <div>
+                        <p class="font-semibold">Call with ${booking.expertName}</p>
+                        <p class="text-sm text-gray-500">Requested for: ${formattedDate}</p>
+                    </div>
+                    <span class="text-sm font-semibold px-2 py-1 rounded-full ${statusStyles[booking.status]}">${booking.status}</span>
+                `;
+                historyContainer.appendChild(historyItem);
+            });
+        }
+
+        // --- Countdown Timer ---
+        function startCountdown(days, time) {
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            const [hours, minutes] = time.split(':');
+
+            const getNextStudyDate = () => {
+                const now = new Date();
+                let nextDate = null;
+
+                for (let i = 0; i < 7; i++) {
+                    const tempDate = new Date(now);
+                    tempDate.setDate(now.getDate() + i);
+                    const dayOfWeek = tempDate.getDay();
+
+                    if (days.includes(dayOfWeek)) {
+                        const potentialNextDate = new Date(tempDate);
+                        potentialNextDate.setHours(hours, minutes, 0, 0);
+
+                        if (potentialNextDate > now) {
+                            nextDate = potentialNextDate;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!nextDate) {
+                     for (let i = 0; i < 7; i++) {
+                        const tempDate = new Date(now);
+                        tempDate.setDate(now.getDate() + 7 + i);
+                        const dayOfWeek = tempDate.getDay();
+                         if (days.includes(dayOfWeek)) {
+                             nextDate = new Date(tempDate);
+                             nextDate.setHours(hours, minutes, 0, 0);
+                             break;
+                         }
+                     }
+                }
+                return nextDate;
+            };
+
+            countdownInterval = setInterval(() => {
+                const targetDate = getNextStudyDate();
+                if (!targetDate) {
+                    document.getElementById('countdown-timer').textContent = "No upcoming session.";
+                    clearInterval(countdownInterval);
+                    return;
+                }
+
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById('countdown-timer').innerHTML = `${d}d ${h}h ${m}m ${s}s`;
+
+                if (distance < 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById('countdown-timer').textContent = "It's time to study!";
+                }
+            }, 1000);
+        }
+
+
         function setupEventListeners() {
             window.onclick = function(event) {
                 if (event.target == studyPlanModal) {
                     closeStudyPlanModal();
+                }
+                if (event.target == expertProfileModal) {
+                    closeExpertProfileModal();
+                }
+                if (event.target == bookingModal) {
+                    closeBookingModal();
                 }
             }
             
@@ -425,6 +838,10 @@
                 const searchTerm = e.target.value.toLowerCase();
                 populateSkillsGrid(searchTerm);
             });
+
+            document.getElementById('study-plan-form').addEventListener('submit', handleStudyPlanSubmit);
+            document.getElementById('invite-form').addEventListener('submit', handleInviteSubmit);
+            document.getElementById('booking-form').addEventListener('submit', handleBookingSubmit);
         }
 
     </script>
