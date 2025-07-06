@@ -123,12 +123,30 @@
 
     <!-- Main Content -->
     <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
+        <!-- Mobile Header -->
+        <div class="md:hidden sticky top-0 z-30 bg-white/80 backdrop-blur-sm p-4 border-b border-gray-200">
+            <div class="flex items-center justify-center">
+                <div class="flex items-center text-xl font-semibold text-gray-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 text-purple-600"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                    <span class="ml-2 font-montserrat">RewardRush</span>
+                </div>
+            </div>
+        </div>
+
         <div id="page-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Initial Page: Skills Grid -->
             <div id="skills-page">
                 <header class="mb-8">
                     <h1 class="text-4xl font-bold font-montserrat text-gray-900">Choose Your Path</h1>
                     <p class="text-lg text-gray-600 mt-2">Select a skill to start your learning journey.</p>
+                    <div class="mt-6">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </span>
+                            <input type="text" id="skill-search-input" placeholder="Search for skills..." class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                    </div>
                 </header>
                 <div id="skills-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     <!-- Skill cards will be injected here by JS -->
@@ -293,11 +311,16 @@
             setupEventListeners();
         });
 
-        function populateSkillsGrid() {
+        function populateSkillsGrid(searchTerm = '') {
             const skillsGrid = document.getElementById('skills-grid');
             skillsGrid.innerHTML = ''; // Clear existing
             for (const key in learningData) {
                 const skill = learningData[key];
+                
+                if (searchTerm && !skill.title.toLowerCase().includes(searchTerm)) {
+                    continue; // Skip if it doesn't match search
+                }
+
                 const colors = colorMap[skill.color] || colorMap.purple;
                 const card = document.createElement('div');
                 card.className = 'glass-card p-6 cursor-pointer';
@@ -394,6 +417,11 @@
                     button.classList.toggle('text-gray-700');
                     button.classList.toggle('text-white');
                 });
+            });
+
+            document.getElementById('skill-search-input').addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                populateSkillsGrid(searchTerm);
             });
         }
 
