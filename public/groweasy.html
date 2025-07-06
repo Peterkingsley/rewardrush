@@ -617,8 +617,10 @@
                     }
                     
                     if (htmlEl.classList.contains('dark')) {
-                        initThreeJs();
-                        animateThreeJs();
+                        if (!window.threeJsInitialized) {
+                            initThreeJs();
+                            window.threeJsInitialized = true;
+                        }
                     }
 
                     themeToggleBtn.addEventListener('click', () => {
@@ -628,7 +630,6 @@
                             themeIcon.classList.replace('fa-moon', 'fa-sun');
                             if(!window.threeJsInitialized) {
                                 initThreeJs();
-                                animateThreeJs();
                                 window.threeJsInitialized = true;
                             }
                         } else {
@@ -957,7 +958,7 @@
                         document.getElementById('submit-btn').classList.remove('hidden');
                     } else {
                         document.getElementById('next-btn').classList.remove('hidden');
-                        document.getElementById('submit-btn').classList.add('hidden');
+                        document.getElementById('submit-btn').add('hidden');
                     }
                 },
 
@@ -1266,6 +1267,9 @@
 
                 document.body.addEventListener('pointermove', onDocumentMouseMove, false);
                 window.addEventListener('resize', onWindowResize, false);
+
+                // FIX: Start the animation loop only after everything is initialized.
+                animateThreeJs();
             }
 
             function animateThreeJs() {
@@ -1335,4 +1339,3 @@
     </script>
 </body>
 </html>
-
