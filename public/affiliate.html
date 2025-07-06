@@ -125,8 +125,21 @@
 
     <!-- Main Content Wrapper -->
     <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
+        
+        <!-- Header Section (Mobile Only, Sticky) -->
+        <div class="md:hidden sticky top-0 z-30 bg-gray-100/80 dark:bg-dark-bg/80 backdrop-blur-sm pt-4">
+             <div class="px-4">
+                <header class="bg-white shadow-md p-4 flex items-center justify-center rounded-2xl">
+                    <div class="text-xl font-semibold flex items-center text-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2 text-purple-600"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                        <span class="font-montserrat">RewardRush</span>
+                    </div>
+                </header>
+            </div>
+        </div>
+
         <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-            <header class="mb-6">
+            <header class="mb-6 hidden md:block">
                 <h2 id="greeting-header" class="text-2xl font-bold text-gray-900 font-montserrat">Jobs Dashboard</h2>
             </header>
 
@@ -154,9 +167,9 @@
 
                 <section id="available-jobs-section" class="bg-white rounded-2xl shadow-md p-5 mb-6">
                     <h3 class="text-lg font-bold text-gray-900 mb-4">Available Jobs</h3>
-                    <div class="flex flex-col md:flex-row gap-4 mb-4">
-                        <input type="text" id="job-search-input" placeholder="Search jobs..." class="w-full p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                        <select id="filter-category" class="w-full p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-4 mb-4">
+                        <input type="text" id="job-search-input" placeholder="Search jobs..." class="w-full p-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <select id="filter-category" class="w-full p-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                             <option value="all">All Categories</option>
                             <option value="sign-up">Sign Up</option>
                             <option value="trading-volume">Trading Volume</option>
@@ -165,7 +178,7 @@
                             <option value="transacting-users">Transacting Users</option>
                             <option value="pay-for-a-product">Pay for a Product</option>
                         </select>
-                        <select id="sort-reward" class="w-full p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <select id="sort-reward" class="w-full p-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                             <option value="default">Sort by Reward</option>
                             <option value="high-to-low">High to Low</option>
                             <option value="low-to-high">Low to High</option>
@@ -307,7 +320,9 @@
                         ]);
 
                         this.state.totalEarnings = profileData.totalEarnings || 0;
-                        this.elements.greetingHeader.textContent = `Good morning, ${profileData.fullName.split(' ')[0]}`;
+                        if (this.elements.greetingHeader) {
+                            this.elements.greetingHeader.textContent = `Good morning, ${profileData.fullName.split(' ')[0]}`;
+                        }
                         this.state.allJobs = jobsData.jobs || [];
 
                         this.updateAll();
