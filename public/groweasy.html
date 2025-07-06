@@ -958,7 +958,7 @@
                         document.getElementById('submit-btn').classList.remove('hidden');
                     } else {
                         document.getElementById('next-btn').classList.remove('hidden');
-                        document.getElementById('submit-btn').add('hidden');
+                        document.getElementById('submit-btn').classList.add('hidden');
                     }
                 },
 
@@ -1206,9 +1206,6 @@
                 }
             };
 
-            // Start the application
-            App.init();
-
             // --- Additional Animations ---
             window.threeJsInitialized = false;
 
@@ -1268,7 +1265,6 @@
                 document.body.addEventListener('pointermove', onDocumentMouseMove, false);
                 window.addEventListener('resize', onWindowResize, false);
 
-                // FIX: Start the animation loop only after everything is initialized.
                 animateThreeJs();
             }
 
@@ -1335,6 +1331,9 @@
                     cursorOutline.style.transform = 'translate(-50%, -50%) scale(1)';
                 });
             });
+
+            // Start the application
+            App.init();
         });
     </script>
 </body>
