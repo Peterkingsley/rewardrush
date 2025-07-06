@@ -890,6 +890,3 @@ app.use((req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
 })
-```
-
-I've made the necessary updates to your `server.js` file. The history section should now display the correct da
