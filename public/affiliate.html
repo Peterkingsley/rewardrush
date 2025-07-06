@@ -185,6 +185,7 @@
                         </select>
                     </div>
                     <div id="job-listings" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                    <nav id="pagination" class="flex justify-center items-center mt-6 space-x-2"></nav>
                 </section>
 
                 <section id="my-jobs-section" class="bg-white rounded-2xl shadow-md p-5">
@@ -275,6 +276,8 @@
                     activeJobs: [],
                     completedJobs: [],
                     totalEarnings: 0,
+                    currentPage: 1,
+                    itemsPerPage: 6,
                     currentJobInModal: null,
                     progressInterval: null,
                     username: 'guest',
@@ -282,6 +285,7 @@
                 
                 elements: {
                     jobListingsContainer: document.getElementById('job-listings'),
+                    pagination: document.getElementById('pagination'),
                     searchInput: document.getElementById('job-search-input'),
                     categoryFilterEl: document.getElementById('filter-category'),
                     sortFilter: document.getElementById('sort-reward'),
@@ -348,32 +352,56 @@
                     const categoryFilter = categoryFilterEl.value;
                     const sortOrder = sortFilter.value;
                     
-                    const availableJobs = allJobs.filter(job => !activeJobs.some(aj => aj.id === job.id) && !completedJobs.some(cj => cj.id === job.id));
-                    let filteredJobs = availableJobs.filter(job => (job.title.toLowerCase().includes(searchTerm) || job.description.toLowerCase().includes(searchTerm)) && (categoryFilter === 'all' || job.category === categoryFilter));
+                    let filteredJobs = allJobs
+                        .filter(job => !activeJobs.some(aj => aj.id === job.id) && !completedJobs.some(cj => cj.id === job.id))
+                        .filter(job => (job.title.toLowerCase().includes(searchTerm) || job.description.toLowerCase().includes(searchTerm)) && (categoryFilter === 'all' || job.category === categoryFilter));
                     
                     if (sortOrder === 'high-to-low') filteredJobs.sort((a, b) => b.payment - a.payment);
                     if (sortOrder === 'low-to-high') filteredJobs.sort((a, b) => a.payment - b.payment);
                     
-                    if (filteredJobs.length === 0) {
+                    const startIndex = (this.state.currentPage - 1) * this.state.itemsPerPage;
+                    const endIndex = startIndex + this.state.itemsPerPage;
+                    const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
+
+                    if (paginatedJobs.length === 0) {
                         jobListingsContainer.innerHTML = `<p class="text-gray-500 md:col-span-2 lg:col-span-3 text-center py-8">No available jobs match your criteria.</p>`;
-                        return;
+                    } else {
+                        paginatedJobs.forEach(job => {
+                            const jobCard = document.createElement('div');
+                            jobCard.className = 'job-card bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col justify-between transition-shadow hover:shadow-md';
+                            jobCard.dataset.jobId = job.id;
+                            jobCard.innerHTML = `
+                                <div class="flex-grow">
+                                    <h4 class="font-bold text-gray-800">${job.title}</h4>
+                                    <p class="text-gray-600 text-sm mt-1 mb-3">${job.description}</p>
+                                </div>
+                                <div class="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
+                                    <p class="font-bold text-green-600 text-base">$${job.payment}</p>
+                                    <button class="get-started-btn bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700 text-sm">Get Started</button>
+                                </div>`;
+                            jobListingsContainer.appendChild(jobCard);
+                        });
                     }
-                    
-                    filteredJobs.forEach(job => {
-                        const jobCard = document.createElement('div');
-                        jobCard.className = 'job-card bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col justify-between transition-shadow hover:shadow-md';
-                        jobCard.dataset.jobId = job.id;
-                        jobCard.innerHTML = `
-                            <div class="flex-grow">
-                                <h4 class="font-bold text-gray-800">${job.title}</h4>
-                                <p class="text-gray-600 text-sm mt-1 mb-3">${job.description}</p>
-                            </div>
-                            <div class="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
-                                <p class="font-bold text-green-600 text-base">$${job.payment}</p>
-                                <button class="get-started-btn bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700 text-sm">Get Started</button>
-                            </div>`;
-                        jobListingsContainer.appendChild(jobCard);
-                    });
+                    this.renderPagination(filteredJobs.length);
+                },
+
+                renderPagination(totalItems) {
+                    const { pagination } = this.elements;
+                    pagination.innerHTML = '';
+                    const pageCount = Math.ceil(totalItems / this.state.itemsPerPage);
+
+                    if (pageCount <= 1) return;
+
+                    for (let i = 1; i <= pageCount; i++) {
+                        const pageLink = document.createElement('button');
+                        pageLink.textContent = i;
+                        pageLink.className = `px-3 py-1 text-sm rounded-md font-semibold transition ${this.state.currentPage === i ? 'bg-purple-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-200'}`;
+                        pageLink.addEventListener('click', () => {
+                            this.state.currentPage = i;
+                            this.renderJobs();
+                        });
+                        pagination.appendChild(pageLink);
+                    }
                 },
 
                 renderDashboard() {
@@ -575,7 +603,12 @@
                 bindEvents() {
                     const { searchInput, categoryFilterEl, sortFilter, jobListingsContainer, acceptBtn, activeTab, historyTab, historyActionBtn, closeModalBtn, sidebarToggleBtn } = this.elements;
                     
-                    [searchInput, categoryFilterEl, sortFilter].forEach(el => el.addEventListener('input', () => this.renderJobs()));
+                    [searchInput, categoryFilterEl, sortFilter].forEach(el => {
+                        el.addEventListener('input', () => {
+                            this.state.currentPage = 1;
+                            this.renderJobs();
+                        });
+                    });
                     
                     jobListingsContainer.addEventListener('click', (e) => {
                         const btn = e.target.closest('.get-started-btn');
