@@ -116,6 +116,100 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// --- NEW JOBS API ENDPOINTS ---
+
+/**
+ * @route GET /api/jobs
+ * @description Fetches all available jobs (affiliate programs).
+ * @access Private (requires login)
+ */
+app.get('/api/jobs', requireLogin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM affiliate_programs ORDER BY id');
+        
+        // Map database columns to the frontend's expected format
+        const jobs = result.rows.map(program => {
+            // Combine different text fields into a single 'requirements' array
+            const requirements = [];
+            if (program.guidelines) requirements.push(program.guidelines);
+            if (program.pros && program.pros.length > 0) requirements.push(...program.pros.map(p => `Pro: ${p}`));
+            if (program.cons && program.cons.length > 0) requirements.push(...program.cons.map(c => `Con: ${c}`));
+
+            // Convert category name to a URL-friendly slug
+            const categorySlug = program.category.toLowerCase().replace(/\s+/g, '-');
+            
+            // Simple logic to extract a target number from the title for progress bars
+            const titleMatch = program.title.match(/(\d+)/);
+            const target = titleMatch ? parseInt(titleMatch[0], 10) : 1;
+
+            return {
+                id: program.id,
+                title: program.title,
+                category: categorySlug,
+                payment: parsePayout(program.payout),
+                description: program.details,
+                requirements: requirements,
+                target: target,
+                destinationUrl: program.destination_url
+            };
+        });
+        
+        res.json({ jobs });
+    } catch (err) {
+        console.error('Error fetching jobs:', err);
+        res.status(500).json({ error: 'Failed to fetch jobs' });
+    }
+});
+
+/**
+ * @route POST /api/jobs/:jobId/complete
+ * @description Marks a job as complete for a user and awards points.
+ * @access Private (requires login)
+ */
+app.post('/api/jobs/:jobId/complete', requireLogin, async (req, res) => {
+    const { jobId } = req.params;
+    const { submissionLink } = req.body; // For content-based jobs
+    const userDbId = req.user.id;
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Note: In a real app, you'd have a `user_jobs` table to track completion.
+        // For now, we'll just award the points.
+        const jobResult = await client.query('SELECT * FROM affiliate_programs WHERE id = $1', [jobId]);
+        const job = jobResult.rows[0];
+
+        if (!job) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Job not found.' });
+        }
+
+        const payoutAmount = parsePayout(job.payout);
+        
+        // Update user's points
+        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [payoutAmount, userDbId]);
+
+        // If it was a content submission, we could store the link
+        if (job.category.toLowerCase().includes('video') || job.category.toLowerCase().includes('post')) {
+            console.log(`User ${req.user.username} submitted link for job ${jobId}: ${submissionLink}`);
+            // You could insert this into a `job_submissions` table here.
+        }
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: `Job completed! $${payoutAmount} awarded.` });
+
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Error completing job:', err);
+        res.status(500).json({ error: 'Failed to complete job.' });
+    } finally {
+        client.release();
+    }
+});
+
+// --- EXISTING ROUTES ---
+
 app.get('/check-session', (req, res) => {
     if (req.session.userId) {
         res.json({ loggedIn: true, userId: req.session.userId, isAdmin: !!req.session.isAdmin });

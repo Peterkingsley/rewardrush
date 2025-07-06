@@ -127,7 +127,7 @@
     <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
         <div class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
             <header class="mb-6">
-                <h2 class="text-2xl font-bold text-gray-900 font-montserrat">Good morning, Kingsley</h2>
+                <h2 id="greeting-header" class="text-2xl font-bold text-gray-900 font-montserrat">Jobs Dashboard</h2>
             </header>
 
             <main>
@@ -160,9 +160,10 @@
                             <option value="all">All Categories</option>
                             <option value="sign-up">Sign Up</option>
                             <option value="trading-volume">Trading Volume</option>
+                            <option value="video-creation">Video Creation</option>
+                            <option value="post-on-socials">Post on Socials</option>
                             <option value="transacting-users">Transacting Users</option>
-                            <option value="written-content">Written Content</option>
-                            <option value="video-content">Video Content</option>
+                            <option value="pay-for-a-product">Pay for a Product</option>
                         </select>
                         <select id="sort-reward" class="w-full p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                             <option value="default">Sort by Reward</option>
@@ -220,21 +221,50 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+
+            const ApiService = {
+                async fetch(endpoint, options = {}) {
+                    const baseUrl = ''; 
+                    try {
+                        const response = await fetch(baseUrl + endpoint, {
+                            ...options,
+                            headers: { 'Content-Type': 'application/json', ...options.headers },
+                        });
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    } catch (error) {
+                        console.error(`API Error on ${endpoint}:`, error);
+                        App.showNotification(error.message, 'error');
+                        throw error;
+                    }
+                },
+                getJobs() {
+                    return this.fetch('/api/jobs');
+                },
+                completeJob(jobId, submissionLink = null) {
+                    const body = submissionLink ? { submissionLink } : {};
+                    return this.fetch(`/api/jobs/${jobId}/complete`, {
+                        method: 'POST',
+                        body: JSON.stringify(body),
+                    });
+                },
+                getProfile(userId) {
+                    return this.fetch(`/api/profile/${userId}`);
+                }
+            };
+
             const App = {
                 state: {
-                    allJobs: [
-                        { id: 1, title: "Create a Promotional Video", category: "video-content", payment: 250, description: "Produce a 60-90 second promotional video for our new product.", requirements: ["Video must be in 1080p resolution.", "Include brand logo and call-to-action.", "Submit raw footage and final edited video."] },
-                        { id: 2, title: "Write 5 Blog Posts about Crypto", category: "written-content", payment: 500, description: "Write five engaging blog posts about the future of cryptocurrency.", requirements: ["Each blog post must be at least 1000 words.", "Content must be original and pass plagiarism checks.", "Include at least 2 relevant images per post."] },
-                        { id: 3, title: "Achieve $10k in Trading Volume", category: "trading-volume", payment: 100, description: "Trade a total of $10,000 or more on the specified platform.", requirements: ["Must be completed within 30 days of accepting.", "Provide transaction history for verification."], target: 10000 },
-                        { id: 4, title: "Onboard 20 New Users", category: "transacting-users", payment: 150, description: "Get 20 new users to sign up and complete one transaction.", requirements: ["Each user must complete at least one transaction.", "Track your referrals through the dashboard."], target: 20 },
-                        { id: 5, title: "Sign Up for Partner Exchange", category: "sign-up", payment: 10, description: "Create and verify an account on our new partner exchange.", requirements: ["Complete the KYC (Know Your Customer) verification.", "Provide a screenshot of your verified account dashboard."], target: 1 },
-                        { id: 6, title: "In-depth Competitor Analysis Report", category: "written-content", payment: 300, description: "Analyze 3 top competitors in the DeFi space and deliver a report.", requirements: ["Report must be at least 10 pages.", "Include SWOT analysis for each competitor.", "Submit as a PDF document."] }
-                    ],
+                    allJobs: [],
                     activeJobs: [],
                     completedJobs: [],
                     totalEarnings: 0,
                     currentJobInModal: null,
                     progressInterval: null,
+                    username: 'guest',
                 },
                 
                 elements: {
@@ -254,13 +284,37 @@
                     historyActionBtn: document.getElementById('history-action-btn'),
                     sidebarToggleBtn: document.getElementById('sidebar-toggle'),
                     themeToggleBtn: document.getElementById('theme-toggle'),
+                    greetingHeader: document.getElementById('greeting-header'),
                 },
 
-                init() {
+                async init() {
                     this.initTheme();
                     this.initCursor();
                     this.bindEvents();
-                    this.updateAll();
+                    
+                    try {
+                        const sessionData = await ApiService.fetch('/check-session');
+                        if (!sessionData.loggedIn) {
+                            this.showNotification('Please log in to view jobs.', 'error');
+                            document.body.innerHTML = `<div class="flex h-screen items-center justify-center bg-gray-100"><div class="text-center p-8 bg-white rounded-lg shadow-md"><h1 class="text-2xl font-bold mb-4">Access Denied</h1><p>Please <a href="/auth.html" class="text-purple-600 hover:underline">log in</a> to continue.</p></div></div>`;
+                            return;
+                        }
+                        this.state.username = sessionData.userId;
+
+                        const [profileData, jobsData] = await Promise.all([
+                            ApiService.getProfile(this.state.username),
+                            ApiService.getJobs()
+                        ]);
+
+                        this.state.totalEarnings = profileData.totalEarnings || 0;
+                        this.elements.greetingHeader.textContent = `Good morning, ${profileData.fullName.split(' ')[0]}`;
+                        this.state.allJobs = jobsData.jobs || [];
+
+                        this.updateAll();
+
+                    } catch (error) {
+                        console.error("Initialization failed:", error);
+                    }
                 },
 
                 updateAll() {
@@ -354,16 +408,17 @@
                     const { jobProgressView } = this.elements;
                     jobProgressView.innerHTML = '';
                     let progressContent = '';
-                    const referralCategories = ['sign-up', 'trading-volume', 'transacting-users'];
-                    const contentCategories = ['written-content', 'video-content'];
+                    const referralCategories = ['sign-up', 'trading-volume', 'transacting-users', 'pay-for-a-product'];
+                    const contentCategories = ['video-creation', 'post-on-socials'];
 
                     if (referralCategories.includes(job.category)) {
-                        const link = `https://rewardrush.app/ref/${'kingsley' + job.id}`;
+                        const link = `/track?programId=${job.id}&affiliate_id=${this.state.username}`;
                         progressContent = `
-                            <h3 class="font-bold text-lg mb-2 text-gray-800">Your Referral Link</h3>
+                            <h3 class="font-bold text-lg mb-2 text-gray-800">Your Tracking Link</h3>
+                            <p class="text-sm text-gray-600 mb-4">Share this link to complete the job. Progress will be updated automatically.</p>
                             <div class="flex items-center mb-4">
-                                <input type="text" value="${link}" readonly class="w-full p-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm">
-                                <button onclick="App.copyToClipboard('${link}')" class="copy-link-btn bg-purple-600 text-white p-2.5 rounded-r-lg hover:bg-purple-700"><i class="fas fa-copy"></i></button>
+                                <input type="text" value="${window.location.origin + link}" readonly class="w-full p-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm">
+                                <button onclick="App.copyToClipboard('${window.location.origin + link}')" class="copy-link-btn bg-purple-600 text-white p-2.5 rounded-r-lg hover:bg-purple-700"><i class="fas fa-copy"></i></button>
                             </div>
                             <h3 class="font-bold text-lg mb-2 mt-6 text-gray-800">Progress</h3>
                             <div class="w-full bg-gray-200 rounded-full h-4 mb-2"><div id="progress-bar" class="progress-bar-fill bg-green-500 h-4 rounded-full" style="width: 0%"></div></div>
@@ -398,19 +453,25 @@
                         progressText.textContent = `${currentProgress} of ${job.target} completed`;
                         if (currentProgress >= job.target) {
                             clearInterval(this.state.progressInterval);
-                            progressText.textContent = `Task Complete!`;
+                            progressText.textContent = `Task Complete! Ready to claim.`;
                             claimBtn.disabled = false;
                         }
-                    }, 1000);
+                    }, 1500);
                 },
 
-                claimReward(job) {
-                    this.state.activeJobs = this.state.activeJobs.filter(j => j.id !== job.id);
-                    this.state.completedJobs.push(job);
-                    this.state.totalEarnings += job.payment;
-                    this.updateAll();
-                    this.showNotification(`Job "${job.title}" completed! $${job.payment} added to balance.`);
-                    this.closeModal();
+                async claimReward(job) {
+                    const submissionLink = document.getElementById('content-link-input')?.value;
+                    try {
+                        await ApiService.completeJob(job.id, submissionLink);
+                        this.state.activeJobs = this.state.activeJobs.filter(j => j.id !== job.id);
+                        this.state.completedJobs.push(job);
+                        this.state.totalEarnings += job.payment;
+                        this.updateAll();
+                        this.showNotification(`Job "${job.title}" completed! $${job.payment} added to balance.`);
+                        this.closeModal();
+                    } catch (error) {
+                        this.showNotification(`Failed to claim reward: ${error.message}`, 'error');
+                    }
                 },
 
                 openModal(job) {

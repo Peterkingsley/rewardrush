@@ -572,19 +572,10 @@
                         this.user.name = profileData.fullName;
                         this.user.balance = profileData.totalEarnings;
                         this.user.recentActivity = profileData.recentActivity;
-                        // Get completed quest IDs from profile's recent activity for 'quest_completed' type
-                        this.user.completedQuests = profileData.recentActivity
-                            .filter(activity => activity.activity_type === 'quest_completed')
-                            .map(activity => {
-                                // Extract quest title from details, e.g., "Passed quiz 'Crypto Basics'..."
-                                const match = activity.details.match(/'([^']+)'/);
-                                return match ? match[1] : null;
-                            }).filter(Boolean);
 
-
-                        // Populate quests
+                        // Populate quests using the correct completedQuestIds from the server
                         this.quests = questsData.quests.map(quest => {
-                            const isCompleted = this.user.completedQuests.includes(quest.title);
+                            const isCompleted = profileData.completedQuestIds.includes(quest.id);
                             return { ...quest, status: isCompleted ? 'completed' : 'not-started' };
                         });
 
@@ -743,7 +734,7 @@
                 displayHistory() {
                     this.elements.historyList.innerHTML = ''; // Clear previous list
                     
-                    if (this.user.recentActivity.length === 0) {
+                    if (!this.user.recentActivity || this.user.recentActivity.length === 0) {
                         this.elements.historyList.innerHTML = `<p class="text-gray-500 text-center py-4">No recent activity yet.</p>`;
                     } else {
                         this.user.recentActivity.forEach(activity => {
@@ -755,17 +746,11 @@
                             });
 
                             let amountHtml = '';
-                            if (activity.activity_type === 'quest_completed' || activity.activity_type === 'new_referral') {
-                                // Extract amount from details, e.g., "...earned $5.00"
-                                const amountMatch = activity.details.match(/\$(\d+\.\d+)/);
-                                if (amountMatch) {
-                                    amountHtml = `<p class="font-semibold text-green-600">+$${parseFloat(amountMatch[1]).toFixed(2)}</p>`;
-                                }
-                            } else if (activity.activity_type === 'withdrawal') {
-                                const amountMatch = activity.details.match(/(\d+\.\d+)/);
-                                 if (amountMatch) {
-                                    amountHtml = `<p class="font-semibold text-red-600">-$${parseFloat(amountMatch[1]).toFixed(2)}</p>`;
-                                }
+                            const amount = parseFloat(activity.amount);
+                            if (activity.type === 'credit') {
+                                amountHtml = `<p class="font-semibold text-green-600">+$${amount.toFixed(2)}</p>`;
+                            } else if (activity.type === 'debit') {
+                                amountHtml = `<p class="font-semibold text-red-600">-$${amount.toFixed(2)}</p>`;
                             }
 
                             historyItem.innerHTML = `
