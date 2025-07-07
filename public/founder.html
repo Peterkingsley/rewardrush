@@ -222,16 +222,27 @@
 
             // --- API Service ---
             const ApiService = {
+                async checkSession() {
+                    try {
+                        const response = await fetch('/check-session');
+                        return await response.json();
+                    } catch (error) {
+                        console.error("Failed to check session:", error);
+                        return { loggedIn: false };
+                    }
+                },
                 async fetchBuildData() {
                     try {
                         const response = await fetch('/api/build-data');
                         if (!response.ok) {
+                            if (response.status === 401) {
+                                window.location.href = '/auth.html';
+                            }
                             throw new Error(`HTTP error! status: ${response.status}`);
                         }
                         return await response.json();
                     } catch (error) {
                         console.error("Failed to fetch build data:", error);
-                        // Optionally, display an error message to the user
                         return null;
                     }
                 }
@@ -366,6 +377,12 @@
                     this.populateStaticContent();
                     this.initTheme();
                     this.bindSidebarToggle();
+                    
+                    const session = await ApiService.checkSession();
+                    if (!session.loggedIn) {
+                        window.location.href = '/auth.html';
+                        return; 
+                    }
                     
                     const data = await ApiService.fetchBuildData();
                     if (data) {
