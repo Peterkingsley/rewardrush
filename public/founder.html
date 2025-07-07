@@ -2,1221 +2,532 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RewardRush - Founder Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RewardRush - Build Your Product</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Three.js for Particle Background -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts using <link> for better performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&display=swap');
-        
-        :root {
-            --primary: #6c5ce7;
-            --primary-light: #a29bfe;
-            --primary-dark: #5649c0;
-            --secondary: #00cec9;
-            --accent: #fd79a8;
-            --dark: #2d3436;
-            --darker: #1e272e;
-            --light: #f5f6fa;
-            --success: #00b894;
-            --warning: #fdcb6e;
-            --danger: #d63031;
-            --border-radius: 12px;
-            --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            --galaxy-gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+         :root {
+            --primary-glow: #8b00ff;
+            --secondary-glow: #00f0ff;
+            --accent-glow: #39ff14;
+            --dark-bg: #0a0a15;
+            --mid-bg: #1a1a2e;
+            --light-bg: #2a2a3e;
         }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-        
+        /* Custom styles to complement Tailwind */
         body {
-            background: var(--galaxy-gradient);
-            color: var(--light);
-            min-height: 100vh;
-            width: 100vw;
-            overflow-x: hidden;
-            position: relative;
-            padding-bottom: 80px; /* Space for bottom nav */
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5; /* Lighter gray background */
+            cursor: none; /* Hide the default cursor */
+            transition: background-color 0.3s ease;
         }
-
-        /* Animated background elements */
-        .bg-particle {
-            position: fixed;
-            border-radius: 50%;
-            background: rgba(108, 92, 231, 0.1);
-            pointer-events: none;
-            z-index: -1;
-            animation: float 15s infinite ease-in-out;
+        .dark body {
+            background-color: var(--dark-bg);
         }
-        
-        /* Navigation */
-        nav {
-            background: rgba(30, 39, 46, 0.9);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border-bottom: 1px solid rgba(108, 92, 231, 0.2);
-            width: 100%;
-        }
-        
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        .font-montserrat {
             font-family: 'Montserrat', sans-serif;
-            letter-spacing: 1px;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #2a2a3e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #555;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
         
-        .logo i {
-            font-size: 1.5rem;
+        /* Animation for notification toast */
+        @keyframes toast-in {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
-        
-        .nav-menu {
-            display: flex;
-            gap: 1.5rem;
-            align-items: center;
+        .toast-in {
+            animation: toast-in 0.5s ease-out forwards;
         }
-        
-        .nav-menu a {
-            color: var(--light);
-            text-decoration: none;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: var(--transition);
-            padding: 0.5rem 1rem;
-            border-radius: var(--border-radius);
+        /* Custom shadow for the top of an element */
+        .shadow-t-md {
+            box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1), 0 -2px 4px -2px rgb(0 0 0 / 0.1);
         }
-        
-        .nav-menu a:hover {
-            color: var(--primary-light);
-            background: rgba(108, 92, 231, 0.1);
+        /* Sidebar collapsed state styles */
+        .sidebar-collapsed #desktop-sidebar {
+            width: 5.5rem; /* 88px */
         }
-        
-        .nav-menu a.active {
-            color: var(--primary-light);
-            background: rgba(108, 92, 231, 0.2);
+        .sidebar-collapsed #main-content-wrapper {
+            margin-left: 5.5rem;
         }
-        
-        .nav-menu .profile-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .nav-menu .profile-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
-        }
-
-        .mobile-nav {
+        .sidebar-collapsed .sidebar-text {
             display: none;
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-            width: 100%;
-        }
-        
-        /* Founder Header */
-        .founder-header {
-            text-align: center;
-            margin-bottom: 3rem;
-            position: relative;
-        }
-        
-        .founder-header h2 {
-            font-size: 2.5rem;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 1rem;
-            position: relative;
-            display: inline-block;
-        }
-        
-        .founder-header h2::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            border-radius: 2px;
-        }
-        
-        .founder-header p {
-            font-size: 1.1rem;
-            color: rgba(255, 255, 255, 0.8);
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        
-        /* Section Cards */
-        .section-card {
-            background: rgba(45, 52, 54, 0.7);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: var(--card-shadow);
-            transition: var(--transition);
-            margin-bottom: 2rem;
-            border-top: 4px solid var(--primary);
-        }
-        
-        .section-header {
-            padding: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            background: rgba(30, 39, 46, 0.5);
-        }
-        
-        .section-header h3 {
-            font-size: 1.3rem;
-            color: var(--primary-light);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        
-        .section-header .toggle-icon {
-            color: var(--primary-light);
-            transition: transform 0.3s ease;
-        }
-        
-        .section-header.active .toggle-icon {
+        .sidebar-collapsed #sidebar-toggle i {
             transform: rotate(180deg);
         }
-        
-        .section-content {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
+        .sidebar-collapsed .nav-link {
+            justify-content: center;
         }
-        
-        .section-content.active {
-            max-height: 5000px;
+        .sidebar-collapsed .nav-link i {
+            margin-right: 0;
         }
-        
-        /* Project Grid */
-        .project-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-            padding: 0 1.5rem 1.5rem;
-        }
-        
-        .project-card {
-            background: rgba(30, 39, 46, 0.5);
-            border-radius: 10px;
-            padding: 1.5rem;
-            transition: var(--transition);
-            border-left: 3px solid var(--primary);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-        
-        .project-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(108, 92, 231, 0.1) 0%, transparent 100%);
-            opacity: 0;
-            transition: var(--transition);
-        }
-        
-        .project-card:hover::before {
-            opacity: 1;
-        }
-        
-        .project-card h3 {
-            font-size: 1.2rem;
-            color: var(--primary-light);
-            margin-bottom: 1rem;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .project-details {
-            position: relative;
-            z-index: 1;
-        }
-        
-        .detail-item {
-            margin-bottom: 1rem;
-        }
-        
-        .detail-item h4 {
-            font-size: 0.95rem;
-            color: var(--light);
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .detail-item p {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.5;
-            margin-bottom: 0.5rem;
-        }
-        
-        .resource-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        
-        .resource-link {
-            background: rgba(0, 206, 201, 0.1);
-            color: var(--secondary);
-            padding: 0.5rem 0.75rem;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            text-decoration: none;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-        
-        .resource-link:hover {
-            background: rgba(0, 206, 201, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        /* Founder Filters */
-        .founder-filters {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            padding: 0 1.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .filter-group {
-            flex: 1;
-            min-width: 200px;
-        }
-        
-        .filter-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.8);
-        }
-        
-        .filter-select {
-            width: 100%;
-            padding: 0.75rem;
-            background: rgba(30, 39, 46, 0.8);
-            border: 1px solid rgba(108, 92, 231, 0.3);
-            border-radius: 8px;
-            color: var(--light);
-            font-size: 0.95rem;
-            transition: var(--transition);
-        }
-        
-        .filter-select:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
-        }
-        
-        /* Founder Grid */
-        .founder-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
-            padding: 0 1.5rem;
-        }
-        
-        .founder-card {
-            background: rgba(30, 39, 46, 0.5);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            transition: var(--transition);
-            border-left: 3px solid var(--primary);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .founder-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--card-shadow);
-        }
-        
-        .founder-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(108, 92, 231, 0.1) 0%, transparent 100%);
-            opacity: 0;
-            transition: var(--transition);
-        }
-        
-        .founder-card:hover::before {
-            opacity: 1;
-        }
-        
-        .founder-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .founder-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--primary);
-        }
-        
-        .founder-name {
-            font-size: 1.2rem;
-            color: var(--primary-light);
-            margin-bottom: 0.25rem;
-        }
-        
-        .founder-title {
-            font-size: 0.85rem;
-            color: var(--secondary);
-        }
-        
-        .founder-bio {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 1rem;
-            line-height: 1.5;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .founder-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 1rem;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .founder-rate {
-            font-weight: 600;
-            color: var(--success);
-        }
-        
-        .founder-actions {
-            display: flex;
-            gap: 0.75rem;
-        }
-        
-        .view-profile-btn, .book-btn {
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            border: none;
-        }
-        
-        .view-profile-btn {
-            background: rgba(108, 92, 231, 0.1);
-            color: var(--primary-light);
-        }
-        
-        .view-profile-btn:hover {
-            background: rgba(108, 92, 231, 0.2);
-        }
-        
-        .book-btn {
-            background: var(--primary);
-            color: white;
-        }
-        
-        .book-btn:hover {
-            background: var(--primary-dark);
-        }
-        
-        /* See More Button */
-        .see-more {
-            text-align: center;
-            margin-top: 1.5rem;
-            padding: 0 1.5rem 1.5rem;
-        }
-        
-        .see-more-btn {
-            background: rgba(108, 92, 231, 0.1);
-            color: var(--primary-light);
-            border: 1px solid var(--primary);
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .see-more-btn:hover {
-            background: rgba(108, 92, 231, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            grid-column: 1/-1;
-        }
-        
-        .empty-state i {
-            font-size: 2.5rem;
-            color: var(--primary-light);
-            margin-bottom: 1rem;
-        }
-        
-        .empty-state p {
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        /* Modal Styles */
-        .modal {
-            display: none;
+        /* Particle background canvas */
+        #bg-canvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            animation: fadeIn 0.3s ease;
+            z-index: -1;
+            display: none; /* Hidden by default */
         }
-        
-        .modal-content {
-            background: var(--darker);
-            padding: 2rem;
-            border-radius: var(--border-radius);
-            width: 90%;
-            max-width: 600px;
-            max-height: 90vh;
-            overflow-y: auto;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        .dark #bg-canvas {
+            display: block; /* Shown in dark mode */
         }
-        
-        .close-modal {
-            position: absolute;
-            top: 1rem;
-            right: 1.5rem;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--light);
-            transition: var(--transition);
-        }
-        
-        .close-modal:hover {
-            color: var(--accent);
-        }
-        
-        /* Founder Modal Specific Styles */
-        .founder-profile-header {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .founder-avatar-large {
-            width: 100px;
-            height: 100px;
+
+        /* Custom Cursor Styles */
+        .cursor-dot, .cursor-outline {
+            pointer-events: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
             border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid var(--primary);
-            box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
+            opacity: 1;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
         }
-        
-        .profile-section {
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(108, 92, 231, 0.2);
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-glow);
+            z-index: 10001;
         }
-        
-        .profile-section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(139, 0, 255, 0.2);
+            z-index: 10000;
         }
-        
-        .profile-section h4 {
-            color: var(--primary-light);
-            margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+        /* Scroll Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
-        
-        .profile-bio {
-            line-height: 1.6;
-            color: rgba(255, 255, 255, 0.8);
-        }
-        
-        .social-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.75rem;
-        }
-        
-        .social-link {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: rgba(108, 92, 231, 0.1);
-            border-radius: 8px;
-            color: var(--light);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-        
-        .social-link:hover {
-            background: rgba(108, 92, 231, 0.2);
-            transform: translateY(-2px);
-        }
-        
-        .portfolio-items {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-        
-        .portfolio-item {
-            background: rgba(30, 39, 46, 0.5);
-            padding: 1rem;
-            border-radius: 8px;
-            border-left: 3px solid var(--secondary);
-            transition: var(--transition);
-        }
-        
-        .portfolio-item:hover {
-            transform: translateY(-3px);
-        }
-        
-        .portfolio-item h5 {
-            color: var(--light);
-            margin-bottom: 0.25rem;
-        }
-        
-        .portfolio-item p {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.85rem;
-        }
-        
-        /* Booking Form Styles */
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--light);
-            font-size: 0.95rem;
-        }
-        
-        .form-group textarea, 
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem;
-            background: rgba(30, 39, 46, 0.8);
-            border: 1px solid rgba(108, 92, 231, 0.3);
-            border-radius: 8px;
-            color: var(--light);
-            font-size: 0.95rem;
-            transition: var(--transition);
-        }
-        
-        .form-group textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-        
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
-        }
-        
-        .submit-booking {
-            background: var(--success);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: var(--transition);
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-        
-        .submit-booking:hover {
-            background: #00a884;
-            transform: translateY(-2px);
-        }
-        
-        /* Responsive Styles */
-        @media (max-width: 768px) {
-            body {
-                width: 100vw;
-                margin: 0;
-            }
-
-            nav {
-                justify-content: center;
-                padding: 1rem;
-                width: 100vw;
-            }
-
-            .nav-menu {
-                display: none;
-            }
-
-            .mobile-nav {
-                display: flex;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                width: 100vw;
-                background: rgba(30, 39, 46, 0.9);
-                backdrop-filter: blur(10px);
-                justify-content: space-around;
-                padding: 0.5rem 0;
-                z-index: 100;
-                border-top: 1px solid rgba(108, 92, 231, 0.2);
-            }
-
-            .mobile-nav a {
-                color: var(--light);
-                text-decoration: none;
-                font-size: 1.2rem;
-                padding: 0.5rem 1rem;
-                border-radius: 0.5rem;
-                transition: all 0.3s ease;
-            }
-
-            .mobile-nav a.active {
-                color: var(--primary-light);
-            }
-            
-            .container {
-                padding: 1.5rem;
-            }
-            
-            .founder-header h2 {
-                font-size: 2rem;
-            }
-            
-            .founder-filters {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .filter-group {
-                min-width: 100%;
-            }
-            
-            .modal-content {
-                padding: 1.5rem;
-                width: 95%;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .project-grid,
-            .founder-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .founder-header h2 {
-                font-size: 1.8rem;
-            }
-            
-            .founder-header p {
-                font-size: 1rem;
-            }
-            
-            .founder-actions {
-                flex-direction: column;
-            }
-        }
-        
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-        
-        @keyframes slideIn {
-            from { transform: translateX(-20px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        .animate-in {
-            animation: fadeIn 0.5s ease forwards;
-        }
-        
-        .slide-in {
-            animation: slideIn 0.5s ease forwards;
-        }
-        
-        .delay-1 { animation-delay: 0.1s; }
-        .delay-2 { animation-delay: 0.2s; }
-        .delay-3 { animation-delay: 0.3s; }
-        
-        /* Loading Spinner */
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--light);
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        /* Dark Mode Styles */
+        .dark .bg-white { background-color: var(--mid-bg) !important; }
+        .dark .bg-gray-100 { background-color: var(--dark-bg) !important; }
+        .dark .bg-gray-50 { background-color: var(--light-bg) !important; }
+        .dark .text-gray-900 { color: #f0f2f5 !important; }
+        .dark .text-gray-800 { color: #e2e8f0 !important; }
+        .dark .text-gray-700 { color: #a0aec0 !important; }
+        .dark .text-gray-600 { color: #cbd5e0 !important; }
+        .dark .text-gray-500 { color: #a0aec0 !important; }
+        .dark .border-gray-200 { border-color: #4a5568 !important; }
+        .dark .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2); }
+        .dark .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2); }
+        .dark .bg-gray-100\/80 { background-color: rgba(10, 10, 21, 0.8) !important; }
+        .dark .nav-link.text-gray-600:hover { color: #f0f2f5 !important; }
+        .dark .nav-link.text-gray-600:hover { background-color: var(--light-bg) !important; }
+        .dark .active-nav { background-color: var(--primary-glow) !important; color: white !important; }
+        .dark input, .dark select, .dark textarea { background-color: var(--light-bg); border-color: #4a5568; color: white; }
     </style>
 </head>
-<body>
-    <div id="bg-particles"></div>
+<body class="text-gray-800">
+    
+    <!-- Background Canvas and Custom Cursor -->
+    <canvas id="bg-canvas"></canvas>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
 
-    <nav>
-        <div class="logo">
-            <i class="fas fa-rocket"></i>
-            <span>RewardRush</span>
+    <!-- Sidebar (Desktop Only) -->
+    <aside id="desktop-sidebar" class="hidden md:flex flex-col justify-between w-64 bg-white fixed top-0 left-0 h-full z-40 transition-all duration-300">
+        <div>
+            <!-- Sidebar Header -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <div class="flex items-center text-2xl font-semibold text-gray-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                    <span class="sidebar-text ml-2">RewardRush</span>
+                </div>
+                <button id="sidebar-toggle" class="p-2 rounded-md hover:bg-gray-100">
+                    <i class="fas fa-chevron-left transition-transform duration-300"></i>
+                </button>
+            </div>
+            <!-- Navigation -->
+            <nav class="p-4">
+                <ul>
+                    <li class="mb-4"><a href="groweasy.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-compass w-6 text-center mr-4"></i><span class="sidebar-text">Quests</span></a></li>
+                    <li class="mb-4"><a href="affiliate.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-briefcase w-6 text-center mr-4"></i><span class="sidebar-text">Jobs</span></a></li>
+                    <li class="mb-4"><a href="education.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-book-open w-6 text-center mr-4"></i><span class="sidebar-text">Learn</span></a></li>
+                    <li class="mb-4"><a href="founder.html" class="nav-link flex items-center text-lg font-semibold py-3 px-4 rounded-lg active-nav"><i class="fas fa-tools w-6 text-center mr-4"></i><span class="sidebar-text">Build</span></a></li>
+                    <li class="mb-4"><a href="profile.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-user w-6 text-center mr-4"></i><span class="sidebar-text">Profile</span></a></li>
+                </ul>
+            </nav>
         </div>
-        <div class="nav-menu" id="nav-menu">
-            <a href="groweasy.html"><i class="fas fa-tasks"></i> Quests</a>
-            <a href="affiliate.html"><i class="fas fa-users"></i> Jobs</a>
-            <a href="education.html"><i class="fas fa-graduation-cap"></i> Education</a>
-            <a href="founder.html" class="active"><i class="fas fa-user-tie"></i> Founder</a>
-            <a href="profile.html" class="profile-btn">
-                <i class="fas fa-user"></i>
+        <!-- Social & Theme Toggle -->
+        <div class="p-4">
+            <div class="sidebar-text border-t border-gray-200 pt-4">
+                <h3 class="text-xs uppercase text-gray-500 font-bold mb-4">Follow Us</h3>
+                <ul>
+                    <li class="mb-3"><a href="#" class="flex items-center text-gray-700 hover:text-purple-600 font-bold"><i class="fab fa-facebook-f w-6 text-center mr-3 text-lg"></i><span>Facebook</span></a></li>
+                    <li class="mb-3"><a href="#" class="flex items-center text-gray-700 hover:text-purple-600 font-bold"><i class="fab fa-twitter w-6 text-center mr-3 text-lg"></i><span>X</span></a></li>
+                    <li><a href="#" class="flex items-center text-gray-700 hover:text-purple-600 font-bold"><i class="fab fa-linkedin-in w-6 text-center mr-3 text-lg"></i><span>LinkedIn</span></a></li>
+                </ul>
+            </div>
+            <div class="sidebar-text border-t border-gray-200 pt-4 mt-4">
+                <button id="theme-toggle" class="w-full flex items-center text-gray-700 hover:text-purple-600 font-bold">
+                    <i id="theme-icon" class="fas fa-moon w-6 text-center mr-3 text-lg"></i>
+                    <span>Switch Theme</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
+        
+        <!-- Header Section (Mobile Only, Sticky) -->
+        <div class="md:hidden sticky top-0 z-30 bg-gray-100/80 backdrop-blur-sm pt-4">
+             <div class="px-4">
+                <header class="bg-white shadow-md p-4 flex items-center justify-center rounded-2xl">
+                    <div class="text-xl font-semibold flex items-center">
+                        <a href="/" class="gradient-text flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                            RewardRush
+                        </a>
+                    </div>
+                </header>
+            </div>
+        </div>
+
+        <!-- App Container -->
+        <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 md:pt-8">
+
+            <!-- Main Content -->
+            <main>
+                <!-- Build Page Header -->
+                <div class="text-center mb-12 reveal">
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 font-montserrat">Build Your Next Big Thing</h1>
+                    <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">From concept to launch, find everything you need to build successful products. Step-by-step guides, expert advice, and powerful resources are right at your fingertips.</p>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="mb-8 reveal">
+                    <div class="relative max-w-xl mx-auto">
+                        <input type="search" id="build-search" placeholder="Search for a product to build (e.g., 'DEX', 'AI tool')..." class="w-full p-4 pl-12 text-lg border border-gray-300 rounded-full focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-shadow shadow-md hover:shadow-lg">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+
+                <!-- Product Categories -->
+                <div id="product-categories" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 reveal">
+                    <!-- Category Card Example: CEX -->
+                    <a href="build-guide.html" class="category-card block bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-purple-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-exchange-alt text-2xl text-purple-600"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800">CEX</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4">Build a centralized exchange with our comprehensive guide, covering everything from security to user experience.</p>
+                        <span class="font-semibold text-purple-600 hover:underline">View Guide <i class="fas fa-arrow-right ml-1"></i></span>
+                    </a>
+
+                    <!-- Category Card Example: DEX -->
+                    <a href="build-guide.html" class="category-card block bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-green-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-cogs text-2xl text-green-600"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800">DEX</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4">Learn to create a decentralized exchange on the blockchain, with a focus on smart contracts and liquidity pools.</p>
+                        <span class="font-semibold text-green-600 hover:underline">View Guide <i class="fas fa-arrow-right ml-1"></i></span>
+                    </a>
+
+                    <!-- Category Card Example: AI Tools -->
+                    <a href="build-guide.html" class="category-card block bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-robot text-2xl text-blue-600"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-800">AI Tools</h3>
+                        </div>
+                        <p class="text-gray-600 mb-4">Dive into the world of Artificial Intelligence. Build your own AI-powered applications from scratch.</p>
+                        <span class="font-semibold text-blue-600 hover:underline">View Guide <i class="fas fa-arrow-right ml-1"></i></span>
+                    </a>
+                    
+                     <!-- More categories can be added here -->
+                </div>
+
+                <!-- Spacer for mobile footer -->
+                <div class="h-20 md:hidden"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar (Mobile Only) -->
+    <footer class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-t-md p-2 z-40">
+        <div class="flex justify-around items-center">
+            <a href="groweasy.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
+                <i class="fas fa-compass text-lg"></i>
+                <span class="text-xs mt-1">Quests</span>
+            </a>
+            <a href="affiliate.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
+                <i class="fas fa-briefcase text-lg"></i>
+                <span class="text-xs mt-1">Jobs</span>
+            </a>
+            <a href="education.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
+                <i class="fas fa-book-open text-lg"></i>
+                <span class="text-xs mt-1">Learn</span>
+            </a>
+            <a href="founder.html" class="flex flex-col items-center text-purple-600 w-1/5">
+                <i class="fas fa-tools text-lg"></i>
+                <span class="text-xs font-semibold mt-1">Build</span>
+            </a>
+            <a href="profile.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
+                <i class="fas fa-user text-lg"></i>
+                <span class="text-xs mt-1">Profile</span>
             </a>
         </div>
-    </nav>
+    </footer>
 
-    <div class="container">
-        <div class="founder-header">
-            <h2>Founder Resource Hub</h2>
-            <p>Essential tools, insights, and resources to help you build and grow your crypto project</p>
-        </div>
-        
-        <!-- Projects Section -->
-        <div class="section-card animate-in" id="projects-section">
-            <div class="section-header active" onclick="toggleSection('projects-content')">
-                <h3><i class="fas fa-box-open"></i> Project Resources</h3>
-                <i class="fas fa-chevron-down toggle-icon"></i>
-            </div>
-            <div class="section-content active" id="projects-content">
-                <div class="project-grid" id="project-grid">
-                    <!-- Projects will be populated dynamically -->
-                </div>
-                <div class="see-more">
-                    <button class="see-more-btn" id="load-more-projects" onclick="loadMoreProjects()">
-                        <i class="fas fa-plus"></i> Show More Projects
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Founders Section -->
-        <div class="section-card animate-in delay-1" id="founders-section">
-            <div class="section-header" onclick="toggleSection('founders-content')">
-                <h3><i class="fas fa-user-tie"></i> Founder Network</h3>
-                <i class="fas fa-chevron-down toggle-icon"></i>
-            </div>
-            <div class="section-content" id="founders-content">
-                <div class="founder-filters">
-                    <div class="filter-group">
-                        <label for="founder-category"><i class="fas fa-tag"></i> Expertise</label>
-                        <select id="founder-category" class="filter-select" onchange="filterFounders()">
-                            <option value="all">All Categories</option>
-                            <option value="blockchain">Blockchain</option>
-                            <option value="defi">DeFi</option>
-                            <option value="nft">NFT</option>
-                            <option value="exchange">Exchange</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="founder-rate"><i class="fas fa-dollar-sign"></i> Rate</label>
-                        <select id="founder-rate" class="filter-select" onchange="filterFounders()">
-                            <option value="all">Any Rate</option>
-                            <option value="50">Under $50/hr</option>
-                            <option value="100">$50-$100/hr</option>
-                            <option value="200">$100-$200/hr</option>
-                            <option value="201">Over $200/hr</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="founder-sort"><i class="fas fa-sort"></i> Sort By</label>
-                        <select id="founder-sort" class="filter-select" onchange="filterFounders()">
-                            <option value="rating">Highest Rated</option>
-                            <option value="rate-low">Rate: Low to High</option>
-                            <option value="rate-high">Rate: High to Low</option>
-                            <option value="name">Alphabetical</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="founder-grid" id="founder-grid">
-                    <!-- Founders will be populated dynamically -->
-                </div>
-                <div class="see-more">
-                    <button class="see-more-btn" id="load-more-founders" onclick="loadMoreFounders()">
-                        <i class="fas fa-plus"></i> Show More Founders
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="mobile-nav">
-        <a href="groweasy.html"><i class="fas fa-tasks"></i></a>
-        <a href="affiliate.html"><i class="fas fa-users"></i></a>
-        <a href="education.html"><i class="fas fa-graduation-cap"></i></a>
-        <a href="founder.html" class="active"><i class="fas fa-user-tie"></i></a>
-        <a href="profile.html"><i class="fas fa-user"></i></a>
-    </div>
-
-    <!-- Founder Modal -->
-    <div class="modal" id="founder-modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeFounderModal()">×</span>
-            <div class="founder-profile-header">
-                <img id="founder-modal-avatar" src="" alt="Founder Avatar" class="founder-avatar-large">
-                <div>
-                    <h3 id="founder-modal-name"></h3>
-                    <p id="founder-modal-title" class="expert-title"></p>
-                    <p id="founder-modal-rate" class="expert-rate"></p>
-                </div>
-            </div>
-            
-            <div class="profile-section">
-                <h4><i class="fas fa-user-tie"></i> About</h4>
-                <p id="founder-modal-bio" class="profile-bio"></p>
-            </div>
-            
-            <div class="profile-section">
-                <h4><i class="fas fa-share-alt"></i> Social Links</h4>
-                <div class="social-links" id="founder-modal-socials"></div>
-            </div>
-            
-            <div class="profile-section">
-                <h4><i class="fas fa-briefcase"></i> Portfolio</h4>
-                <div class="portfolio-items" id="founder-modal-portfolio"></div>
-            </div>
-            
-            <button class="book-btn" onclick="openBookingModalFromProfile()">
-                <i class="fas fa-calendar-check"></i> Book Session
-            </button>
-        </div>
-    </div>
-
-    <!-- Booking Modal -->
-    <div class="modal" id="booking-modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeBookingModal()">×</span>
-            <h3>Book a Session with <span id="booking-founder-name"></span></h3>
-            <form id="booking-form" class="booking-form">
-                <input type="hidden" id="booking-founder-id">
-                <div class="form-group">
-                    <label for="booking-reason">Reason for booking</label>
-                    <textarea id="booking-reason" required placeholder="Explain what you hope to gain from this session"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="booking-date">Preferred date & time</label>
-                    <input type="datetime-local" id="booking-date" required>
-                </div>
-                <button type="submit" class="submit-booking">
-                    <span id="submit-text">Submit Request</span>
-                    <span id="submit-spinner" class="loading-spinner" style="display: none;"></span>
-                </button>
-            </form>
-        </div>
-    </div>
 
     <script>
-        // Global variables
-        let currentFounderId = null;
-        
-        // Pagination variables
-        let projectsPage = 1;
-        let foundersPage = 1;
-        const itemsPerPage = 6;
-        let allProjects = [];
-        let allFounders = [];
-        let filteredFounders = [];
+        document.addEventListener('DOMContentLoaded', () => {
 
-        // --- Background Animation ---
-        function createBackgroundParticles() {
-            const container = document.getElementById('bg-particles');
-            const particleCount = Math.floor(window.innerWidth / 20);
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('bg-particle');
+            // Encapsulate all logic in an App object
+            const App = {
+                // --- UI ELEMENTS ---
+                elements: {
+                    sidebarToggleBtn: document.getElementById('sidebar-toggle'),
+                    themeToggleBtn: document.getElementById('theme-toggle'),
+                    themeIcon: document.getElementById('theme-icon'),
+                },
                 
-                const size = Math.random() * 5 + 1;
-                const posX = Math.random() * window.innerWidth;
-                const posY = Math.random() * window.innerHeight;
-                const opacity = Math.random() * 0.2 + 0.05;
-                const duration = Math.random() * 20 + 10;
-                const delay = Math.random() * 10;
+                // --- METHODS ---
                 
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                particle.style.left = `${posX}px`;
-                particle.style.top = `${posY}px`;
-                particle.style.opacity = opacity;
-                particle.style.animationDuration = `${duration}s`;
-                particle.style.animationDelay = `-${delay}s`;
+                /**
+                 * Initializes the application.
+                 */
+                init() {
+                    this.initTheme();
+                    this.bindSidebarToggle();
+                },
+
+                /**
+                 * Initializes and binds events for the theme toggle.
+                 */
+                initTheme() {
+                    const themeToggleBtn = this.elements.themeToggleBtn;
+                    const themeIcon = this.elements.themeIcon;
+                    const htmlEl = document.documentElement;
+
+                    if (localStorage.getItem('theme') === 'dark') {
+                        htmlEl.classList.add('dark');
+                        themeIcon.classList.replace('fa-moon', 'fa-sun');
+                    } else {
+                        htmlEl.classList.remove('dark');
+                        themeIcon.classList.replace('fa-sun', 'fa-moon');
+                    }
+                    
+                    if (htmlEl.classList.contains('dark')) {
+                        if (!window.threeJsInitialized) {
+                            initThreeJs();
+                            window.threeJsInitialized = true;
+                        }
+                    }
+
+                    themeToggleBtn.addEventListener('click', () => {
+                        htmlEl.classList.toggle('dark');
+                        if (htmlEl.classList.contains('dark')) {
+                            localStorage.setItem('theme', 'dark');
+                            themeIcon.classList.replace('fa-moon', 'fa-sun');
+                            if(!window.threeJsInitialized) {
+                                initThreeJs();
+                                window.threeJsInitialized = true;
+                            }
+                        } else {
+                            localStorage.setItem('theme', 'light');
+                            themeIcon.classList.replace('fa-sun', 'fa-moon');
+                        }
+                    });
+                },
+
+                /**
+                 * Binds the click event for the sidebar toggle button.
+                 */
+                bindSidebarToggle() {
+                    if (!this.elements.sidebarToggleBtn) return;
+
+                    this.elements.sidebarToggleBtn.addEventListener('click', () => {
+                        document.body.classList.toggle('sidebar-collapsed');
+                    });
+                },
+            };
+
+            // --- Additional Animations ---
+            window.threeJsInitialized = false;
+
+            // Scroll reveal animation
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            document.querySelectorAll('.reveal').forEach(el => {
+                observer.observe(el);
+            });
+
+            // Three.js Particle Background
+            let scene, camera, renderer, particles, mouseX = 0, mouseY = 0;
+            let windowHalfX = window.innerWidth / 2;
+            let windowHalfY = window.innerHeight / 2;
+
+            function initThreeJs() {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+                camera.position.z = 1000;
+
+                const particleCount = 2000;
+                const particlesGeometry = new THREE.BufferGeometry();
+                const posArray = new Float32Array(particleCount * 3);
                 
-                container.appendChild(particle);
-            }
-        }
-
-        // Check session
-        async function checkSession() {
-            // Mocking session check
-            return { loggedIn: true };
-        }
-
-        function toggleSection(sectionId) {
-            const sectionContent = document.getElementById(sectionId);
-            const sectionHeader = sectionContent.previousElementSibling;
-            
-            sectionHeader.classList.toggle('active');
-            sectionContent.classList.toggle('active');
-        }
-
-        // Projects Section
-        async function populateProjects() {
-            // Mock data
-            allProjects = [
-                { name: 'DeFi Lending Protocol', tools: 'Solidity, Hardhat, Ethers.js', brands: 'AAVE, Compound', regulations: 'Varies by jurisdiction', competitors: 'MakerDAO', uniqueness: 'Unique interest rate model', resources: [{name: 'Whitepaper', url: '#'}] },
-                { name: 'NFT Marketplace', tools: 'React, Web3.js, IPFS', brands: 'OpenSea, Rarible', regulations: 'Emerging regulations', competitors: 'LooksRare', uniqueness: 'Low transaction fees', resources: [{name: 'GitHub', url: '#'}] }
-            ];
-            displayProjects();
-        }
-
-        function displayProjects() {
-            const projectGrid = document.getElementById('project-grid');
-            const projectsToShow = allProjects.slice(0, projectsPage * itemsPerPage);
-            
-            projectGrid.innerHTML = projectsToShow.map((project, index) => `
-                <div class="project-card animate-in delay-${index % 3}">
-                    <h3>${project.name}</h3>
-                    <div class="project-details">
-                        <div class="detail-item"><h4><i class="fas fa-tools"></i> Tools</h4><p>${project.tools}</p></div>
-                        <div class="detail-item"><h4><i class="fas fa-link"></i> Resources</h4><div class="resource-list">${project.resources.map(res => `<a href="${res.url}" target="_blank" class="resource-link"><i class="fas ${getResourceIcon(res.url)}"></i> ${res.name}</a>`).join('')}</div></div>
-                    </div>
-                </div>
-            `).join('');
-            
-            if (projectsToShow.length >= allProjects.length) {
-                document.getElementById('load-more-projects').style.display = 'none';
-            }
-        }
-
-        function loadMoreProjects() {
-            projectsPage++;
-            displayProjects();
-        }
-
-        function getResourceIcon(url) {
-            if (url.includes('youtube')) return 'fa-video';
-            if (url.includes('github')) return 'fa-code-branch';
-            return 'fa-external-link-alt';
-        }
-
-        // Founders Section
-        async function populateFounders() {
-            // Mock data
-            allFounders = [
-                { id: '1', name: 'Vitalik Buterin', title: 'Co-founder of Ethereum', rate: 500, avatar: 'https://placehold.co/60x60/6c5ce7/white?text=VB', bio: 'Known for creating Ethereum...', categories: ['blockchain', 'defi'], rating: 5.0 },
-                { id: '2', name: 'Gavin Wood', title: 'Co-founder of Ethereum & Polkadot', rate: 450, avatar: 'https://placehold.co/60x60/00cec9/white?text=GW', bio: 'Invented Solidity...', categories: ['blockchain', 'development'], rating: 4.9 }
-            ];
-            filteredFounders = [...allFounders];
-            filterFounders();
-        }
-
-        function filterFounders() {
-            // Filtering logic...
-            displayFounders();
-        }
-
-        function displayFounders() {
-            const founderGrid = document.getElementById('founder-grid');
-            const foundersToShow = filteredFounders.slice(0, foundersPage * itemsPerPage);
-
-            founderGrid.innerHTML = foundersToShow.map((founder, index) => `
-                <div class="founder-card animate-in delay-${index % 3}">
-                    <div class="founder-header">
-                        <img src="${founder.avatar}" alt="${founder.name}" class="founder-avatar">
-                        <div><h4 class="founder-name">${founder.name}</h4><p class="founder-title">${founder.title}</p></div>
-                    </div>
-                    <p class="founder-bio">${founder.bio}</p>
-                    <div class="founder-meta">
-                        <span class="founder-rate">$${founder.rate}/hour</span>
-                        <div class="founder-actions">
-                            <button class="view-profile-btn" onclick="openFounderModal('${founder.id}')">Profile</button>
-                            <button class="book-btn" onclick="openBookingModal('${founder.id}')">Book</button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            if (foundersToShow.length >= filteredFounders.length) {
-                document.getElementById('load-more-founders').style.display = 'none';
-            }
-        }
-
-        function loadMoreFounders() {
-            foundersPage++;
-            displayFounders();
-        }
-
-        // Modals
-        function openFounderModal(founderId) {
-            const founder = allFounders.find(f => f.id === founderId);
-            if (!founder) return;
-            currentFounderId = founderId;
-            // Populate and show founder modal
-            document.getElementById('founder-modal').style.display = 'flex';
-        }
-
-        function closeFounderModal() {
-            document.getElementById('founder-modal').style.display = 'none';
-        }
-
-        function openBookingModal(founderId) {
-            const founder = allFounders.find(f => f.id === founderId);
-            if(!founder) return;
-            currentFounderId = founderId;
-            document.getElementById('booking-founder-name').textContent = founder.name;
-            document.getElementById('booking-modal').style.display = 'flex';
-        }
-        
-        function openBookingModalFromProfile() {
-            closeFounderModal();
-            if (currentFounderId) {
-                openBookingModal(currentFounderId);
-            }
-        }
-
-        function closeBookingModal() {
-            document.getElementById('booking-modal').style.display = 'none';
-        }
-
-        async function handleBookingSubmit(e) {
-            e.preventDefault();
-            alert('Booking submitted!');
-            closeBookingModal();
-        }
-
-        function setupEventListeners() {
-            document.getElementById('booking-form').addEventListener('submit', handleBookingSubmit);
-        }
-
-        // Initialize on load
-        async function init() {
-            const session = await checkSession();
-            if (session.loggedIn) {
-                createBackgroundParticles();
-                populateProjects();
-                populateFounders();
-                setupEventListeners();
-                
-                // Auto-expand first section
-                const firstHeader = document.querySelector('.section-header');
-                if (firstHeader) {
-                    firstHeader.click();
+                for (let i = 0; i < particleCount * 3; i++) {
+                    posArray[i] = (Math.random() - 0.5) * (Math.random() * 2000);
                 }
-            } else {
-                window.location.href = '/auth.html';
-            }
-        }
+                particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+                
+                const material = new THREE.PointsMaterial({
+                    size: 1.5,
+                    color: 0x8b00ff,
+                    transparent: true,
+                    opacity: 0.7,
+                    blending: THREE.AdditiveBlending
+                });
 
-        window.onload = init;
+                particles = new THREE.Points(particlesGeometry, material);
+                scene.add(particles);
+
+                renderer = new THREE.WebGLRenderer({
+                    canvas: document.getElementById('bg-canvas'),
+                    alpha: true
+                });
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setClearColor(0x000000, 0);
+
+                document.body.addEventListener('pointermove', onDocumentMouseMove, false);
+                window.addEventListener('resize', onWindowResize, false);
+
+                animateThreeJs();
+            }
+
+            function animateThreeJs() {
+                requestAnimationFrame(animateThreeJs);
+                renderThreeJs();
+            }
+
+
+            function renderThreeJs() {
+                if (!renderer) return;
+                const time = Date.now() * 0.00005;
+                camera.position.x += (mouseX - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                
+                particles.rotation.x = time * 0.1;
+                particles.rotation.y = time * 0.2;
+
+                renderer.render(scene, camera);
+            }
+
+            function onDocumentMouseMove(event) {
+                mouseX = event.clientX - windowHalfX;
+                mouseY = event.clientY - windowHalfY;
+            }
+
+            function onWindowResize() {
+                if (!renderer) return;
+                windowHalfX = window.innerWidth / 2;
+                windowHalfY = window.innerHeight / 2;
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+            
+            // Custom cursor
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorOutline = document.querySelector('.cursor-outline');
+
+            window.addEventListener('mousemove', (e) => {
+                const posX = e.clientX;
+                const posY = e.clientY;
+
+                cursorDot.style.left = `${posX}px`;
+                cursorDot.style.top = `${posY}px`;
+                
+                cursorOutline.animate({
+                    left: `${posX}px`,
+                    top: `${posY}px`
+                }, { duration: 500, fill: "forwards" });
+            });
+            
+            document.querySelectorAll('a, button, input, .category-card, .expert-card').forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursorDot.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                    cursorDot.style.backgroundColor = 'var(--secondary-glow)';
+                    cursorOutline.style.transform = 'translate(-50%, -50%) scale(1.2)';
+                });
+                
+                el.addEventListener('mouseleave', () => {
+                    cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
+                    cursorDot.style.backgroundColor = 'var(--accent-glow)';
+                    cursorOutline.style.transform = 'translate(-50%, -50%) scale(1)';
+                });
+            });
+
+            // Start the application
+            App.init();
+        });
     </script>
 </body>
 </html>
