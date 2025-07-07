@@ -984,5 +984,7 @@ app.use((req, res, next) => {
     next();
 });
 
+// Server entry point: start listening for incoming requests
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
+});
