@@ -84,6 +84,7 @@
         .tab-button {
             transition: all 0.3s ease;
             border-bottom: 3px solid transparent;
+            white-space: nowrap;
         }
         .tab-button.active {
             color: var(--purple-dark);
@@ -97,6 +98,16 @@
             display: block;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Responsive adjustments */
+        @media (max-width: 767px) {
+            .cursor-dot, .cursor-outline {
+                display: none;
+            }
+            body {
+                cursor: auto;
+            }
+        }
 
     </style>
 </head>
@@ -140,15 +151,15 @@
 
     <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
         
-        <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 md:pt-8">
             
             <div id="build-home-page">
                 <main>
-                    <div class="text-center mb-16 reveal">
-                        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 font-montserrat">Build Your Next Big Thing</h1>
-                        <p class="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">From concept to launch, find everything you need to build successful products. Step-by-step guides, expert advice, and powerful resources are right at your fingertips.</p>
+                    <div class="text-center mb-8 md:mb-16 reveal">
+                        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 font-montserrat">Build Your Next Big Thing</h1>
+                        <p class="mt-4 text-base md:text-lg text-gray-600 max-w-2xl mx-auto">From concept to launch, find everything you need to build successful products.</p>
                     </div>
-                    <div id="product-categories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 reveal"></div>
+                    <div id="product-categories-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 reveal"></div>
                 </main>
             </div>
 
@@ -156,15 +167,17 @@
                 <main>
                     <div class="mb-8 reveal">
                         <button onclick="showBuildHome()" class="text-purple-600 hover:text-purple-800 font-semibold mb-6 inline-block transition-transform hover:scale-105"><i class="fas fa-arrow-left mr-2"></i>Back to Build Home</button>
-                        <h1 id="guide-title" class="text-4xl md:text-5xl font-bold text-gray-900 font-montserrat"></h1>
-                        <p id="guide-description" class="mt-4 text-lg text-gray-600 max-w-3xl"></p>
+                        <h1 id="guide-title" class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 font-montserrat"></h1>
+                        <p id="guide-description" class="mt-4 text-base md:text-lg text-gray-600 max-w-3xl"></p>
                     </div>
 
                     <!-- Tabs -->
                     <div class="border-b border-gray-200 mb-8 reveal">
-                        <nav id="tabs-container" class="-mb-px flex space-x-8" aria-label="Tabs">
-                            <!-- Tab buttons will be injected here -->
-                        </nav>
+                        <div class="overflow-x-auto pb-1">
+                            <nav id="tabs-container" class="-mb-px flex space-x-6 sm:space-x-8" aria-label="Tabs">
+                                <!-- Tab buttons will be injected here -->
+                            </nav>
+                        </div>
                     </div>
 
                     <!-- Tab Content Panels -->
@@ -375,14 +388,12 @@
                 Object.keys(product.tabs).forEach((tabKey, index) => {
                     const tabData = product.tabs[tabKey];
 
-                    // Create Tab Button
                     const tabButton = document.createElement('button');
-                    tabButton.className = `tab-button py-4 px-1 text-lg font-semibold text-gray-500 hover:text-purple-700 ${index === 0 ? 'active' : ''}`;
+                    tabButton.className = `tab-button py-4 px-1 text-base sm:text-lg font-semibold text-gray-500 hover:text-purple-700 ${index === 0 ? 'active' : ''}`;
                     tabButton.dataset.tab = tabKey;
                     tabButton.innerHTML = `<i class="fas ${tabData.icon} mr-2"></i> ${tabData.title}`;
                     tabsContainer.appendChild(tabButton);
 
-                    // Create Tab Content Panel
                     const tabContent = document.createElement('div');
                     tabContent.id = `tab-content-${tabKey}`;
                     tabContent.className = `tab-content ${index === 0 ? 'active' : ''}`;
@@ -393,10 +404,10 @@
                         tabData.content.forEach((item, i) => {
                             contentHTML += `
                                 <div class="flex items-start">
-                                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-${product.color}-100 dark:bg-gray-700 text-${product.color}-600 dark:text-${product.color}-400 flex items-center justify-center font-bold text-xl">${i + 1}</div>
-                                    <div class="ml-4">
-                                        <h3 class="text-xl font-bold text-gray-800">${item.title}</h3>
-                                        <p class="text-gray-600 mt-1">${item.content}</p>
+                                    <div class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-${product.color}-100 dark:bg-gray-700 text-${product.color}-600 dark:text-${product.color}-400 flex items-center justify-center font-bold text-lg sm:text-xl">${i + 1}</div>
+                                    <div class="ml-3 sm:ml-4">
+                                        <h3 class="text-lg sm:text-xl font-bold text-gray-800">${item.title}</h3>
+                                        <p class="text-gray-600 mt-1 text-sm sm:text-base">${item.content}</p>
                                     </div>
                                 </div>
                             `;
@@ -415,7 +426,7 @@
                         });
                         contentHTML += '</div>';
                     } else if (tabKey === 'experts') {
-                        contentHTML = '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 mt-8">';
+                        contentHTML = '<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-16 sm:gap-x-8 sm:gap-y-12 mt-8">';
                         tabData.expertIds.forEach(id => {
                             const expert = expertsData[id];
                             contentHTML += `
@@ -437,7 +448,6 @@
                     tabContentContainer.appendChild(tabContent);
                 });
 
-                // Add tab switching logic
                 tabsContainer.querySelectorAll('.tab-button').forEach(button => {
                     button.addEventListener('click', () => {
                         tabsContainer.querySelector('.active').classList.remove('active');
