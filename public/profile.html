@@ -4,426 +4,613 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - RewardRush</title>
+    
+    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        :root {
-            --primary: #8a63f2; --primary-light: #a78bfa; --secondary: #00f5d4; --accent: #ff5c8d;
-            --dark: #0f172a; --darker: #020617; --light: #f8fafc; --success: #10b981; --warning: #f59e0b;
-            --danger: #ef4444; --card-bg: rgba(15, 23, 42, 0.7); --border-radius: 12px;
-            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+         :root {
+            --primary-glow: #8b00ff;
+            --secondary-glow: #00f0ff;
+            --dark-bg: #0a0a15;
+            --mid-bg: #1a1a2e;
+            --light-bg: #2a2a3e;
         }
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(to bottom, var(--darker), var(--dark)); color: var(--light); min-height: 100vh; }
-        .gradient-text { background: linear-gradient(90deg, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .neon-shadow { box-shadow: 0 0 10px rgba(138, 99, 242, 0.5), 0 0 20px rgba(138, 99, 242, 0.3); }
-        .neon-border { border: 1px solid var(--primary); box-shadow: 0 0 10px rgba(138, 99, 242, 0.3); }
-        .badge-earned { filter: drop-shadow(0 0 8px rgba(138, 99, 242, 0.6)); }
-        .badge-locked { filter: grayscale(100%) brightness(0.5); }
-        .tab-active { border-bottom: 3px solid var(--primary); color: var(--primary-light); }
-        .progress-bar { background: linear-gradient(90deg, var(--primary), var(--accent)); }
-        .skeleton { background: linear-gradient(90deg, rgba(15, 23, 42, 0.5), rgba(30, 41, 59, 0.5), rgba(15, 23, 42, 0.5)); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        nav { background: rgba(30, 39, 46, 0.95); backdrop-filter: blur(10px); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
-        .logo { font-size: 1.8rem; font-weight: 700; background: linear-gradient(to right, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; color: transparent; display: flex; align-items: center; gap: 0.5rem; }
-        .logo i { font-size: 1.5rem; }
-        .nav-menu { display: flex; gap: 1.5rem; align-items: center; }
-        .nav-menu a { color: var(--light); text-decoration: none; font-size: 1rem; font-weight: 500; transition: var(--transition); padding: 0.5rem 1rem; border-radius: var(--border-radius); }
-        .nav-menu a:hover { color: var(--primary-light); background: rgba(108, 92, 231, 0.1); }
-        .nav-menu a.active { color: var(--primary-light); background: rgba(108, 92, 231, 0.2); }
-        .nav-menu .profile-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; transition: var(--transition); }
-        .nav-menu .profile-btn:hover { transform: scale(1.05); box-shadow: 0 0 10px rgba(108, 92, 231, 0.5); }
-        .hamburger { display: none; font-size: 1.5rem; cursor: pointer; color: var(--primary-light); z-index: 101; }
-        #earnings-filter-buttons .bg-primary {
-            background-color: var(--primary);
-            color: white;
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
         }
-        @media (max-width: 768px) { .nav-menu { display: none; flex-direction: column; position: absolute; top: 60px; left: 0; width: 100%; background: rgba(30, 39, 46, 0.95); padding: 1rem 0; } .nav-menu.open { display: flex; } .nav-menu a { width: 100%; text-align: center; padding: 1rem 0; } .hamburger { display: block; } }
+        .font-montserrat {
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar-collapsed #desktop-sidebar { width: 5.5rem; }
+        .sidebar-collapsed #main-content-wrapper { margin-left: 5.5rem; }
+        .sidebar-collapsed .sidebar-text { display: none; }
+        .sidebar-collapsed #sidebar-toggle i { transform: rotate(180deg); }
+        .sidebar-collapsed .nav-link { justify-content: center; }
+        .sidebar-collapsed .nav-link i { margin-right: 0; }
+        
+        /* Tab Styles */
+        .tab-button {
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-button.active {
+            color: var(--primary-glow);
+            border-color: var(--primary-glow);
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modal Styles */
+        .modal {
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            transition: transform 0.3s ease;
+            transform: scale(0.95);
+        }
+        .modal.flex .modal-content {
+            transform: scale(1);
+        }
+
+        /* Dark Mode Styles */
+        .dark body { background-color: var(--dark-bg); }
+        .dark .bg-white { background-color: var(--mid-bg) !important; }
+        .dark .bg-gray-100 { background-color: var(--dark-bg) !important; }
+        .dark .bg-gray-50 { background-color: var(--light-bg) !important; }
+        .dark .text-gray-900 { color: #f0f2f5 !important; }
+        .dark .text-gray-800 { color: #e2e8f0 !important; }
+        .dark .text-gray-700 { color: #a0aec0 !important; }
+        .dark .text-gray-600 { color: #cbd5e0 !important; }
+        .dark .text-gray-500 { color: #a0aec0 !important; }
+        .dark .border-gray-200 { border-color: #4a5568 !important; }
+        .dark .border-gray-300 { border-color: #4a5568 !important; }
+        .dark .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2); }
+        .dark .active-nav { background-color: var(--primary-glow) !important; color: white !important; }
+        .dark .nav-link:not(.active-nav):hover { background-color: var(--light-bg) !important; }
+        .dark .tab-button { color: #a0aec0; }
+        .dark .tab-button.active { color: white; border-color: var(--primary-glow); }
+        .dark input, .dark select, .dark textarea { background-color: var(--light-bg); border-color: #4a5568; color: white; }
+        .dark input[readonly] { background-color: #2d3748 !important; } /* More distinct readonly style */
+        .dark .toggle-bg:after { background-color: white; }
+        .dark input:checked + .toggle-bg { background-color: var(--primary-glow); border-color: var(--primary-glow); }
     </style>
 </head>
-<body class="bg-darker text-light">
-    <nav>
-        <div class="logo"> <i class="fas fa-rocket"></i> <span>RewardRush</span> </div>
-        <div class="hamburger" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
-        <div class="nav-menu" id="nav-menu">
-            <a href="groweasy.html"><i class="fas fa-tasks"></i> Quests</a>
-            <a href="affiliate.html"><i class="fas fa-users"></i>Jobs</a>
-            <a href="education.html"><i class="fas fa-graduation-cap"></i> Education</a>
-            <a href="founder.html"><i class="fas fa-user-tie"></i> Founder</a>
-            <a href="profile.html" class="profile-btn"><i class="fas fa-user"></i></a>
-        </div>
-    </nav>
+<body class="text-gray-800">
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-16">
+    <!-- Sidebar (Desktop Only) -->
+    <aside id="desktop-sidebar" class="hidden md:flex flex-col justify-between w-64 bg-white fixed top-0 left-0 h-full z-40 transition-all duration-300">
+        <div>
+            <!-- Sidebar Header -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <div class="flex items-center text-2xl font-semibold text-gray-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                    <span class="sidebar-text ml-2">RewardRush</span>
+                </div>
+                <button id="sidebar-toggle" class="p-2 rounded-md hover:bg-gray-100">
+                    <i class="fas fa-chevron-left transition-transform duration-300"></i>
+                </button>
+            </div>
+            <!-- Navigation -->
+            <nav class="p-4">
+                <ul>
+                    <li class="mb-4"><a href="groweasy.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-compass w-6 text-center mr-4"></i><span class="sidebar-text">Quests</span></a></li>
+                    <li class="mb-4"><a href="affiliate.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-briefcase w-6 text-center mr-4"></i><span class="sidebar-text">Jobs</span></a></li>
+                    <li class="mb-4"><a href="education.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-book-open w-6 text-center mr-4"></i><span class="sidebar-text">Learn</span></a></li>
+                    <li class="mb-4"><a href="founder.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-tools w-6 text-center mr-4"></i><span class="sidebar-text">Build</span></a></li>
+                    <li class="mb-4"><a href="#" class="nav-link flex items-center text-lg font-semibold py-3 px-4 rounded-lg active-nav"><i class="fas fa-user w-6 text-center mr-4"></i><span class="sidebar-text">Profile</span></a></li>
+                </ul>
+            </nav>
+        </div>
+        <!-- Theme Toggle -->
+        <div class="p-4 border-t border-gray-200">
+            <button id="theme-toggle" class="w-full flex items-center text-gray-700 hover:text-purple-600 font-bold">
+                <i id="theme-icon" class="fas fa-moon w-6 text-center mr-3 text-lg"></i>
+                <span class="sidebar-text">Switch Theme</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
         
-        <div id="profile-shareable-area" class="p-6 rounded-xl" style="background-color: var(--dark);">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-                <div class="flex items-center mb-4 md:mb-0">
-                    <div class="relative group">
-                        <img id="profileImage" class="h-20 w-20 rounded-full border-2 border-primary neon-shadow object-cover" src="" alt="Profile">
-                        <div id="uploadTrigger" class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                            <i class="fas fa-camera text-white text-xl"></i>
-                        </div>
-                    </div>
-                    <input type="file" id="imageUpload" class="hidden" accept="image/*">
-                    <div class="ml-4">
-                        <h1 id="profile-name" class="text-2xl font-bold skeleton rounded w-48">&nbsp;</h1>
-                        <div class="flex items-center mt-1">
-                            <span id="profile-username" class="text-gray-400 skeleton rounded w-32">&nbsp;</span>
-                            <span id="profile-level" class="ml-3 px-2 py-1 bg-gray-800 text-xs rounded-full text-primary font-bold skeleton w-12">&nbsp;</span>
-                            <span id="profile-title" class="ml-2 px-2 py-1 bg-primary/10 text-xs rounded-full text-primary font-bold skeleton w-40">&nbsp;</span>
-                        </div>
-                    </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Profile Header -->
+            <header class="bg-white shadow-lg rounded-2xl p-6 mb-8 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <img id="profile-avatar" src="https://i.pravatar.cc/150?img=12" alt="User Avatar" class="w-24 h-24 rounded-full border-4 border-purple-200 object-cover">
+                <div class="text-center sm:text-left flex-grow">
+                    <h1 id="profile-name" class="text-3xl font-bold text-gray-900 font-montserrat">John Doe</h1>
+                    <p id="profile-joindate" class="text-sm text-gray-500">Member since Jan 2024</p>
+                    <p id="profile-bio" class="text-gray-600 mt-2 text-sm max-w-xl">Lifelong learner and digital creator. Exploring the worlds of design, code, and marketing. Let's connect!</p>
                 </div>
-                <div class="flex space-x-3">
-                    <button id="share-profile-btn" class="px-4 py-2 bg-primary hover:bg-primary-light rounded-lg font-medium flex items-center neon-shadow">
-                        <i class="fas fa-share-alt mr-2"></i> Share Profile
-                    </button>
-                    <button class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium flex items-center"><i class="fas fa-cog mr-2"></i> Settings</button>
+                <button id="edit-profile-btn" class="bg-purple-100 text-purple-700 font-semibold py-2 px-5 rounded-lg hover:bg-purple-200 transition-colors flex-shrink-0">Edit Profile</button>
+            </header>
+
+            <!-- Tabs -->
+            <div class="mb-8">
+                <div class="border-b border-gray-200">
+                    <nav id="tabs-container" class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
+                        <button class="tab-button active py-4 px-1 text-base font-semibold" data-tab="overview">Overview</button>
+                        <button class="tab-button py-4 px-1 text-base font-semibold text-gray-500" data-tab="learning">My Learning</button>
+                        <button class="tab-button py-4 px-1 text-base font-semibold text-gray-500" data-tab="work">My Work</button>
+                        <button class="tab-button py-4 px-1 text-base font-semibold text-gray-500" data-tab="settings">Settings</button>
+                    </nav>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
-                    <div class="text-gray-400 text-sm">Total Earnings</div>
-                    <div class="text-2xl font-bold mt-1">$<span id="total-earnings" class="skeleton rounded inline-block w-24">&nbsp;</span></div>
-                </div>
-                <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
-                    <div class="text-gray-400 text-sm">Quests Completed</div>
-                    <div class="text-2xl font-bold mt-1"><span id="quests-completed" class="skeleton rounded inline-block w-12">&nbsp;</span></div>
-                </div>
-                <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
-                    <div class="text-gray-400 text-sm">Referrals</div>
-                    <div class="text-2xl font-bold mt-1"><span id="referrals-count" class="skeleton rounded inline-block w-12">&nbsp;</span></div>
-                    <div class="text-xs text-gray-500 mt-1">$<span id="referral-earnings">0.00</span> earned</div>
-                </div>
-                <div class="bg-card-bg rounded-xl p-4 border border-gray-800 neon-border">
-                    <div class="text-gray-400 text-sm">Streak</div>
-                    <div class="text-2xl font-bold mt-1"><span id="login-streak" class="skeleton rounded inline-block w-12">&nbsp;</span> days</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="border-b border-gray-800 mb-6 mt-8">
-            <div class="flex space-x-8">
-                <button id="overview-tab" class="py-3 px-1 font-medium tab-active">Overview</button>
-                <button id="refer-tab" class="py-3 px-1 font-medium text-gray-400 hover:text-white">Refer & Earn</button>
-                <button id="achievements-tab" class="py-3 px-1 font-medium text-gray-400 hover:text-white">Achievements</button>
-            </div>
-        </div>
-
-        <div id="tab-content">
-            <div id="overview-content" class="tab-pane active">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-card-bg rounded-xl p-6 border border-gray-800 neon-border lg:col-span-2">
-                        <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-lg font-bold">Earnings</h2>
-                            <div id="earnings-filter-buttons" class="flex space-x-1 sm:space-x-2">
-                                <button data-range="7d" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">7D</button>
-                                <button data-range="1m" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">1M</button>
-                                <button data-range="6m" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">6M</button>
-                                <button data-range="1y" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">1Y</button>
-                                <button data-range="all" class="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-700 rounded-md hover:bg-primary transition-colors">All</button>
+            <!-- Tab Content -->
+            <main id="tab-content-container">
+                <!-- Overview Tab -->
+                <div id="tab-content-overview" class="tab-content active">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2">
+                            <!-- Stats -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                                <div class="bg-white p-4 rounded-xl shadow-md text-center">
+                                    <p class="text-2xl font-bold text-purple-600">$1,250</p>
+                                    <p class="text-sm text-gray-500">Total Earnings</p>
+                                </div>
+                                <div class="bg-white p-4 rounded-xl shadow-md text-center">
+                                    <p class="text-2xl font-bold text-green-600">42</p>
+                                    <p class="text-sm text-gray-500">Quests Done</p>
+                                </div>
+                                <div class="bg-white p-4 rounded-xl shadow-md text-center">
+                                    <p class="text-2xl font-bold text-blue-600">8</p>
+                                    <p class="text-sm text-gray-500">Jobs Finished</p>
+                                </div>
+                                <div class="bg-white p-4 rounded-xl shadow-md text-center">
+                                    <p class="text-2xl font-bold text-yellow-600">3</p>
+                                    <p class="text-sm text-gray-500">Skills in Progress</p>
+                                </div>
+                            </div>
+                            <!-- Earnings Chart -->
+                            <div class="bg-white shadow-lg rounded-2xl p-6">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4">Earnings This Year</h3>
+                                <div class="relative h-80 md:h-96">
+                                    <canvas id="earningsChart"></canvas>
+                                </div>
                             </div>
                         </div>
-                        <div class="h-64"><canvas id="earningsChart"></canvas></div>
-                    </div>
-                    <div class="bg-card-bg rounded-xl p-6 border border-gray-800 neon-border">
-                        <h2 class="text-lg font-bold mb-4 text-center">Active Quests</h2>
-                        <div id="active-quests-list" class="space-y-4 flex items-center justify-center h-full">
-                           </div>
-                    </div>
-                    <div class="bg-card-bg rounded-xl p-6 border border-gray-800 neon-border lg:col-span-3">
-                        <h2 class="text-lg font-bold mb-4">Recent Activity</h2>
-                        <div id="recent-activity-list" class="space-y-3">
+                        <div class="lg:col-span-1">
+                            <!-- Recent Activity -->
+                            <div class="bg-white shadow-lg rounded-2xl p-6 h-full">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4">Recent Activity</h3>
+                                <ul id="recent-activity-list" class="space-y-4">
+                                    <!-- Activity items will be injected by JS -->
+                                </ul>
                             </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+
+                <!-- My Learning Tab -->
+                <div id="tab-content-learning" class="tab-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- My Skills -->
+                        <div class="bg-white shadow-lg rounded-2xl p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">My Skills</h3>
+                            <div id="my-skills-list" class="space-y-4">
+                                <!-- Skills will be injected by JS -->
+                            </div>
+                        </div>
+                        <!-- Bookings & Study Plan -->
+                        <div class="space-y-8">
+                            <div class="bg-white shadow-lg rounded-2xl p-6">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4">My Study Plan</h3>
+                                <div class="text-center">
+                                    <p class="text-gray-600">Next session (Graphic Design):</p>
+                                    <p class="text-2xl font-bold text-purple-600">Tomorrow at 7:00 PM</p>
+                                </div>
+                            </div>
+                            <div class="bg-white shadow-lg rounded-2xl p-6">
+                                <h3 class="text-xl font-bold text-gray-800 mb-4">Expert Bookings</h3>
+                                <ul id="expert-bookings-list" class="space-y-3">
+                                    <!-- Bookings will be injected by JS -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Work Tab -->
+                <div id="tab-content-work" class="tab-content">
+                    <div class="bg-white shadow-lg rounded-2xl p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Transaction History</h3>
+                        <p class="text-gray-600">A detailed log of all your earnings and withdrawals.</p>
+                        <!-- In a real app, this would be a filterable table -->
+                        <div id="transaction-history-list" class="mt-4 space-y-3">
+                             <!-- Transactions will be injected by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="tab-content-settings" class="tab-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Account Settings -->
+                        <div class="bg-white shadow-lg rounded-2xl p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Account</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                                    <input type="text" id="username" value="johndoe" readonly class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed">
+                                </div>
+                                <div>
+                                    <label for="full-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                                    <input type="text" id="full-name" value="John Doe" readonly class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed">
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                                    <input type="email" id="email" value="john.doe@example.com" readonly class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed">
+                                </div>
+                                <div>
+                                    <label for="password" class="block text-sm font-medium text-gray-700">New Password</label>
+                                    <input type="password" id="password" placeholder="••••••••" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                </div>
+                                <button class="bg-purple-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-purple-700">Update Password</button>
+                            </div>
+                        </div>
+                        <!-- Notification Settings -->
+                        <div class="bg-white shadow-lg rounded-2xl p-6">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Notifications</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-700">New Quests & Jobs</span>
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only" checked>
+                                        <div class="relative w-11 h-6 bg-gray-200 rounded-full border border-gray-200 toggle-bg"><div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform transform"></div></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-700">Study Reminders</span>
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only" checked>
+                                        <div class="relative w-11 h-6 bg-gray-200 rounded-full border border-gray-200 toggle-bg"><div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform transform"></div></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-gray-700">Platform Updates (Email)</span>
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only">
+                                        <div class="relative w-11 h-6 bg-gray-200 rounded-full border border-gray-200 toggle-bg"><div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform transform"></div></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
-    </main>
+    </div>
+    
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="modal fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Edit Profile</h2>
+                <button id="close-modal-btn" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+            </div>
+            <form id="edit-profile-form">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
+                    <div class="flex items-center space-x-4">
+                        <img id="avatar-preview" src="https://i.pravatar.cc/150?img=12" class="w-16 h-16 rounded-full object-cover">
+                        <label for="avatar-upload" class="cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                            <span>Change</span>
+                            <input id="avatar-upload" name="avatar-upload" type="file" class="sr-only" accept="image/*">
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label for="modal-profile-bio" class="block text-sm font-medium text-gray-700 mb-1">Your Bio</label>
+                    <textarea id="modal-profile-bio" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Tell us a little about yourself..."></textarea>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" id="cancel-edit-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Cancel</button>
+                    <button type="submit" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Nav -->
+    <footer class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-t-md p-2 z-40 border-t border-gray-200">
+        <div class="flex justify-around items-center">
+            <a href="groweasy.html" class="flex flex-col items-center text-gray-500 w-1/5"><i class="fas fa-compass text-lg"></i><span class="text-xs mt-1">Quests</span></a>
+            <a href="affiliate.html" class="flex flex-col items-center text-gray-500 w-1/5"><i class="fas fa-briefcase text-lg"></i><span class="text-xs mt-1">Jobs</span></a>
+            <a href="education.html" class="flex flex-col items-center text-gray-500 w-1/5"><i class="fas fa-book-open text-lg"></i><span class="text-xs mt-1">Learn</span></a>
+            <a href="founder.html" class="flex flex-col items-center text-gray-500 w-1/5"><i class="fas fa-tools text-lg"></i><span class="text-xs mt-1">Build</span></a>
+            <a href="#" class="flex flex-col items-center text-purple-600 w-1/5"><i class="fas fa-user text-lg"></i><span class="text-xs font-semibold mt-1">Profile</span></a>
+        </div>
+    </footer>
+
 
     <script>
-        let earningsChart = null;
-        let currentUserId = null; 
+        document.addEventListener('DOMContentLoaded', () => {
 
-        function updateProfileUI(data) {
-            const updateElement = (id, value, prefix = '', suffix = '') => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.textContent = `${prefix}${value}${suffix}`;
-                    el.classList.remove('skeleton', 'w-48', 'w-32', 'w-12', 'w-40', 'w-24', 'inline-block');
-                }
-            };
-            
-            document.getElementById('profileImage').src = data.avatar || 'https://www.gravatar.com/avatar/?d=mp';
-            // **FIXED**: Use username as a fallback if full name is null or empty
-            updateElement('profile-name', data.fullName || data.username);
-            updateElement('profile-username', data.username, '@');
-            updateElement('profile-level', data.level || 1, 'Lvl ');
-            updateElement('profile-title', data.title || 'Newcomer');
-            updateElement('total-earnings', (data.totalEarnings || 0).toFixed(2));
-            updateElement('quests-completed', data.questsCompleted);
-            updateElement('referrals-count', data.referralsCount || 0);
-            updateElement('referral-earnings', (data.referralEarnings || 0).toFixed(2));
-            updateElement('login-streak', data.loginStreak || 0);
-
-            const activityList = document.getElementById('recent-activity-list');
-            activityList.innerHTML = ''; 
-            if (data.recentActivity && data.recentActivity.length > 0) {
-                data.recentActivity.forEach(item => {
-                    const iconData = {
-                        quest_completed: { icon: 'fa-check-circle', color: 'primary' },
-                        new_referral: { icon: 'fa-user-plus', color: 'green-500' },
-                        account_created: { icon: 'fa-rocket', color: 'blue-500' }
-                    };
-                    const { icon, color } = iconData[item.activity_type] || { icon: 'fa-star', color: 'yellow-500' };
-
-                    activityList.innerHTML += `
-                        <div class="activity-item flex items-start">
-                            <div class="bg-${color}/10 p-2 rounded-lg mr-3">
-                                <i class="fas ${icon} text-${color}"></i>
-                            </div>
-                            <div>
-                                <div>${item.details}</div>
-                                <div class="text-sm text-gray-400">${new Date(item.created_at).toLocaleString()}</div>
-                            </div>
-                        </div>`;
-                });
-            } else {
-                 activityList.innerHTML = `<p class="text-gray-400 text-center">No recent activity to display.</p>`;
-            }
-        }
-
-        function initChart(labels, chartData) {
-            const ctx = document.getElementById('earningsChart').getContext('2d');
-            if (earningsChart) {
-                earningsChart.destroy();
-            }
-            earningsChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Earnings ($)',
-                        data: chartData,
-                        backgroundColor: 'rgba(138, 99, 242, 0.2)',
-                        borderColor: 'rgba(138, 99, 242, 1)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true,
-                    }]
+            // --- MOCK DATA ---
+            const mockData = {
+                user: {
+                    username: 'johndoe',
+                    fullName: 'John Doe',
+                    email: 'john.doe@example.com',
+                    joinDate: 'Jan 2024',
+                    avatar: 'https://i.pravatar.cc/150?img=12',
+                    bio: 'Lifelong learner and digital creator. Exploring the worlds of design, code, and marketing. Let\'s connect!'
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { 
-                            beginAtZero: true,
-                            ticks: { color: 'rgba(255, 255, 255, 0.7)', callback: (value) => '$' + value } 
-                        },
-                        x: { ticks: { color: 'rgba(255, 255, 255, 0.7)' } }
-                    }
+                recentActivity: [
+                    { icon: 'fa-check-circle', color: 'green', text: 'Completed Quest: "Intro to Design"', time: '2 hours ago' },
+                    { icon: 'fa-briefcase', color: 'blue', text: 'Accepted Job: "Sign Up Bonus"', time: '1 day ago' },
+                    { icon: 'fa-calendar-check', color: 'purple', text: 'Booked a call with Jane Doe', time: '2 days ago' },
+                    { icon: 'fa-graduation-cap', color: 'yellow', text: 'Started Skill: "Coding"', time: '3 days ago' },
+                    { icon: 'fa-wallet', color: 'red', text: 'Withdrew $50.00', time: '5 days ago' }
+                ],
+                mySkills: [
+                    { name: 'Graphic Design', progress: 75 },
+                    { name: 'Coding', progress: 20 },
+                    { name: 'Digital Marketing', progress: 50 }
+                ],
+                expertBookings: [
+                    { name: 'Jane Doe', status: 'Confirmed', date: 'Jul 8, 2025, 4:00 PM' },
+                    { name: 'John Smith', status: 'Completed', date: 'Jun 25, 2025, 10:00 AM' }
+                ],
+                transactions: [
+                    { type: 'credit', amount: 5.00, desc: 'Reward: "Intro to Design" Quest', date: 'Jul 7, 2025' },
+                    { type: 'debit', amount: 50.00, desc: 'Withdrawal to Bank Account', date: 'Jul 2, 2025' },
+                    { type: 'credit', amount: 25.00, desc: 'Reward: "Sign Up Bonus" Job', date: 'Jul 1, 2025' }
+                ]
+            };
+
+            // --- DOM ELEMENTS ---
+            const editProfileModal = document.getElementById('edit-profile-modal');
+            let newAvatarFile = null;
+
+            // --- TAB SWITCHING LOGIC ---
+            const tabsContainer = document.getElementById('tabs-container');
+            const tabContentContainer = document.getElementById('tab-content-container');
+            tabsContainer.addEventListener('click', (e) => {
+                const targetButton = e.target.closest('.tab-button');
+                if (!targetButton) return;
+
+                tabsContainer.querySelector('.active').classList.remove('active');
+                targetButton.classList.add('active');
+
+                tabContentContainer.querySelector('.active').classList.remove('active');
+                const tabName = targetButton.dataset.tab;
+                tabContentContainer.querySelector(`#tab-content-${tabName}`).classList.add('active');
+            });
+
+            // --- MODAL LOGIC ---
+            function openModal(modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            function closeModal(modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+            
+            document.getElementById('edit-profile-btn').addEventListener('click', () => {
+                document.getElementById('modal-profile-bio').value = mockData.user.bio;
+                document.getElementById('avatar-preview').src = mockData.user.avatar;
+                newAvatarFile = null; // Reset on open
+                openModal(editProfileModal);
+            });
+
+            document.getElementById('avatar-upload').addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    newAvatarFile = file;
+                    document.getElementById('avatar-preview').src = URL.createObjectURL(file);
                 }
             });
-        }
 
-        async function fetchAndRenderEarnings(userId, range = '7d') {
-            try {
-                const response = await fetch(`/api/profile/${userId}/earnings-history?range=${range}`);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const data = await response.json();
+            document.getElementById('close-modal-btn').addEventListener('click', () => closeModal(editProfileModal));
+            document.getElementById('cancel-edit-btn').addEventListener('click', () => closeModal(editProfileModal));
+            editProfileModal.addEventListener('click', (e) => {
+                if (e.target === editProfileModal) {
+                    closeModal(editProfileModal);
+                }
+            });
+
+            document.getElementById('edit-profile-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newBio = document.getElementById('modal-profile-bio').value;
+
+                // Update bio
+                mockData.user.bio = newBio;
+                document.getElementById('profile-bio').textContent = newBio;
                 
-                initChart(data.labels, data.data);
+                // Update avatar if a new one was selected
+                if (newAvatarFile) {
+                    const newAvatarURL = URL.createObjectURL(newAvatarFile);
+                    mockData.user.avatar = newAvatarURL;
+                    document.getElementById('profile-avatar').src = newAvatarURL;
+                }
 
-                document.querySelectorAll('#earnings-filter-buttons button').forEach(button => {
-                    button.classList.toggle('bg-primary', button.dataset.range === range);
-                    button.classList.toggle('bg-gray-700', button.dataset.range !== range);
-                });
+                closeModal(editProfileModal);
+            });
 
-            } catch (error) {
-                console.error(`Could not fetch earnings for range ${range}:`, error);
-            }
-        }
 
-        async function loadProfileData(userId) {
-            currentUserId = userId;
-            try {
-                const response = await fetch(`/api/profile/${userId}`);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const data = await response.json();
-                
-                updateProfileUI(data);
+            // --- RENDER DYNAMIC CONTENT ---
+            function renderContent() {
+                // Main Profile Info
+                document.getElementById('profile-avatar').src = mockData.user.avatar;
+                document.getElementById('profile-name').textContent = mockData.user.fullName;
+                document.getElementById('profile-joindate').textContent = `Member since ${mockData.user.joinDate}`;
+                document.getElementById('profile-bio').textContent = mockData.user.bio;
 
-                const activeQuestsEl = document.getElementById('active-quests-list');
-                if (activeQuestsEl) {
-                    activeQuestsEl.innerHTML = `
-                        <div class="text-center">
-                            <div class="text-4xl font-bold gradient-text">${data.activeQuestsCount}</div>
-                            <p class="text-gray-400 mt-2">Quests Available</p>
-                            <a href="groweasy.html" class="mt-4 inline-block px-4 py-2 bg-primary hover:bg-primary-light rounded-lg font-medium text-sm">
-                                View Quests
-                            </a>
+                // Settings Tab Info
+                document.getElementById('username').value = mockData.user.username;
+                document.getElementById('full-name').value = mockData.user.fullName;
+                document.getElementById('email').value = mockData.user.email;
+
+                // Recent Activity
+                const activityList = document.getElementById('recent-activity-list');
+                activityList.innerHTML = mockData.recentActivity.map(item => `
+                    <li class="flex items-start">
+                        <i class="fas ${item.icon} text-${item.color}-500 text-lg mr-4 mt-1"></i>
+                        <div>
+                            <p class="text-gray-800 text-sm">${item.text}</p>
+                            <p class="text-xs text-gray-400">${item.time}</p>
                         </div>
-                    `;
-                }
+                    </li>
+                `).join('');
 
-                if (data.earningsChartData) {
-                    initChart(data.earningsChartData.labels, data.earningsChartData.data);
-                    const initialButton = document.querySelector('#earnings-filter-buttons button[data-range="7d"]');
-                    if(initialButton) {
-                        initialButton.classList.add('bg-primary');
-                        initialButton.classList.remove('bg-gray-700');
-                    }
-                }
+                // My Skills
+                const skillsList = document.getElementById('my-skills-list');
+                skillsList.innerHTML = mockData.mySkills.map(skill => `
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <p class="font-semibold text-gray-700">${skill.name}</p>
+                            <p class="text-sm text-gray-500">${skill.progress}%</p>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-purple-600 h-2.5 rounded-full" style="width: ${skill.progress}%"></div>
+                        </div>
+                    </div>
+                `).join('');
 
-            } catch (error) {
-                console.error("Could not fetch profile data:", error);
-                document.querySelector('main').innerHTML = `<p class="text-center text-danger">Could not load profile. Please try again later.</p>`;
+                // Expert Bookings
+                const bookingsList = document.getElementById('expert-bookings-list');
+                bookingsList.innerHTML = mockData.expertBookings.map(booking => `
+                    <li class="flex justify-between items-center">
+                        <div>
+                            <p class="font-semibold text-gray-700">${booking.name}</p>
+                            <p class="text-sm text-gray-500">${booking.date}</p>
+                        </div>
+                        <span class="text-xs font-semibold px-2 py-1 rounded-full ${booking.status === 'Confirmed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">${booking.status}</span>
+                    </li>
+                `).join('');
+                
+                // Transaction History
+                const transactionList = document.getElementById('transaction-history-list');
+                transactionList.innerHTML = mockData.transactions.map(tx => `
+                    <div class="flex justify-between items-center p-3 rounded-lg ${tx.type === 'credit' ? 'bg-green-50' : 'bg-red-50'}">
+                        <div>
+                            <p class="font-semibold text-gray-800">${tx.desc}</p>
+                            <p class="text-sm text-gray-500">${tx.date}</p>
+                        </div>
+                        <p class="font-bold ${tx.type === 'credit' ? 'text-green-600' : 'text-red-600'}">
+                            ${tx.type === 'credit' ? '+' : '-'}$${tx.amount.toFixed(2)}
+                        </p>
+                    </div>
+                `).join('');
             }
-        }
-        
-        function setupProfileUpload(userId) {
-            const uploadTrigger = document.getElementById('uploadTrigger');
-            const imageUpload = document.getElementById('imageUpload');
-            const profileImage = document.getElementById('profileImage');
 
-            if (uploadTrigger) {
-                uploadTrigger.addEventListener('click', () => imageUpload.click());
-            }
-
-            if(imageUpload) {
-                imageUpload.addEventListener('change', async function(event) {
-                    const file = event.target.files[0];
-                    if (file && file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => { profileImage.src = e.target.result; };
-                        reader.readAsDataURL(file);
-
-                        const formData = new FormData();
-                        formData.append('profilePicture', file);
-
-                        try {
-                            const response = await fetch('/api/user/upload-picture', {
-                                method: 'POST',
-                                body: formData,
-                            });
-                            const result = await response.json();
-                            if (!response.ok) throw new Error(result.error || 'Upload failed');
-                            profileImage.src = result.filePath; 
-                        } catch (error) {
-                            console.error('Error uploading file:', error);
-                            alert('Could not upload profile picture. ' + error.message);
-                            loadProfileData(userId); 
+            // --- CHART.JS LOGIC ---
+            function renderChart() {
+                const ctx = document.getElementById('earningsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                        datasets: [{
+                            label: 'Earnings ($)',
+                            data: [120, 190, 300, 500, 250, 600, 1250],
+                            borderColor: 'rgba(139, 92, 246, 1)', // purple-500
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
                         }
                     }
                 });
             }
-        }
-
-        function setupShareButton(userId) {
-            const shareButton = document.getElementById('share-profile-btn');
-            const shareArea = document.getElementById('profile-shareable-area');
-
-            if (!shareButton || !shareArea) return;
-
-            shareButton.addEventListener('click', async () => {
-                shareButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generating...';
-                shareButton.disabled = true;
-
-                try {
-                    const canvas = await html2canvas(shareArea, {
-                        backgroundColor: '#0f172a', 
-                        useCORS: true 
-                    });
-
-                    canvas.toBlob(async (blob) => {
-                        if (!blob) throw new Error('Canvas to Blob conversion failed');
-                        const referralLink = `https://rewardrush.com/join?ref=${userId}`;
-                        const files = [new File([blob], 'rewardrush-profile.png', { type: 'image/png' })];
-
-                        if (navigator.canShare && navigator.canShare({ files })) {
-                            await navigator.share({
-                                files: files,
-                                title: 'My RewardRush Profile',
-                                text: `Check out my progress on RewardRush and join with my link!`,
-                                url: referralLink
-                            });
-                        } else {
-                            const link = document.createElement('a');
-                            link.href = URL.createObjectURL(blob);
-                            link.download = `rewardrush-profile-${userId}.png`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            URL.revokeObjectURL(link.href);
-                        }
-                    }, 'image/png');
-
-                } catch (err) {
-                    console.error('Error generating or sharing profile image:', err);
-                    alert('Sorry, could not generate the profile image.');
-                } finally {
-                    shareButton.innerHTML = '<i class="fas fa-share-alt mr-2"></i> Share Profile';
-                    shareButton.disabled = false;
-                }
-            });
-        }
-        
-        document.addEventListener('DOMContentLoaded', async function() {
-            try {
-                const sessionRes = await fetch('/check-session');
-                const sessionData = await sessionRes.json();
-
-                if (sessionData.loggedIn) {
-                    await loadProfileData(sessionData.userId);
-                    setupProfileUpload(sessionData.userId);
-                    setupShareButton(sessionData.userId);
-
-                    const filterContainer = document.getElementById('earnings-filter-buttons');
-                    if (filterContainer) {
-                        filterContainer.addEventListener('click', (event) => {
-                            if (event.target.tagName === 'BUTTON') {
-                                const range = event.target.dataset.range;
-                                if(range && currentUserId) {
-                                    fetchAndRenderEarnings(currentUserId, range);
-                                }
-                            }
-                        });
+            
+            // --- SETTINGS TOGGLE LOGIC ---
+            document.querySelectorAll('input[type="checkbox"]').forEach(toggle => {
+                toggle.addEventListener('change', (e) => {
+                    const toggleBg = e.target.nextElementSibling;
+                    const dot = toggleBg.querySelector('div');
+                    if(e.target.checked) {
+                        toggleBg.classList.add('bg-purple-600');
+                        toggleBg.classList.remove('bg-gray-200');
+                        dot.style.transform = 'translateX(1.25rem)';
+                    } else {
+                        toggleBg.classList.remove('bg-purple-600');
+                        toggleBg.classList.add('bg-gray-200');
+                        dot.style.transform = 'translateX(0)';
                     }
-
-                } else {
-                    window.location.href = '/auth.html';
-                }
-            } catch (error) {
-                console.error("Session check failed:", error);
-                 window.location.href = '/auth.html';
-            }
-        });
-
-        document.querySelectorAll('[id$="-tab"]').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('[id$="-tab"]').forEach(t => t.classList.remove('tab-active', 'text-primary-light'));
-                document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
-                
-                this.classList.add('tab-active', 'text-primary-light');
-                const tabName = this.id.replace('-tab', '');
-                const contentPane = document.getElementById(`${tabName}-content`);
-                if(contentPane) {
-                   contentPane.classList.remove('hidden');
-                   contentPane.classList.add('active');
+                });
+                // Initial state
+                if (toggle.checked) {
+                    const toggleBg = toggle.nextElementSibling;
+                    const dot = toggleBg.querySelector('div');
+                    toggleBg.classList.add('bg-purple-600');
+                    toggleBg.classList.remove('bg-gray-200');
+                    dot.style.transform = 'translateX(1.25rem)';
                 }
             });
+
+            // --- THEME & SIDEBAR LOGIC ---
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const htmlEl = document.documentElement;
+
+            function setTheme(theme) {
+                if (theme === 'dark') {
+                    htmlEl.classList.add('dark');
+                    themeIcon.classList.replace('fa-moon', 'fa-sun');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    htmlEl.classList.remove('dark');
+                    themeIcon.classList.replace('fa-sun', 'fa-moon');
+                    localStorage.setItem('theme', 'light');
+                }
+            }
+
+            if (localStorage.getItem('theme') === 'dark') {
+                setTheme('dark');
+            }
+
+            themeToggleBtn.addEventListener('click', () => {
+                setTheme(htmlEl.classList.contains('dark') ? 'light' : 'dark');
+            });
+            
+            document.getElementById('sidebar-toggle').addEventListener('click', () => {
+                document.body.classList.toggle('sidebar-collapsed');
+            });
+
+            // --- INITIALIZE PAGE ---
+            renderContent();
+            renderChart();
         });
-        
-        function toggleMenu() {
-            document.getElementById('nav-menu').classList.toggle('open');
-        }
     </script>
 </body>
 </html>
