@@ -98,33 +98,22 @@ function parsePayout(payoutString) {
 
 // --- Routes ---
 
-// FIX: Explicitly set index.html as the default page for the root URL
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// --- NEW BUILD PAGE API ENDPOINTS ---
+// --- NEW BUILD PAGE API ENDPOINT ---
 app.get('/api/build-data', requireLogin, async (req, res) => {
     try {
-        const data = await fs.readFile(path.join(__dirname, 'public', 'build-data.json'), 'utf8');
+        // CORRECTED: Path now points to the project root directory
+        const data = await fs.readFile(path.join(__dirname, 'build-data.json'), 'utf8');
         res.json(JSON.parse(data));
     } catch (err) {
         console.error('Error reading build data:', err);
         res.status(500).json({ error: 'Failed to fetch build data' });
     }
 });
-
-app.get('/api/experts', requireLogin, async (req, res) => {
-    try {
-        const data = await fs.readFile(path.join(__dirname, 'public', 'build-data.json'), 'utf8');
-        const jsonData = JSON.parse(data);
-        res.json(jsonData.expertsData);
-    } catch (err) {
-        console.error('Error reading experts data:', err);
-        res.status(500).json({ error: 'Failed to fetch experts data' });
-    }
-});
-// --- END NEW BUILD PAGE API ENDPOINTS ---
+// --- END NEW BUILD PAGE API ENDPOINT ---
 
 
 // --- NEW JOBS API ENDPOINTS ---
@@ -984,7 +973,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// Server entry point: start listening for incoming requests
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
 });
