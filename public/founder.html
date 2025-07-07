@@ -58,6 +58,7 @@
         .dark .bg-white { background-color: var(--mid-bg) !important; }
         .dark .bg-gray-100 { background-color: var(--dark-bg) !important; }
         .dark .bg-gray-50 { background-color: var(--light-bg) !important; }
+        .dark .bg-gray-100\/80 { background-color: rgba(10, 10, 21, 0.8) !important; }
         .dark .text-gray-900 { color: #f0f2f5 !important; }
         .dark .text-gray-800 { color: #e2e8f0 !important; }
         .dark .text-gray-700 { color: #a0aec0 !important; }
@@ -151,6 +152,18 @@
 
     <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
         
+        <!-- Mobile Header -->
+        <div class="md:hidden sticky top-0 z-30 bg-gray-100/80 dark:bg-dark-bg/80 backdrop-blur-sm pt-4 pb-2">
+             <div class="px-4">
+                <header class="bg-white shadow-md p-4 flex items-center justify-center rounded-2xl">
+                    <div class="flex items-center text-xl font-semibold text-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 text-purple-600"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                        <span class="ml-2 font-montserrat">RewardRush</span>
+                    </div>
+                </header>
+            </div>
+        </div>
+
         <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 md:pt-8">
             
             <div id="build-home-page">
