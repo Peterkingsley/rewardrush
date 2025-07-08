@@ -233,7 +233,7 @@
                 },
                 async fetchBuildData() {
                     try {
-                        const response = await fetch('/api/build-data');
+                        const response = await fetch('/build-data.json');
                         if (!response.ok) {
                             if (response.status === 401) {
                                 window.location.href = '/auth.html';
@@ -474,3 +474,4 @@
     </script>
 </body>
 </html>
+fetch('/api/build-data')

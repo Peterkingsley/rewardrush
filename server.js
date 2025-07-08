@@ -102,7 +102,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// --- REMOVED: The /api/build-data endpoint is no longer needed ---
+// --- REMOVED: The /api/ endpoint is no longer needed ---
 // Express.static will now handle serving the build-data.json file from the public folder.
 
 
