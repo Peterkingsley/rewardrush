@@ -102,8 +102,76 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// --- REMOVED: The /api/ endpoint is no longer needed ---
-// Express.static will now handle serving the build-data.json file from the public folder.
+// --- UPDATED BUILD PAGE API ENDPOINT ---
+app.get('/api/build-data', requireLogin, async (req, res) => {
+    try {
+        // 1. Fetch all base data in parallel
+        const [expertsResult, productsResult, tabsResult, contentResult, expertMapResult] = await Promise.all([
+            pool.query('SELECT * FROM experts'),
+            pool.query('SELECT * FROM products'),
+            pool.query('SELECT * FROM product_tabs'),
+            pool.query('SELECT * FROM tab_content'),
+            pool.query('SELECT * FROM product_expert_map')
+        ]);
+
+        // 2. Format experts data
+        const expertsData = expertsResult.rows.reduce((acc, expert) => {
+            acc[expert.id] = expert;
+            return acc;
+        }, {});
+
+        // 3. Build the nested product data object
+        const buildProductsData = productsResult.rows.reduce((acc, product) => {
+            // Find all tabs for the current product
+            const productTabs = tabsResult.rows.filter(t => t.product_id === product.id);
+            
+            const tabsData = productTabs.reduce((tabAcc, tab) => {
+                // For the 'experts' tab, find the associated expert IDs
+                if (tab.tab_key === 'experts') {
+                    tabAcc[tab.tab_key] = {
+                        title: tab.title,
+                        icon: tab.icon,
+                        expertIds: expertMapResult.rows
+                            .filter(map => map.product_id === product.id)
+                            .map(map => map.expert_id.toString())
+                    };
+                } else {
+                    // For other tabs, find the associated content
+                    tabAcc[tab.tab_key] = {
+                        title: tab.title,
+                        icon: tab.icon,
+                        content: contentResult.rows
+                            .filter(c => c.tab_id === tab.id)
+                            .map(c => ({ title: c.title, content: c.content, link: c.link }))
+                    };
+                }
+                return tabAcc;
+            }, {});
+
+            acc[product.id] = {
+                title: product.title,
+                icon: product.icon,
+                color: product.color,
+                description: product.description,
+                guideTitle: product.guide_title,
+                guideDescription: product.guide_description,
+                tabs: tabsData
+            };
+            return acc;
+        }, {});
+
+        // 4. Send the final composite object
+        res.json({
+            expertsData,
+            buildProductsData
+        });
+
+    } catch (err) {
+        console.error('Error fetching build data from DB:', err);
+        res.status(500).json({ error: 'Failed to fetch build data' });
+    }
+});
+// --- END UPDATED BUILD PAGE API ENDPOINT ---
 
 
 // --- NEW JOBS API ENDPOINTS ---
