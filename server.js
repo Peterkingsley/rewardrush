@@ -102,18 +102,8 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// --- NEW BUILD PAGE API ENDPOINT ---
-app.get('/api/build-data', requireLogin, async (req, res) => {
-    try {
-        // CORRECTED: Path now points to the project root directory
-        const data = await fs.readFile(path.join(__dirname, 'build-data.json'), 'utf8');
-        res.json(JSON.parse(data));
-    } catch (err) {
-        console.error('Error reading build data:', err);
-        res.status(500).json({ error: 'Failed to fetch build data' });
-    }
-});
-// --- END NEW BUILD PAGE API ENDPOINT ---
+// --- REMOVED: The /api/build-data endpoint is no longer needed ---
+// Express.static will now handle serving the build-data.json file from the public folder.
 
 
 // --- NEW JOBS API ENDPOINTS ---
