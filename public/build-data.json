@@ -1,0 +1,142 @@
+{
+  "expertsData": {
+    "1": { "name": "Jane Doe", "title": "CEX Architect", "avatar": "https://i.pravatar.cc/150?img=1", "color": "purple" },
+    "2": { "name": "John Smith", "title": "DeFi Specialist", "avatar": "https://i.pravatar.cc/150?img=2", "color": "green" },
+    "3": { "name": "Alex Johnson", "title": "AI & ML Engineer", "avatar": "https://i.pravatar.cc/150?img=3", "color": "blue" },
+    "4": { "name": "Sarah Lee", "title": "Marketing Guru", "avatar": "https://i.pravatar.cc/150?img=4", "color": "yellow" },
+    "5": { "name": "Mike Ross", "title": "Security Specialist", "avatar": "https://i.pravatar.cc/150?img=5", "color": "purple" },
+    "6": { "name": "Emily White", "title": "Smart Contract Auditor", "avatar": "https://i.pravatar.cc/150?img=6", "color": "green" },
+    "7": { "name": "Chris Brown", "title": "Data Scientist", "avatar": "https://i.pravatar.cc/150?img=7", "color": "blue" }
+  },
+  "buildProductsData": {
+    "cex": {
+      "title": "CEX",
+      "icon": "fas fa-exchange-alt",
+      "color": "purple",
+      "description": "Build a centralized exchange with our comprehensive guide, covering everything from security to user experience.",
+      "guideTitle": "How to Build a Centralized Exchange (CEX)",
+      "guideDescription": "Your complete A-Z roadmap. Follow these steps to go from idea to a fully-functional, secure, and successful exchange.",
+      "tabs": {
+        "roadmap": {
+          "title": "Roadmap",
+          "icon": "fa-map-signs",
+          "content": [
+            { "title": "Ideation & Market Research", "content": "Define your niche, target audience, and unique selling proposition (USP). Analyze competitors to understand the market landscape." },
+            { "title": "Technical Architecture & Stack", "content": "Design the system architecture, including the matching engine, user wallets, and admin panel. Choose your technology stack." },
+            { "title": "Coding & Development", "content": "Implement the core features, user authentication, and trading functionalities. Follow best practices for secure code." },
+            { "title": "Marketing & Launch", "content": "Develop a comprehensive marketing strategy to attract users. Prepare for launch day with a solid plan." }
+          ]
+        },
+        "resources": {
+          "title": "Tools & Resources",
+          "icon": "fa-tools",
+          "content": [
+            { "title": "TradingView Charts", "description": "Integrate advanced charting libraries for technical analysis.", "link": "#" },
+            { "title": "KYC/AML Providers", "description": "Partner with identity verification services like Sumsub or Veriff.", "link": "#" },
+            { "title": "Secure Wallet Solutions", "description": "Use hardware security modules (HSMs) and multi-signature wallets.", "link": "#" }
+          ]
+        },
+        "marketing": {
+          "title": "Marketing Plan",
+          "icon": "fa-bullhorn",
+          "content": [
+            { "title": "Pre-launch Campaign", "description": "Build hype with a coming soon page, social media marketing, and email sign-ups." },
+            { "title": "Referral Program", "description": "Incentivize user growth by rewarding users for inviting friends." },
+            { "title": "Content Marketing", "description": "Create blog posts and videos about trading guides and market analysis to attract organic traffic." }
+          ]
+        },
+        "experts": {
+          "title": "Experts",
+          "icon": "fa-user-tie",
+          "expertIds": ["1", "5"]
+        }
+      }
+    },
+    "dex": {
+      "title": "DEX",
+      "icon": "fas fa-cogs",
+      "color": "green",
+      "description": "Learn to create a decentralized exchange on the blockchain, with a focus on smart contracts and liquidity pools.",
+      "guideTitle": "How to Build a Decentralized Exchange (DEX)",
+      "guideDescription": "A step-by-step guide to building your own DEX, focusing on smart contracts, liquidity, and security on the blockchain.",
+      "tabs": {
+        "roadmap": {
+          "title": "Roadmap",
+          "icon": "fa-map-signs",
+          "content": [
+            { "title": "Choose a Blockchain", "content": "Select the network (e.g., Ethereum, Solana) that fits your needs for speed, cost, and community." },
+            { "title": "Develop Smart Contracts", "content": "Write, test, and audit the smart contracts for swapping tokens, providing liquidity, and governance." },
+            { "title": "Build the Frontend", "content": "Create an intuitive user interface that allows users to connect their wallets and interact with your smart contracts." },
+            { "title": "Attract Liquidity", "content": "Incentivize liquidity providers (LPs) to add their assets to your pools through yield farming." }
+          ]
+        },
+        "resources": {
+          "title": "Tools & Resources",
+          "icon": "fa-tools",
+          "content": [
+            { "title": "Etherscan", "description": "The go-to block explorer for the Ethereum network.", "link": "#" },
+            { "title": "Hardhat / Truffle", "description": "Development environments for compiling, testing, and deploying smart contracts.", "link": "#" },
+            { "title": "Uniswap V3 Periphery", "description": "Use battle-tested contracts for your router and other peripheral functions.", "link": "#" }
+          ]
+        },
+        "marketing": {
+          "title": "Marketing Plan",
+          "icon": "fa-bullhorn",
+          "content": [
+            { "title": "Airdrop Campaign", "description": "Reward early users and community members with a token airdrop to bootstrap your user base." },
+            { "title": "Liquidity Mining", "description": "Offer high APY rewards for liquidity providers in the initial phase to attract capital." },
+            { "title": "Community Governance", "description": "Empower your users with governance tokens to let them vote on the future of the protocol." }
+          ]
+        },
+        "experts": {
+          "title": "Experts",
+          "icon": "fa-user-tie",
+          "expertIds": ["2", "6"]
+        }
+      }
+    },
+    "ai-tools": {
+      "title": "AI SaaS",
+      "icon": "fas fa-robot",
+      "color": "blue",
+      "description": "Dive into the world of Artificial Intelligence. Build your own AI-powered applications from scratch.",
+      "guideTitle": "How to Build an AI-Powered SaaS",
+      "guideDescription": "From data collection to model deployment, learn the key stages of creating a functional AI application.",
+      "tabs": {
+        "roadmap": {
+          "title": "Roadmap",
+          "icon": "fa-map-signs",
+          "content": [
+            { "title": "Define the Problem", "content": "Clearly identify the problem your AI tool will solve. This will guide your data and model selection." },
+            { "title": "Data Collection & Preprocessing", "content": "Gather and clean a relevant dataset. This is one of the most critical steps for a successful AI model." },
+            { "title": "Model Training & Evaluation", "content": "Choose an appropriate AI model, train it on your data, and evaluate its performance." },
+            { "title": "Deployment & Integration", "content": "Deploy your trained model via an API and integrate it into a user-facing application." }
+          ]
+        },
+        "resources": {
+          "title": "Tools & Resources",
+          "icon": "fa-tools",
+          "content": [
+            { "title": "Hugging Face", "description": "Access thousands of pre-trained models and datasets for your projects.", "link": "#" },
+            { "title": "TensorFlow / PyTorch", "description": "The two leading open-source libraries for machine learning and deep learning.", "link": "#" },
+            { "title": "AWS SageMaker", "description": "A fully managed service to build, train, and deploy machine learning models at scale.", "link": "#" }
+          ]
+        },
+        "marketing": {
+          "title": "Marketing Plan",
+          "icon": "fa-bullhorn",
+          "content": [
+            { "title": "Freemium Model", "description": "Offer a free tier with limited usage to attract a wide user base and convert them to paying customers." },
+            { "title": "API-First Approach", "description": "Provide a well-documented API for developers to integrate your AI into their own applications." },
+            { "title": "Content Marketing", "description": "Publish articles and tutorials on AI use-cases to establish thought leadership and attract organic traffic." }
+          ]
+        },
+        "experts": {
+          "title": "Experts",
+          "icon": "fa-user-tie",
+          "expertIds": ["3", "7", "4"]
+        }
+      }
+    }
+  }
+}
