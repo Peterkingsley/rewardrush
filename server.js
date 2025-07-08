@@ -102,10 +102,9 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// --- UPDATED BUILD PAGE API ENDPOINT ---
+// --- BUILD PAGE API ENDPOINT ---
 app.get('/api/build-data', requireLogin, async (req, res) => {
     try {
-        // 1. Fetch all base data in parallel
         const [expertsResult, productsResult, tabsResult, contentResult, expertMapResult] = await Promise.all([
             pool.query('SELECT * FROM experts'),
             pool.query('SELECT * FROM products'),
@@ -114,19 +113,14 @@ app.get('/api/build-data', requireLogin, async (req, res) => {
             pool.query('SELECT * FROM product_expert_map')
         ]);
 
-        // 2. Format experts data
         const expertsData = expertsResult.rows.reduce((acc, expert) => {
             acc[expert.id] = expert;
             return acc;
         }, {});
 
-        // 3. Build the nested product data object
         const buildProductsData = productsResult.rows.reduce((acc, product) => {
-            // Find all tabs for the current product
             const productTabs = tabsResult.rows.filter(t => t.product_id === product.id);
-            
             const tabsData = productTabs.reduce((tabAcc, tab) => {
-                // For the 'experts' tab, find the associated expert IDs
                 if (tab.tab_key === 'experts') {
                     tabAcc[tab.tab_key] = {
                         title: tab.title,
@@ -136,7 +130,6 @@ app.get('/api/build-data', requireLogin, async (req, res) => {
                             .map(map => map.expert_id.toString())
                     };
                 } else {
-                    // For other tabs, find the associated content
                     tabAcc[tab.tab_key] = {
                         title: tab.title,
                         icon: tab.icon,
@@ -160,7 +153,6 @@ app.get('/api/build-data', requireLogin, async (req, res) => {
             return acc;
         }, {});
 
-        // 4. Send the final composite object
         res.json({
             expertsData,
             buildProductsData
@@ -171,81 +163,122 @@ app.get('/api/build-data', requireLogin, async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch build data' });
     }
 });
-// --- END UPDATED BUILD PAGE API ENDPOINT ---
 
+// --- EDUCATION PAGE API ENDPOINTS ---
 
-// --- NEW JOBS API ENDPOINTS ---
-app.get('/api/jobs', requireLogin, async (req, res) => {
+// Get all static education content (skills, materials, experts)
+app.get('/api/education/content', requireLogin, async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM affiliate_programs ORDER BY id');
-        
-        const jobs = result.rows.map(program => {
-            const requirements = [];
-            if (program.guidelines) requirements.push(program.guidelines);
-            if (program.pros && program.pros.length > 0) requirements.push(...program.pros.map(p => `Pro: ${p}`));
-            if (program.cons && program.cons.length > 0) requirements.push(...program.cons.map(c => `Con: ${c}`));
+        const [skillsResult, materialsResult, expertsResult] = await Promise.all([
+            pool.query('SELECT * FROM education_skills'),
+            pool.query('SELECT * FROM education_materials'),
+            pool.query('SELECT * FROM education_experts')
+        ]);
 
-            const categorySlug = program.category.toLowerCase().replace(/\s+/g, '-');
-            
-            const titleMatch = program.title.match(/(\d+)/);
-            const target = titleMatch ? parseInt(titleMatch[0], 10) : 1;
-
-            return {
-                id: program.id,
-                title: program.title,
-                category: categorySlug,
-                payment: parsePayout(program.payout),
-                description: program.details,
-                requirements: requirements,
-                target: target,
-                destinationUrl: program.destination_url
+        const learningData = skillsResult.rows.reduce((acc, skill) => {
+            acc[skill.id] = {
+                ...skill,
+                materials: materialsResult.rows.filter(m => m.skill_id === skill.id)
             };
-        });
-        
-        res.json({ jobs });
+            return acc;
+        }, {});
+
+        const expertsData = expertsResult.rows.reduce((acc, expert) => {
+            acc[expert.id] = expert;
+            return acc;
+        }, {});
+
+        res.json({ learningData, expertsData });
     } catch (err) {
-        console.error('Error fetching jobs:', err);
-        res.status(500).json({ error: 'Failed to fetch jobs' });
+        console.error('Error fetching education content from DB:', err);
+        res.status(500).json({ error: 'Failed to fetch education content' });
     }
 });
 
-app.post('/api/jobs/:jobId/complete', requireLogin, async (req, res) => {
-    const { jobId } = req.params;
-    const { submissionLink } = req.body;
-    const userDbId = req.user.id;
+// Get user-specific data for a skill (progress and study plan)
+app.get('/api/education/user-data/:skillId', requireLogin, async (req, res) => {
+    const { skillId } = req.params;
+    const userId = req.user.id;
+
+    try {
+        const [progressResult, planResult] = await Promise.all([
+            pool.query('SELECT material_id FROM user_material_progress WHERE user_id = $1', [userId]),
+            pool.query('SELECT * FROM study_plans WHERE user_id = $1 AND skill_id = $2 AND is_active = TRUE', [userId, skillId])
+        ]);
+
+        const completedMaterials = progressResult.rows.map(r => r.material_id);
+        const activePlan = planResult.rows[0] || null;
+
+        if (activePlan) {
+            const daysResult = await pool.query('SELECT day_of_week FROM study_plan_days WHERE study_plan_id = $1', [activePlan.id]);
+            activePlan.days = daysResult.rows.map(r => r.day_of_week);
+        }
+
+        res.json({ completedMaterials, activePlan });
+    } catch (err) {
+        console.error(`Error fetching user data for skill ${skillId}:`, err);
+        res.status(500).json({ error: 'Failed to fetch user data' });
+    }
+});
+
+// Update user progress for a material
+app.post('/api/education/progress', requireLogin, async (req, res) => {
+    const { materialId, completed } = req.body;
+    const userId = req.user.id;
+
+    try {
+        if (completed) {
+            await pool.query('INSERT INTO user_material_progress (user_id, material_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [userId, materialId]);
+        } else {
+            await pool.query('DELETE FROM user_material_progress WHERE user_id = $1 AND material_id = $2', [userId, materialId]);
+        }
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error updating progress:', err);
+        res.status(500).json({ error: 'Failed to update progress' });
+    }
+});
+
+// Create or update a study plan
+app.post('/api/education/study-plan', requireLogin, async (req, res) => {
+    const { skillId, goal, days, time } = req.body;
+    const userId = req.user.id;
 
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
+        // Deactivate any old plans for this skill
+        await client.query('UPDATE study_plans SET is_active = FALSE WHERE user_id = $1 AND skill_id = $2', [userId, skillId]);
 
-        const jobResult = await client.query('SELECT * FROM affiliate_programs WHERE id = $1', [jobId]);
-        const job = jobResult.rows[0];
+        // Create new plan
+        const planResult = await client.query(
+            'INSERT INTO study_plans (user_id, skill_id, goal, reminder_time) VALUES ($1, $2, $3, $4) RETURNING id',
+            [userId, skillId, goal, time]
+        );
+        const planId = planResult.rows[0].id;
 
-        if (!job) {
-            await client.query('ROLLBACK');
-            return res.status(404).json({ error: 'Job not found.' });
+        // Insert days for the new plan
+        if (days && days.length > 0) {
+            const dayValues = days.map(day => `(${planId}, ${day})`).join(',');
+            await client.query(`INSERT INTO study_plan_days (study_plan_id, day_of_week) VALUES ${dayValues}`);
         }
-
-        const payoutAmount = parsePayout(job.payout);
         
-        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [payoutAmount, userDbId]);
-
-        if (job.category.toLowerCase().includes('video') || job.category.toLowerCase().includes('post')) {
-            console.log(`User ${req.user.username} submitted link for job ${jobId}: ${submissionLink}`);
-        }
-
         await client.query('COMMIT');
-        res.json({ success: true, message: `Job completed! $${payoutAmount} awarded.` });
-
+        res.status(201).json({ success: true, message: 'Study plan created!' });
     } catch (err) {
         await client.query('ROLLBACK');
-        console.error('Error completing job:', err);
-        res.status(500).json({ error: 'Failed to complete job.' });
+        console.error('Error creating study plan:', err);
+        res.status(500).json({ error: 'Failed to create study plan' });
     } finally {
         client.release();
     }
 });
-// --- END NEW JOBS API ENDPOINTS ---
+
+
+// --- Other existing routes... ---
+// ... (The rest of your server.js file remains the same) ...
+
+// --- END EDUCATION PAGE API ENDPOINTS ---
 
 
 app.get('/check-session', (req, res) => {

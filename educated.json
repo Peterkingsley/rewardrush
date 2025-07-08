@@ -1,0 +1,150 @@
+{
+  "learningData": {
+    "graphic-design": {
+      "title": "Graphic Design",
+      "icon": "fas fa-palette",
+      "color": "purple",
+      "courses": 12,
+      "hours": 48,
+      "description": "Master visual communication, from branding to UI/UX design.",
+      "materials": [
+        { "id": 1, "title": "Intro to Design", "type": "video", "duration": "15 mins" },
+        { "id": 2, "title": "Color Theory", "type": "image", "duration": "10 mins" },
+        { "id": 3, "title": "Typography", "type": "video", "duration": "25 mins" }
+      ]
+    },
+    "coding": {
+      "title": "Coding",
+      "icon": "fas fa-code",
+      "color": "cyan",
+      "courses": 25,
+      "hours": 120,
+      "description": "Learn to build websites, apps, and software from scratch.",
+      "materials": [
+        { "id": 4, "title": "HTML & CSS", "type": "video", "duration": "2 hours" },
+        { "id": 5, "title": "JavaScript", "type": "video", "duration": "3 hours" }
+      ]
+    },
+    "digital-marketing": {
+      "title": "Digital Marketing",
+      "icon": "fas fa-bullhorn",
+      "color": "red",
+      "courses": 18,
+      "hours": 60,
+      "description": "Grow businesses with SEO, SEM, and social media marketing.",
+      "materials": [
+        { "id": 6, "title": "SEO Fundamentals", "type": "video", "duration": "1.5 hours" }
+      ]
+    },
+    "data-science": {
+      "title": "Data Science",
+      "icon": "fas fa-chart-pie",
+      "color": "amber",
+      "courses": 22,
+      "hours": 150,
+      "description": "Extract insights and knowledge from data with Python.",
+      "materials": [
+        { "id": 7, "title": "Intro to Python", "type": "video", "duration": "3 hours" }
+      ]
+    },
+    "video-editing": {
+      "title": "Video Editing",
+      "icon": "fas fa-film",
+      "color": "blue",
+      "courses": 10,
+      "hours": 35,
+      "description": "Tell compelling stories by editing professional videos.",
+      "materials": [
+        { "id": 8, "title": "Premiere Pro Basics", "type": "video", "duration": "2 hours" }
+      ]
+    },
+    "project-management": {
+      "title": "Project Management",
+      "icon": "fas fa-tasks",
+      "color": "green",
+      "courses": 15,
+      "hours": 55,
+      "description": "Lead projects to success with Agile and Scrum methodologies.",
+      "materials": [
+        { "id": 9, "title": "Intro to Agile", "type": "image", "duration": "20 mins" }
+      ]
+    },
+    "content-writing": {
+      "title": "Content Writing",
+      "icon": "fas fa-pencil-alt",
+      "color": "indigo",
+      "courses": 14,
+      "hours": 30,
+      "description": "Craft engaging and persuasive content for various platforms.",
+      "materials": [
+        { "id": 10, "title": "Copywriting 101", "type": "video", "duration": "1 hour" }
+      ]
+    },
+    "photography": {
+      "title": "Photography",
+      "icon": "fas fa-camera",
+      "color": "pink",
+      "courses": 11,
+      "hours": 40,
+      "description": "Capture stunning photos by mastering your camera.",
+      "materials": [
+        { "id": 11, "title": "Composition Rules", "type": "image", "duration": "15 mins" }
+      ]
+    },
+    "music-production": {
+      "title": "Music Production",
+      "icon": "fas fa-music",
+      "color": "teal",
+      "courses": 16,
+      "hours": 70,
+      "description": "Create professional-quality music from your home studio.",
+      "materials": [
+        { "id": 12, "title": "FL Studio Guide", "type": "video", "duration": "2.5 hours" }
+      ]
+    },
+    "3d-modeling": {
+      "title": "3D Modeling",
+      "icon": "fas fa-cube",
+      "color": "rose",
+      "courses": 19,
+      "hours": 95,
+      "description": "Design and create 3D models for games and animation.",
+      "materials": [
+        { "id": 13, "title": "Blender for Beginners", "type": "video", "duration": "4 hours" }
+      ]
+    }
+  },
+  "expertsData": {
+    "1": {
+      "id": 1,
+      "name": "Jane Doe",
+      "title": "Specialist in UI/UX",
+      "avatar": "https://placehold.co/100x100/8b00ff/white?text=JD",
+      "bio": "Jane is a passionate UI/UX designer with over 10 years of experience in creating intuitive and beautiful user interfaces for web and mobile applications. She specializes in user-centered design and has a strong portfolio of successful projects.",
+      "socials": {
+        "twitter": "https://twitter.com/janedoe",
+        "linkedin": "https://linkedin.com/in/janedoe",
+        "dribbble": "https://dribbble.com/janedoe"
+      },
+      "portfolio": [
+        { "title": "E-commerce App Redesign", "description": "Complete redesign of a major e-commerce platform." },
+        { "title": "SaaS Dashboard", "description": "Designed a complex data visualization dashboard." }
+      ]
+    },
+    "2": {
+      "id": 2,
+      "name": "John Smith",
+      "title": "Branding Guru",
+      "avatar": "https://placehold.co/100x100/00f0ff/black?text=JS",
+      "bio": "John helps businesses build strong and memorable brands. From logo design to complete brand identity systems, he has a knack for creating visuals that resonate with audiences.",
+      "socials": {
+        "linkedin": "https://linkedin.com/in/johnsmith",
+        "website": "https://johnsmith.design"
+      },
+      "portfolio": [
+        { "title": "Startup Brand Identity", "description": "Created the full brand package for a new tech startup." },
+        { "title": "Marketing Campaign", "description": "Designed all visual assets for a national marketing campaign." }
+      ]
+    }
+  }
+}
