@@ -269,6 +269,170 @@ app.post('/api/education/study-plan', requireLogin, async (req, res) => {
         client.release();
     }
 });
+
+// --- Group Study API Endpoints ---
+
+// Invite a user to a study group
+app.post('/api/education/study-group/invite', requireLogin, async (req, res) => {
+    const { skillId, inviteeEmail } = req.body;
+    const inviterId = req.user.id;
+
+    if (!inviterId) {
+        return res.status(401).json({ message: 'You must be logged in to invite users.' });
+    }
+
+    try {
+        // Find the user being invited
+        const inviteeResult = await pool.query('SELECT id FROM users WHERE email = $1', [inviteeEmail]);
+        if (inviteeResult.rows.length === 0) {
+            return res.status(404).json({ message: 'User with that email does not exist.' });
+        }
+        const inviteeId = inviteeResult.rows[0].id;
+
+        if (inviteeId === inviterId) {
+            return res.status(400).json({ message: 'You cannot invite yourself.' });
+        }
+
+        // Find or create the study group
+        let groupResult = await pool.query('SELECT id FROM study_groups WHERE skill_id = $1 AND creator_id = $2', [skillId, inviterId]);
+        let groupId;
+
+        if (groupResult.rows.length === 0) {
+            // Create a new group if one doesn't exist
+            const newGroupResult = await pool.query(
+                'INSERT INTO study_groups (skill_id, creator_id) VALUES ($1, $2) RETURNING id',
+                [skillId, inviterId]
+            );
+            groupId = newGroupResult.rows[0].id;
+            // The creator is automatically a member
+            await pool.query(
+                'INSERT INTO study_group_invitations (study_group_id, inviter_id, invitee_id, status) VALUES ($1, $2, $3, $4)',
+                [groupId, inviterId, inviterId, 'accepted']
+            );
+        } else {
+            groupId = groupResult.rows[0].id;
+        }
+
+        // Create the invitation
+        const invitationResult = await pool.query(
+            'INSERT INTO study_group_invitations (study_group_id, inviter_id, invitee_id) VALUES ($1, $2, $3) ON CONFLICT (study_group_id, invitee_id) DO NOTHING RETURNING *',
+            [groupId, inviterId, inviteeId]
+        );
+
+        if (invitationResult.rows.length === 0) {
+             return res.status(409).json({ message: 'This user has already been invited.' });
+        }
+
+        res.status(201).json({ success: true, invitation: invitationResult.rows[0] });
+
+    } catch (error) {
+        console.error('Error sending invitation:', error);
+        res.status(500).json({ message: 'Server error while sending invitation.' });
+    }
+});
+
+// Get data for a specific study group
+app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) => {
+    const { skillId } = req.params;
+    const userId = req.user.id;
+
+    if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+    
+    try {
+        // Find the group the user is part of for this skill
+        const groupMembership = await pool.query(`
+            SELECT sg.id FROM study_groups sg
+            JOIN study_group_invitations sgi ON sg.id = sgi.study_group_id
+            WHERE sgi.invitee_id = $1 AND sg.skill_id = $2 AND sgi.status = 'accepted'
+        `, [userId, skillId]);
+
+        if (groupMembership.rows.length === 0) {
+            return res.json({ members: [], invitations: [] }); // User is not in a group for this skill
+        }
+        const groupId = groupMembership.rows[0].id;
+
+        // Get all accepted members and their progress
+        const membersResult = await pool.query(`
+            SELECT u.id, u.username as name, u.avatar, COALESCE(COUNT(up.material_id), 0) as completed_count
+            FROM users u
+            JOIN study_group_invitations sgi ON u.id = sgi.invitee_id
+            LEFT JOIN user_education_progress up ON u.id = up.user_id AND up.skill_id = $2
+            WHERE sgi.study_group_id = $1 AND sgi.status = 'accepted'
+            GROUP BY u.id, u.username, u.avatar
+        `, [groupId, skillId]);
+
+        // Get total materials for progress calculation
+        const materialsResult = await pool.query('SELECT COUNT(*) as total FROM education_materials WHERE skill_id = $1', [skillId]);
+        const totalMaterials = parseInt(materialsResult.rows[0].total, 10);
+
+        const members = membersResult.rows.map(m => ({
+            ...m,
+            progress: totalMaterials > 0 ? Math.round((m.completed_count / totalMaterials) * 100) : 0
+        }));
+
+        // Get all invitations for this group
+        const invitationsResult = await pool.query(`
+            SELECT i.id, u.email, i.status FROM study_group_invitations i
+            JOIN users u ON i.invitee_id = u.id
+            WHERE i.study_group_id = $1 AND i.invitee_id != i.inviter_id
+        `, [groupId]);
+        
+        res.json({ members, invitations: invitationsResult.rows });
+
+    } catch (error) {
+        console.error('Error fetching group data:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Get all pending invitations for the logged-in user
+app.get('/api/education/invitations', requireLogin, async (req, res) => {
+    const userId = req.user.id;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    try {
+        const invitations = await pool.query(`
+            SELECT i.id, s.skill_id, u.username as inviter_name
+            FROM study_group_invitations i
+            JOIN study_groups s ON i.study_group_id = s.id
+            JOIN users u ON i.inviter_id = u.id
+            WHERE i.invitee_id = $1 AND i.status = 'pending'
+        `, [userId]);
+        res.json(invitations.rows);
+    } catch (error) {
+        console.error('Error fetching invitations:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Respond to an invitation
+app.post('/api/education/invitations/respond', requireLogin, async (req, res) => {
+    const { invitationId, response } = req.body; // response should be 'accepted' or 'declined'
+    const userId = req.user.id;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    if (response !== 'accepted' && response !== 'declined') {
+        return res.status(400).json({ message: 'Invalid response.' });
+    }
+
+    try {
+        const result = await pool.query(
+            'UPDATE study_group_invitations SET status = $1 WHERE id = $2 AND invitee_id = $3 RETURNING *',
+            [response, invitationId, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Invitation not found or you are not authorized to respond.' });
+        }
+        res.json({ success: true, invitation: result.rows[0] });
+    } catch (error) {
+        console.error('Error responding to invitation:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 // --- END EDUCATION PAGE API ENDPOINTS ---
 
 

@@ -245,6 +245,18 @@
         </div>
     </footer>
 
+    <!-- Invitations Modal -->
+    <div id="invitations-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Your Study Group Invitations</h2>
+                <span class="text-2xl cursor-pointer text-gray-500" onclick="closeInvitationsModal()">&times;</span>
+            </div>
+            <div id="invitations-list" class="space-y-4">
+                <!-- Invitations will be injected here -->
+            </div>
+        </div>
+    </div>
 
     <div id="study-plan-modal" class="modal">
         <div class="modal-content">
@@ -357,9 +369,11 @@
                     });
                     if (!response.ok) {
                         if (response.status === 401) window.location.href = '/auth.html';
-                        throw new Error(`HTTP Error: ${response.status}`);
+                        const errorData = await response.json().catch(() => ({ message: `HTTP Error: ${response.status}` }));
+                        throw new Error(errorData.message);
                     }
-                    return response.json();
+                    const text = await response.text();
+                    return text ? JSON.parse(text) : {};
                 } catch (error) {
                     console.error(`API Error on ${endpoint}:`, error);
                     throw error;
@@ -376,30 +390,16 @@
                 method: 'POST',
                 body: JSON.stringify(plan)
             }),
-            getGroupStudyData: async (skillId) => {
-                console.log(`Fetching group data for skill: ${skillId}`);
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 500));
-                // Return mock data - in a real app, this would come from your backend
-                return {
-                    members: [
-                        { id: 1, name: 'Alex', avatar: 'https://placehold.co/40x40/8b00ff/white?text=A', progress: 75 },
-                        { id: 2, name: 'Ben', avatar: 'https://placehold.co/40x40/00f0ff/white?text=B', progress: 50 },
-                        { id: 3, name: 'Chris', avatar: 'https://placehold.co/40x40/39ff14/black?text=C', progress: 25 }
-                    ],
-                    invitations: [
-                        { email: 'dave@example.com', status: 'pending' },
-                        { email: 'eva@example.com', status: 'accepted' }
-                    ]
-                };
-            },
-            sendInvitation: async (skillId, email) => {
-                console.log(`Inviting ${email} to skill: ${skillId}`);
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 500));
-                // In a real app, you would get the response from the server.
-                return { success: true, invitation: { email, status: 'pending' } };
-            }
+            getGroupStudyData: (skillId) => ApiService.fetch(`/api/education/study-group/${skillId}`),
+            sendInvitation: (skillId, inviteeEmail) => ApiService.fetch('/api/education/study-group/invite', {
+                method: 'POST',
+                body: JSON.stringify({ skillId, inviteeEmail })
+            }),
+            getInvitations: () => ApiService.fetch('/api/education/invitations'),
+            respondToInvitation: (invitationId, response) => ApiService.fetch('/api/education/invitations/respond', {
+                method: 'POST',
+                body: JSON.stringify({ invitationId, response })
+            })
         };
 
         const colorMap = {
@@ -429,6 +429,7 @@
                 expertsData = content.expertsData;
                 populateSkillsGrid();
                 setupEventListeners();
+                checkForInvitations();
             } catch (error) {
                 console.error("Initialization failed", error);
                 document.getElementById('skills-grid').innerHTML = `<p class="text-red-500">Could not load learning content. Please try again later.</p>`;
@@ -637,7 +638,7 @@
             }
             groupMembers.forEach(member => {
                 const avatarImg = document.createElement('img');
-                avatarImg.src = member.avatar;
+                avatarImg.src = member.avatar || 'https://placehold.co/40x40/cccccc/ffffff?text=?';
                 avatarImg.title = `${member.name} (${member.progress}%)`; // Tooltip on hover
                 avatarImg.className = 'w-10 h-10 rounded-full border-2 border-white -mr-2 cursor-pointer';
                 membersContainer.appendChild(avatarImg);
@@ -673,17 +674,16 @@
             try {
                 const response = await ApiService.sendInvitation(currentSkillKey, email);
                 if (response.success) {
-                    // Avoid adding duplicates if the user is already in the list
                     if (!invitationHistory.some(inv => inv.email === email)) {
-                        invitationHistory.push(response.invitation);
+                        invitationHistory.push({ email: email, status: 'pending' });
                     }
                     renderInvitationHistory();
-                    emailInput.value = ''; // Clear input
+                    emailInput.value = '';
                     alert("Invitation sent!");
                 }
             } catch (error) {
                 console.error("Failed to send invitation:", error);
-                alert("Could not send invitation. Please try again.");
+                alert(`Could not send invitation: ${error.message}`);
             }
         }
         
@@ -698,6 +698,58 @@
             
             document.getElementById('team-progress-bar').style.width = `${averageProgress}%`;
             document.getElementById('team-progress-text').textContent = `${Math.round(averageProgress)}% Complete`;
+        }
+
+        // --- Invitation Modal Logic ---
+        const invitationsModal = document.getElementById('invitations-modal');
+        function openInvitationsModal() { invitationsModal.style.display = 'block'; }
+        function closeInvitationsModal() { invitationsModal.style.display = 'none'; }
+
+        async function checkForInvitations() {
+            try {
+                const invitations = await ApiService.getInvitations();
+                if (invitations && invitations.length > 0) {
+                    const list = document.getElementById('invitations-list');
+                    list.innerHTML = '';
+                    invitations.forEach(inv => {
+                        const skillTitle = learningData[inv.skill_id]?.title || 'a skill';
+                        const item = document.createElement('div');
+                        item.className = 'p-4 bg-gray-100 rounded-lg flex justify-between items-center';
+                        item.innerHTML = `
+                            <div>
+                                <p class="text-gray-700"><strong>${inv.inviter_name}</strong> invited you to study <strong>${skillTitle}</strong>.</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn-primary py-1 px-3 text-sm" onclick="respondToInvite(${inv.id}, 'accepted')">Accept</button>
+                                <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 py-1 px-3 text-sm rounded-lg" onclick="respondToInvite(${inv.id}, 'declined')">Decline</button>
+                            </div>
+                        `;
+                        list.appendChild(item);
+                    });
+                    openInvitationsModal();
+                }
+            } catch (error) {
+                console.error("Could not check for invitations:", error);
+            }
+        }
+
+        async function respondToInvite(invitationId, response) {
+            try {
+                await ApiService.respondToInvitation(invitationId, response);
+                alert(`Invitation ${response}.`);
+                // Refresh the invitations list
+                const list = document.getElementById('invitations-list');
+                const itemToRemove = list.querySelector(`button[onclick*="respondToInvite(${invitationId},"]`).closest('.p-4');
+                if (itemToRemove) {
+                    itemToRemove.remove();
+                }
+                // If no more invitations, close the modal
+                if (list.children.length === 0) {
+                    closeInvitationsModal();
+                }
+            } catch (error) {
+                alert(`Failed to respond to invitation: ${error.message}`);
+            }
         }
 
         // --- Expert Logic ---
@@ -817,6 +869,7 @@
                 if (event.target == studyPlanModal) closeStudyPlanModal();
                 if (event.target == expertProfileModal) closeExpertProfileModal();
                 if (event.target == bookingModal) closeBookingModal();
+                if (event.target == invitationsModal) closeInvitationsModal();
             }
             
             document.getElementById('sidebar-toggle').addEventListener('click', () => document.body.classList.toggle('sidebar-collapsed'));
