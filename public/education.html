@@ -163,7 +163,7 @@
                     </div>
                 </header>
                 <div id="skills-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    </div>
+                </div>
             </div>
 
             <div id="skill-detail-page" class="hidden">
@@ -196,21 +196,23 @@
                 <div class="mb-8">
                     <h3 class="text-2xl font-bold mb-4 text-gray-800">Learning Materials</h3>
                     <div id="learning-materials" class="space-y-4">
-                        </div>
+                    </div>
                     <div id="pagination-controls" class="flex justify-center items-center mt-6 space-x-2">
-                        </div>
+                    </div>
                 </div>
 
                 <div class="glass-card p-6 mb-8">
                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Group Study</h3>
                     <div id="group-members-avatars" class="flex items-center mb-4">
-                        </div>
+                        <!-- Avatars for team members will be injected here -->
+                    </div>
                      <form id="invite-form" class="flex items-center gap-2 mt-4">
                         <input type="email" id="invite-email" placeholder="Enter friend's email" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-purple-500 focus:border-transparent" required>
                         <button type="submit" class="btn-primary py-2 px-4 text-sm">Invite</button>
                     </form>
                     <div id="invitation-history" class="mt-4 space-y-2">
-                        </div>
+                        <!-- Invitation history will be injected here -->
+                    </div>
                     <h4 class="font-semibold mb-2 mt-6 text-gray-700">Team Progress</h4>
                     <div class="progress-bar h-4 w-full">
                         <div id="team-progress-bar" class="progress-bar-inner h-4" style="width: 0%;"></div>
@@ -221,13 +223,13 @@
                 <div class="glass-card p-6">
                     <h3 class="text-xl font-bold mb-4 text-gray-800">Book Live Calls with Experts</h3>
                     <div id="expert-list" class="space-y-4">
-                        </div>
+                    </div>
                 </div>
                 
                 <div id="booking-history-section" class="hidden glass-card p-6 mt-8">
                      <h3 class="text-xl font-semibold mb-4 text-gray-800">Call Request History</h3>
                      <div id="booking-history-list" class="space-y-4">
-                         </div>
+                     </div>
                 </div>
             </div>
         </div>
@@ -345,17 +347,40 @@
         let currentPage = 1;
         const itemsPerPage = 5;
 
-        // --- API Service Layer (with simulated group study functions) ---
+        // --- API Service Layer ---
         const ApiService = {
             async fetch(endpoint, options = {}) {
-                // ... (existing fetch logic)
+                try {
+                    const response = await fetch(endpoint, {
+                        ...options,
+                        headers: { 'Content-Type': 'application/json', ...options.headers },
+                    });
+                    if (!response.ok) {
+                        if (response.status === 401) window.location.href = '/auth.html';
+                        throw new Error(`HTTP Error: ${response.status}`);
+                    }
+                    return response.json();
+                } catch (error) {
+                    console.error(`API Error on ${endpoint}:`, error);
+                    throw error;
+                }
             },
-            // ... (existing API functions)
+            checkSession: () => ApiService.fetch('/check-session'),
+            getEducationContent: () => ApiService.fetch('/api/education/content'),
+            getUserDataForSkill: (skillId) => ApiService.fetch(`/api/education/user-data/${skillId}`),
+            updateProgress: (materialId, completed) => ApiService.fetch('/api/education/progress', {
+                method: 'POST',
+                body: JSON.stringify({ materialId, completed })
+            }),
+            saveStudyPlan: (plan) => ApiService.fetch('/api/education/study-plan', {
+                method: 'POST',
+                body: JSON.stringify(plan)
+            }),
             getGroupStudyData: async (skillId) => {
                 console.log(`Fetching group data for skill: ${skillId}`);
                 // Simulate API call
                 await new Promise(resolve => setTimeout(resolve, 500));
-                // Return mock data
+                // Return mock data - in a real app, this would come from your backend
                 return {
                     members: [
                         { id: 1, name: 'Alex', avatar: 'https://placehold.co/40x40/8b00ff/white?text=A', progress: 75 },
@@ -372,18 +397,71 @@
                 console.log(`Inviting ${email} to skill: ${skillId}`);
                 // Simulate API call
                 await new Promise(resolve => setTimeout(resolve, 500));
+                // In a real app, you would get the response from the server.
                 return { success: true, invitation: { email, status: 'pending' } };
             }
         };
 
-        const colorMap = { /* ... (existing colorMap) ... */ };
+        const colorMap = {
+            purple: { bg: 'bg-purple-500/10', text: 'text-purple-600' },
+            cyan: { bg: 'bg-cyan-500/10', text: 'text-cyan-600' },
+            red: { bg: 'bg-red-500/10', text: 'text-red-600' },
+            amber: { bg: 'bg-amber-500/10', text: 'text-amber-600' },
+            blue: { bg: 'bg-blue-500/10', text: 'text-blue-600' },
+            green: { bg: 'bg-green-500/10', text: 'text-green-600' },
+            indigo: { bg: 'bg-indigo-500/10', text: 'text-indigo-600' },
+            pink: { bg: 'bg-pink-500/10', text: 'text-pink-600' },
+            teal: { bg: 'bg-teal-500/10', text: 'text-teal-600' },
+            rose: { bg: 'bg-rose-500/10', text: 'text-rose-600' }
+        };
 
         // --- Page Initialization ---
         document.addEventListener('DOMContentLoaded', async () => {
-            // ... (existing DOMContentLoaded logic)
+            const session = await ApiService.checkSession();
+            if (!session.loggedIn) {
+                window.location.href = '/auth.html';
+                return;
+            }
+            
+            try {
+                const content = await ApiService.getEducationContent();
+                learningData = content.learningData;
+                expertsData = content.expertsData;
+                populateSkillsGrid();
+                setupEventListeners();
+            } catch (error) {
+                console.error("Initialization failed", error);
+                document.getElementById('skills-grid').innerHTML = `<p class="text-red-500">Could not load learning content. Please try again later.</p>`;
+            }
         });
 
-        function populateSkillsGrid(searchTerm = '') { /* ... (existing function) ... */ }
+        function populateSkillsGrid(searchTerm = '') {
+            const skillsGrid = document.getElementById('skills-grid');
+            skillsGrid.innerHTML = ''; // Clear existing
+            for (const key in learningData) {
+                const skill = learningData[key];
+                
+                if (searchTerm && !skill.title.toLowerCase().includes(searchTerm)) {
+                    continue; // Skip if it doesn't match search
+                }
+
+                const colors = colorMap[skill.color] || colorMap.purple;
+                const card = document.createElement('div');
+                card.className = 'glass-card p-6 cursor-pointer';
+                card.onclick = () => showSkillDetail(key);
+                card.innerHTML = `
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 ${colors.bg} rounded-lg mr-4"><i class="${skill.icon} text-2xl ${colors.text}"></i></div>
+                        <h2 class="text-xl font-bold text-gray-800">${skill.title}</h2>
+                    </div>
+                    <p class="text-gray-600 mb-4 text-sm">${skill.description}</p>
+                    <div class="flex items-center text-sm text-gray-500">
+                        <i class="fas fa-book mr-2"></i> ${skill.courses} Courses &nbsp;&nbsp; <i class="fas fa-clock mr-2"></i> ${skill.hours} Hours
+                    </div>
+                `;
+                skillsGrid.appendChild(card);
+            }
+        }
 
         // --- Page Navigation & Detail View ---
         const skillsPage = document.getElementById('skills-page');
@@ -399,22 +477,20 @@
             if (!data) return;
 
             try {
-                // Regular data fetch
                 const userData = await ApiService.getUserDataForSkill(skillKey);
                 userProgress = userData.completedMaterials || [];
-                
-                // Group study data fetch
+
                 const groupData = await ApiService.getGroupStudyData(skillKey);
                 groupMembers = groupData.members || [];
                 invitationHistory = groupData.invitations || [];
-
+                
                 skillTitle.textContent = data.title;
                 renderLearningMaterials();
                 renderPaginationControls();
                 updateProgress();
                 renderSkillExperts(data.expertIds);
                 renderGroupStudy();
-
+                
                 if (userData.activePlan) {
                     displayStudyPlan(userData.activePlan);
                 } else {
@@ -430,13 +506,120 @@
             }
         }
         
-        // --- Learning Materials & Pagination ---
-        function renderLearningMaterials() { /* ... (existing function) ... */ }
-        function renderPaginationControls() { /* ... (existing function) ... */ }
-        function changePage(page) { /* ... (existing function) ... */ }
-        async function toggleMaterialComplete(materialId, isCompleted) { /* ... (existing function) ... */ }
-        function updateProgress() { /* ... (existing function) ... */ }
-        function showSkillsGrid() { /* ... (existing function) ... */ }
+        function renderLearningMaterials() {
+            const data = learningData[currentSkillKey];
+            learningMaterialsContainer.innerHTML = '';
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedMaterials = data.materials.slice(startIndex, endIndex);
+
+            paginatedMaterials.forEach(material => {
+                const isCompleted = userProgress.includes(material.id);
+                
+                const materialLink = document.createElement('a');
+                materialLink.href = material.link || '#';
+                materialLink.target = '_blank';
+                materialLink.rel = 'noopener noreferrer';
+                materialLink.className = `p-4 rounded-lg flex items-center justify-between transition-all ${isCompleted ? 'bg-green-100' : 'bg-gray-100'} hover:shadow-md`;
+
+                const iconClass = material.type === 'video' ? 'fa-play-circle' : 'fa-file-alt';
+                
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.className = 'flex-shrink-0';
+                checkboxContainer.innerHTML = isCompleted 
+                    ? `<i class="fas fa-check-circle text-green-500 text-xl cursor-pointer"></i>` 
+                    : `<div class="w-5 h-5 border-2 border-gray-400 rounded-full cursor-pointer"></div>`;
+                
+                checkboxContainer.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleMaterialComplete(material.id, !isCompleted);
+                });
+
+                materialLink.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas ${iconClass} text-purple-600 text-2xl mr-4"></i>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">${material.title}</h4>
+                            <p class="text-sm text-gray-500">${material.duration}</p>
+                        </div>
+                    </div>
+                `;
+                materialLink.appendChild(checkboxContainer);
+                learningMaterialsContainer.appendChild(materialLink);
+            });
+        }
+
+        function renderPaginationControls() {
+            const data = learningData[currentSkillKey];
+            const totalItems = data.materials.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            paginationControlsContainer.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            // Previous Button
+            const prevButton = document.createElement('button');
+            prevButton.innerHTML = `<i class="fas fa-chevron-left"></i>`;
+            prevButton.className = "px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 disabled:opacity-50";
+            prevButton.disabled = currentPage === 1;
+            prevButton.onclick = () => changePage(currentPage - 1);
+            paginationControlsContainer.appendChild(prevButton);
+
+            // Page Numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.className = `px-3 py-1 rounded-md ${currentPage === i ? 'bg-purple-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`;
+                pageButton.onclick = () => changePage(i);
+                paginationControlsContainer.appendChild(pageButton);
+            }
+
+            // Next Button
+            const nextButton = document.createElement('button');
+            nextButton.innerHTML = `<i class="fas fa-chevron-right"></i>`;
+            nextButton.className = "px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 disabled:opacity-50";
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.onclick = () => changePage(currentPage + 1);
+            paginationControlsContainer.appendChild(nextButton);
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderLearningMaterials();
+            renderPaginationControls();
+        }
+
+        async function toggleMaterialComplete(materialId, isCompleted) {
+            try {
+                await ApiService.updateProgress(materialId, isCompleted);
+                if (isCompleted) {
+                    userProgress.push(materialId);
+                } else {
+                    userProgress = userProgress.filter(id => id !== materialId);
+                }
+                renderLearningMaterials();
+                updateProgress();
+            } catch (error) {
+                console.error("Failed to update progress", error);
+            }
+        }
+
+        function updateProgress() {
+            const skill = learningData[currentSkillKey];
+            const completedCount = userProgress.length;
+            const progress = skill.materials.length > 0 ? (completedCount / skill.materials.length) * 100 : 0;
+            document.getElementById('skill-progress-bar').style.width = `${progress}%`;
+            document.getElementById('skill-progress-text').textContent = `${Math.round(progress)}% Complete`;
+        }
+
+        function showSkillsGrid() {
+            currentSkillKey = null;
+            skillDetailPage.classList.add('hidden');
+            skillsPage.classList.remove('hidden');
+            if (countdownInterval) clearInterval(countdownInterval);
+        }
 
         // --- Group Study Logic ---
         function renderGroupStudy() {
@@ -449,13 +632,13 @@
             const membersContainer = document.getElementById('group-members-avatars');
             membersContainer.innerHTML = '';
             if (groupMembers.length === 0) {
-                membersContainer.innerHTML = `<p class="text-sm text-gray-500">No members in your group yet. Invite some friends!</p>`;
+                membersContainer.innerHTML = `<p class="text-sm text-gray-500">No members yet. Invite friends to study together!</p>`;
                 return;
             }
             groupMembers.forEach(member => {
                 const avatarImg = document.createElement('img');
                 avatarImg.src = member.avatar;
-                avatarImg.title = `${member.name} (${member.progress}%)`;
+                avatarImg.title = `${member.name} (${member.progress}%)`; // Tooltip on hover
                 avatarImg.className = 'w-10 h-10 rounded-full border-2 border-white -mr-2 cursor-pointer';
                 membersContainer.appendChild(avatarImg);
             });
@@ -464,7 +647,10 @@
         function renderInvitationHistory() {
             const historyContainer = document.getElementById('invitation-history');
             historyContainer.innerHTML = '';
-            if (invitationHistory.length === 0) return;
+            if (invitationHistory.length === 0) {
+                historyContainer.innerHTML = '<p class="text-sm text-gray-400 italic">No pending invitations.</p>';
+                return;
+            }
 
             invitationHistory.forEach(invite => {
                 const statusClass = invite.status === 'pending' ? 'text-amber-600 bg-amber-100' : 'text-green-600 bg-green-100';
@@ -487,7 +673,10 @@
             try {
                 const response = await ApiService.sendInvitation(currentSkillKey, email);
                 if (response.success) {
-                    invitationHistory.push(response.invitation);
+                    // Avoid adding duplicates if the user is already in the list
+                    if (!invitationHistory.some(inv => inv.email === email)) {
+                        invitationHistory.push(response.invitation);
+                    }
                     renderInvitationHistory();
                     emailInput.value = ''; // Clear input
                     alert("Invitation sent!");
@@ -504,7 +693,6 @@
                  document.getElementById('team-progress-text').textContent = `0% Complete`;
                 return;
             }
-
             const totalProgress = groupMembers.reduce((sum, member) => sum + member.progress, 0);
             const averageProgress = totalProgress / groupMembers.length;
             
@@ -513,17 +701,113 @@
         }
 
         // --- Expert Logic ---
-        function renderSkillExperts(expertIds) { /* ... (existing function) ... */ }
+        function renderSkillExperts(expertIds) {
+            const expertList = document.getElementById('expert-list');
+            expertList.innerHTML = '';
+            if (!expertIds || expertIds.length === 0) {
+                expertList.innerHTML = '<p class="text-gray-500">No experts available for this skill yet.</p>';
+                return;
+            }
+
+            expertIds.forEach(id => {
+                const expert = expertsData[id];
+                if (expert) {
+                    const expertCard = document.createElement('div');
+                    expertCard.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg';
+                    expertCard.innerHTML = `
+                        <div class="flex items-center">
+                            <img src="${expert.avatar}" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <h4 class="font-semibold text-lg text-gray-800">${expert.name}</h4>
+                                <p class="text-sm text-gray-500">${expert.title}</p>
+                            </div>
+                        </div>
+                        <button class="btn-primary text-sm py-2 px-4" onclick="openExpertProfileModal('${id}')">View Profile</button>
+                    `;
+                    expertList.appendChild(expertCard);
+                }
+            });
+        }
 
         // --- Modal & Form Logic ---
-        function openStudyPlanModal() { /* ... (existing function) ... */ }
-        function closeStudyPlanModal() { /* ... (existing function) ... */ }
-        function openExpertProfileModal(expertId) { /* ... (existing function) ... */ }
-        function closeExpertProfileModal() { /* ... (existing function) ... */ }
-        function openBookingModal(expertId) { /* ... (existing function) ... */ }
-        function closeBookingModal() { /* ... (existing function) ... */ }
-        async function handleStudyPlanSubmit(event) { /* ... (existing function) ... */ }
-        function displayStudyPlan(plan) { /* ... (existing function) ... */ }
+        const studyPlanModal = document.getElementById('study-plan-modal');
+        const expertProfileModal = document.getElementById('expert-profile-modal');
+        const bookingModal = document.getElementById('booking-modal');
+
+        function openStudyPlanModal() { studyPlanModal.style.display = 'block'; }
+        function closeStudyPlanModal() { studyPlanModal.style.display = 'none'; }
+        function openExpertProfileModal(expertId) {
+            const expert = expertsData[expertId];
+            if (!expert) return;
+
+            document.getElementById('expert-modal-avatar').src = expert.avatar;
+            document.getElementById('expert-modal-name').textContent = expert.name;
+            document.getElementById('expert-modal-title').textContent = expert.title;
+            document.getElementById('expert-modal-bio').textContent = expert.bio;
+            document.getElementById('expert-profile-book-btn').onclick = () => openBookingModal(expertId);
+
+            const socialsContainer = document.getElementById('expert-modal-socials');
+            socialsContainer.innerHTML = '';
+            for(const social in expert.socials) {
+                const icon = social === 'website' ? 'fas fa-globe' : `fab fa-${social}`;
+                socialsContainer.innerHTML += `<a href="${expert.socials[social]}" target="_blank" class="text-gray-500 hover:text-purple-600 text-2xl"><i class="${icon}"></i></a>`;
+            }
+
+            const portfolioContainer = document.getElementById('expert-modal-portfolio');
+            portfolioContainer.innerHTML = '';
+            expert.portfolio.forEach(item => {
+                portfolioContainer.innerHTML += `<div class="bg-gray-100 p-3 rounded-lg"><h4 class="font-semibold text-gray-800">${item.title}</h4><p class="text-sm text-gray-600">${item.description}</p></div>`;
+            });
+
+            expertProfileModal.style.display = 'block';
+        }
+        function closeExpertProfileModal() { expertProfileModal.style.display = 'none'; }
+        function openBookingModal(expertId) {
+            currentBookingExpertId = expertId;
+            const expert = expertsData[expertId];
+            if (!expert) return;
+            closeExpertProfileModal();
+            document.getElementById('booking-expert-name').textContent = expert.name;
+            const now = new Date();
+            now.setDate(now.getDate() + 2);
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            const minDateTime = `${year}-${month}-${day}T00:00`;
+            document.getElementById('booking-datetime').min = minDateTime;
+            bookingModal.style.display = 'block';
+        }
+        function closeBookingModal() { bookingModal.style.display = 'none'; }
+
+        async function handleStudyPlanSubmit(event) {
+            event.preventDefault();
+            const goal = document.getElementById('study-goal').value;
+            const time = document.getElementById('study-time').value;
+            const selectedDays = [...document.querySelectorAll('.day-toggle.active')].map(el => parseInt(el.dataset.day));
+
+            if (!goal || !time || selectedDays.length === 0) {
+                alert("Please fill out all fields and select at least one day.");
+                return;
+            }
+            
+            try {
+                const plan = { skillId: currentSkillKey, goal, days: selectedDays, time };
+                await ApiService.saveStudyPlan(plan);
+                displayStudyPlan({ goal, days: selectedDays, reminder_time: time });
+                alert("Study plan saved!");
+                closeStudyPlanModal();
+            } catch (error) {
+                alert("Failed to save study plan. Please try again.");
+            }
+        }
+        
+        function displayStudyPlan(plan) {
+            document.getElementById('plan-goal-display').textContent = `Goal: ${plan.goal}`;
+            document.getElementById('study-plan-display').classList.remove('hidden');
+            document.getElementById('create-plan-btn').classList.add('hidden');
+            startCountdown(plan.days, plan.reminder_time);
+        }
+
         function handleBookingSubmit(event) { /* ... UI logic ... */ }
         function renderBookingHistory() { /* ... UI logic ... */ }
         function startCountdown(days, time) { /* ... UI logic ... */ }
