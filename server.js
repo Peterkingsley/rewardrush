@@ -349,16 +349,31 @@ app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) =>
         `, [userId, skillId]);
 
         if (groupMembership.rows.length === 0) {
-            return res.json({ members: [], invitations: [] }); // User is not in a group for this skill
+            // If the user isn't an accepted member, check if they are the creator of a group for this skill
+             const creatorGroup = await pool.query('SELECT id FROM study_groups WHERE creator_id = $1 AND skill_id = $2', [userId, skillId]);
+             if (creatorGroup.rows.length === 0) {
+                // If they are not in a group and not a creator, return empty data
+                return res.json({ members: [], invitations: [] }); 
+             }
+             groupMembership.rows.push(creatorGroup.rows[0]);
         }
         const groupId = groupMembership.rows[0].id;
 
-        // Get all accepted members and their progress
+        // Get all accepted members and their progress using a more robust LEFT JOIN
         const membersResult = await pool.query(`
-            SELECT u.id, u.username as name, u.avatar, COALESCE(COUNT(up.material_id), 0) as completed_count
+            SELECT
+                u.id,
+                u.username AS name,
+                u.avatar,
+                COUNT(ump.material_id) AS completed_count
             FROM users u
             JOIN study_group_invitations sgi ON u.id = sgi.invitee_id
-            LEFT JOIN user_education_progress up ON u.id = up.user_id AND up.skill_id = $2
+            LEFT JOIN (
+                SELECT ump_inner.user_id, ump_inner.material_id
+                FROM user_material_progress ump_inner
+                JOIN education_materials em ON ump_inner.material_id = em.id
+                WHERE em.skill_id = $2
+            ) AS ump ON ump.user_id = u.id
             WHERE sgi.study_group_id = $1 AND sgi.status = 'accepted'
             GROUP BY u.id, u.username, u.avatar
         `, [groupId, skillId]);
@@ -369,7 +384,7 @@ app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) =>
 
         const members = membersResult.rows.map(m => ({
             ...m,
-            progress: totalMaterials > 0 ? Math.round((m.completed_count / totalMaterials) * 100) : 0
+            progress: totalMaterials > 0 ? Math.round((parseInt(m.completed_count, 10) / totalMaterials) * 100) : 0
         }));
 
         // Get all invitations for this group
@@ -383,7 +398,7 @@ app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) =>
 
     } catch (error) {
         console.error('Error fetching group data:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ message: 'Server error while fetching group data.' });
     }
 });
 
