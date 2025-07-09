@@ -97,10 +97,8 @@
 </head>
 <body class="text-gray-800">
 
-    <!-- Sidebar -->
     <aside id="desktop-sidebar" class="hidden md:flex flex-col justify-between w-64 bg-white fixed top-0 left-0 h-full z-40 transition-all duration-300">
         <div>
-            <!-- Sidebar Header -->
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
                 <div class="flex items-center text-2xl font-semibold text-gray-800">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
@@ -110,7 +108,6 @@
                     <i class="fas fa-chevron-left transition-transform duration-300"></i>
                 </button>
             </div>
-            <!-- Navigation -->
             <nav class="p-4">
                 <ul>
                     <li class="mb-4"><a href="groweasy.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-compass w-6 text-center mr-4"></i><span class="sidebar-text">Quests</span></a></li>
@@ -121,7 +118,6 @@
                 </ul>
             </nav>
         </div>
-        <!-- Social & Theme Toggle -->
         <div class="p-4">
             <div class="sidebar-text border-t border-gray-200 pt-4">
                 <h3 class="text-xs uppercase text-gray-500 font-bold mb-4">Follow Us</h3>
@@ -140,9 +136,7 @@
         </div>
     </aside>
 
-    <!-- Main Content -->
     <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
-        <!-- Mobile Header -->
         <div class="md:hidden sticky top-0 z-30 bg-light-bg/95 backdrop-blur-sm pt-4 pb-2">
              <div class="px-4">
                 <header class="bg-white shadow-md p-4 flex items-center justify-center rounded-2xl">
@@ -155,7 +149,6 @@
         </div>
 
         <div id="page-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <!-- Initial Page: Skills Grid -->
             <div id="skills-page">
                 <header class="mb-8">
                     <h1 class="text-4xl font-bold font-montserrat text-gray-900">Choose Your Path</h1>
@@ -170,11 +163,9 @@
                     </div>
                 </header>
                 <div id="skills-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    <!-- Skill cards will be injected here by JS -->
-                </div>
+                    </div>
             </div>
 
-            <!-- Skill Detail Page (hidden by default) -->
             <div id="skill-detail-page" class="hidden">
                 <button class="mb-6 text-purple-600 hover:text-purple-800 font-semibold" onclick="showSkillsGrid()"><i class="fas fa-arrow-left mr-2"></i> Back to Skills</button>
                 <header class="mb-8 flex flex-col md:flex-row justify-between md:items-center">
@@ -185,7 +176,6 @@
                     <button id="create-plan-btn" class="btn-primary" onclick="openStudyPlanModal()">Create Study Plan</button>
                 </header>
                 
-                <!-- Study Plan Display -->
                 <div id="study-plan-display" class="hidden glass-card p-6 mb-8">
                      <h3 class="text-xl font-semibold mb-2 text-gray-800">Your Active Plan</h3>
                      <p class="text-gray-600 mb-4" id="plan-goal-display"></p>
@@ -195,7 +185,6 @@
                      </div>
                 </div>
 
-                <!-- Progress Section -->
                 <div class="glass-card p-6 mb-8">
                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Your Progress</h3>
                     <div class="progress-bar h-4 w-full">
@@ -204,19 +193,17 @@
                     <p id="skill-progress-text" class="text-right mt-2 text-gray-500">0% Complete</p>
                 </div>
 
-                <!-- Study Materials Section -->
                 <div class="mb-8">
                     <h3 class="text-2xl font-bold mb-4 text-gray-800">Learning Materials</h3>
                     <div id="learning-materials" class="space-y-4">
-                        <!-- Materials will be injected by JS -->
-                    </div>
+                        </div>
+                    <div id="pagination-controls" class="flex justify-center items-center mt-6 space-x-2">
+                        </div>
                 </div>
 
-                <!-- Group Study Section -->
                 <div class="glass-card p-6 mb-8">
                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Group Study</h3>
                     <div class="flex items-center mb-4">
-                        <!-- Avatars for team members -->
                         <img src="https://placehold.co/40x40/8b00ff/white?text=A" class="rounded-full border-2 border-white -mr-2">
                         <img src="https://placehold.co/40x40/00f0ff/white?text=B" class="rounded-full border-2 border-white -mr-2">
                         <img src="https://placehold.co/40x40/39ff14/black?text=C" class="rounded-full border-2 border-white">
@@ -226,8 +213,7 @@
                         <button type="submit" class="btn-primary py-2 px-4 text-sm">Invite</button>
                     </form>
                     <div id="invitation-history" class="mt-6">
-                        <!-- Invitation history will be injected here -->
-                    </div>
+                        </div>
                     <h4 class="font-semibold mb-2 mt-6 text-gray-700">Team Progress</h4>
                     <div class="progress-bar h-4 w-full">
                         <div class="progress-bar-inner h-4" style="width: 40%;"></div>
@@ -235,26 +221,21 @@
                     <p class="text-right mt-2 text-gray-500">40% Complete</p>
                 </div>
 
-                <!-- Expert Booking Section -->
                 <div class="glass-card p-6">
                     <h3 class="text-xl font-bold mb-4 text-gray-800">Book Live Calls with Experts</h3>
                     <div id="expert-list" class="space-y-4">
-                        <!-- Expert cards will be injected here -->
-                    </div>
+                        </div>
                 </div>
                 
-                <!-- Booking History Section -->
                 <div id="booking-history-section" class="hidden glass-card p-6 mt-8">
                      <h3 class="text-xl font-semibold mb-4 text-gray-800">Call Request History</h3>
                      <div id="booking-history-list" class="space-y-4">
-                         <!-- Booking history will be injected here -->
-                     </div>
+                         </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Mobile Bottom Nav -->
     <footer class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-t-md p-2 z-40 border-t border-gray-200">
         <div class="flex justify-around items-center">
             <a href="groweasy.html" class="flex flex-col items-center text-gray-500 w-1/5"><i class="fas fa-compass text-lg"></i><span class="text-xs mt-1">Quests</span></a>
@@ -266,7 +247,6 @@
     </footer>
 
 
-    <!-- Study Plan Modal -->
     <div id="study-plan-modal" class="modal">
         <div class="modal-content">
             <div class="flex justify-between items-center mb-6">
@@ -281,7 +261,6 @@
                 <div class="mb-4">
                     <label class="block mb-2 text-sm font-medium text-gray-700">When do you want to study?</label>
                     <div id="day-selector" class="grid grid-cols-3 md:grid-cols-7 gap-2">
-                        <!-- Day selection -->
                         <button type="button" data-day="1" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Mon</button>
                         <button type="button" data-day="2" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Tue</button>
                         <button type="button" data-day="3" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Wed</button>
@@ -300,7 +279,6 @@
         </div>
     </div>
     
-    <!-- Expert Profile Modal -->
     <div id="expert-profile-modal" class="modal">
         <div class="modal-content max-w-2xl">
             <div class="flex justify-between items-start mb-6">
@@ -335,7 +313,6 @@
         </div>
     </div>
 
-    <!-- Booking Modal -->
     <div id="booking-modal" class="modal">
         <div class="modal-content">
             <div class="flex justify-between items-center mb-6">
@@ -367,6 +344,8 @@
         let learningData = {};
         let expertsData = {};
         let userProgress = [];
+        let currentPage = 1;
+        const itemsPerPage = 5;
 
         // --- API Service Layer ---
         const ApiService = {
@@ -465,9 +444,11 @@
         const skillDetailPage = document.getElementById('skill-detail-page');
         const skillTitle = document.getElementById('skill-title');
         const learningMaterialsContainer = document.getElementById('learning-materials');
+        const paginationControlsContainer = document.getElementById('pagination-controls');
 
         async function showSkillDetail(skillKey) {
             currentSkillKey = skillKey;
+            currentPage = 1;
             const data = learningData[skillKey];
             if (!data) return;
 
@@ -477,6 +458,7 @@
                 
                 skillTitle.textContent = data.title;
                 renderLearningMaterials();
+                renderPaginationControls();
                 updateProgress();
                 renderSkillExperts(data.expertIds);
                 
@@ -498,7 +480,12 @@
         function renderLearningMaterials() {
             const data = learningData[currentSkillKey];
             learningMaterialsContainer.innerHTML = '';
-            data.materials.forEach(material => {
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedMaterials = data.materials.slice(startIndex, endIndex);
+
+            paginatedMaterials.forEach(material => {
                 const isCompleted = userProgress.includes(material.id);
                 
                 const materialLink = document.createElement('a');
@@ -533,6 +520,46 @@
                 materialLink.appendChild(checkboxContainer);
                 learningMaterialsContainer.appendChild(materialLink);
             });
+        }
+
+        function renderPaginationControls() {
+            const data = learningData[currentSkillKey];
+            const totalItems = data.materials.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            paginationControlsContainer.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            // Previous Button
+            const prevButton = document.createElement('button');
+            prevButton.innerHTML = `<i class="fas fa-chevron-left"></i>`;
+            prevButton.className = "px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 disabled:opacity-50";
+            prevButton.disabled = currentPage === 1;
+            prevButton.onclick = () => changePage(currentPage - 1);
+            paginationControlsContainer.appendChild(prevButton);
+
+            // Page Numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.className = `px-3 py-1 rounded-md ${currentPage === i ? 'bg-purple-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`;
+                pageButton.onclick = () => changePage(i);
+                paginationControlsContainer.appendChild(pageButton);
+            }
+
+            // Next Button
+            const nextButton = document.createElement('button');
+            nextButton.innerHTML = `<i class="fas fa-chevron-right"></i>`;
+            nextButton.className = "px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 disabled:opacity-50";
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.onclick = () => changePage(currentPage + 1);
+            paginationControlsContainer.appendChild(nextButton);
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderLearningMaterials();
+            renderPaginationControls();
         }
 
         async function toggleMaterialComplete(materialId, isCompleted) {
