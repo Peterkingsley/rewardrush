@@ -237,7 +237,7 @@
 
                 <!-- Expert Booking Section -->
                 <div class="glass-card p-6">
-                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Book Live Calls with Experts</h3>
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">Book Live Calls with Experts</h3>
                     <div id="expert-list" class="space-y-4">
                         <!-- Expert cards will be injected here -->
                     </div>
@@ -399,7 +399,6 @@
             }),
         };
 
-        // --- Color Map ---
         const colorMap = {
             purple: { bg: 'bg-purple-500/10', text: 'text-purple-600' },
             cyan: { bg: 'bg-cyan-500/10', text: 'text-cyan-600' },
@@ -426,11 +425,10 @@
                 learningData = content.learningData;
                 expertsData = content.expertsData;
                 populateSkillsGrid();
-                renderExperts();
                 setupEventListeners();
             } catch (error) {
                 console.error("Initialization failed", error);
-                // Display an error message to the user
+                document.getElementById('skills-grid').innerHTML = `<p class="text-red-500">Could not load learning content. Please try again later.</p>`;
             }
         });
 
@@ -480,6 +478,7 @@
                 skillTitle.textContent = data.title;
                 renderLearningMaterials();
                 updateProgress();
+                renderSkillExperts(data.expertIds);
                 
                 if (userData.activePlan) {
                     displayStudyPlan(userData.activePlan);
@@ -501,15 +500,28 @@
             learningMaterialsContainer.innerHTML = '';
             data.materials.forEach(material => {
                 const isCompleted = userProgress.includes(material.id);
-                const materialEl = document.createElement('div');
-                materialEl.className = `p-4 rounded-lg flex items-center justify-between transition-all ${isCompleted ? 'bg-green-100' : 'bg-gray-100'}`;
                 
-                const iconClass = material.type === 'video' ? 'fa-play-circle' : 'fa-image';
-                const statusIcon = isCompleted 
-                    ? `<i class="fas fa-check-circle text-green-500 text-xl cursor-pointer" onclick="toggleMaterialComplete(${material.id}, false)"></i>` 
-                    : `<div class="w-5 h-5 border-2 border-gray-400 rounded-full cursor-pointer" onclick="toggleMaterialComplete(${material.id}, true)"></div>`;
+                const materialLink = document.createElement('a');
+                materialLink.href = material.link || '#';
+                materialLink.target = '_blank';
+                materialLink.rel = 'noopener noreferrer';
+                materialLink.className = `p-4 rounded-lg flex items-center justify-between transition-all ${isCompleted ? 'bg-green-100' : 'bg-gray-100'} hover:shadow-md`;
 
-                materialEl.innerHTML = `
+                const iconClass = material.type === 'video' ? 'fa-play-circle' : 'fa-file-alt';
+                
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.className = 'flex-shrink-0';
+                checkboxContainer.innerHTML = isCompleted 
+                    ? `<i class="fas fa-check-circle text-green-500 text-xl cursor-pointer"></i>` 
+                    : `<div class="w-5 h-5 border-2 border-gray-400 rounded-full cursor-pointer"></div>`;
+                
+                checkboxContainer.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleMaterialComplete(material.id, !isCompleted);
+                });
+
+                materialLink.innerHTML = `
                     <div class="flex items-center">
                         <i class="fas ${iconClass} text-purple-600 text-2xl mr-4"></i>
                         <div>
@@ -517,9 +529,9 @@
                             <p class="text-sm text-gray-500">${material.duration}</p>
                         </div>
                     </div>
-                    ${statusIcon}
                 `;
-                learningMaterialsContainer.appendChild(materialEl);
+                materialLink.appendChild(checkboxContainer);
+                learningMaterialsContainer.appendChild(materialLink);
             });
         }
 
@@ -554,25 +566,32 @@
         }
 
         // --- Expert Logic ---
-        function renderExperts() {
+        function renderSkillExperts(expertIds) {
             const expertList = document.getElementById('expert-list');
             expertList.innerHTML = '';
-            for(const id in expertsData) {
-                const expert = expertsData[id];
-                const expertCard = document.createElement('div');
-                expertCard.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg';
-                expertCard.innerHTML = `
-                    <div class="flex items-center">
-                        <img src="${expert.avatar.replace('100x100', '50x50')}" class="rounded-full mr-4">
-                        <div>
-                            <h4 class="font-semibold text-lg text-gray-800">${expert.name}</h4>
-                            <p class="text-sm text-gray-500">${expert.title}</p>
-                        </div>
-                    </div>
-                    <button class="btn-primary text-sm py-2 px-4" onclick="openExpertProfileModal('${id}')">View Profile</button>
-                `;
-                expertList.appendChild(expertCard);
+            if (!expertIds || expertIds.length === 0) {
+                expertList.innerHTML = '<p class="text-gray-500">No experts available for this skill yet.</p>';
+                return;
             }
+
+            expertIds.forEach(id => {
+                const expert = expertsData[id];
+                if (expert) {
+                    const expertCard = document.createElement('div');
+                    expertCard.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg';
+                    expertCard.innerHTML = `
+                        <div class="flex items-center">
+                            <img src="${expert.avatar}" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <h4 class="font-semibold text-lg text-gray-800">${expert.name}</h4>
+                                <p class="text-sm text-gray-500">${expert.title}</p>
+                            </div>
+                        </div>
+                        <button class="btn-primary text-sm py-2 px-4" onclick="openExpertProfileModal('${id}')">View Profile</button>
+                    `;
+                    expertList.appendChild(expertCard);
+                }
+            });
         }
 
         // --- Modal & Form Logic ---
@@ -654,28 +673,7 @@
             startCountdown(plan.days, plan.reminder_time);
         }
 
-        function handleInviteSubmit(event) {
-            event.preventDefault();
-            const emailInput = document.getElementById('invite-email');
-            const email = emailInput.value;
-            if (email) {
-                // In a real app, this would make an API call
-                const newInvite = { id: Date.now(), email, sentDate: new Date(), status: 'Pending', acceptedDate: null };
-                invitationHistory.push(newInvite);
-                renderInvitationHistory();
-                alert(`Invitation sent to ${email}!`);
-                emailInput.value = '';
-                setTimeout(() => {
-                    const invite = invitationHistory.find(i => i.id === newInvite.id);
-                    if (invite) {
-                        invite.status = 'Accepted';
-                        invite.acceptedDate = new Date();
-                        renderInvitationHistory();
-                    }
-                }, 5000);
-            }
-        }
-        
+        function handleInviteSubmit(event) { /* ... UI logic ... */ }
         function renderInvitationHistory() { /* ... UI logic ... */ }
         function handleBookingSubmit(event) { /* ... UI logic ... */ }
         function renderBookingHistory() { /* ... UI logic ... */ }

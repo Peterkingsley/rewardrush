@@ -167,16 +167,20 @@ app.get('/api/build-data', requireLogin, async (req, res) => {
 // --- EDUCATION PAGE API ENDPOINTS ---
 app.get('/api/education/content', requireLogin, async (req, res) => {
     try {
-        const [skillsResult, materialsResult, expertsResult] = await Promise.all([
+        const [skillsResult, materialsResult, expertsResult, skillExpertMapResult] = await Promise.all([
             pool.query('SELECT * FROM education_skills ORDER BY title'),
             pool.query('SELECT * FROM education_materials ORDER BY id'),
-            pool.query('SELECT * FROM education_experts ORDER BY name')
+            pool.query('SELECT * FROM education_experts ORDER BY name'),
+            pool.query('SELECT * FROM skill_expert_map')
         ]);
 
         const learningData = skillsResult.rows.reduce((acc, skill) => {
             acc[skill.id] = {
                 ...skill,
-                materials: materialsResult.rows.filter(m => m.skill_id === skill.id)
+                materials: materialsResult.rows.filter(m => m.skill_id === skill.id),
+                expertIds: skillExpertMapResult.rows
+                    .filter(map => map.skill_id === skill.id)
+                    .map(map => map.expert_id)
             };
             return acc;
         }, {});
