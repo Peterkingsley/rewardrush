@@ -785,7 +785,7 @@ res.json({
     })),
     mySkills: skillsWithProgress,
     expertBookings: bookingsResult.rows,
-    transactionHistory: transactions,
+    transactions: transactions,
 });
 
     } catch (err) {
