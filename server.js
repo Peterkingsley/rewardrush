@@ -664,11 +664,10 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 
-// START: CORRECTED /api/profile/:userId ROUTE
+// START: FINAL CORRECTED /api/profile/:userId ROUTE
 app.get('/api/profile/:userId', requireLogin, async (req, res) => {
     const { userId } = req.params;
 
-    // Ensure the user is requesting their own profile
     if (userId !== req.session.userId && !req.session.isAdmin) {
         return res.status(403).json({ error: 'Forbidden' });
     }
@@ -723,7 +722,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         `;
         const expertBookingsResult = await pool.query(expertBookingsQuery, [user.id]);
         
-        // 4. Transaction & Activity History (This query was already in your profile API, we'll reuse it)
+        // 4. Transaction & Activity History
         const historyQuery = `
             (SELECT 'Completed quest: ''' || q.title || '''' AS details, parse_payout(q.reward) AS amount, uq.completed_at AS created_at, 'credit' as type FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
             UNION ALL
@@ -739,7 +738,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             SELECT TO_CHAR(date_trunc('month', d), 'Mon') AS label, COALESCE(SUM(amount), 0) AS value
             FROM GENERATE_SERIES(CURRENT_DATE - INTERVAL '11 months', CURRENT_DATE, '1 month'::interval) d
             LEFT JOIN (
-                SELECT completed_at AS earned_at, (SELECT parse_payout(reward) FROM quests q WHERE q.id = uq.quest_id) AS amount FROM user_quests uq WHERE uq.user_id = $1
+                SELECT completed_at AS earned_at, parse_payout(q.reward) AS amount FROM user_quests uq JOIN quests q ON q.id = uq.quest_id WHERE uq.user_id = $1
                 UNION ALL
                 SELECT timestamp AS earned_at, payout_amount AS amount FROM conversions WHERE affiliate_username = $2
             ) earnings ON date_trunc('month', d) = date_trunc('month', earnings.earned_at)
@@ -754,7 +753,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
                 email: user.email,
                 avatar: user.avatar,
                 joinDate: new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-                bio: user.bio
+                bio: null // The 'users' table does not have a bio column. Set to null.
             },
             stats: {
                 totalEarnings: parseFloat(user.points) || 0,
@@ -766,10 +765,10 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
                 labels: earningsHistoryResult.rows.map(r => r.label),
                 data: earningsHistoryResult.rows.map(r => r.value),
             },
-            recentActivity: historyResult.rows.slice(0, 5), // Send the 5 most recent items for the activity feed
+            recentActivity: historyResult.rows.slice(0, 5),
             mySkills: mySkillsResult.rows,
             expertBookings: expertBookingsResult.rows,
-            transactions: historyResult.rows // Send the full history for the transactions tab
+            transactions: historyResult.rows
         });
 
     } catch (err) {
@@ -777,7 +776,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch profile data.' });
     }
 });
-// END: CORRECTED /api/profile/:userId ROUTE
+// END: FINAL CORRECTED /api/profile/:userId ROUTE
 
 
 app.get('/api/profile/:userId/earnings-history', requireLogin, async (req, res) => {
