@@ -755,43 +755,38 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         `, [user.id, user.username]);
         
         // 7. Assemble the final JSON payload
-        res.json({
-            // Header Info
-            fullName: user.full_name,
-            username: user.username,
-            email: user.email,
-            avatar: user.avatar || 'https://i.pravatar.cc/150?img=12',
-            joinDate: new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-            // NOTE: 'bio' is a placeholder as it does not exist in the 'users' table schema.
-            bio: "Lifelong learner and digital creator. Exploring the worlds of design, code, and marketing. Let's connect!",
-
-            // Overview Tab Stats
-            stats: {
-                totalEarnings: parseFloat(user.points).toFixed(2) || 0,
-                questsCompleted: questsCompleted,
-                jobsFinished: jobsFinished,
-                skillsInProgress: skillsWithProgress.length
-            },
-            // Overview Tab Chart
-            earningsChart: {
-                labels: earningsHistoryResult.rows.map(r => r.label),
-                data: earningsHistoryResult.rows.map(r => parseFloat(r.value))
-            },
-            // Overview Tab Recent Activity
-            recentActivity: transactions.slice(0, 5).map(item => ({
-                icon: item.type === 'credit' ? 'fa-check-circle' : 'fa-wallet',
-                color: item.type === 'credit' ? 'green' : 'red',
-                text: `${item.desc} ($${item.amount})`,
-                time: item.date
-            })),
-
-            // Learning Tab
-            mySkills: skillsWithProgress,
-            expertBookings: bookingsResult.rows,
-
-            // Work Tab
-            transactionHistory: transactions,
-        });
+        // ...
+res.json({
+    // Wrap user-specific data in a 'user' object
+    user: {
+        fullName: user.full_name,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar || 'https://i.pravatar.cc/150?img=12',
+        joinDate: new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        bio: "Lifelong learner and digital creator. Exploring the worlds of design, code, and marketing. Let's connect!",
+    },
+    // Keep other data outside the 'user' object
+    stats: {
+        totalEarnings: parseFloat(user.points).toFixed(2) || 0,
+        questsCompleted: questsCompleted,
+        jobsFinished: jobsFinished,
+        skillsInProgress: skillsWithProgress.length
+    },
+    earningsChart: {
+        labels: earningsHistoryResult.rows.map(r => r.label),
+        data: earningsHistoryResult.rows.map(r => parseFloat(r.value))
+    },
+    recentActivity: transactions.slice(0, 5).map(item => ({
+        icon: item.type === 'credit' ? 'fa-check-circle' : 'fa-wallet',
+        color: item.type === 'credit' ? 'green' : 'red',
+        text: `${item.desc} ($${item.amount})`,
+        time: item.date
+    })),
+    mySkills: skillsWithProgress,
+    expertBookings: bookingsResult.rows,
+    transactionHistory: transactions,
+});
 
     } catch (err) {
         console.error('Error fetching profile data:', err);
@@ -1364,3 +1359,4 @@ app.use((req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
 });
+api/profile/:userId

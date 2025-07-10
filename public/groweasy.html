@@ -692,7 +692,7 @@
                     
                     // 1. Filter
                     let filteredQuests = this.quests.filter(quest => {
-                        const matchesSearch = quest.title.toLowerCase().includes(searchTerm) || quest.description.toLowerCase().includes(searchTerm);
+                       const matchesSearch = (quest.title?.toLowerCase().includes(searchTerm) || quest.description?.toLowerCase().includes(searchTerm));
                         const matchesStatus = (statusFilter === 'all') || (quest.status === statusFilter);
                         return matchesSearch && matchesStatus;
                     });
@@ -1323,3 +1323,4 @@
     </script>
 </body>
 </html>
+displayQuests
