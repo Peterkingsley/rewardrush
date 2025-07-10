@@ -68,104 +68,79 @@
 
             <main>
                 <section class="bg-white rounded-2xl shadow-md p-6">
-                    <div id="form-container">
-                        <!-- The "target" attribute makes the form submit in a new tab, and the "onsubmit" script shows a success message on this page. -->
-                        <form id="job-posting-form" action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSe9B3WgKbcs1Yr5YDtRCU-xciybypyUEqhS4JIS_sNWuY_t1Q/formResponse" method="POST" target="hidden_iframe" onsubmit="formSubmitted()">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <!-- Personal Information -->
-                                <div class="md:col-span-2"><h3 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Your Information</h3></div>
-                                <div>
-                                    <label for="fullName" class="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
-                                    <input type="text" name="entry.142655619" id="fullName" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                                </div>
-                                <div>
-                                    <label for="role" class="block text-sm font-bold text-gray-700 mb-1">Your Role</label>
-                                    <input type="text" name="entry.455676718" id="role" placeholder="e.g., Marketing Manager, Founder" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                                </div>
-
-                                <!-- Brand Information -->
-                                <div class="md:col-span-2 mt-4"><h3 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Brand Information</h3></div>
-                                <div>
-                                    <label for="brandName" class="block text-sm font-bold text-gray-700 mb-1">Brand Name</label>
-                                    <input type="text" name="entry.830222710" id="brandName" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                                </div>
-                                <div>
-                                    <label for="website" class="block text-sm font-bold text-gray-700 mb-1">Website</label>
-                                    <input type="url" name="entry.24015201" id="website" placeholder="https://example.com" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label for="socials" class="block text-sm font-bold text-gray-700 mb-1">Socials of Your Brand</label>
-                                    <textarea id="socials" name="entry.212001965" rows="3" placeholder="Enter one social media link per line (e.g., Twitter, LinkedIn, etc.)" class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"></textarea>
-                                </div>
-
-                                <!-- Contact Information -->
-                                <div class="md:col-span-2 mt-4"><h3 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Contact & Job Details</h3></div>
-                                <div>
-                                    <label for="email" class="block text-sm font-bold text-gray-700 mb-1">Official Email Address</label>
-                                    <input type="email" name="entry.875232312" id="email" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                                </div>
-                                <div>
-                                    <label for="contactMedium" class="block text-sm font-bold text-gray-700 mb-1">Best Contact Medium</label>
-                                    <select id="contactMedium" name="entry.599612324" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                                        <option value="">Select a medium</option>
-                                        <option value="Email">Email</option>
-                                        <option value="Telegram">Telegram</option>
-                                        <option value="WhatsApp">WhatsApp</option>
-                                        <option value="Phone Call">Phone Call</option>
-                                    </select>
-                                </div>
-                                
-                                <!-- === NEW DYNAMIC FIELD WRAPPER === -->
-                                <div id="contact-detail-wrapper" class="hidden md:col-span-2">
-                                    <label for="contactDetail" id="contact-detail-label" class="block text-sm font-bold text-gray-700 mb-1">Contact Detail</label>
-                                    <input type="text" name="entry.557111599" id="contactDetail" class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                                </div>
-                                
-                                <!-- Job Details -->
-                                <div class="md:col-span-2">
-                                    <label for="jobType" class="block text-sm font-bold text-gray-700 mb-1">Type of Job</label>
-                                    <input type="text" name="entry.1021762808" id="jobType" placeholder="e.g., Sign Up, Video Creation, Social Media Post" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label for="description" class="block text-sm font-bold text-gray-700 mb-1">Brief Description</label>
-                                    <textarea id="description" name="entry.2129542856" rows="4" required placeholder="Describe the job requirements and what the user needs to do." class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"></textarea>
-                                </div>
+                    <!-- The form now submits directly to Google Forms. -->
+                    <form id="job-posting-form" action="https://docs.google.com/forms/u/0/d/e/1FAIpQLSe9B3WgKbcs1Yr5YDtRCU-xciybypyUEqhS4JIS_sNWuY_t1Q/formResponse" method="POST">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Personal Information -->
+                            <div class="md:col-span-2"><h3 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Your Information</h3></div>
+                            <div>
+                                <label for="fullName" class="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
+                                <input type="text" name="entry.252811031" id="fullName" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label for="role" class="block text-sm font-bold text-gray-700 mb-1">Your Role</label>
+                                <input type="text" name="entry.1748609075" id="role" placeholder="e.g., Marketing Manager, Founder" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                             </div>
 
-                            <div class="mt-8 border-t pt-6">
-                                <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-purple-700 transition-colors">Submit Job for Review</button>
+                            <!-- Brand Information -->
+                            <div class="md:col-span-2 mt-4"><h3 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Brand Information</h3></div>
+                            <div>
+                                <label for="brandName" class="block text-sm font-bold text-gray-700 mb-1">Brand Name</label>
+                                <input type="text" name="entry.825270587" id="brandName" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                             </div>
-                        </form>
-                    </div>
+                            <div>
+                                <label for="website" class="block text-sm font-bold text-gray-700 mb-1">Website</label>
+                                <input type="url" name="entry.660852588" id="website" placeholder="https://example.com" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="socials" class="block text-sm font-bold text-gray-700 mb-1">Socials of Your Brand</label>
+                                <textarea id="socials" name="entry.1737156504" rows="3" placeholder="Enter one social media link per line (e.g., Twitter, LinkedIn, etc.)" class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"></textarea>
+                            </div>
 
-                    <!-- Success Message -->
-                    <div id="form-success-message" class="hidden text-center p-6">
-                         <div class="inline-block bg-green-100 rounded-full p-5">
-                            <i class="fas fa-check-circle text-5xl text-green-500"></i>
+                            <!-- Contact Information -->
+                            <div class="md:col-span-2 mt-4"><h3 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Contact & Job Details</h3></div>
+                            <div>
+                                <label for="email" class="block text-sm font-bold text-gray-700 mb-1">Official Email Address</label>
+                                <input type="email" name="entry.1588080318" id="email" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label for="contactMedium" class="block text-sm font-bold text-gray-700 mb-1">Best Contact Medium</label>
+                                <select id="contactMedium" name="entry.1771942278" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                    <option value="">Select a medium</option>
+                                    <option value="Email">Email</option>
+                                    <option value="Telegram">Telegram</option>
+                                    <option value="WhatsApp">WhatsApp</option>
+                                    <option value="Phone Call">Phone Call</option>
+                                </select>
+                            </div>
+                            
+                            <!-- === DYNAMIC FIELD WRAPPER === -->
+                            <div id="contact-detail-wrapper" class="hidden md:col-span-2">
+                                <label for="contactDetail" id="contact-detail-label" class="block text-sm font-bold text-gray-700 mb-1">Contact Detail</label>
+                                <input type="text" name="entry.1400525671" id="contactDetail" class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                            </div>
+                            
+                            <!-- Job Details -->
+                            <div class="md:col-span-2">
+                                <label for="jobType" class="block text-sm font-bold text-gray-700 mb-1">Type of Job</label>
+                                <input type="text" name="entry.1561423154" id="jobType" placeholder="e.g., Sign Up, Video Creation, Social Media Post" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="description" class="block text-sm font-bold text-gray-700 mb-1">Brief Description</label>
+                                <textarea id="description" name="entry.256063339" rows="4" required placeholder="Describe the job requirements and what the user needs to do." class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"></textarea>
+                            </div>
                         </div>
-                        <h3 class="text-2xl font-bold mt-4 text-gray-800">Submission Received!</h3>
-                        <p class="text-gray-600 mt-2">Thank you! We've received your job submission and will be in touch shortly to complete the verification process.</p>
-                        <a href="affiliate.html" class="inline-block mt-6 bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700">Back to Jobs</a>
-                    </div>
+
+                        <div class="mt-8 border-t pt-6">
+                            <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-purple-700 transition-colors">Submit Job for Review</button>
+                        </div>
+                    </form>
                 </section>
             </main>
         </div>
     </div>
     
-    <!-- This iframe is used to submit the form in the background without navigating the user away. -->
-    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted) {console.log('Form submitted to iframe');}"></iframe>
-
     <script>
-        // This script handles dark mode, form submission success message,
-        // and the dynamic contact detail field.
-
-        let submitted = false;
-        function formSubmitted() {
-            submitted = true;
-            document.getElementById('form-container').classList.add('hidden');
-            document.getElementById('form-success-message').classList.remove('hidden');
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             // Dark mode check
             if (localStorage.getItem('theme') === 'dark') {
