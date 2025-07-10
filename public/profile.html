@@ -5,16 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - RewardRush</title>
     
-    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
@@ -98,10 +94,8 @@
 </head>
 <body class="text-gray-800">
 
-    <!-- Sidebar (Desktop Only) -->
     <aside id="desktop-sidebar" class="hidden md:flex flex-col justify-between w-64 bg-white fixed top-0 left-0 h-full z-40 transition-all duration-300">
         <div>
-            <!-- Sidebar Header -->
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
                 <div class="flex items-center text-2xl font-semibold text-gray-800">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
@@ -111,7 +105,6 @@
                     <i class="fas fa-chevron-left transition-transform duration-300"></i>
                 </button>
             </div>
-            <!-- Navigation -->
             <nav class="p-4">
                 <ul>
                     <li class="mb-4"><a href="groweasy.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-compass w-6 text-center mr-4"></i><span class="sidebar-text">Quests</span></a></li>
@@ -122,7 +115,6 @@
                 </ul>
             </nav>
         </div>
-        <!-- Theme Toggle -->
         <div class="p-4 border-t border-gray-200">
             <button id="theme-toggle" class="w-full flex items-center text-gray-700 hover:text-purple-600 font-bold">
                 <i id="theme-icon" class="fas fa-moon w-6 text-center mr-3 text-lg"></i>
@@ -131,10 +123,8 @@
         </div>
     </aside>
 
-    <!-- Main Content Wrapper -->
     <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
         
-        <!-- Mobile Header -->
         <div class="md:hidden sticky top-0 z-30 bg-gray-100/80 dark:bg-dark-bg/80 backdrop-blur-sm pt-4 pb-2">
             <div class="px-4">
                 <header class="bg-white shadow-md p-4 flex items-center justify-center rounded-2xl">
@@ -147,7 +137,6 @@
         </div>
         
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <!-- Profile Header -->
             <header class="bg-white shadow-lg rounded-2xl p-6 mb-8 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
                 <img id="profile-avatar" src="https://placehold.co/150x150/e2e8f0/e2e8f0" alt="User Avatar" class="w-24 h-24 rounded-full border-4 border-purple-200 object-cover">
                 <div class="text-center sm:text-left flex-grow">
@@ -158,7 +147,6 @@
                 <button id="edit-profile-btn" class="bg-purple-100 text-purple-700 font-semibold py-2 px-5 rounded-lg hover:bg-purple-200 transition-colors flex-shrink-0">Edit Profile</button>
             </header>
 
-            <!-- Tabs -->
             <div class="mb-8">
                 <div class="border-b border-gray-200">
                     <nav id="tabs-container" class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
@@ -170,16 +158,13 @@
                 </div>
             </div>
 
-            <!-- Tab Content -->
             <main id="tab-content-container">
-                <!-- Overview Tab -->
                 <div id="tab-content-overview" class="tab-content active">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <div class="lg:col-span-2">
-                            <!-- Stats -->
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                                 <div class="bg-white p-4 rounded-xl shadow-md text-center">
-                                    <p id="stats-total-earnings" class="text-2xl font-bold text-purple-600">$0</p>
+                                    <p id="stats-total-earnings" class="text-2xl font-bold text-purple-600">$0.00</p>
                                     <p class="text-sm text-gray-500">Total Earnings</p>
                                 </div>
                                 <div class="bg-white p-4 rounded-xl shadow-md text-center">
@@ -195,7 +180,6 @@
                                     <p class="text-sm text-gray-500">Skills in Progress</p>
                                 </div>
                             </div>
-                            <!-- Earnings Chart -->
                             <div class="bg-white shadow-lg rounded-2xl p-6">
                                 <h3 class="text-xl font-bold text-gray-800 mb-4">Earnings This Year</h3>
                                 <div class="relative h-80 md:h-96">
@@ -204,61 +188,49 @@
                             </div>
                         </div>
                         <div class="lg:col-span-1">
-                            <!-- Recent Activity -->
                             <div class="bg-white shadow-lg rounded-2xl p-6 h-full">
                                 <h3 class="text-xl font-bold text-gray-800 mb-4">Recent Activity</h3>
                                 <ul id="recent-activity-list" class="space-y-4">
-                                    <!-- Activity items will be injected by JS -->
-                                </ul>
+                                    </ul>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- My Learning Tab -->
                 <div id="tab-content-learning" class="tab-content">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- My Skills -->
                         <div class="bg-white shadow-lg rounded-2xl p-6">
                             <h3 class="text-xl font-bold text-gray-800 mb-4">My Skills</h3>
                             <div id="my-skills-list" class="space-y-4">
-                                <!-- Skills will be injected by JS -->
-                            </div>
+                                </div>
                         </div>
-                        <!-- Bookings & Study Plan -->
                         <div class="space-y-8">
                             <div class="bg-white shadow-lg rounded-2xl p-6">
                                 <h3 class="text-xl font-bold text-gray-800 mb-4">My Study Plan</h3>
                                 <div id="study-plan-details" class="text-center">
-                                    <p class="text-gray-600">No active study plan found.</p>
+                                    <p class="text-gray-600">Feature coming soon.</p>
                                 </div>
                             </div>
                             <div class="bg-white shadow-lg rounded-2xl p-6">
                                 <h3 class="text-xl font-bold text-gray-800 mb-4">Expert Bookings</h3>
                                 <ul id="expert-bookings-list" class="space-y-3">
-                                    <!-- Bookings will be injected by JS -->
-                                </ul>
+                                    </ul>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- My Work Tab -->
                 <div id="tab-content-work" class="tab-content">
                     <div class="bg-white shadow-lg rounded-2xl p-6">
                         <h3 class="text-xl font-bold text-gray-800 mb-4">Transaction History</h3>
-                        <p class="text-gray-600">A detailed log of all your earnings and withdrawals.</p>
-                        <!-- In a real app, this would be a filterable table -->
-                        <div id="transaction-history-list" class="mt-4 space-y-3">
-                             <!-- Transactions will be injected by JS -->
-                        </div>
+                        <p class="text-gray-600 mb-4">A detailed log of all your earnings and withdrawals.</p>
+                        <div id="transaction-history-list" class="space-y-3">
+                             </div>
                     </div>
                 </div>
 
-                <!-- Settings Tab -->
                 <div id="tab-content-settings" class="tab-content">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- Account Settings -->
                         <div class="bg-white shadow-lg rounded-2xl p-6">
                             <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Account</h3>
                             <div class="space-y-4">
@@ -281,7 +253,6 @@
                                 <button class="bg-purple-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-purple-700">Update Password</button>
                             </div>
                         </div>
-                        <!-- Notification Settings -->
                         <div class="bg-white shadow-lg rounded-2xl p-6">
                             <h3 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Notifications</h3>
                             <div class="space-y-4">
@@ -314,7 +285,6 @@
         </div>
     </div>
     
-    <!-- Edit Profile Modal -->
     <div id="edit-profile-modal" class="modal fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
             <div class="flex justify-between items-center mb-6">
@@ -328,13 +298,13 @@
                         <img id="avatar-preview" src="https://i.pravatar.cc/150?img=12" class="w-16 h-16 rounded-full object-cover">
                         <label for="avatar-upload" class="cursor-pointer bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                             <span>Change</span>
-                            <input id="avatar-upload" name="avatar-upload" type="file" class="sr-only" accept="image/*">
+                            <input id="avatar-upload" name="avatar" type="file" class="sr-only" accept="image/*">
                         </label>
                     </div>
                 </div>
                 <div class="mb-6">
                     <label for="modal-profile-bio" class="block text-sm font-medium text-gray-700 mb-1">Your Bio</label>
-                    <textarea id="modal-profile-bio" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Tell us a little about yourself..."></textarea>
+                    <textarea id="modal-profile-bio" name="bio" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Tell us a little about yourself..."></textarea>
                 </div>
                 <div class="flex justify-end space-x-4">
                     <button type="button" id="cancel-edit-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Cancel</button>
@@ -344,7 +314,6 @@
         </div>
     </div>
 
-    <!-- Mobile Bottom Nav -->
     <footer class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-t-md p-2 z-40 border-t border-gray-200">
         <div class="flex justify-around items-center">
             <a href="groweasy.html" class="flex flex-col items-center text-gray-500 w-1/5"><i class="fas fa-compass text-lg"></i><span class="text-xs mt-1">Quests</span></a>
@@ -359,30 +328,37 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             let chartInstance = null;
-            let profileData = {};
+            let profileData = {}; // This will hold the fetched data for reuse
+            let sessionData = {}; // This will hold session info like userId
 
-            // --- API Service ---
+            // --- API Service Layer ---
             const ApiService = {
                 async fetch(endpoint, options = {}) {
+                    // Use relative paths for same-origin requests. No hardcoded URL needed.
                     try {
-                        const response = await fetch(endpoint, { ...options });
+                        const response = await fetch(endpoint, options);
                         if (!response.ok) {
                             if (response.status === 401) window.location.href = '/auth.html';
-                            throw new Error(`HTTP Error: ${response.status}`);
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || `HTTP Error: ${response.status}`);
                         }
                         return response.json();
                     } catch (error) {
                         console.error(`API Error on ${endpoint}:`, error);
+                        // Implement a visual notification system if needed
                         throw error;
                     }
                 },
                 getProfileData: (userId) => ApiService.fetch(`/api/profile/${userId}`),
-                checkSession: () => ApiService.fetch('/check-session')
+                checkSession: () => ApiService.fetch('/check-session'),
+                updateProfile: (formData) => ApiService.fetch('/api/profile', {
+                    method: 'POST',
+                    body: formData, // When using FormData, headers are set automatically by the browser
+                })
             };
 
             // --- DOM ELEMENTS ---
             const editProfileModal = document.getElementById('edit-profile-modal');
-            let newAvatarFile = null;
 
             // --- TAB SWITCHING LOGIC ---
             const tabsContainer = document.getElementById('tabs-container');
@@ -411,16 +387,17 @@
             }
             
             document.getElementById('edit-profile-btn').addEventListener('click', () => {
-                document.getElementById('modal-profile-bio').value = profileData.user.bio;
-                document.getElementById('avatar-preview').src = profileData.user.avatar || 'https://placehold.co/150x150/e2e8f0/e2e8f0';
-                newAvatarFile = null; // Reset on open
+                // Populate modal with current data
+                if (profileData.user) {
+                    document.getElementById('modal-profile-bio').value = profileData.user.bio;
+                    document.getElementById('avatar-preview').src = profileData.user.avatar || 'https://placehold.co/150x150/e2e8f0/e2e8f0';
+                }
                 openModal(editProfileModal);
             });
 
             document.getElementById('avatar-upload').addEventListener('change', (event) => {
                 const file = event.target.files[0];
                 if (file) {
-                    newAvatarFile = file;
                     document.getElementById('avatar-preview').src = URL.createObjectURL(file);
                 }
             });
@@ -433,17 +410,32 @@
                 }
             });
 
-            document.getElementById('edit-profile-form').addEventListener('submit', (e) => {
+            // --- FUNCTIONAL EDIT PROFILE FORM ---
+            document.getElementById('edit-profile-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                // This part would need a new API endpoint to save the data
-                alert("Profile update functionality not yet connected to the backend.");
-                closeModal(editProfileModal);
+                const form = e.target;
+                const formData = new FormData(form);
+                
+                try {
+                    const result = await ApiService.updateProfile(formData);
+                    console.log('Profile updated successfully', result);
+                    closeModal(editProfileModal);
+                    // Refresh page data to show changes
+                    initializePage(); 
+                } catch (error) {
+                    alert("Failed to update profile. See console for details.");
+                }
             });
 
 
             // --- RENDER DYNAMIC CONTENT ---
             function renderContent(data) {
                 profileData = data; // Store data globally for modal use
+
+                if (!data || !data.user || !data.stats) {
+                    console.error("Incomplete data received from server:", data);
+                    return; // Exit if essential data is missing
+                }
 
                 // Main Profile Info
                 document.getElementById('profile-avatar').src = data.user.avatar || 'https://placehold.co/150x150/e2e8f0/e2e8f0';
@@ -464,25 +456,25 @@
 
                 // Recent Activity
                 const activityList = document.getElementById('recent-activity-list');
-                activityList.innerHTML = data.recentActivity.length ? data.recentActivity.map(item => `
+                activityList.innerHTML = data.recentActivity?.length ? data.recentActivity.map(item => `
                     <li class="flex items-start">
-                        <i class="fas ${item.type === 'credit' ? 'fa-plus-circle text-green-500' : 'fa-minus-circle text-red-500'} text-lg mr-4 mt-1"></i>
+                        <i class="fas ${item.icon} ${item.color} text-lg mr-4 mt-1"></i>
                         <div>
-                            <p class="text-gray-800 text-sm">${item.details}</p>
-                            <p class="text-xs text-gray-400">${new Date(item.created_at).toLocaleString()}</p>
+                            <p class="text-gray-800 text-sm">${item.text}</p>
+                            <p class="text-xs text-gray-400">${item.time}</p>
                         </div>
                     </li>
                 `).join('') : '<p class="text-sm text-gray-500">No recent activity.</p>';
 
                 // My Skills
                 const skillsList = document.getElementById('my-skills-list');
-                skillsList.innerHTML = data.mySkills.length ? data.mySkills.map(skill => `
+                skillsList.innerHTML = data.mySkills?.length ? data.mySkills.map(skill => `
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <p class="font-semibold text-gray-700">${skill.name}</p>
                             <p class="text-sm text-gray-500">${skill.progress}%</p>
                         </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
                             <div class="bg-purple-600 h-2.5 rounded-full" style="width: ${skill.progress}%"></div>
                         </div>
                     </div>
@@ -490,23 +482,23 @@
 
                 // Expert Bookings
                 const bookingsList = document.getElementById('expert-bookings-list');
-                bookingsList.innerHTML = data.expertBookings.length ? data.expertBookings.map(booking => `
+                bookingsList.innerHTML = data.expertBookings?.length ? data.expertBookings.map(booking => `
                     <li class="flex justify-between items-center">
                         <div>
                             <p class="font-semibold text-gray-700">${booking.name}</p>
-                            <p class="text-sm text-gray-500">${new Date(booking.date).toLocaleString()}</p>
+                            <p class="text-sm text-gray-500">${booking.date}</p>
                         </div>
-                        <span class="text-xs font-semibold px-2 py-1 rounded-full ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${booking.status}</span>
+                        <span class="text-xs font-semibold capitalize px-2 py-1 rounded-full ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${booking.status}</span>
                     </li>
                 `).join('') : '<p class="text-sm text-gray-500">No bookings found.</p>';
                 
                 // Transaction History
                 const transactionList = document.getElementById('transaction-history-list');
-                transactionList.innerHTML = data.transactions.length ? data.transactions.map(tx => `
+                transactionList.innerHTML = data.transactions?.length ? data.transactions.map(tx => `
                     <div class="flex justify-between items-center p-3 rounded-lg ${tx.type === 'credit' ? 'bg-green-50' : 'bg-red-50'}">
                         <div>
-                            <p class="font-semibold text-gray-800">${tx.details}</p>
-                            <p class="text-sm text-gray-500">${new Date(tx.created_at).toLocaleDateString()}</p>
+                            <p class="font-semibold text-gray-800">${tx.desc}</p>
+                            <p class="text-sm text-gray-500">${tx.date}</p>
                         </div>
                         <p class="font-bold ${tx.type === 'credit' ? 'text-green-600' : 'text-red-600'}">
                             ${tx.type === 'credit' ? '+' : '-'}$${parseFloat(tx.amount).toFixed(2)}
@@ -515,11 +507,15 @@
                 `).join('') : '<p class="text-sm text-gray-500">No transactions yet.</p>';
 
                 // Render Chart with fetched data
-                renderChart(data.earningsChartData);
+                renderChart(data.earningsChart);
             }
 
             // --- CHART.JS LOGIC ---
             function renderChart(chartData) {
+                if (!chartData || !chartData.labels || !chartData.data) {
+                    console.error("Invalid chart data provided", chartData);
+                    return; // Exit if chart data is incomplete
+                }
                 if (chartInstance) {
                     chartInstance.destroy(); // Destroy old chart before creating new one
                 }
@@ -612,9 +608,9 @@
             // --- INITIALIZE PAGE ---
             async function initializePage() {
                 try {
-                    const session = await ApiService.checkSession();
-                    if (session.loggedIn) {
-                        const data = await ApiService.getProfileData(session.userId);
+                    sessionData = await ApiService.checkSession();
+                    if (sessionData.loggedIn) {
+                        const data = await ApiService.getProfileData(sessionData.userId);
                         renderContent(data);
                     } else {
                         window.location.href = '/auth.html';
