@@ -437,6 +437,7 @@
             const emailContainer = document.getElementById('email-container');
             const submitBtnText = document.getElementById('submit-btn-text');
             const forgotPasswordLink = document.getElementById('forgot-password-link');
+            const formError = document.getElementById('form-error');
             let isSignUp = false;
             
             function setFormState(signUp) {
@@ -479,16 +480,51 @@
 
             document.getElementById('auth-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                // Mock API call
+                
                 const spinner = document.getElementById('submit-spinner');
                 const submitBtn = document.getElementById('submit-btn');
                 submitBtnText.style.display = 'none';
                 spinner.classList.remove('hidden');
                 submitBtn.disabled = true;
+                formError.classList.add('hidden');
 
-                setTimeout(() => {
-                    window.location.href = './splash.html'; // Redirect to splash screen
-                }, 1500);
+                const fullName = document.getElementById('fullName').value;
+                const username = document.getElementById('username').value;
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+
+                const endpoint = isSignUp ? '/signup' : '/login';
+                const body = isSignUp 
+                    ? { fullName, username, email, password } 
+                    : { username, password };
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        // On successful login/signup, redirect to the splash page
+                        window.location.href = './splash.html';
+                    } else {
+                        // Display error message from the server
+                        formError.textContent = data.error || 'An unexpected error occurred.';
+                        formError.classList.remove('hidden');
+                    }
+                } catch (err) {
+                    console.error('Authentication error:', err);
+                    formError.textContent = 'Could not connect to the server. Please try again later.';
+                    formError.classList.remove('hidden');
+                } finally {
+                    // Re-enable the button and hide spinner
+                    submitBtnText.style.display = 'inline-block';
+                    spinner.classList.add('hidden');
+                    submitBtn.disabled = false;
+                }
             });
 
             // --- INITIALIZATION ---
