@@ -90,6 +90,7 @@ const requireAdmin = (req, res, next) => {
     return res.status(403).json({ error: 'Forbidden: Requires admin privileges' });
 };
 
+// This function will now be used in the Node.js part of the code
 function parsePayout(payoutString) {
     if (typeof payoutString !== 'string') return 0;
     const match = payoutString.match(/\$?(\d+(\.\d+)?)/);
@@ -102,6 +103,115 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// START: DEFINITIVELY CORRECTED /api/profile/:userId ROUTE
+app.get('/api/profile/:userId', requireLogin, async (req, res) => {
+    const { userId } = req.params;
+
+    if (userId !== req.session.userId && !req.session.isAdmin) {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    try {
+        const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [userId]);
+        const user = userResult.rows[0];
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        // --- All Database Queries ---
+        
+        const completedQuestsResult = await pool.query('SELECT quest_id FROM user_quests WHERE user_id = $1', [user.id]);
+        
+        const jobsFinishedResult = await pool.query('SELECT COUNT(*) FROM conversions WHERE affiliate_username = $1', [user.username]);
+        
+        const skillsInProgressResult = await pool.query(
+            'SELECT COUNT(DISTINCT m.skill_id) FROM user_material_progress ump JOIN education_materials m ON ump.material_id = m.id WHERE ump.user_id = $1',
+            [user.id]
+        );
+
+        const mySkillsQuery = `
+            WITH skill_material_counts AS (
+                SELECT skill_id, COUNT(*) as total_materials FROM education_materials GROUP BY skill_id
+            ),
+            user_skill_progress AS (
+                SELECT m.skill_id, COUNT(ump.id) as completed_materials
+                FROM user_material_progress ump
+                JOIN education_materials m ON ump.material_id = m.id
+                WHERE ump.user_id = $1
+                GROUP BY m.skill_id
+            )
+            SELECT
+                s.title AS name,
+                COALESCE(CAST(usp.completed_materials * 100.0 / smc.total_materials AS INTEGER), 0) as progress
+            FROM user_skill_progress usp
+            JOIN education_skills s ON usp.skill_id = s.id
+            JOIN skill_material_counts smc ON usp.skill_id = smc.skill_id
+            ORDER BY s.title;
+        `;
+        const mySkillsResult = await pool.query(mySkillsQuery, [user.id]);
+
+        const expertBookingsQuery = `
+            SELECT p.name, b.preferred_date as date, b.status
+            FROM bookings b
+            JOIN professionals p ON b.professional_id = p.id
+            WHERE b.user_id = $1
+            ORDER BY b.preferred_date DESC;
+        `;
+        const expertBookingsResult = await pool.query(expertBookingsQuery, [user.id]);
+        
+        const historyQuery = `
+            (SELECT 'Completed quest: ''' || q.title || '''' AS details, parse_payout(q.reward) AS amount, uq.completed_at AS created_at, 'credit' as type FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
+            UNION ALL
+            (SELECT 'Affiliate conversion for ''' || ap.title || '''' AS details, c.payout_amount AS amount, c.timestamp AS created_at, 'credit' as type FROM conversions c JOIN affiliate_programs ap ON c.program_id = ap.id WHERE c.affiliate_username = $2)
+            UNION ALL
+            (SELECT 'Withdrew funds' AS details, rc.amount AS amount, rc.created_at AS created_at, 'debit' as type FROM redeemable_codes rc WHERE rc.user_id = $1)
+            ORDER BY created_at DESC;
+        `;
+        const historyResult = await pool.query(historyQuery, [user.id, user.username]);
+
+        const earningsHistoryResult = await pool.query(`
+            SELECT TO_CHAR(date_trunc('month', d), 'Mon') AS label, COALESCE(SUM(amount), 0) AS value
+            FROM GENERATE_SERIES(CURRENT_DATE - INTERVAL '11 months', CURRENT_DATE, '1 month'::interval) d
+            LEFT JOIN (
+                SELECT completed_at AS earned_at, parse_payout(q.reward) AS amount FROM user_quests uq JOIN quests q ON q.id = uq.quest_id WHERE uq.user_id = $1
+                UNION ALL
+                SELECT timestamp AS earned_at, payout_amount AS amount FROM conversions WHERE affiliate_username = $2
+            ) earnings ON date_trunc('month', d) = date_trunc('month', earnings.earned_at)
+            GROUP BY 1 ORDER BY date_trunc('month', d);
+        `, [user.id, user.username]);
+
+        // --- Assemble the Correct JSON Response ---
+        res.json({
+            user: {
+                fullName: user.full_name,
+                username: user.username,
+                email: user.email,
+                avatar: user.avatar,
+                joinDate: new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                bio: user.bio // Now correctly fetches the bio column
+            },
+            stats: {
+                totalEarnings: parseFloat(user.points) || 0,
+                questsCompleted: completedQuestsResult.rows.length,
+                jobsFinished: parseInt(jobsFinishedResult.rows[0].count, 10),
+                skillsInProgress: parseInt(skillsInProgressResult.rows[0].count, 10)
+            },
+            earningsChartData: {
+                labels: earningsHistoryResult.rows.map(r => r.label),
+                data: earningsHistoryResult.rows.map(r => parseFloat(r.value)),
+            },
+            recentActivity: historyResult.rows.slice(0, 5),
+            mySkills: mySkillsResult.rows,
+            expertBookings: expertBookingsResult.rows,
+            transactions: historyResult.rows
+        });
+
+    } catch (err) {
+        console.error('Error fetching profile data:', err);
+        res.status(500).json({ error: 'Failed to fetch profile data.' });
+    }
+});
+// END: DEFINITIVELY CORRECTED /api/profile/:userId ROUTE
+
+// ... (The rest of your server.js file remains the same)
 // --- BUILD PAGE API ENDPOINT ---
 app.get('/api/build-data', requireLogin, async (req, res) => {
     try {
@@ -270,9 +380,6 @@ app.post('/api/education/study-plan', requireLogin, async (req, res) => {
     }
 });
 
-// --- Group Study API Endpoints ---
-
-// Invite a user to a study group
 app.post('/api/education/study-group/invite', requireLogin, async (req, res) => {
     const { skillId, inviteeEmail } = req.body;
     const inviterId = req.user.id;
@@ -282,7 +389,6 @@ app.post('/api/education/study-group/invite', requireLogin, async (req, res) => 
     }
 
     try {
-        // Find the user being invited
         const inviteeResult = await pool.query('SELECT id FROM users WHERE email = $1', [inviteeEmail]);
         if (inviteeResult.rows.length === 0) {
             return res.status(404).json({ message: 'User with that email does not exist.' });
@@ -293,18 +399,15 @@ app.post('/api/education/study-group/invite', requireLogin, async (req, res) => 
             return res.status(400).json({ message: 'You cannot invite yourself.' });
         }
 
-        // Find or create the study group
         let groupResult = await pool.query('SELECT id FROM study_groups WHERE skill_id = $1 AND creator_id = $2', [skillId, inviterId]);
         let groupId;
 
         if (groupResult.rows.length === 0) {
-            // Create a new group if one doesn't exist
             const newGroupResult = await pool.query(
                 'INSERT INTO study_groups (skill_id, creator_id) VALUES ($1, $2) RETURNING id',
                 [skillId, inviterId]
             );
             groupId = newGroupResult.rows[0].id;
-            // The creator is automatically a member
             await pool.query(
                 'INSERT INTO study_group_invitations (study_group_id, inviter_id, invitee_id, status) VALUES ($1, $2, $3, $4)',
                 [groupId, inviterId, inviterId, 'accepted']
@@ -313,7 +416,6 @@ app.post('/api/education/study-group/invite', requireLogin, async (req, res) => 
             groupId = groupResult.rows[0].id;
         }
 
-        // Create the invitation
         const invitationResult = await pool.query(
             'INSERT INTO study_group_invitations (study_group_id, inviter_id, invitee_id) VALUES ($1, $2, $3) ON CONFLICT (study_group_id, invitee_id) DO NOTHING RETURNING *',
             [groupId, inviterId, inviteeId]
@@ -331,7 +433,6 @@ app.post('/api/education/study-group/invite', requireLogin, async (req, res) => 
     }
 });
 
-// Get data for a specific study group
 app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) => {
     const { skillId } = req.params;
     const userId = req.user.id;
@@ -341,7 +442,6 @@ app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) =>
     }
     
     try {
-        // Find the group the user is part of for this skill
         const groupMembership = await pool.query(`
             SELECT sg.id FROM study_groups sg
             JOIN study_group_invitations sgi ON sg.id = sgi.study_group_id
@@ -349,17 +449,14 @@ app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) =>
         `, [userId, skillId]);
 
         if (groupMembership.rows.length === 0) {
-            // If the user isn't an accepted member, check if they are the creator of a group for this skill
              const creatorGroup = await pool.query('SELECT id FROM study_groups WHERE creator_id = $1 AND skill_id = $2', [userId, skillId]);
              if (creatorGroup.rows.length === 0) {
-                // If they are not in a group and not a creator, return empty data
                 return res.json({ members: [], invitations: [] }); 
              }
              groupMembership.rows.push(creatorGroup.rows[0]);
         }
         const groupId = groupMembership.rows[0].id;
 
-        // Get all accepted members and their progress using a more robust LEFT JOIN
         const membersResult = await pool.query(`
             SELECT
                 u.id,
@@ -378,7 +475,6 @@ app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) =>
             GROUP BY u.id, u.username, u.avatar
         `, [groupId, skillId]);
 
-        // Get total materials for progress calculation
         const materialsResult = await pool.query('SELECT COUNT(*) as total FROM education_materials WHERE skill_id = $1', [skillId]);
         const totalMaterials = parseInt(materialsResult.rows[0].total, 10);
 
@@ -387,7 +483,6 @@ app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) =>
             progress: totalMaterials > 0 ? Math.round((parseInt(m.completed_count, 10) / totalMaterials) * 100) : 0
         }));
 
-        // Get all invitations for this group
         const invitationsResult = await pool.query(`
             SELECT i.id, u.email, i.status FROM study_group_invitations i
             JOIN users u ON i.invitee_id = u.id
@@ -402,7 +497,6 @@ app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) =>
     }
 });
 
-// Get all pending invitations for the logged-in user
 app.get('/api/education/invitations', requireLogin, async (req, res) => {
     const userId = req.user.id;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
@@ -422,9 +516,8 @@ app.get('/api/education/invitations', requireLogin, async (req, res) => {
     }
 });
 
-// Respond to an invitation
 app.post('/api/education/invitations/respond', requireLogin, async (req, res) => {
-    const { invitationId, response } = req.body; // response should be 'accepted' or 'declined'
+    const { invitationId, response } = req.body;
     const userId = req.user.id;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
@@ -448,10 +541,6 @@ app.post('/api/education/invitations/respond', requireLogin, async (req, res) =>
     }
 });
 
-// --- END EDUCATION PAGE API ENDPOINTS ---
-
-
-// --- JOBS API ENDPOINTS ---
 app.get('/api/jobs', requireLogin, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM affiliate_programs ORDER BY id');
@@ -522,8 +611,6 @@ app.post('/api/jobs/:jobId/complete', requireLogin, async (req, res) => {
         client.release();
     }
 });
-// --- END JOBS API ENDPOINTS ---
-
 
 app.get('/check-session', (req, res) => {
     if (req.session.userId) {
@@ -664,90 +751,17 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 
-app.get('/api/profile/:userId', requireLogin, async (req, res) => {
+app.post('/api/users/:userId/settings', requireLogin, async (req, res) => {
     const { userId } = req.params;
+    const { settings } = req.body;
 
-    if (userId !== req.session.userId && !req.session.isAdmin) {
+    if (userId !== req.session.userId) {
         return res.status(403).json({ error: 'Forbidden' });
     }
-
-    try {
-        const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [userId]);
-        const user = userResult.rows[0];
-        if (!user) return res.status(404).json({ error: 'User not found' });
-
-        const completedQuestsResult = await pool.query('SELECT quest_id FROM user_quests WHERE user_id = $1', [user.id]);
-        const completedQuestIds = completedQuestsResult.rows.map(r => r.quest_id);
-
-        const activeQuestsResult = await pool.query('SELECT COUNT(*) FROM quests WHERE status = $1 AND id NOT IN (SELECT quest_id FROM user_quests WHERE user_id = $2)', ['Available', user.id]);
-        const referralsResult = await pool.query('SELECT COUNT(*) FROM conversions WHERE affiliate_username = $1', [user.username]);
-        const referralEarningsResult = await pool.query('SELECT SUM(payout_amount) as total FROM conversions WHERE affiliate_username = $1', [user.username]);
-        
-        const historyQuery = `
-            (SELECT
-                'Completed quest: ''' || q.title || '''' AS details,
-                parse_payout(q.reward) AS amount,
-                uq.completed_at AS created_at,
-                'credit' as type
-            FROM user_quests uq
-            JOIN quests q ON uq.quest_id = q.id
-            WHERE uq.user_id = $1)
-            UNION ALL
-            (SELECT
-                'Affiliate conversion for ''' || ap.title || '''' AS details,
-                c.payout_amount AS amount,
-                c.timestamp AS created_at,
-                'credit' as type
-            FROM conversions c
-            JOIN affiliate_programs ap ON c.program_id = ap.id
-            WHERE c.affiliate_username = $2)
-            UNION ALL
-            (SELECT
-                'Withdrew funds' AS details,
-                rc.amount AS amount,
-                rc.created_at AS created_at,
-                'debit' as type
-            FROM redeemable_codes rc
-            WHERE rc.user_id = $1)
-            ORDER BY created_at DESC
-            LIMIT 10;
-        `;
-        const recentActivityResult = await pool.query(historyQuery, [user.id, user.username]);
-
-        const earningsHistoryResult = await pool.query(`
-            SELECT TO_CHAR(date_trunc('day', d), 'Mon DD') AS label, COALESCE(SUM(amount), 0) AS value
-            FROM GENERATE_SERIES(CURRENT_DATE - INTERVAL '6 days', CURRENT_DATE, '1 day'::interval) d
-            LEFT JOIN (
-                SELECT completed_at AS earned_at, (SELECT parse_payout(reward) FROM quests q WHERE q.id = uq.quest_id) AS amount FROM user_quests uq WHERE uq.user_id = $1
-                UNION ALL
-                SELECT timestamp AS earned_at, payout_amount AS amount FROM conversions WHERE affiliate_username = $2
-            ) earnings ON date_trunc('day', d) = date_trunc('day', earnings.earned_at)
-            GROUP BY 1 ORDER BY 1;
-        `, [user.id, user.username]);
-
-        res.json({
-            fullName: user.full_name,
-            username: user.username,
-            avatar: user.avatar,
-            level: Math.floor((user.points || 0) / 100) + 1,
-            title: "Crypto Apprentice",
-            totalEarnings: parseFloat(user.points) || 0,
-            questsCompleted: completedQuestIds.length,
-            referralsCount: parseInt(referralsResult.rows[0].count, 10),
-            referralEarnings: parseFloat(referralEarningsResult.rows[0].total) || 0,
-            loginStreak: user.login_streak || 0,
-            activeQuestsCount: parseInt(activeQuestsResult.rows[0].count, 10),
-            earningsChartData: {
-                labels: earningsHistoryResult.rows.map(r => r.label),
-                data: earningsHistoryResult.rows.map(r => r.value),
-            },
-            recentActivity: recentActivityResult.rows,
-            completedQuestIds: completedQuestIds
-        });
-    } catch (err) {
-        console.error('Error fetching profile data:', err);
-        res.status(500).json({ error: 'Failed to fetch profile data.' });
-    }
+    
+    console.log(`Received settings for user ${userId}:`, settings);
+    
+    res.json({ success: true, message: 'Settings saved successfully (simulated)!' });
 });
 
 app.get('/api/profile/:userId/earnings-history', requireLogin, async (req, res) => {
@@ -1286,18 +1300,15 @@ app.post('/founders', requireAdmin, async (req, res) => {
     res.status(501).json({ message: "Admin founder management not yet implemented with database." });
 });
 
-// NEW: Endpoint for Growth Settings
-app.post('/api/users/:userId/settings', requireLogin, async (req, res) => {
-    const { userId } = req.params;
-    const { settings } = req.body;
-
-    if (userId !== req.session.userId) {
-        return res.status(403).json({ error: 'Forbidden' });
+app.post('/api/user/bio', requireLogin, async (req, res) => {
+    const { bio } = req.body;
+    try {
+        await pool.query('UPDATE users SET bio = $1 WHERE id = $2', [bio, req.user.id]);
+        res.json({ success: true, message: 'Bio updated successfully.' });
+    } catch (err) {
+        console.error('Error updating bio:', err);
+        res.status(500).json({ error: 'Failed to update bio.' });
     }
-    
-    console.log(`Received settings for user ${userId}:`, settings);
-    
-    res.json({ success: true, message: 'Settings saved successfully (simulated)!' });
 });
 
 
