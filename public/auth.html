@@ -4,363 +4,255 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RewardRush - Welcome</title>
+    
+    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Three.js for Particle Background -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --primary: #6c5ce7;
-            --primary-light: #a29bfe;
-            --secondary: #00cec9;
-            --dark: #2d3436;
-            --darker: #1e272e;
-            --light: #f5f6fa;
-            --danger: #d63031;
+            --primary-glow: #8b00ff;
+            --secondary-glow: #00f0ff;
+            --accent-glow: #39ff14;
+            --dark-bg: #0a0a15;
+            --mid-bg: #1a1a2e;
+            --light-bg: #2a2a3e;
         }
 
+        /* Custom styles to complement Tailwind */
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            background-color: #f0f2f5; /* Light mode background */
+            cursor: none; /* Hide the default cursor */
+            transition: background-color 0.3s ease;
             overflow-x: hidden;
         }
 
-        .auth-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
+        .dark body {
+            background-color: var(--dark-bg);
         }
 
-        .auth-panel {
-            background: rgba(45, 52, 54, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(108, 92, 231, 0.3);
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        .font-montserrat {
+            font-family: 'Montserrat', sans-serif;
         }
 
-        #reward-canvas {
-            position: absolute;
+        /* Particle background canvas */
+        #bg-canvas {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 0;
-            opacity: 0.7;
+            z-index: -1;
+            display: none; /* Hidden by default */
         }
 
+        .dark #bg-canvas {
+            display: block; /* Shown in dark mode */
+        }
+
+        /* Custom Cursor Styles */
+        .cursor-dot, .cursor-outline {
+            pointer-events: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            border-radius: 50%;
+            opacity: 1;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            z-index: 10001;
+        }
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-glow);
+        }
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(139, 0, 255, 0.2);
+            z-index: 10000;
+        }
+
+        /* Form styles */
         .form-toggle-bg {
-            background: rgba(30, 39, 46, 0.9);
+            background-color: #e9ecef;
             border-radius: 9999px;
             padding: 0.25rem;
+            position: relative;
         }
-
-        .form-toggle-label::after {
-            content: '';
+        .dark .form-toggle-bg {
+            background-color: var(--light-bg);
+        }
+        .form-toggle-slider {
             position: absolute;
             top: 0.25rem;
             left: 0.25rem;
-            width: 50%;
+            width: calc(50% - 0.25rem);
             height: calc(100% - 0.5rem);
-            background: var(--primary);
+            background-color: var(--primary-glow);
             border-radius: 9999px;
             transition: transform 0.3s ease;
+            z-index: 0;
         }
-
-        .form-toggle-input:checked + .form-toggle-label::after {
-            transform: translateX(calc(100% - 0.5rem));
+        .form-toggle-input:checked + .form-toggle-slider {
+            transform: translateX(100%);
         }
 
         .form-group-container {
-            transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in-out 0.2s;
+            transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in-out 0.2s, margin-top 0.5s ease-in-out;
             max-height: 0;
             opacity: 0;
             overflow: hidden;
         }
-
         .form-group-container.active {
             max-height: 500px;
             opacity: 1;
         }
 
-        .error-message {
-            color: var(--danger);
-            font-size: 0.75rem;
-            padding-left: 0.5rem;
-            margin-top: 0.25rem;
-            display: none;
+        /* Animation for notification toast */
+        @keyframes toast-in {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
-
-        .toast-notification {
-            transform: translateX(calc(100% + 1.25rem));
-            transition: transform 0.3s ease-in-out;
+        .toast-in {
+            animation: toast-in 0.5s ease-out forwards;
         }
-
-        .toast-notification.show {
-            transform: translateX(0);
-        }
-
-        /* Desktop-specific styles */
-        @media (min-width: 1024px) {
-            .auth-panel {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                max-width: 80rem;
-                margin: 0 auto;
-            }
-
-            .hero-section {
-                padding: 3rem;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                position: relative;
-                overflow: hidden;
-                border-radius: 1.5rem 0 0 1.5rem;
-            }
-
-            .form-section {
-                padding: 3rem;
-                background: rgba(30, 39, 46, 0.95);
-                border-radius: 0 1.5rem 1.5rem 0;
-            }
-
-            .form-toggle-container {
-                max-width: 16rem;
-                margin-left: auto;
-                margin-right: auto;
-            }
-
-            .input-container {
-                background: rgba(45, 52, 54, 0.8);
-                border-radius: 0.75rem;
-                border: 2px solid transparent;
-                transition: border-color 0.3s ease;
-            }
-
-            .input-container:focus-within {
-                border-color: var(--primary);
-            }
-
-            .submit-btn {
-                background: linear-gradient(90deg, var(--primary), var(--primary-light));
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-            }
-
-            .submit-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 20px rgba(108, 92, 231, 0.4);
-            }
-
-            .social-btn {
-                background: rgba(45, 52, 54, 0.8);
-                transition: background 0.3s ease, transform 0.3s ease;
-            }
-
-            .social-btn:hover {
-                background: rgba(45, 52, 54, 1);
-                transform: translateY(-2px);
-            }
-
-            .benefit-item {
-                background: rgba(255, 255, 255, 0.05);
-                padding: 1rem;
-                border-radius: 0.75rem;
-                backdrop-filter: blur(5px);
-            }
-        }
-
-        /* Mobile-specific styles */
-        @media (max-width: 1023px) {
-            .auth-panel {
-                max-width: 90%;
-                display: flex;
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .hero-section {
-                padding: 2rem 1.5rem;
-                text-align: center;
-                position: relative;
-                border-radius: 1.5rem 1.5rem 0 0;
-            }
-
-            .form-section {
-                padding: 2rem 1.5rem;
-                background: rgba(30, 39, 46, 0.95);
-                border-radius: 0 0 1.5rem 1.5rem;
-            }
-
-            .form-toggle-container {
-                max-width: 100%;
-                padding: 0.5rem;
-            }
-
-            .form-toggle-btn {
-                padding: 0.75rem;
-                font-size: 1rem;
-            }
-
-            .input-container {
-                background: rgba(45, 52, 54, 0.8);
-                border-radius: 0.5rem;
-                border: 1px solid rgba(108, 92, 231, 0.2);
-            }
-
-            .input-field {
-                padding: 1rem 3rem;
-                font-size: 1rem;
-            }
-
-            .submit-btn {
-                padding: 1rem;
-                font-size: 1.125rem;
-                border-radius: 0.5rem;
-                background: var(--primary);
-                transition: background 0.3s ease;
-            }
-
-            .submit-btn:hover {
-                background: var(--primary-light);
-            }
-
-            .social-btn {
-                padding: 1rem;
-                font-size: 1rem;
-                border-radius: 0.5rem;
-                background: rgba(45, 52, 54, 0.8);
-            }
-
-            .benefit-item {
-                padding: 1rem;
-                border-radius: 0.5rem;
-                background: rgba(255, 255, 255, 0.05);
-            }
-
-            .form-title {
-                font-size: 1.75rem;
-            }
-
-            .form-subtitle {
-                font-size: 0.875rem;
-            }
-        }
+        
+        /* Dark Mode Styles */
+        .dark .bg-white { background-color: var(--mid-bg) !important; }
+        .dark .text-gray-900 { color: #f0f2f5 !important; }
+        .dark .text-gray-800 { color: #e2e8f0 !important; }
+        .dark .text-gray-700 { color: #a0aec0 !important; }
+        .dark .text-gray-600 { color: #cbd5e0 !important; }
+        .dark .text-gray-500 { color: #a0aec0 !important; }
+        .dark .text-gray-400 { color: #718096 !important; }
+        .dark .border-gray-300 { border-color: #4a5568 !important; }
+        .dark .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2); }
+        .dark input, .dark select, .dark textarea { background-color: var(--light-bg); border-color: #4a5568; color: white; }
+        .dark input::placeholder { color: #718096; }
+        .dark .benefit-item { background: rgba(255, 255, 255, 0.05); }
     </style>
 </head>
-<body>
-    <div class="auth-container">
-        <div class="auth-panel">
+<body class="text-gray-800">
+
+    <!-- Background Canvas and Custom Cursor -->
+    <canvas id="bg-canvas"></canvas>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="fixed top-4 right-4 z-50 p-3 rounded-full bg-white/50 dark:bg-black/50 backdrop-blur-sm shadow-md text-gray-800 dark:text-gray-200">
+        <i id="theme-icon" class="fas fa-moon"></i>
+    </button>
+
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-6xl mx-auto grid lg:grid-cols-2 bg-white shadow-lg rounded-2xl overflow-hidden">
+            
             <!-- Hero Section -->
-            <div class="hero-section text-white">
-                <canvas id="reward-canvas"></canvas>
+            <div class="hero-section relative hidden lg:flex flex-col justify-center p-12 bg-gray-50 text-gray-900">
                 <div class="relative z-10">
-                    <h1 class="text-3xl lg:text-5xl font-bold leading-tight">Join the Rush.</h1>
-                    <h2 class="text-2xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary-light to-secondary leading-tight mb-6">Unlock Your Crypto Potential.</h2>
-                    <div id="benefits-carousel" class="relative h-24 lg:h-32">
+                    <div class="flex items-center text-3xl font-bold font-montserrat mb-2">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-600 dark:text-white mr-3"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                         RewardRush
                     </div>
-                    <div class="mt-8 lg:mt-12 text-center">
-                        <a href="#" class="text-sm text-gray-400 hover:text-secondary transition-colors">
-                            Are you a Project or an Expert? <span class="font-semibold underline">Partner with RewardRush</span>
+                    <h1 class="text-5xl font-bold font-montserrat leading-tight">Join the Rush.</h1>
+                    <h2 class="text-4xl font-bold font-montserrat text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-cyan-400 leading-tight mb-8">Unlock Your Crypto Potential.</h2>
+                    
+                    <div id="benefits-carousel" class="relative h-32">
+                        <!-- Benefits will be injected here by JS -->
+                    </div>
+
+                    <div class="mt-12 text-center">
+                        <a href="#" class="text-sm text-gray-500 hover:text-purple-600 transition-colors">
+                            Are you a Project or an Expert? <span class="font-semibold underline">Partner with us</span>
                         </a>
                     </div>
                 </div>
             </div>
 
             <!-- Form Section -->
-            <div class="form-section">
+            <div class="form-section p-8 md:p-12">
                 <div class="max-w-md mx-auto">
-                    <div id="form-toggle-container" class="form-toggle-bg flex justify-between items-center mb-8 relative">
+                    <!-- Form Toggle -->
+                    <div class="form-toggle-bg flex justify-between items-center mb-8">
                         <input type="checkbox" id="form-toggle" class="hidden form-toggle-input">
-                        <label for="form-toggle" class="form-toggle-label absolute inset-0 cursor-pointer"></label>
+                        <div class="form-toggle-slider"></div>
                         <button id="login-toggle-btn" class="form-toggle-btn w-1/2 text-center z-10 py-2 rounded-full font-semibold text-white transition-colors">Log In</button>
-                        <button id="signup-toggle-btn" class="form-toggle-btn w-1/2 text-center z-10 py-2 rounded-full font-semibold text-gray-400 transition-colors">Sign Up</button>
+                        <button id="signup-toggle-btn" class="form-toggle-btn w-1/2 text-center z-10 py-2 rounded-full font-semibold text-gray-500 transition-colors">Sign Up</button>
                     </div>
 
-                    <h2 id="form-title" class="form-title text-2xl lg:text-3xl font-bold text-white mb-2 text-center">Welcome Back to RewardRush</h2>
-                    <p id="form-subtitle" class="form-subtitle text-gray-400 mb-8 text-center">Log in to continue your journey.</p>
+                    <h2 id="form-title" class="text-3xl font-bold text-gray-900 mb-2 text-center font-montserrat">Welcome Back</h2>
+                    <p id="form-subtitle" class="text-gray-600 mb-8 text-center">Log in to continue your journey.</p>
 
+                    <!-- Main Auth Form -->
                     <form id="auth-form" class="space-y-4">
                         <div id="fullName-container" class="form-group-container">
-                            <label for="fullName" class="text-sm font-medium text-gray-300 sr-only">Full Name</label>
-                            <div class="input-container relative">
-                                <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                                <input type="text" id="fullName" name="fullName" placeholder="Full Name" class="input-field w-full bg-transparent py-3 pl-12 pr-4 text-white focus:outline-none">
+                            <label for="fullName" class="sr-only">Full Name</label>
+                            <div class="relative">
+                                <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" id="fullName" name="fullName" placeholder="Full Name" class="w-full bg-transparent py-3 pl-12 pr-4 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none">
                             </div>
-                            <p id="fullName-error" class="error-message"></p>
                         </div>
                         <div class="form-group-container active">
-                            <label for="username" class="text-sm font-medium text-gray-300 sr-only">Username</label>
-                            <div class="input-container relative">
-                                <i class="fas fa-at absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                                <input type="text" id="username" name="username" placeholder="Username" class="input-field w-full bg-transparent py-3 pl-12 pr-4 text-white focus:outline-none" required>
+                            <label for="username" class="sr-only">Username</label>
+                            <div class="relative">
+                                <i class="fas fa-at absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" id="username" name="username" placeholder="Username" class="w-full bg-transparent py-3 pl-12 pr-4 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none" required>
                             </div>
-                            <p id="username-error" class="error-message"></p>
                         </div>
                         <div id="email-container" class="form-group-container">
-                            <label for="email" class="text-sm font-medium text-gray-300 sr-only">Email</label>
-                            <div class="input-container relative">
-                                <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                                <input type="email" id="email" name="email" placeholder="Email Address" class="input-field w-full bg-transparent py-3 pl-12 pr-4 text-white focus:outline-none">
+                            <label for="email" class="sr-only">Email</label>
+                            <div class="relative">
+                                <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input type="email" id="email" name="email" placeholder="Email Address" class="w-full bg-transparent py-3 pl-12 pr-4 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none">
                             </div>
-                            <p id="email-error" class="error-message"></p>
                         </div>
                         <div class="form-group-container active">
-                            <label for="password" class="text-sm font-medium text-gray-300 sr-only">Password</label>
-                            <div class="input-container relative">
-                                <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                                <input type="password" id="password" name="password" placeholder="Password" class="input-field w-full bg-transparent py-3 pl-12 pr-12 text-white focus:outline-none" required>
-                                <button type="button" id="password-toggle" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-primary-light">
+                            <label for="password" class="sr-only">Password</label>
+                            <div class="relative">
+                                <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                                <input type="password" id="password" name="password" placeholder="Password" class="w-full bg-transparent py-3 pl-12 pr-12 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none" required>
+                                <button type="button" id="password-toggle" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-500">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
-                            <p id="password-error" class="error-message"></p>
                         </div>
                         <div class="text-right -mt-2">
-                            <a href="#" id="forgot-password-link" class="text-sm text-gray-300 hover:text-white transition-colors">Forgot Password?</a>
+                            <a href="#" id="forgot-password-link" class="text-sm text-gray-500 hover:text-purple-600 transition-colors">Forgot Password?</a>
                         </div>
-                        <p id="form-error" class="error-message text-center"></p>
-                        <button type="submit" id="submit-btn" class="submit-btn w-full text-white font-bold py-3 rounded-lg flex items-center justify-center">
+                        <p id="form-error" class="text-red-500 text-sm text-center hidden"></p>
+                        <button type="submit" id="submit-btn" class="w-full text-white font-bold py-3 rounded-lg flex items-center justify-center bg-purple-600 hover:bg-purple-700 transition-transform hover:scale-105">
                             <span id="submit-btn-text">Log In</span>
                             <i id="submit-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
                         </button>
                     </form>
-
-                    <form id="forgot-password-form" class="space-y-4" style="display: none;">
-                        <div>
-                            <label for="forgot-email" class="text-sm font-medium text-gray-300 sr-only">Email</label>
-                            <div class="input-container relative">
-                                <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                                <input type="email" id="forgot-email" name="forgot-email" placeholder="Enter your Email Address" class="input-field w-full bg-transparent py-3 pl-12 pr-4 text-white focus:outline-none" required>
-                            </div>
-                        </div>
-                        <p id="forgot-message" class="text-sm text-center py-2"></p>
-                        <button type="submit" id="forgot-submit-btn" class="submit-btn w-full text-white font-bold py-3 rounded-lg flex items-center justify-center">
-                            <span>Send Reset Link</span>
-                        </button>
-                        <div class="text-center">
-                            <a href="#" id="back-to-login-link" class="text-sm text-gray-300 hover:text-white transition-colors"> ← Back to Login</a>
-                        </div>
-                    </form>
-
-                    <div id="social-login-container" class="relative flex py-5 items-center">
-                        <div class="flex-grow border-t border-gray-700"></div>
+                    
+                    <!-- Social Login -->
+                    <div class="relative flex py-5 items-center">
+                        <div class="flex-grow border-t border-gray-300"></div>
                         <span class="flex-shrink mx-4 text-gray-500 text-sm">Or continue with</span>
-                        <div class="flex-grow border-t border-gray-700"></div>
+                        <div class="flex-grow border-t border-gray-300"></div>
                     </div>
-
-                    <div id="social-buttons" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <button type="button" id="google-login-btn" class="social-btn relative overflow-hidden w-full text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2">
-                            <div class="absolute -top-1 -right-1 bg-secondary text-white text-xs font-bold px-2 py-0.5 rounded-bl-lg">SOON</div>
-                            <img src="./logos/googlelogo.png" alt="Google Logo" width="28" height="28">
-                            <!-- <span>Google</span> -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <button class="social-btn w-full font-semibold py-3 rounded-lg flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <img src="https://www.google.com/favicon.ico" alt="Google Logo" class="w-5 h-5">
+                            <span>Google</span>
                         </button>
-                        <button type="button" id="twitter-login-btn" class="social-btn relative overflow-hidden w-full text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2">
-                            <div class="absolute -top-1 -right-1 bg-secondary text-white text-xs font-bold px-2 py-0.5 rounded-bl-lg">SOON</div>
-                            <img src="./logos/X_icon.svg.png" alt="X Logo" width="24" height="24">
-                            <!-- <span>Twitter</span> -->
+                        <button class="social-btn w-full font-semibold py-3 rounded-lg flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <i class="fab fa-twitter text-blue-400 text-xl"></i>
+                            <span>Twitter</span>
                         </button>
                     </div>
                 </div>
@@ -368,97 +260,130 @@
         </div>
     </div>
 
-    <div id="toast-notification" class="fixed top-5 right-5 bg-secondary text-white py-3 px-5 rounded-lg shadow-lg toast-notification">
-        <p class="font-semibold">Coming Soon!</p>
-        <p class="text-sm -mt-1">This feature is under development.</p>
+    <!-- Custom Notification/Toast -->
+    <div id="notification-toast" class="fixed bottom-8 right-8 bg-gray-800 text-white py-3 px-6 rounded-lg shadow-xl z-50 hidden">
+        <p id="notification-message">Notification message</p>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Canvas Animation
-            const canvas = document.getElementById('reward-canvas');
-            const ctx = canvas.getContext('2d');
-            let particles = [];
-            let animationFrameId;
-
-            const center = { x: 0, y: 0, radius: 10 };
-
-            function resizeCanvas() {
-                canvas.width = canvas.offsetWidth;
-                canvas.height = canvas.offsetHeight;
-                center.x = canvas.width / 2;
-                center.y = canvas.height / 2;
-                initParticles();
-            }
-
-            class Orb {
-                constructor() {
-                    this.x = Math.random() * canvas.width;
-                    this.y = Math.random() * canvas.height;
-                    this.vx = (Math.random() - 0.5) * 0.5;
-                    this.vy = (Math.random() - 0.5) * 0.5;
-                    this.radius = Math.random() * 2 + 1;
-                    this.color = Math.random() > 0.5 ? 'rgba(108, 92, 231, 0.7)' : 'rgba(0, 206, 201, 0.7)';
+            
+            // --- THEME AND ANIMATION ---
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const htmlEl = document.documentElement;
+            window.threeJsInitialized = false;
+            
+            function initTheme() {
+                if (localStorage.getItem('theme') === 'dark') {
+                    htmlEl.classList.add('dark');
+                    themeIcon.classList.replace('fa-moon', 'fa-sun');
+                } else {
+                    htmlEl.classList.remove('dark');
+                    themeIcon.classList.replace('fa-sun', 'fa-moon');
                 }
                 
-                draw() {
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-                    ctx.fillStyle = this.color;
-                    ctx.fill();
-                }
-
-                update() {
-                    this.x += this.vx;
-                    this.y += this.vy;
-                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-                }
-            }
-
-            function initParticles() {
-                particles = [];
-                for (let i = 0; i < 100; i++) {
-                    particles.push(new Orb());
-                }
-            }
-
-            function connect() {
-                let opacityValue = 1;
-                for (let a = 0; a < particles.length; a++) {
-                    for (let b = a; b < particles.length; b++) {
-                        let distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x)) +
-                                       ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
-                        if (distance < (canvas.width / 7) * (canvas.height / 7)) {
-                            opacityValue = 1 - (distance / 20000);
-                            ctx.strokeStyle = `rgba(162, 155, 254, ${opacityValue})`;
-                            ctx.lineWidth = 1;
-                            ctx.beginPath();
-                            ctx.moveTo(particles[a].x, particles[a].y);
-                            ctx.lineTo(particles[b].x, particles[b].y);
-                            ctx.stroke();
-                        }
+                if (htmlEl.classList.contains('dark')) {
+                    if (!window.threeJsInitialized) {
+                        initThreeJs();
+                        window.threeJsInitialized = true;
                     }
                 }
             }
 
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                for (const particle of particles) {
-                    particle.update();
-                    particle.draw();
+            themeToggleBtn.addEventListener('click', () => {
+                htmlEl.classList.toggle('dark');
+                if (htmlEl.classList.contains('dark')) {
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.classList.replace('fa-moon', 'fa-sun');
+                    if(!window.threeJsInitialized) {
+                        initThreeJs();
+                        window.threeJsInitialized = true;
+                    }
+                } else {
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.classList.replace('fa-sun', 'fa-moon');
                 }
-                connect();
-                animationFrameId = requestAnimationFrame(animate);
+            });
+            
+            let scene, camera, renderer, particles, mouseX = 0, mouseY = 0;
+            let windowHalfX = window.innerWidth / 2, windowHalfY = window.innerHeight / 2;
+
+            function initThreeJs() {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+                camera.position.z = 1000;
+
+                const particleCount = 2000;
+                const particlesGeometry = new THREE.BufferGeometry();
+                const posArray = new Float32Array(particleCount * 3);
+                for (let i = 0; i < particleCount * 3; i++) posArray[i] = (Math.random() - 0.5) * (Math.random() * 2000);
+                particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+                
+                const material = new THREE.PointsMaterial({ size: 1.5, color: 0x8b00ff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending });
+                particles = new THREE.Points(particlesGeometry, material);
+                scene.add(particles);
+
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true });
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setClearColor(0x000000, 0);
+
+                document.body.addEventListener('pointermove', onDocumentMouseMove, false);
+                window.addEventListener('resize', onWindowResize, false);
+                animateThreeJs();
+            }
+
+            function animateThreeJs() {
+                requestAnimationFrame(animateThreeJs);
+                renderThreeJs();
+            }
+
+            function renderThreeJs() {
+                if (!renderer) return;
+                const time = Date.now() * 0.00005;
+                camera.position.x += (mouseX - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                particles.rotation.x = time * 0.1;
+                particles.rotation.y = time * 0.2;
+                renderer.render(scene, camera);
+            }
+
+            function onDocumentMouseMove(event) {
+                mouseX = event.clientX - windowHalfX;
+                mouseY = event.clientY - windowHalfY;
+            }
+
+            function onWindowResize() {
+                if (!renderer) return;
+                windowHalfX = window.innerWidth / 2;
+                windowHalfY = window.innerHeight / 2;
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
             }
             
-            resizeCanvas();
-            animate();
-            window.addEventListener('resize', () => {
-                cancelAnimationFrame(animationFrameId);
-                resizeCanvas();
-                animate();
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorOutline = document.querySelector('.cursor-outline');
+            window.addEventListener('mousemove', (e) => {
+                cursorDot.style.left = `${e.clientX}px`;
+                cursorDot.style.top = `${e.clientY}px`;
+                cursorOutline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
             });
+            
+            document.querySelectorAll('a, button, input').forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursorDot.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                    cursorOutline.style.transform = 'translate(-50%, -50%) scale(1.2)';
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
+                    cursorOutline.style.transform = 'translate(-50%, -50%) scale(1)';
+                });
+            });
+
+            // --- UI LOGIC ---
 
             // Benefits Carousel
             const benefits = [
@@ -470,11 +395,12 @@
             const carouselContainer = document.getElementById('benefits-carousel');
             
             function showBenefit(index) {
+                if (!carouselContainer) return;
                 const benefit = benefits[index];
                 const benefitHTML = `
-                    <div class="benefit-item absolute inset-0 flex items-center gap-4 animate-fade-in">
-                        <i class="fas ${benefit.icon} text-2xl lg:text-3xl text-secondary"></i>
-                        <p class="text-gray-300 text-sm lg:text-base">${benefit.text}</p>
+                    <div class="benefit-item absolute inset-0 flex items-center gap-4 p-4 rounded-xl animate-fade-in">
+                        <i class="fas ${benefit.icon} text-3xl text-purple-500"></i>
+                        <p class="text-gray-600">${benefit.text}</p>
                     </div>
                 `;
                 carouselContainer.innerHTML = benefitHTML;
@@ -487,7 +413,7 @@
             
             showBenefit(currentBenefit);
             setInterval(nextBenefit, 5000);
-
+            
             // Form Logic
             const formToggle = document.getElementById('form-toggle');
             const loginBtn = document.getElementById('login-toggle-btn');
@@ -497,50 +423,38 @@
             const fullNameContainer = document.getElementById('fullName-container');
             const emailContainer = document.getElementById('email-container');
             const submitBtnText = document.getElementById('submit-btn-text');
-            const authForm = document.getElementById('auth-form');
+            const forgotPasswordLink = document.getElementById('forgot-password-link');
             let isSignUp = false;
             
-            const forgotPasswordForm = document.getElementById('forgot-password-form');
-            const forgotPasswordLink = document.getElementById('forgot-password-link');
-            const backToLoginLink = document.getElementById('back-to-login-link');
-            const formToggleContainer = document.getElementById('form-toggle-container');
-            const socialLoginContainer = document.getElementById('social-login-container');
-            const socialButtons = document.getElementById('social-buttons');
-
             function setFormState(signUp) {
                 isSignUp = signUp;
                 formToggle.checked = isSignUp;
-                document.querySelectorAll('.error-message').forEach(el => {
-                    el.textContent = '';
-                    el.style.display = 'none';
-                });
                 
                 if (isSignUp) {
-                    loginBtn.classList.replace('text-white', 'text-gray-400');
-                    signupBtn.classList.replace('text-gray-400', 'text-white');
-                    formTitle.textContent = 'Join RewardRush Today';
-                    formSubtitle.textContent = 'Create your account to start earning rewards.';
+                    loginBtn.classList.replace('text-white', 'text-gray-500');
+                    signupBtn.classList.replace('text-gray-500', 'text-white');
+                    formTitle.textContent = 'Create an Account';
+                    formSubtitle.textContent = 'Join to start earning rewards.';
                     fullNameContainer.classList.add('active');
                     emailContainer.classList.add('active');
                     submitBtnText.textContent = 'Create Account';
-                    forgotPasswordLink.parentElement.style.display = 'none';
+                    forgotPasswordLink.style.display = 'none';
                 } else {
-                    loginBtn.classList.replace('text-gray-400', 'text-white');
-                    signupBtn.classList.replace('text-white', 'text-gray-400');
-                    formTitle.textContent = 'Welcome Back to RewardRush';
+                    loginBtn.classList.replace('text-gray-500', 'text-white');
+                    signupBtn.classList.replace('text-white', 'text-gray-500');
+                    formTitle.textContent = 'Welcome Back';
                     formSubtitle.textContent = 'Log in to continue your journey.';
                     fullNameContainer.classList.remove('active');
                     emailContainer.classList.remove('active');
                     submitBtnText.textContent = 'Log In';
-                    forgotPasswordLink.parentElement.style.display = 'block';
+                    forgotPasswordLink.style.display = 'block';
                 }
             }
 
             formToggle.addEventListener('change', () => setFormState(formToggle.checked));
             loginBtn.addEventListener('click', () => setFormState(false));
             signupBtn.addEventListener('click', () => setFormState(true));
-            setFormState(false);
-
+            
             const passwordInput = document.getElementById('password');
             const passwordToggle = document.getElementById('password-toggle');
             passwordToggle.addEventListener('click', () => {
@@ -550,169 +464,24 @@
                 passwordToggle.querySelector('i').classList.toggle('fa-eye-slash');
             });
 
-            authForm.addEventListener('submit', async (e) => {
+            document.getElementById('auth-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                
-                const submitBtn = document.getElementById('submit-btn');
+                // Mock API call
                 const spinner = document.getElementById('submit-spinner');
+                const submitBtn = document.getElementById('submit-btn');
                 submitBtnText.style.display = 'none';
-                spinner.style.display = 'inline-block';
+                spinner.classList.remove('hidden');
                 submitBtn.disabled = true;
 
-                document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
-
-                const fullName = document.getElementById('fullName').value;
-                const username = document.getElementById('username').value;
-                const email = document.getElementById('email').value;
-                const password = document.getElementById('password').value;
-
-                let hasError = false;
-                if (!username) {
-                    document.getElementById('username-error').textContent = 'Username is required.';
-                    document.getElementById('username-error').style.display = 'block';
-                    hasError = true;
-                }
-                if (!password) {
-                    document.getElementById('password-error').textContent = 'Password is required.';
-                    document.getElementById('password-error').style.display = 'block';
-                    hasError = true;
-                } else if (password.length < 6) {
-                    document.getElementById('password-error').textContent = 'Password must be at least 6 characters.';
-                    document.getElementById('password-error').style.display = 'block';
-                    hasError = true;
-                }
-                
-                if (isSignUp) {
-                    if (!fullName) {
-                        document.getElementById('fullName-error').textContent = 'Full name is required.';
-                        document.getElementById('fullName-error').style.display = 'block';
-                        hasError = true;
-                    }
-                    if (!email) {
-                        document.getElementById('email-error').textContent = 'Email is required.';
-                        document.getElementById('email-error').style.display = 'block';
-                        hasError = true;
-                    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                        document.getElementById('email-error').textContent = 'Please enter a valid email.';
-                        document.getElementById('email-error').style.display = 'block';
-                        hasError = true;
-                    }
-                }
-
-                if (hasError) {
-                    submitBtnText.style.display = 'inline-block';
-                    spinner.style.display = 'none';
-                    submitBtn.disabled = false;
-                    return;
-                }
-                
-                const API_BASE_URL = '';
-                const endpoint = isSignUp ? `${API_BASE_URL}/signup` : `${API_BASE_URL}/login`;
-                const body = isSignUp ? { fullName, username, email, password } : { username, password };
-                
-                try {
-                    const response = await fetch(endpoint, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(body)
-                    });
-                    const data = await response.json();
-
-                    if (response.ok) {
-                        window.location.href = data.isAdmin ? '/admin.html' : '/groweasy.html';
-                    } else {
-                        document.getElementById('form-error').textContent = data.error || 'An unexpected error occurred.';
-                        document.getElementById('form-error').style.display = 'block';
-                    }
-                } catch (err) {
-                    console.error('Auth error:', err);
-                    document.getElementById('form-error').textContent = 'Could not connect to the server. Please try again later.';
-                    document.getElementById('form-error').style.display = 'block';
-                } finally {
-                    submitBtnText.style.display = 'inline-block';
-                    spinner.style.display = 'none';
-                    submitBtn.disabled = false;
-                }
+                setTimeout(() => {
+                    window.location.href = './groweasy.html'; // Redirect on successful login/signup
+                }, 1500);
             });
 
-            forgotPasswordLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                authForm.style.display = 'none';
-                formToggleContainer.style.display = 'none';
-                socialLoginContainer.style.display = 'none';
-                socialButtons.style.display = 'none';
-                forgotPasswordForm.style.display = 'block';
-                formTitle.textContent = 'Reset Password';
-                formSubtitle.textContent = 'Enter your email to receive a password reset link.';
-            });
+            // --- INITIALIZATION ---
+            initTheme();
+            setFormState(false); // Initial state is login
 
-            backToLoginLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                forgotPasswordForm.style.display = 'none';
-                document.getElementById('forgot-message').textContent = '';
-                authForm.style.display = 'block';
-                formToggleContainer.style.display = 'flex';
-                socialLoginContainer.style.display = 'flex';
-                socialButtons.style.display = 'grid';
-                setFormState(false);
-            });
-
-            forgotPasswordForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const emailInput = document.getElementById('forgot-email');
-                const messageEl = document.getElementById('forgot-message');
-                const email = emailInput.value;
-
-                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                    messageEl.textContent = 'Please enter a valid email address.';
-                    messageEl.className = 'error-message text-center';
-                    messageEl.style.display = 'block';
-                    return;
-                }
-                
-                const API_ENDPOINT = '/forgot-password';
-                try {
-                    const response = await fetch(API_ENDPOINT, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: email })
-                    });
-                    const data = await response.json();
-                    messageEl.textContent = data.message || 'If an account exists for this email, a reset link will be sent.';
-                    messageEl.className = 'text-sm text-center text-green-400';
-                    messageEl.style.display = 'block';
-                    emailInput.value = '';
-                } catch (error) {
-                    console.error("Forgot Password Error:", error);
-                    messageEl.textContent = 'An error occurred. Please try again later.';
-                    messageEl.className = 'error-message text-center';
-                    messageEl.style.display = 'block';
-                }
-            });
-
-            const googleBtn = document.getElementById('google-login-btn');
-            const twitterBtn = document.getElementById('twitter-login-btn');
-            const toast = document.getElementById('toast-notification');
-            let toastTimeout;
-
-            const showToast = () => {
-                if (toastTimeout) clearTimeout(toastTimeout);
-                toast.classList.add('show');
-                toastTimeout = setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
-            };
-
-            googleBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                showToast();
-            });
-
-            twitterBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                showToast();
-            });
-            
             const styleSheet = document.createElement("style");
             styleSheet.type = "text/css";
             styleSheet.innerText = `
