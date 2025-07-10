@@ -751,7 +751,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
                 UNION ALL
                 SELECT timestamp AS earned_at, payout_amount AS amount FROM conversions WHERE affiliate_username = $2
             ) earnings ON date_trunc('month', d) = date_trunc('month', earnings.earned_at)
-            GROUP BY 1 ORDER BY date_trunc('month', d);
+            GROUP BY date_trunc('month', d) ORDER BY date_trunc('month', d);
         `, [user.id, user.username]);
         
         // 7. Assemble the final JSON payload
