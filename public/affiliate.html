@@ -255,19 +255,16 @@
                         throw error;
                     }
                 },
-                getJobs() {
-                    return this.fetch('/api/jobs');
-                },
-                completeJob(jobId, submissionLink = null) {
+                getJobs: () => ApiService.fetch('/api/jobs'),
+                completeJob: (jobId, submissionLink = null) => {
                     const body = submissionLink ? { submissionLink } : {};
-                    return this.fetch(`/api/jobs/${jobId}/complete`, {
+                    return ApiService.fetch(`/api/jobs/${jobId}/complete`, {
                         method: 'POST',
                         body: JSON.stringify(body),
                     });
                 },
-                getProfile(userId) {
-                    return this.fetch(`/api/profile/${userId}`);
-                }
+                getProfile: (userId) => ApiService.fetch(`/api/profile/${userId}`),
+                checkSession: () => ApiService.fetch('/check-session'),
             };
 
             const App = {
@@ -310,7 +307,7 @@
                     this.bindEvents();
                     
                     try {
-                        const sessionData = await ApiService.fetch('/check-session');
+                        const sessionData = await ApiService.checkSession();
                         if (!sessionData.loggedIn) {
                             this.showNotification('Please log in to view jobs.', 'error');
                             document.body.innerHTML = `<div class="flex h-screen items-center justify-center bg-gray-100"><div class="text-center p-8 bg-white rounded-lg shadow-md"><h1 class="text-2xl font-bold mb-4">Access Denied</h1><p>Please <a href="/auth.html" class="text-purple-600 hover:underline">log in</a> to continue.</p></div></div>`;
@@ -318,14 +315,16 @@
                         }
                         this.state.username = sessionData.userId;
 
+                        // **FIX**: Fetch profile data to get earnings and name
                         const [profileData, jobsData] = await Promise.all([
                             ApiService.getProfile(this.state.username),
                             ApiService.getJobs()
                         ]);
 
-                        this.state.totalEarnings = profileData.totalEarnings || 0;
+                        // **FIX**: Correctly access nested profile data
+                        this.state.totalEarnings = profileData.stats.totalEarnings || 0;
                         if (this.elements.greetingHeader) {
-                            this.elements.greetingHeader.textContent = `Good morning, ${profileData.fullName.split(' ')[0]}`;
+                            this.elements.greetingHeader.textContent = `Good morning, ${profileData.user.fullName.split(' ')[0]}`;
                         }
                         this.state.allJobs = jobsData.jobs || [];
 
@@ -354,7 +353,10 @@
                     
                     let filteredJobs = allJobs
                         .filter(job => !activeJobs.some(aj => aj.id === job.id) && !completedJobs.some(cj => cj.id === job.id))
-                        .filter(job => (job.title.toLowerCase().includes(searchTerm) || job.description.toLowerCase().includes(searchTerm)) && (categoryFilter === 'all' || job.category === categoryFilter));
+                        .filter(job => 
+                            (job.title?.toLowerCase().includes(searchTerm) || job.description?.toLowerCase().includes(searchTerm)) && 
+                            (categoryFilter === 'all' || job.category === categoryFilter)
+                        );
                     
                     if (sortOrder === 'high-to-low') filteredJobs.sort((a, b) => b.payment - a.payment);
                     if (sortOrder === 'low-to-high') filteredJobs.sort((a, b) => a.payment - b.payment);
@@ -492,12 +494,12 @@
                     this.state.progressInterval = setInterval(() => {
                         currentProgress++;
                         const percentage = (currentProgress / job.target) * 100;
-                        progressBar.style.width = `${percentage}%`;
-                        progressText.textContent = `${currentProgress} of ${job.target} completed`;
+                        if(progressBar) progressBar.style.width = `${percentage}%`;
+                        if(progressText) progressText.textContent = `${currentProgress} of ${job.target} completed`;
                         if (currentProgress >= job.target) {
                             clearInterval(this.state.progressInterval);
-                            progressText.textContent = `Task Complete! Ready to claim.`;
-                            claimBtn.disabled = false;
+                            if(progressText) progressText.textContent = `Task Complete! Ready to claim.`;
+                            if(claimBtn) claimBtn.disabled = false;
                         }
                     }, 1500);
                 },
@@ -561,7 +563,20 @@
                 },
 
                 copyToClipboard(text) {
-                    navigator.clipboard.writeText(text).then(() => this.showNotification('Link copied to clipboard!'));
+                    // Use a temporary textarea to copy text to clipboard
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        this.showNotification('Link copied to clipboard!');
+                    } catch (err) {
+                        console.error('Failed to copy: ', err);
+                        this.showNotification('Failed to copy link.', 'error');
+                    }
+                    document.body.removeChild(textArea);
                 },
                 
                 initTheme() {
@@ -654,7 +669,6 @@
                 }
             };
             
-            // Expose a minimal API to the global scope for inline event handlers
             window.App = {
                 copyToClipboard: (text) => App.copyToClipboard(text)
             };
