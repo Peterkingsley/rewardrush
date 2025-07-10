@@ -120,6 +120,10 @@
             max-height: 500px;
             opacity: 1;
         }
+        
+        .benefit-item {
+            background-color: #f3f4f6; /* bg-gray-100 */
+        }
 
         /* Animation for notification toast */
         @keyframes toast-in {
@@ -132,6 +136,7 @@
         
         /* Dark Mode Styles */
         .dark .bg-white { background-color: var(--mid-bg) !important; }
+        .dark .bg-gray-50 { background-color: var(--dark-bg) !important; }
         .dark .text-gray-900 { color: #f0f2f5 !important; }
         .dark .text-gray-800 { color: #e2e8f0 !important; }
         .dark .text-gray-700 { color: #a0aec0 !important; }
@@ -175,7 +180,7 @@
                     </div>
 
                     <div class="mt-12 text-center">
-                        <a href="#" class="text-sm text-gray-500 hover:text-purple-600 transition-colors">
+                        <a href="#" class="text-sm text-gray-500 hover:text-purple-600 dark:hover:text-cyan-400 transition-colors">
                             Are you a Project or an Expert? <span class="font-semibold underline">Partner with us</span>
                         </a>
                     </div>
@@ -188,7 +193,7 @@
                     <!-- Mobile Header -->
                     <div class="lg:hidden text-center mb-6">
                         <div class="flex items-center justify-center text-2xl font-bold font-montserrat text-gray-900 dark:text-white">
-                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-600 mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-600 dark:text-purple-400 mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
                              <span>RewardRush</span>
                         </div>
                     </div>
@@ -232,13 +237,13 @@
                             <div class="relative">
                                 <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
                                 <input type="password" id="password" name="password" placeholder="Password" class="w-full bg-transparent py-3 pl-12 pr-12 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none" required>
-                                <button type="button" id="password-toggle" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-500">
+                                <button type="button" id="password-toggle" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-500 dark:hover:text-cyan-400">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
                         </div>
                         <div class="text-right -mt-2">
-                            <a href="#" id="forgot-password-link" class="text-sm text-gray-500 hover:text-purple-600 transition-colors">Forgot Password?</a>
+                            <a href="#" id="forgot-password-link" class="text-sm text-gray-500 hover:text-purple-600 dark:hover:text-cyan-400 transition-colors">Forgot Password?</a>
                         </div>
                         <p id="form-error" class="text-red-500 text-sm text-center hidden"></p>
                         <button type="submit" id="submit-btn" class="w-full text-white font-bold py-3 rounded-lg flex items-center justify-center bg-purple-600 hover:bg-purple-700 transition-transform hover:scale-105">
@@ -254,11 +259,11 @@
                         <div class="flex-grow border-t border-gray-300"></div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <button class="social-btn w-full font-semibold py-3 rounded-lg flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <button class="social-btn text-gray-700 w-full font-semibold py-3 rounded-lg flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                             <img src="https://www.google.com/favicon.ico" alt="Google Logo" class="w-5 h-5">
                             <span>Google</span>
                         </button>
-                        <button class="social-btn w-full font-semibold py-3 rounded-lg flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <button class="social-btn text-gray-700 w-full font-semibold py-3 rounded-lg flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                             <i class="fab fa-twitter text-blue-400 text-xl"></i>
                             <span>Twitter</span>
                         </button>
@@ -407,7 +412,7 @@
                 const benefit = benefits[index];
                 const benefitHTML = `
                     <div class="benefit-item absolute inset-0 flex items-center gap-4 p-4 rounded-xl animate-fade-in">
-                        <i class="fas ${benefit.icon} text-3xl text-purple-500"></i>
+                        <i class="fas ${benefit.icon} text-3xl text-purple-500 dark:text-purple-400"></i>
                         <p class="text-gray-600">${benefit.text}</p>
                     </div>
                 `;
