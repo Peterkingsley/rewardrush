@@ -664,7 +664,6 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 
-// START: FINAL CORRECTED /api/profile/:userId ROUTE
 app.get('/api/profile/:userId', requireLogin, async (req, res) => {
     const { userId } = req.params;
 
@@ -677,107 +676,79 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         const user = userResult.rows[0];
         if (!user) return res.status(404).json({ error: 'User not found' });
 
-        // --- All Database Queries ---
-        
-        // 1. Basic Stats (Quests, Jobs, Skills)
         const completedQuestsResult = await pool.query('SELECT quest_id FROM user_quests WHERE user_id = $1', [user.id]);
         const completedQuestIds = completedQuestsResult.rows.map(r => r.quest_id);
 
-        const jobsFinishedResult = await pool.query('SELECT COUNT(*) FROM conversions WHERE affiliate_username = $1', [user.username]);
+        const activeQuestsResult = await pool.query('SELECT COUNT(*) FROM quests WHERE status = $1 AND id NOT IN (SELECT quest_id FROM user_quests WHERE user_id = $2)', ['Available', user.id]);
+        const referralsResult = await pool.query('SELECT COUNT(*) FROM conversions WHERE affiliate_username = $1', [user.username]);
+        const referralEarningsResult = await pool.query('SELECT SUM(payout_amount) as total FROM conversions WHERE affiliate_username = $1', [user.username]);
         
-        const skillsInProgressResult = await pool.query(
-            'SELECT COUNT(DISTINCT m.skill_id) FROM user_material_progress ump JOIN education_materials m ON ump.material_id = m.id WHERE ump.user_id = $1',
-            [user.id]
-        );
-
-        // 2. My Skills with Progress Calculation
-        const mySkillsQuery = `
-            WITH skill_material_counts AS (
-                SELECT skill_id, COUNT(*) as total_materials FROM education_materials GROUP BY skill_id
-            ),
-            user_skill_progress AS (
-                SELECT m.skill_id, COUNT(ump.id) as completed_materials
-                FROM user_material_progress ump
-                JOIN education_materials m ON ump.material_id = m.id
-                WHERE ump.user_id = $1
-                GROUP BY m.skill_id
-            )
-            SELECT
-                s.title AS name,
-                COALESCE(CAST(usp.completed_materials * 100.0 / smc.total_materials AS INTEGER), 0) as progress
-            FROM user_skill_progress usp
-            JOIN education_skills s ON usp.skill_id = s.id
-            JOIN skill_material_counts smc ON usp.skill_id = smc.skill_id
-            ORDER BY s.title;
-        `;
-        const mySkillsResult = await pool.query(mySkillsQuery, [user.id]);
-
-        // 3. Expert Bookings
-        const expertBookingsQuery = `
-            SELECT p.name, b.preferred_date as date, b.status
-            FROM bookings b
-            JOIN professionals p ON b.professional_id = p.id
-            WHERE b.user_id = $1
-            ORDER BY b.preferred_date DESC;
-        `;
-        const expertBookingsResult = await pool.query(expertBookingsQuery, [user.id]);
-        
-        // 4. Transaction & Activity History
         const historyQuery = `
-            (SELECT 'Completed quest: ''' || q.title || '''' AS details, parse_payout(q.reward) AS amount, uq.completed_at AS created_at, 'credit' as type FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
+            (SELECT
+                'Completed quest: ''' || q.title || '''' AS details,
+                parse_payout(q.reward) AS amount,
+                uq.completed_at AS created_at,
+                'credit' as type
+            FROM user_quests uq
+            JOIN quests q ON uq.quest_id = q.id
+            WHERE uq.user_id = $1)
             UNION ALL
-            (SELECT 'Affiliate conversion for ''' || ap.title || '''' AS details, c.payout_amount AS amount, c.timestamp AS created_at, 'credit' as type FROM conversions c JOIN affiliate_programs ap ON c.program_id = ap.id WHERE c.affiliate_username = $2)
+            (SELECT
+                'Affiliate conversion for ''' || ap.title || '''' AS details,
+                c.payout_amount AS amount,
+                c.timestamp AS created_at,
+                'credit' as type
+            FROM conversions c
+            JOIN affiliate_programs ap ON c.program_id = ap.id
+            WHERE c.affiliate_username = $2)
             UNION ALL
-            (SELECT 'Withdrew funds' AS details, rc.amount AS amount, rc.created_at AS created_at, 'debit' as type FROM redeemable_codes rc WHERE rc.user_id = $1)
-            ORDER BY created_at DESC;
+            (SELECT
+                'Withdrew funds' AS details,
+                rc.amount AS amount,
+                rc.created_at AS created_at,
+                'debit' as type
+            FROM redeemable_codes rc
+            WHERE rc.user_id = $1)
+            ORDER BY created_at DESC
+            LIMIT 10;
         `;
-        const historyResult = await pool.query(historyQuery, [user.id, user.username]);
+        const recentActivityResult = await pool.query(historyQuery, [user.id, user.username]);
 
-        // 5. Earnings Chart Data
         const earningsHistoryResult = await pool.query(`
-            SELECT TO_CHAR(date_trunc('month', d), 'Mon') AS label, COALESCE(SUM(amount), 0) AS value
-            FROM GENERATE_SERIES(CURRENT_DATE - INTERVAL '11 months', CURRENT_DATE, '1 month'::interval) d
+            SELECT TO_CHAR(date_trunc('day', d), 'Mon DD') AS label, COALESCE(SUM(amount), 0) AS value
+            FROM GENERATE_SERIES(CURRENT_DATE - INTERVAL '6 days', CURRENT_DATE, '1 day'::interval) d
             LEFT JOIN (
-                SELECT completed_at AS earned_at, parse_payout(q.reward) AS amount FROM user_quests uq JOIN quests q ON q.id = uq.quest_id WHERE uq.user_id = $1
+                SELECT completed_at AS earned_at, (SELECT parse_payout(reward) FROM quests q WHERE q.id = uq.quest_id) AS amount FROM user_quests uq WHERE uq.user_id = $1
                 UNION ALL
                 SELECT timestamp AS earned_at, payout_amount AS amount FROM conversions WHERE affiliate_username = $2
-            ) earnings ON date_trunc('month', d) = date_trunc('month', earnings.earned_at)
-            GROUP BY 1 ORDER BY date_trunc('month', d);
+            ) earnings ON date_trunc('day', d) = date_trunc('day', earnings.earned_at)
+            GROUP BY 1 ORDER BY 1;
         `, [user.id, user.username]);
 
-        // --- Assemble the Correct JSON Response ---
         res.json({
-            user: {
-                fullName: user.full_name,
-                username: user.username,
-                email: user.email,
-                avatar: user.avatar,
-                joinDate: new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-                bio: null // The 'users' table does not have a bio column. Set to null.
-            },
-            stats: {
-                totalEarnings: parseFloat(user.points) || 0,
-                questsCompleted: completedQuestIds.length,
-                jobsFinished: parseInt(jobsFinishedResult.rows[0].count, 10),
-                skillsInProgress: parseInt(skillsInProgressResult.rows[0].count, 10)
-            },
+            fullName: user.full_name,
+            username: user.username,
+            avatar: user.avatar,
+            level: Math.floor((user.points || 0) / 100) + 1,
+            title: "Crypto Apprentice",
+            totalEarnings: parseFloat(user.points) || 0,
+            questsCompleted: completedQuestIds.length,
+            referralsCount: parseInt(referralsResult.rows[0].count, 10),
+            referralEarnings: parseFloat(referralEarningsResult.rows[0].total) || 0,
+            loginStreak: user.login_streak || 0,
+            activeQuestsCount: parseInt(activeQuestsResult.rows[0].count, 10),
             earningsChartData: {
                 labels: earningsHistoryResult.rows.map(r => r.label),
                 data: earningsHistoryResult.rows.map(r => r.value),
             },
-            recentActivity: historyResult.rows.slice(0, 5),
-            mySkills: mySkillsResult.rows,
-            expertBookings: expertBookingsResult.rows,
-            transactions: historyResult.rows
+            recentActivity: recentActivityResult.rows,
+            completedQuestIds: completedQuestIds
         });
-
     } catch (err) {
         console.error('Error fetching profile data:', err);
         res.status(500).json({ error: 'Failed to fetch profile data.' });
     }
 });
-// END: FINAL CORRECTED /api/profile/:userId ROUTE
-
 
 app.get('/api/profile/:userId/earnings-history', requireLogin, async (req, res) => {
     const { userId } = req.params;
