@@ -768,7 +768,7 @@ res.json({
     },
     // Keep other data outside the 'user' object
     stats: {
-        totalEarnings: parseFloat(user.points).toFixed(2) || 0,
+        totalEarnings: parseFloat(user.points) || 0,
         questsCompleted: questsCompleted,
         jobsFinished: jobsFinished,
         skillsInProgress: skillsWithProgress.length
