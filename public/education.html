@@ -206,25 +206,18 @@
                     <div id="group-members-avatars" class="flex items-center mb-4">
                         <!-- Avatars for team members will be injected here -->
                     </div>
-
-                    <!-- Detailed progress list -->
-                    <div id="group-members-progress-list" class="mt-6 space-y-3">
-                        <!-- Individual progress bars will be injected here -->
-                    </div>
-
-                    <h4 class="font-semibold mb-2 mt-6 text-gray-700">Team Progress</h4>
-                    <div class="progress-bar h-4 w-full">
-                        <div id="team-progress-bar" class="progress-bar-inner h-4" style="width: 0%;"></div>
-                    </div>
-                    <p id="team-progress-text" class="text-right mt-2 text-gray-500">0% Complete</p>
-
-                     <form id="invite-form" class="flex items-center gap-2 mt-6 pt-4 border-t border-gray-200">
+                     <form id="invite-form" class="flex items-center gap-2 mt-4">
                         <input type="email" id="invite-email" placeholder="Enter friend's email" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-purple-500 focus:border-transparent" required>
                         <button type="submit" class="btn-primary py-2 px-4 text-sm">Invite</button>
                     </form>
                     <div id="invitation-history" class="mt-4 space-y-2">
                         <!-- Invitation history will be injected here -->
                     </div>
+                    <h4 class="font-semibold mb-2 mt-6 text-gray-700">Team Progress</h4>
+                    <div class="progress-bar h-4 w-full">
+                        <div id="team-progress-bar" class="progress-bar-inner h-4" style="width: 0%;"></div>
+                    </div>
+                    <p id="team-progress-text" class="text-right mt-2 text-gray-500">0% Complete</p>
                 </div>
 
                 <div class="glass-card p-6">
@@ -510,8 +503,7 @@
                 skillDetailPage.classList.remove('hidden');
                 window.scrollTo(0, 0);
             } catch (error) {
-                console.error("Could not load skill details:", error);
-                alert(`Failed to load skill details: ${error.message}\n\nPlease check the server logs for more information.`);
+                console.error("Could not load skill details", error);
             }
         }
         
@@ -633,7 +625,6 @@
         // --- Group Study Logic ---
         function renderGroupStudy() {
             renderGroupMembers();
-            renderGroupMembersProgressList();
             renderInvitationHistory();
             updateTeamProgress();
         }
@@ -651,36 +642,6 @@
                 avatarImg.title = `${member.name} (${member.progress}%)`; // Tooltip on hover
                 avatarImg.className = 'w-10 h-10 rounded-full border-2 border-white -mr-2 cursor-pointer';
                 membersContainer.appendChild(avatarImg);
-            });
-        }
-
-        function renderGroupMembersProgressList() {
-            const listContainer = document.getElementById('group-members-progress-list');
-            listContainer.innerHTML = ''; 
-
-            if (groupMembers.length === 0) {
-                listContainer.style.display = 'none';
-                return;
-            }
-            listContainer.style.display = 'block';
-
-            groupMembers.forEach(member => {
-                const memberDiv = document.createElement('div');
-                memberDiv.className = 'flex items-center';
-
-                memberDiv.innerHTML = `
-                    <img src="${member.avatar || 'https://placehold.co/40x40/cccccc/ffffff?text=?'}" class="w-8 h-8 rounded-full mr-4">
-                    <div class="w-full">
-                        <div class="flex justify-between mb-1">
-                            <span class="text-base font-medium text-gray-700">${member.name}</span>
-                            <span class="text-sm font-medium text-gray-500">${member.progress}%</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-purple-600 h-2.5 rounded-full" style="width: ${member.progress}%"></div>
-                        </div>
-                    </div>
-                `;
-                listContainer.appendChild(memberDiv);
             });
         }
 
