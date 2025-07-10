@@ -725,24 +725,67 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             GROUP BY 1 ORDER BY 1;
         `, [user.id, user.username]);
 
+        // New queries for profile page
+        const mySkillsQuery = `
+            SELECT 
+                es.id, 
+                es.title as name,
+                (
+                    SELECT COUNT(*) 
+                    FROM user_material_progress ump 
+                    JOIN education_materials em ON ump.material_id = em.id 
+                    WHERE ump.user_id = $1 AND em.skill_id = es.id
+                ) as completed_count,
+                (
+                    SELECT COUNT(*) 
+                    FROM education_materials em 
+                    WHERE em.skill_id = es.id
+                ) as total_count
+            FROM education_skills es
+            WHERE es.id IN (
+                SELECT DISTINCT em.skill_id 
+                FROM user_material_progress ump
+                JOIN education_materials em ON ump.material_id = em.id
+                WHERE ump.user_id = $1
+            )
+        `;
+        const mySkillsResult = await pool.query(mySkillsQuery, [user.id]);
+        const mySkills = mySkillsResult.rows.map(skill => ({
+            name: skill.name,
+            progress: skill.total_count > 0 ? Math.round((skill.completed_count / skill.total_count) * 100) : 0
+        }));
+
+        const expertBookingsResult = await pool.query(`
+            SELECT ee.name, b.status, b.preferred_date as date 
+            FROM bookings b
+            JOIN education_experts ee ON b.professional_id = ee.id
+            WHERE b.user_id = $1
+            ORDER BY b.preferred_date DESC
+        `, [user.id]);
+
         res.json({
-            fullName: user.full_name,
-            username: user.username,
-            avatar: user.avatar,
-            level: Math.floor((user.points || 0) / 100) + 1,
-            title: "Crypto Apprentice",
-            totalEarnings: parseFloat(user.points) || 0,
-            questsCompleted: completedQuestIds.length,
-            referralsCount: parseInt(referralsResult.rows[0].count, 10),
-            referralEarnings: parseFloat(referralEarningsResult.rows[0].total) || 0,
-            loginStreak: user.login_streak || 0,
-            activeQuestsCount: parseInt(activeQuestsResult.rows[0].count, 10),
+            user: {
+                fullName: user.full_name,
+                username: user.username,
+                email: user.email,
+                avatar: user.avatar,
+                joinDate: new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+                bio: user.bio || ''
+            },
+            stats: {
+                totalEarnings: parseFloat(user.points) || 0,
+                questsCompleted: completedQuestIds.length,
+                jobsFinished: parseInt(referralsResult.rows[0].count, 10),
+                skillsInProgress: mySkills.length
+            },
             earningsChartData: {
                 labels: earningsHistoryResult.rows.map(r => r.label),
                 data: earningsHistoryResult.rows.map(r => r.value),
             },
             recentActivity: recentActivityResult.rows,
-            completedQuestIds: completedQuestIds
+            mySkills,
+            expertBookings: expertBookingsResult.rows,
+            transactions: recentActivityResult.rows // Can be expanded later
         });
     } catch (err) {
         console.error('Error fetching profile data:', err);
@@ -1310,4 +1353,3 @@ app.use((req, res, next) => {
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
-});

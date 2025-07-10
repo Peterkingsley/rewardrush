@@ -149,11 +149,11 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Profile Header -->
             <header class="bg-white shadow-lg rounded-2xl p-6 mb-8 flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                <img id="profile-avatar" src="https://i.pravatar.cc/150?img=12" alt="User Avatar" class="w-24 h-24 rounded-full border-4 border-purple-200 object-cover">
+                <img id="profile-avatar" src="https://placehold.co/150x150/e2e8f0/e2e8f0" alt="User Avatar" class="w-24 h-24 rounded-full border-4 border-purple-200 object-cover">
                 <div class="text-center sm:text-left flex-grow">
-                    <h1 id="profile-name" class="text-3xl font-bold text-gray-900 font-montserrat">John Doe</h1>
-                    <p id="profile-joindate" class="text-sm text-gray-500">Member since Jan 2024</p>
-                    <p id="profile-bio" class="text-gray-600 mt-2 text-sm max-w-xl">Lifelong learner and digital creator. Exploring the worlds of design, code, and marketing. Let's connect!</p>
+                    <h1 id="profile-name" class="text-3xl font-bold text-gray-900 font-montserrat">Loading...</h1>
+                    <p id="profile-joindate" class="text-sm text-gray-500">Member since...</p>
+                    <p id="profile-bio" class="text-gray-600 mt-2 text-sm max-w-xl">Your bio will appear here.</p>
                 </div>
                 <button id="edit-profile-btn" class="bg-purple-100 text-purple-700 font-semibold py-2 px-5 rounded-lg hover:bg-purple-200 transition-colors flex-shrink-0">Edit Profile</button>
             </header>
@@ -179,19 +179,19 @@
                             <!-- Stats -->
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                                 <div class="bg-white p-4 rounded-xl shadow-md text-center">
-                                    <p class="text-2xl font-bold text-purple-600">$1,250</p>
+                                    <p id="stats-total-earnings" class="text-2xl font-bold text-purple-600">$0</p>
                                     <p class="text-sm text-gray-500">Total Earnings</p>
                                 </div>
                                 <div class="bg-white p-4 rounded-xl shadow-md text-center">
-                                    <p class="text-2xl font-bold text-green-600">42</p>
+                                    <p id="stats-quests-completed" class="text-2xl font-bold text-green-600">0</p>
                                     <p class="text-sm text-gray-500">Quests Done</p>
                                 </div>
                                 <div class="bg-white p-4 rounded-xl shadow-md text-center">
-                                    <p class="text-2xl font-bold text-blue-600">8</p>
+                                    <p id="stats-jobs-finished" class="text-2xl font-bold text-blue-600">0</p>
                                     <p class="text-sm text-gray-500">Jobs Finished</p>
                                 </div>
                                 <div class="bg-white p-4 rounded-xl shadow-md text-center">
-                                    <p class="text-2xl font-bold text-yellow-600">3</p>
+                                    <p id="stats-skills-inprogress" class="text-2xl font-bold text-yellow-600">0</p>
                                     <p class="text-sm text-gray-500">Skills in Progress</p>
                                 </div>
                             </div>
@@ -229,9 +229,8 @@
                         <div class="space-y-8">
                             <div class="bg-white shadow-lg rounded-2xl p-6">
                                 <h3 class="text-xl font-bold text-gray-800 mb-4">My Study Plan</h3>
-                                <div class="text-center">
-                                    <p class="text-gray-600">Next session (Graphic Design):</p>
-                                    <p class="text-2xl font-bold text-purple-600">Tomorrow at 7:00 PM</p>
+                                <div id="study-plan-details" class="text-center">
+                                    <p class="text-gray-600">No active study plan found.</p>
                                 </div>
                             </div>
                             <div class="bg-white shadow-lg rounded-2xl p-6">
@@ -265,15 +264,15 @@
                             <div class="space-y-4">
                                 <div>
                                     <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
-                                    <input type="text" id="username" value="johndoe" readonly class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed">
+                                    <input type="text" id="username" readonly class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed">
                                 </div>
                                 <div>
                                     <label for="full-name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                                    <input type="text" id="full-name" value="John Doe" readonly class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed">
+                                    <input type="text" id="full-name" readonly class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed">
                                 </div>
                                 <div>
                                     <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                                    <input type="email" id="email" value="john.doe@example.com" readonly class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed">
+                                    <input type="email" id="email" readonly class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed">
                                 </div>
                                 <div>
                                     <label for="password" class="block text-sm font-medium text-gray-700">New Password</label>
@@ -358,39 +357,27 @@
 
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            let chartInstance = null;
+            let profileData = {};
 
-            // --- MOCK DATA ---
-            const mockData = {
-                user: {
-                    username: 'johndoe',
-                    fullName: 'John Doe',
-                    email: 'john.doe@example.com',
-                    joinDate: 'Jan 2024',
-                    avatar: 'https://i.pravatar.cc/150?img=12',
-                    bio: 'Lifelong learner and digital creator. Exploring the worlds of design, code, and marketing. Let\'s connect!'
+            // --- API Service ---
+            const ApiService = {
+                async fetch(endpoint, options = {}) {
+                    try {
+                        const response = await fetch(endpoint, { ...options });
+                        if (!response.ok) {
+                            if (response.status === 401) window.location.href = '/auth.html';
+                            throw new Error(`HTTP Error: ${response.status}`);
+                        }
+                        return response.json();
+                    } catch (error) {
+                        console.error(`API Error on ${endpoint}:`, error);
+                        throw error;
+                    }
                 },
-                recentActivity: [
-                    { icon: 'fa-check-circle', color: 'green', text: 'Completed Quest: "Intro to Design"', time: '2 hours ago' },
-                    { icon: 'fa-briefcase', color: 'blue', text: 'Accepted Job: "Sign Up Bonus"', time: '1 day ago' },
-                    { icon: 'fa-calendar-check', color: 'purple', text: 'Booked a call with Jane Doe', time: '2 days ago' },
-                    { icon: 'fa-graduation-cap', color: 'yellow', text: 'Started Skill: "Coding"', time: '3 days ago' },
-                    { icon: 'fa-wallet', color: 'red', text: 'Withdrew $50.00', time: '5 days ago' }
-                ],
-                mySkills: [
-                    { name: 'Graphic Design', progress: 75 },
-                    { name: 'Coding', progress: 20 },
-                    { name: 'Digital Marketing', progress: 50 }
-                ],
-                expertBookings: [
-                    { name: 'Jane Doe', status: 'Confirmed', date: 'Jul 8, 2025, 4:00 PM' },
-                    { name: 'John Smith', status: 'Completed', date: 'Jun 25, 2025, 10:00 AM' }
-                ],
-                transactions: [
-                    { type: 'credit', amount: 5.00, desc: 'Reward: "Intro to Design" Quest', date: 'Jul 7, 2025' },
-                    { type: 'debit', amount: 50.00, desc: 'Withdrawal to Bank Account', date: 'Jul 2, 2025' },
-                    { type: 'credit', amount: 25.00, desc: 'Reward: "Sign Up Bonus" Job', date: 'Jul 1, 2025' }
-                ]
+                getProfileData: (userId) => ApiService.fetch(`/api/profile/${userId}`),
+                checkSession: () => ApiService.fetch('/check-session')
             };
 
             // --- DOM ELEMENTS ---
@@ -424,8 +411,8 @@
             }
             
             document.getElementById('edit-profile-btn').addEventListener('click', () => {
-                document.getElementById('modal-profile-bio').value = mockData.user.bio;
-                document.getElementById('avatar-preview').src = mockData.user.avatar;
+                document.getElementById('modal-profile-bio').value = profileData.user.bio;
+                document.getElementById('avatar-preview').src = profileData.user.avatar || 'https://placehold.co/150x150/e2e8f0/e2e8f0';
                 newAvatarFile = null; // Reset on open
                 openModal(editProfileModal);
             });
@@ -448,51 +435,48 @@
 
             document.getElementById('edit-profile-form').addEventListener('submit', (e) => {
                 e.preventDefault();
-                const newBio = document.getElementById('modal-profile-bio').value;
-
-                // Update bio
-                mockData.user.bio = newBio;
-                document.getElementById('profile-bio').textContent = newBio;
-                
-                // Update avatar if a new one was selected
-                if (newAvatarFile) {
-                    const newAvatarURL = URL.createObjectURL(newAvatarFile);
-                    mockData.user.avatar = newAvatarURL;
-                    document.getElementById('profile-avatar').src = newAvatarURL;
-                }
-
+                // This part would need a new API endpoint to save the data
+                alert("Profile update functionality not yet connected to the backend.");
                 closeModal(editProfileModal);
             });
 
 
             // --- RENDER DYNAMIC CONTENT ---
-            function renderContent() {
+            function renderContent(data) {
+                profileData = data; // Store data globally for modal use
+
                 // Main Profile Info
-                document.getElementById('profile-avatar').src = mockData.user.avatar;
-                document.getElementById('profile-name').textContent = mockData.user.fullName;
-                document.getElementById('profile-joindate').textContent = `Member since ${mockData.user.joinDate}`;
-                document.getElementById('profile-bio').textContent = mockData.user.bio;
+                document.getElementById('profile-avatar').src = data.user.avatar || 'https://placehold.co/150x150/e2e8f0/e2e8f0';
+                document.getElementById('profile-name').textContent = data.user.fullName;
+                document.getElementById('profile-joindate').textContent = `Member since ${data.user.joinDate}`;
+                document.getElementById('profile-bio').textContent = data.user.bio || 'No bio set.';
+
+                // Overview Stats
+                document.getElementById('stats-total-earnings').textContent = `$${data.stats.totalEarnings.toFixed(2)}`;
+                document.getElementById('stats-quests-completed').textContent = data.stats.questsCompleted;
+                document.getElementById('stats-jobs-finished').textContent = data.stats.jobsFinished;
+                document.getElementById('stats-skills-inprogress').textContent = data.stats.skillsInProgress;
 
                 // Settings Tab Info
-                document.getElementById('username').value = mockData.user.username;
-                document.getElementById('full-name').value = mockData.user.fullName;
-                document.getElementById('email').value = mockData.user.email;
+                document.getElementById('username').value = data.user.username;
+                document.getElementById('full-name').value = data.user.fullName;
+                document.getElementById('email').value = data.user.email;
 
                 // Recent Activity
                 const activityList = document.getElementById('recent-activity-list');
-                activityList.innerHTML = mockData.recentActivity.map(item => `
+                activityList.innerHTML = data.recentActivity.length ? data.recentActivity.map(item => `
                     <li class="flex items-start">
-                        <i class="fas ${item.icon} text-${item.color}-500 text-lg mr-4 mt-1"></i>
+                        <i class="fas ${item.type === 'credit' ? 'fa-plus-circle text-green-500' : 'fa-minus-circle text-red-500'} text-lg mr-4 mt-1"></i>
                         <div>
-                            <p class="text-gray-800 text-sm">${item.text}</p>
-                            <p class="text-xs text-gray-400">${item.time}</p>
+                            <p class="text-gray-800 text-sm">${item.details}</p>
+                            <p class="text-xs text-gray-400">${new Date(item.created_at).toLocaleString()}</p>
                         </div>
                     </li>
-                `).join('');
+                `).join('') : '<p class="text-sm text-gray-500">No recent activity.</p>';
 
                 // My Skills
                 const skillsList = document.getElementById('my-skills-list');
-                skillsList.innerHTML = mockData.mySkills.map(skill => `
+                skillsList.innerHTML = data.mySkills.length ? data.mySkills.map(skill => `
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <p class="font-semibold text-gray-700">${skill.name}</p>
@@ -502,45 +486,51 @@
                             <div class="bg-purple-600 h-2.5 rounded-full" style="width: ${skill.progress}%"></div>
                         </div>
                     </div>
-                `).join('');
+                `).join('') : '<p class="text-sm text-gray-500">Start a skill in the "Learn" tab to see your progress here.</p>';
 
                 // Expert Bookings
                 const bookingsList = document.getElementById('expert-bookings-list');
-                bookingsList.innerHTML = mockData.expertBookings.map(booking => `
+                bookingsList.innerHTML = data.expertBookings.length ? data.expertBookings.map(booking => `
                     <li class="flex justify-between items-center">
                         <div>
                             <p class="font-semibold text-gray-700">${booking.name}</p>
-                            <p class="text-sm text-gray-500">${booking.date}</p>
+                            <p class="text-sm text-gray-500">${new Date(booking.date).toLocaleString()}</p>
                         </div>
-                        <span class="text-xs font-semibold px-2 py-1 rounded-full ${booking.status === 'Confirmed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">${booking.status}</span>
+                        <span class="text-xs font-semibold px-2 py-1 rounded-full ${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${booking.status}</span>
                     </li>
-                `).join('');
+                `).join('') : '<p class="text-sm text-gray-500">No bookings found.</p>';
                 
                 // Transaction History
                 const transactionList = document.getElementById('transaction-history-list');
-                transactionList.innerHTML = mockData.transactions.map(tx => `
+                transactionList.innerHTML = data.transactions.length ? data.transactions.map(tx => `
                     <div class="flex justify-between items-center p-3 rounded-lg ${tx.type === 'credit' ? 'bg-green-50' : 'bg-red-50'}">
                         <div>
-                            <p class="font-semibold text-gray-800">${tx.desc}</p>
-                            <p class="text-sm text-gray-500">${tx.date}</p>
+                            <p class="font-semibold text-gray-800">${tx.details}</p>
+                            <p class="text-sm text-gray-500">${new Date(tx.created_at).toLocaleDateString()}</p>
                         </div>
                         <p class="font-bold ${tx.type === 'credit' ? 'text-green-600' : 'text-red-600'}">
-                            ${tx.type === 'credit' ? '+' : '-'}$${tx.amount.toFixed(2)}
+                            ${tx.type === 'credit' ? '+' : '-'}$${parseFloat(tx.amount).toFixed(2)}
                         </p>
                     </div>
-                `).join('');
+                `).join('') : '<p class="text-sm text-gray-500">No transactions yet.</p>';
+
+                // Render Chart with fetched data
+                renderChart(data.earningsChartData);
             }
 
             // --- CHART.JS LOGIC ---
-            function renderChart() {
+            function renderChart(chartData) {
+                if (chartInstance) {
+                    chartInstance.destroy(); // Destroy old chart before creating new one
+                }
                 const ctx = document.getElementById('earningsChart').getContext('2d');
-                new Chart(ctx, {
+                chartInstance = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                        labels: chartData.labels,
                         datasets: [{
                             label: 'Earnings ($)',
-                            data: [120, 190, 300, 500, 250, 600, 1250],
+                            data: chartData.data,
                             borderColor: 'rgba(139, 92, 246, 1)', // purple-500
                             backgroundColor: 'rgba(139, 92, 246, 0.1)',
                             borderWidth: 2,
@@ -620,8 +610,22 @@
             });
 
             // --- INITIALIZE PAGE ---
-            renderContent();
-            renderChart();
+            async function initializePage() {
+                try {
+                    const session = await ApiService.checkSession();
+                    if (session.loggedIn) {
+                        const data = await ApiService.getProfileData(session.userId);
+                        renderContent(data);
+                    } else {
+                        window.location.href = '/auth.html';
+                    }
+                } catch (error) {
+                    console.error("Failed to initialize profile page:", error);
+                    document.body.innerHTML = `<div class="text-center p-8 text-red-500">Could not load profile data. Please try logging in again.</div>`;
+                }
+            }
+
+            initializePage();
         });
     </script>
 </body>
