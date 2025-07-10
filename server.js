@@ -1,14 +1,12 @@
 require('dotenv').config();
 
 const express = require('express');
-const fs = require('fs').promises;
 const path = require('path');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
 const crypto = require('crypto');
 const { Pool } = require('pg');
-const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -661,147 +659,6 @@ app.post('/reset-password', async (req, res) => {
     } catch (err) {
         console.error('Reset password error:', err);
         res.status(500).json({ error: 'Server error.' });
-    }
-});
-
-app.get('/api/profile/:userId', requireLogin, async (req, res) => {
-    const { userId } = req.params;
-
-    if (userId !== req.session.userId && !req.session.isAdmin) {
-        return res.status(403).json({ error: 'Forbidden' });
-    }
-
-    try {
-        const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [userId]);
-        const user = userResult.rows[0];
-        if (!user) return res.status(404).json({ error: 'User not found' });
-
-        const completedQuestsResult = await pool.query('SELECT quest_id FROM user_quests WHERE user_id = $1', [user.id]);
-        const completedQuestIds = completedQuestsResult.rows.map(r => r.quest_id);
-
-        const activeQuestsResult = await pool.query('SELECT COUNT(*) FROM quests WHERE status = $1 AND id NOT IN (SELECT quest_id FROM user_quests WHERE user_id = $2)', ['Available', user.id]);
-        const referralsResult = await pool.query('SELECT COUNT(*) FROM conversions WHERE affiliate_username = $1', [user.username]);
-        const referralEarningsResult = await pool.query('SELECT SUM(payout_amount) as total FROM conversions WHERE affiliate_username = $1', [user.username]);
-        
-        const historyQuery = `
-            (SELECT
-                'Completed quest: ''' || q.title || '''' AS details,
-                parse_payout(q.reward) AS amount,
-                uq.completed_at AS created_at,
-                'credit' as type
-            FROM user_quests uq
-            JOIN quests q ON uq.quest_id = q.id
-            WHERE uq.user_id = $1)
-            UNION ALL
-            (SELECT
-                'Affiliate conversion for ''' || ap.title || '''' AS details,
-                c.payout_amount AS amount,
-                c.timestamp AS created_at,
-                'credit' as type
-            FROM conversions c
-            JOIN affiliate_programs ap ON c.program_id = ap.id
-            WHERE c.affiliate_username = $2)
-            UNION ALL
-            (SELECT
-                'Withdrew funds' AS details,
-                rc.amount AS amount,
-                rc.created_at AS created_at,
-                'debit' as type
-            FROM redeemable_codes rc
-            WHERE rc.user_id = $1)
-            ORDER BY created_at DESC
-            LIMIT 10;
-        `;
-        const recentActivityResult = await pool.query(historyQuery, [user.id, user.username]);
-
-        const earningsHistoryResult = await pool.query(`
-            SELECT TO_CHAR(date_trunc('day', d), 'Mon DD') AS label, COALESCE(SUM(amount), 0) AS value
-            FROM GENERATE_SERIES(CURRENT_DATE - INTERVAL '6 days', CURRENT_DATE, '1 day'::interval) d
-            LEFT JOIN (
-                SELECT completed_at AS earned_at, (SELECT parse_payout(reward) FROM quests q WHERE q.id = uq.quest_id) AS amount FROM user_quests uq WHERE uq.user_id = $1
-                UNION ALL
-                SELECT timestamp AS earned_at, payout_amount AS amount FROM conversions WHERE affiliate_username = $2
-            ) earnings ON date_trunc('day', d) = date_trunc('day', earnings.earned_at)
-            GROUP BY 1 ORDER BY 1;
-        `, [user.id, user.username]);
-
-        res.json({
-            fullName: user.full_name,
-            username: user.username,
-            avatar: user.avatar,
-            level: Math.floor((user.points || 0) / 100) + 1,
-            title: "Crypto Apprentice",
-            totalEarnings: parseFloat(user.points) || 0,
-            questsCompleted: completedQuestIds.length,
-            referralsCount: parseInt(referralsResult.rows[0].count, 10),
-            referralEarnings: parseFloat(referralEarningsResult.rows[0].total) || 0,
-            loginStreak: user.login_streak || 0,
-            activeQuestsCount: parseInt(activeQuestsResult.rows[0].count, 10),
-            earningsChartData: {
-                labels: earningsHistoryResult.rows.map(r => r.label),
-                data: earningsHistoryResult.rows.map(r => r.value),
-            },
-            recentActivity: recentActivityResult.rows,
-            completedQuestIds: completedQuestIds
-        });
-    } catch (err) {
-        console.error('Error fetching profile data:', err);
-        res.status(500).json({ error: 'Failed to fetch profile data.' });
-    }
-});
-
-app.get('/api/profile/:userId/earnings-history', requireLogin, async (req, res) => {
-    const { userId } = req.params;
-    const { range } = req.query; 
-
-    let interval, seriesStart;
-    switch(range) {
-        case '1m': interval = '30 days'; seriesStart = `CURRENT_DATE - INTERVAL '${interval}'`; break;
-        case '6m': interval = '6 months'; seriesStart = `CURRENT_DATE - INTERVAL '${interval}'`; break;
-        case '1y': interval = '1 year'; seriesStart = `CURRENT_DATE - INTERVAL '${interval}'`; break;
-        case 'all': interval = null; seriesStart = `(SELECT MIN(created_at) FROM users WHERE username = $2)`; break;
-        default: interval = '6 days'; seriesStart = `CURRENT_DATE - INTERVAL '${interval}'`; break;
-    }
-
-    try {
-        const userResult = await pool.query('SELECT id FROM users WHERE username = $1', [userId]);
-        if (userResult.rows.length === 0) return res.status(404).json({error: "User not found"});
-        const userDbId = userResult.rows[0].id;
-        
-        const query = `
-            SELECT TO_CHAR(date_trunc('day', d), 'Mon DD, YY') AS label, COALESCE(SUM(amount), 0) AS value
-            FROM GENERATE_SERIES(${seriesStart}, CURRENT_DATE, '1 day'::interval) d
-            LEFT JOIN (
-                SELECT completed_at AS earned_at, (SELECT parse_payout(reward) FROM quests q WHERE q.id = uq.quest_id) AS amount FROM user_quests uq WHERE uq.user_id = $1
-                UNION ALL
-                SELECT timestamp AS earned_at, payout_amount AS amount FROM conversions WHERE affiliate_username = $2
-            ) earnings ON date_trunc('day', d) = date_trunc('day', earnings.earned_at)
-            GROUP BY 1 ORDER BY 1;
-        `;
-        const earningsResult = await pool.query(query, [userDbId, userId]);
-        res.json({
-            labels: earningsResult.rows.map(r => r.label),
-            data: earningsResult.rows.map(r => parseFloat(r.value))
-        });
-    } catch(err) {
-        console.error("Error fetching earnings history:", err);
-        res.status(500).json({error: 'Failed to fetch earnings history'});
-    }
-});
-
-const upload = multer({ dest: 'public/uploads/' });
-app.post('/api/user/upload-picture', requireLogin, upload.single('profilePicture'), async (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded.' });
-    }
-    const filePath = `/uploads/${req.file.filename}`;
-    try {
-        await pool.query('UPDATE users SET avatar = $1 WHERE id = $2', [filePath, req.user.id]);
-        res.json({ message: 'Profile picture updated successfully.', filePath });
-    } catch (err) {
-        console.error('Error uploading profile picture:', err);
-        await fs.unlink(path.join(__dirname, 'public', filePath)).catch(e => console.error("Failed to cleanup file", e));
-        res.status(500).json({ error: 'Failed to update profile picture' });
     }
 });
 
