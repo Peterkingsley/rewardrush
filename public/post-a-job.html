@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Post a Job - RewardRush</title>
+    <!-- Tailwind CSS, Font Awesome, Google Fonts (copied from affiliate.html) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,7 +36,9 @@
 </head>
 <body class="text-gray-800">
 
+    <!-- Sidebar (Copied from affiliate.html for consistency) -->
     <aside id="desktop-sidebar" class="hidden md:flex flex-col justify-between w-64 bg-white fixed top-0 left-0 h-full z-40 transition-all duration-300">
+        <!-- Sidebar content from affiliate.html goes here -->
         <div>
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
                 <div class="flex items-center text-2xl font-semibold text-gray-800">
@@ -55,6 +58,7 @@
         </div>
     </aside>
 
+    <!-- Main Content Wrapper -->
     <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
         <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
             <header class="mb-6">
@@ -65,29 +69,64 @@
             <main>
                 <section class="bg-white rounded-2xl shadow-md p-6">
                     <div id="form-container">
-                        <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-800">
-                            <h4 class="font-bold">How to Connect Your Google Form</h4>
-                            <p class="text-sm">This form submits data directly to a Google Form. Please follow the setup guide to connect it to your Google Sheet.</p>
-                        </div>
-
+                        <!-- The "target" attribute makes the form submit in a new tab, and the "onsubmit" script shows a success message on this page. -->
                         <form id="job-posting-form" action="YOUR_GOOGLE_FORM_ACTION_URL" method="POST" target="hidden_iframe" onsubmit="formSubmitted()">
-                            <div class="space-y-5">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Personal Information -->
+                                <div class="md:col-span-2"><h3 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Your Information</h3></div>
                                 <div>
                                     <label for="fullName" class="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
                                     <input type="text" name="entry.YOUR_FIELD_ID_FOR_NAME" id="fullName" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                                 </div>
+                                <div>
+                                    <label for="role" class="block text-sm font-bold text-gray-700 mb-1">Your Role</label>
+                                    <input type="text" name="entry.YOUR_FIELD_ID_FOR_ROLE" id="role" placeholder="e.g., Marketing Manager, Founder" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                </div>
 
+                                <!-- Brand Information -->
+                                <div class="md:col-span-2 mt-4"><h3 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Brand Information</h3></div>
+                                <div>
+                                    <label for="brandName" class="block text-sm font-bold text-gray-700 mb-1">Brand Name</label>
+                                    <input type="text" name="entry.YOUR_FIELD_ID_FOR_BRAND_NAME" id="brandName" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                </div>
+                                <div>
+                                    <label for="website" class="block text-sm font-bold text-gray-700 mb-1">Website</label>
+                                    <input type="url" name="entry.YOUR_FIELD_ID_FOR_WEBSITE" id="website" placeholder="https://example.com" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label for="socials" class="block text-sm font-bold text-gray-700 mb-1">Socials of Your Brand</label>
+                                    <textarea id="socials" name="entry.YOUR_FIELD_ID_FOR_SOCIALS" rows="3" placeholder="Enter one social media link per line (e.g., Twitter, LinkedIn, etc.)" class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"></textarea>
+                                </div>
+
+                                <!-- Contact Information -->
+                                <div class="md:col-span-2 mt-4"><h3 class="text-lg font-semibold text-gray-800 border-b pb-2 mb-4">Contact & Job Details</h3></div>
                                 <div>
                                     <label for="email" class="block text-sm font-bold text-gray-700 mb-1">Official Email Address</label>
                                     <input type="email" name="entry.YOUR_FIELD_ID_FOR_EMAIL" id="email" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                                 </div>
-
                                 <div>
+                                    <label for="contactMedium" class="block text-sm font-bold text-gray-700 mb-1">Best Contact Medium</label>
+                                    <select id="contactMedium" name="entry.YOUR_FIELD_ID_FOR_CONTACT_MEDIUM" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                        <option value="">Select a medium</option>
+                                        <option value="Email">Email</option>
+                                        <option value="Telegram">Telegram</option>
+                                        <option value="WhatsApp">WhatsApp</option>
+                                        <option value="Phone Call">Phone Call</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- === NEW DYNAMIC FIELD WRAPPER === -->
+                                <div id="contact-detail-wrapper" class="hidden md:col-span-2">
+                                    <label for="contactDetail" id="contact-detail-label" class="block text-sm font-bold text-gray-700 mb-1">Contact Detail</label>
+                                    <input type="text" name="entry.YOUR_FIELD_ID_FOR_CONTACT_DETAIL" id="contactDetail" class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                </div>
+                                
+                                <!-- Job Details -->
+                                <div class="md:col-span-2">
                                     <label for="jobType" class="block text-sm font-bold text-gray-700 mb-1">Type of Job</label>
                                     <input type="text" name="entry.YOUR_FIELD_ID_FOR_JOB_TYPE" id="jobType" placeholder="e.g., Sign Up, Video Creation, Social Media Post" required class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
                                 </div>
-
-                                <div>
+                                <div class="md:col-span-2">
                                     <label for="description" class="block text-sm font-bold text-gray-700 mb-1">Brief Description</label>
                                     <textarea id="description" name="entry.YOUR_FIELD_ID_FOR_DESCRIPTION" rows="4" required placeholder="Describe the job requirements and what the user needs to do." class="block w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"></textarea>
                                 </div>
@@ -99,6 +138,7 @@
                         </form>
                     </div>
 
+                    <!-- Success Message -->
                     <div id="form-success-message" class="hidden text-center p-6">
                          <div class="inline-block bg-green-100 rounded-full p-5">
                             <i class="fas fa-check-circle text-5xl text-green-500"></i>
@@ -112,13 +152,12 @@
         </div>
     </div>
     
-    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted) {window.location='affiliate.html';}"></iframe>
+    <!-- This iframe is used to submit the form in the background without navigating the user away. -->
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted) {console.log('Form submitted to iframe');}"></iframe>
 
     <script>
-        // Check for dark mode
-        if (localStorage.getItem('theme') === 'dark') {
-            document.documentElement.classList.add('dark');
-        }
+        // This script handles dark mode, form submission success message,
+        // and the dynamic contact detail field.
 
         let submitted = false;
         function formSubmitted() {
@@ -126,6 +165,35 @@
             document.getElementById('form-container').classList.add('hidden');
             document.getElementById('form-success-message').classList.remove('hidden');
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Dark mode check
+            if (localStorage.getItem('theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+
+            // Dynamic contact field logic
+            const contactMediumSelect = document.getElementById('contactMedium');
+            const contactDetailWrapper = document.getElementById('contact-detail-wrapper');
+            const contactDetailLabel = document.getElementById('contact-detail-label');
+            const contactDetailInput = document.getElementById('contactDetail');
+
+            contactMediumSelect.addEventListener('change', (event) => {
+                const selectedValue = event.target.value;
+                const needsDetail = ['Telegram', 'WhatsApp', 'Phone Call'];
+
+                if (needsDetail.includes(selectedValue)) {
+                    contactDetailLabel.textContent = `Your ${selectedValue} Handle / Number`;
+                    contactDetailInput.placeholder = `Enter your ${selectedValue} contact info`;
+                    contactDetailWrapper.classList.remove('hidden');
+                    contactDetailInput.required = true;
+                } else {
+                    contactDetailWrapper.classList.add('hidden');
+                    contactDetailInput.required = false;
+                    contactDetailInput.value = '';
+                }
+            });
+        });
     </script>
 </body>
 </html>
