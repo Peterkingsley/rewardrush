@@ -681,7 +681,6 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
 
         const activeQuestsResult = await pool.query('SELECT COUNT(*) FROM quests WHERE status = $1 AND id NOT IN (SELECT quest_id FROM user_quests WHERE user_id = $2)', ['Available', user.id]);
         const referralsResult = await pool.query('SELECT COUNT(*) FROM conversions WHERE affiliate_username = $1', [user.username]);
-        const referralEarningsResult = await pool.query('SELECT SUM(payout_amount) as total FROM conversions WHERE affiliate_username = $1', [user.username]);
         
         const historyQuery = `
             (SELECT
@@ -725,7 +724,6 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             GROUP BY 1 ORDER BY 1;
         `, [user.id, user.username]);
 
-        // New queries for profile page
         const mySkillsQuery = `
             SELECT 
                 es.id, 
@@ -785,7 +783,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             recentActivity: recentActivityResult.rows,
             mySkills,
             expertBookings: expertBookingsResult.rows,
-            transactions: recentActivityResult.rows // Can be expanded later
+            transactions: recentActivityResult.rows
         });
     } catch (err) {
         console.error('Error fetching profile data:', err);
@@ -1353,3 +1351,4 @@ app.use((req, res, next) => {
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
+});
