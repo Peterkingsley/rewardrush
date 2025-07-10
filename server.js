@@ -1244,6 +1244,7 @@ app.get('/groweasy.html', requireLogin, (req, res) => res.sendFile(path.join(__d
 app.get('/affiliate.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'affiliate.html')));
 app.get('/education.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'education.html')));
 app.get('/founder.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'founder.html')));
+app.get('/post-a-job.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'post-a-job.html')));
 app.get('/admin-experts.html', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-experts.html'))); 
 
 app.post('/block-user', requireAdmin, async (req, res) => {
