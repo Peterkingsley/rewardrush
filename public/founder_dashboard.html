@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Founder Dashboard - RewardRush</title>
+    <title>Founder Login - RewardRush</title>
     
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,7 +18,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
          :root {
@@ -32,80 +31,44 @@
         }
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f0f2f5;
+            background-color: var(--dark-bg);
+            color: #f0f2f5;
             cursor: none;
             transition: background-color 0.3s ease;
-        }
-        .dark body {
-            background-color: var(--dark-bg);
         }
         .font-montserrat {
             font-family: 'Montserrat', sans-serif;
         }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        .dark ::-webkit-scrollbar-track { background: #2a2a3e; }
-        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
-        .dark ::-webkit-scrollbar-thumb { background: #555; }
-        
-        .sidebar-collapsed #desktop-sidebar { width: 5.5rem; }
-        .sidebar-collapsed #main-content-wrapper { margin-left: 5.5rem; }
-        .sidebar-collapsed .sidebar-text { display: none; }
-        .sidebar-collapsed #sidebar-toggle i { transform: rotate(180deg); }
-        .sidebar-collapsed .nav-link { justify-content: center; }
-        .sidebar-collapsed .nav-link i { margin-right: 0; }
         
         #bg-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
         }
-        .dark #bg-canvas { display: block; }
 
         .cursor-dot, .cursor-outline {
             pointer-events: none; position: fixed; top: 50%; left: 50%;
             border-radius: 50%; opacity: 1; transform: translate(-50%, -50%);
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            transition: opacity 0.3s ease-in-out, transform 0.1s ease-in-out;
         }
         .cursor-dot { width: 8px; height: 8px; background-color: var(--accent-glow); z-index: 10001; }
         .cursor-outline { width: 40px; height: 40px; background-color: rgba(139, 0, 255, 0.2); z-index: 10000; }
-
-        /* Dark Mode Styles */
-        .dark .bg-white { background-color: var(--mid-bg) !important; }
-        .dark .bg-gray-100 { background-color: var(--dark-bg) !important; }
-        .dark .bg-gray-50 { background-color: var(--light-bg) !important; }
-        .dark .text-gray-900 { color: #f0f2f5 !important; }
-        .dark .text-gray-800 { color: #e2e8f0 !important; }
-        .dark .text-gray-700 { color: #a0aec0 !important; }
-        .dark .text-gray-600 { color: #cbd5e0 !important; }
-        .dark .text-gray-500 { color: #a0aec0 !important; }
-        .dark .border-gray-200 { border-color: #4a5568 !important; }
-        .dark .border-gray-300 { border-color: #4a5568 !important; }
-        .dark .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2); }
-        .dark .active-nav { background-color: var(--primary-glow) !important; color: white !important; }
-        .dark input, .dark select, .dark textarea { background-color: var(--light-bg); border-color: #4a5568; color: white; }
-        .dark .form-control { background: var(--light-bg); border-color: #4a5568; }
-        .dark .admin-section { background: var(--mid-bg); border-color: #4a5568; }
-        .dark .list-item { background: var(--light-bg); border-color: #4a5568; }
-        .dark .list-item:hover { background: var(--mid-bg); }
-        .dark .summary-card { background: var(--mid-bg); border-left-color: var(--primary-glow); }
-        .dark .chart-container { background: var(--mid-bg); }
-        .dark .users-table th { background: var(--light-bg); }
-        .dark .users-table td { border-bottom-color: var(--light-bg); }
-        .dark .page-btn { background: var(--light-bg); }
-        .dark .page-btn.active { background: var(--primary-glow); }
-        .dark .login-form { background: var(--mid-bg); border-color: #4a5568; }
-
-        .dashboard-page { display: none; }
-        .dashboard-page.active { display: block; }
         
+        .form-control {
+            background: var(--light-bg);
+            border-color: #4a5568;
+            color: white;
+        }
+        .login-form {
+            background: var(--mid-bg);
+            border: 1px solid #4a5568;
+        }
         .message {
             padding: 1rem; border-radius: 0.5rem; margin: 1rem 0;
             font-size: 0.9rem; text-align: center; display: none;
         }
         .message.error { background: rgba(214, 48, 49, 0.2); color: var(--danger-glow); border: 1px solid var(--danger-glow); display: block; }
-        .message.success { background: rgba(0, 184, 148, 0.2); color: var(--success); border: 1px solid var(--success); display: block; }
     </style>
 </head>
-<body class="text-gray-800">
+<body class="dark">
 
     <canvas id="bg-canvas"></canvas>
     <div class="cursor-dot"></div>
@@ -113,15 +76,19 @@
 
     <!-- Login Form -->
     <div id="login-container" class="min-h-screen flex items-center justify-center p-4">
-        <div class="login-form w-full max-w-sm">
-            <h2 class="text-3xl font-bold text-center mb-6 font-montserrat">Founder Login</h2>
+        <div class="login-form w-full max-w-sm p-8 rounded-2xl shadow-2xl">
+            <div class="flex justify-center items-center mb-6">
+                 <i class="fas fa-rocket text-purple-500 text-4xl"></i>
+                 <h1 class="text-4xl font-bold text-center ml-3 font-montserrat">RewardRush</h1>
+            </div>
+            <h2 class="text-xl font-bold text-center mb-8 text-gray-400">Founder Login</h2>
             <div class="mb-4">
                 <label for="username" class="block text-gray-400 text-sm font-bold mb-2">Username</label>
                 <input type="text" id="username" class="form-control w-full p-3 rounded-lg" placeholder="admin">
             </div>
             <div class="mb-6">
                 <label for="password" class="block text-gray-400 text-sm font-bold mb-2">Password</label>
-                <input type="password" id="password" class="form-control w-full p-3 rounded-lg" placeholder="password123">
+                <input type="password" id="password" class="form-control w-full p-3 rounded-lg" placeholder="••••••••••">
             </div>
             <div id="login-message" class="message"></div>
             <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-lg transition" onclick="login()">
@@ -130,204 +97,40 @@
         </div>
     </div>
 
-    <!-- Main Dashboard Container -->
-    <div id="dashboard-container" style="display: none;">
-        <aside id="desktop-sidebar" class="hidden md:flex flex-col justify-between w-64 bg-white fixed top-0 left-0 h-full z-40 transition-all duration-300 shadow-lg">
-            <div>
-                <div class="flex items-center justify-between p-4 border-b border-gray-200">
-                    <div class="flex items-center text-2xl font-semibold text-gray-800">
-                        <i class="fas fa-rocket text-purple-500"></i>
-                        <span class="sidebar-text ml-2 font-montserrat">RewardRush</span>
-                    </div>
-                    <button id="sidebar-toggle" class="p-2 rounded-md hover:bg-gray-100">
-                        <i class="fas fa-chevron-left transition-transform duration-300"></i>
-                    </button>
-                </div>
-                <nav class="p-4">
-                    <ul>
-                        <li class="mb-2"><a class="nav-link flex items-center text-lg font-semibold py-3 px-4 rounded-lg active-nav" onclick="showPage('analytics')"><i class="fas fa-chart-line w-6 text-center mr-4"></i><span class="sidebar-text">Analytics</span></a></li>
-                        <li class="mb-2"><a class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors" onclick="showPage('admin')"><i class="fas fa-cog w-6 text-center mr-4"></i><span class="sidebar-text">Admin</span></a></li>
-                        <li class="mb-2"><a class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors" onclick="showPage('experts')"><i class="fas fa-users-cog w-6 text-center mr-4"></i><span class="sidebar-text">Experts</span></a></li>
-                    </ul>
-                </nav>
-            </div>
-             <div class="p-4 border-t border-gray-200">
-                <button id="theme-toggle" class="w-full flex items-center text-gray-700 hover:text-purple-600 font-bold py-2 px-2 rounded-lg">
-                    <i id="theme-icon" class="fas fa-moon w-6 text-center mr-3 text-lg"></i>
-                    <span class="sidebar-text">Switch Theme</span>
-                </button>
-                <button class="w-full flex items-center text-gray-700 hover:text-purple-600 font-bold py-2 px-2 rounded-lg mt-2" onclick="logout()">
-                    <i class="fas fa-sign-out-alt w-6 text-center mr-3 text-lg text-red-500"></i>
-                    <span class="sidebar-text">Log Out</span>
-                </button>
-            </div>
-        </aside>
-
-        <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
-            <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <!-- Analytics Page -->
-                <div id="page-analytics" class="dashboard-page">
-                    <!-- content from analytics.html -->
-                </div>
-
-                <!-- Admin Page -->
-                <div id="page-admin" class="dashboard-page">
-                     <!-- content from admin.html -->
-                </div>
-
-                <!-- Experts Page -->
-                <div id="page-experts" class="dashboard-page">
-                     <!-- content from admin-experts.html -->
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const App = {
-                init() {
-                    this.initTheme();
-                    this.checkSession();
-                    this.bindEvents();
-                },
-
-                bindEvents() {
-                    document.getElementById('sidebar-toggle')?.addEventListener('click', () => {
-                        document.body.classList.toggle('sidebar-collapsed');
-                    });
-                     // Cursor effects
-                    const cursorDot = document.querySelector('.cursor-dot');
-                    const cursorOutline = document.querySelector('.cursor-outline');
-                    window.addEventListener('mousemove', (e) => {
-                        cursorDot.style.left = `${e.clientX}px`;
-                        cursorDot.style.top = `${e.clientY}px`;
-                        cursorOutline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
-                    });
-                },
-
-                initTheme() {
-                    const themeToggleBtn = document.getElementById('theme-toggle');
-                    const themeIcon = document.getElementById('theme-icon');
-                    const htmlEl = document.documentElement;
-
-                    if (localStorage.getItem('theme') === 'dark') {
-                        htmlEl.classList.add('dark');
-                        themeIcon.classList.replace('fa-moon', 'fa-sun');
-                        if (!window.threeJsInitialized) initThreeJs();
-                    }
-
-                    themeToggleBtn.addEventListener('click', () => {
-                        htmlEl.classList.toggle('dark');
-                        const isDark = htmlEl.classList.contains('dark');
-                        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                        themeIcon.classList.toggle('fa-moon', !isDark);
-                        themeIcon.classList.toggle('fa-sun', isDark);
-                        if (isDark && !window.threeJsInitialized) initThreeJs();
-                    });
-                },
-                
-                checkSession() {
-                    if (localStorage.getItem('isLoggedIn') === 'true') {
-                        document.getElementById('login-container').style.display = 'none';
-                        document.getElementById('dashboard-container').style.display = 'block';
-                        this.initializeDashboard();
-                    }
-                },
-
-                initializeDashboard() {
-                    this.populateAnalyticsPage();
-                    this.populateAdminPage();
-                    this.populateExpertsPage();
-                    showPage('analytics'); 
-                },
-
-                populateAnalyticsPage() {
-                    const page = document.getElementById('page-analytics');
-                    page.innerHTML = `
-                        <div class="dashboard-header">
-                            <h1 class="text-3xl font-bold font-montserrat">User Analytics</h1>
-                            <div class="date-filter">
-                                <select class="form-control"><option>Last 30 Days</option></select>
-                            </div>
-                        </div>
-                        <div class="summary-grid">
-                            <div class="summary-card"><h3><i class="fas fa-users mr-2"></i>Total Users</h3><div class="value">1,248</div><div class="trend up"><i class="fas fa-arrow-up"></i> 12.5%</div></div>
-                            <div class="summary-card"><h3><i class="fas fa-tasks mr-2"></i>Quests Completed</h3><div class="value">3,742</div><div class="trend up"><i class="fas fa-arrow-up"></i> 8.3%</div></div>
-                            <div class="summary-card"><h3><i class="fas fa-coins mr-2"></i>Quest Earnings</h3><div class="value">$14,568</div><div class="trend up"><i class="fas fa-arrow-up"></i> 5.7%</div></div>
-                            <div class="summary-card"><h3><i class="fas fa-user-plus mr-2"></i>Affiliate Signups</h3><div class="value">892</div><div class="trend down"><i class="fas fa-arrow-down"></i> 2.1%</div></div>
-                        </div>
-                        <div class="charts-section">
-                            <div class="chart-container"><h3><i class="fas fa-chart-line mr-2"></i>User Growth</h3><div class="chart-placeholder"><canvas id="userGrowthChart"></canvas></div></div>
-                            <div class="chart-container"><h3><i class="fas fa-chart-pie mr-2"></i>Referral Sources</h3><div class="chart-placeholder"><canvas id="referralSourcesChart"></canvas></div></div>
-                        </div>
-                    `;
-                    this.initAnalyticsCharts();
-                },
-
-                initAnalyticsCharts() {
-                    const userGrowthCtx = document.getElementById('userGrowthChart')?.getContext('2d');
-                    if (userGrowthCtx) new Chart(userGrowthCtx, { type: 'line', data: { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], datasets: [{ label: 'New Users', data: [65, 59, 80, 81, 56, 55], borderColor: 'rgba(139, 0, 255, 1)', backgroundColor: 'rgba(139, 0, 255, 0.2)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false } });
-
-                    const referralSourcesCtx = document.getElementById('referralSourcesChart')?.getContext('2d');
-                    if (referralSourcesCtx) new Chart(referralSourcesCtx, { type: 'pie', data: { labels: ['Affiliate', 'Quest', 'Direct'], datasets: [{ data: [45, 35, 20], backgroundColor: ['#fd79a8', '#00cec9', '#6c5ce7'] }] }, options: { responsive: true, maintainAspectRatio: false } });
-                },
-                
-                populateAdminPage() {
-                    const page = document.getElementById('page-admin');
-                    page.innerHTML = `
-                         <div class="dashboard-header"><h1>Admin Controls</h1></div>
-                         <div class="admin-section" id="program-section"><h3><i class="fas fa-link"></i> Manage Affiliate Programs</h3><p class="text-gray-400">Affiliate program management form will be here.</p></div>
-                         <div class="admin-section" id="quest-section"><h3><i class="fas fa-tasks"></i> Manage Quests</h3><p class="text-gray-400">Quest management form will be here.</p></div>
-                         <div class="admin-section" id="education-section"><h3><i class="fas fa-graduation-cap"></i> Manage Education</h3><p class="text-gray-400">Education content management form will be here.</p></div>
-                         <div class="admin-section" id="product-section"><h3><i class="fas fa-box"></i> Manage Products</h3><p class="text-gray-400">Product management form will be here.</p></div>
-                    `;
-                },
-
-                populateExpertsPage() {
-                     const page = document.getElementById('page-experts');
-                     page.innerHTML = `
-                        <div class="dashboard-header"><h1>Expert & Founder Management</h1></div>
-                        <div class="admin-section" id="expert-section"><h3><i class="fas fa-users-cog"></i> Manage Experts</h3><p class="text-gray-400">Expert management form will be here.</p></div>
-                        <div class="admin-section" id="founder-section"><h3><i class="fas fa-user-tie"></i> Manage Founders</h3><p class="text-gray-400">Founder management form will be here.</p></div>
-                     `;
-                }
-            };
-            
-            // --- Global Functions ---
-            window.showPage = (pageId) => {
-                document.querySelectorAll('.dashboard-page').forEach(p => p.classList.remove('active'));
-                document.getElementById(`page-${pageId}`).classList.add('active');
-                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active-nav', 'text-white', 'bg-purple-600'));
-                const activeLink = document.querySelector(`.nav-link[onclick="showPage('${pageId}')"]`);
-                activeLink.classList.add('active-nav', 'text-white', 'bg-purple-600');
-                document.getElementById('nav-menu').classList.remove('open');
-            };
-            
+            // --- Authentication ---
             window.login = () => {
                 const username = document.getElementById('username').value;
                 const password = document.getElementById('password').value;
+                const messageEl = document.getElementById('login-message');
+
+                // In a real app, use a secure fetch call to your server.
+                // This is a simple client-side check for demonstration.
                 if (username === "admin" && password === "password123") {
                     localStorage.setItem('isLoggedIn', 'true');
-                    App.checkSession();
+                    window.location.href = 'founder_main_app.html'; // Redirect to the main app
                 } else {
-                    const msgEl = document.getElementById('login-message');
-                    msgEl.textContent = 'Invalid credentials.';
-                    msgEl.className = 'message error';
+                    messageEl.textContent = 'Invalid credentials. Please try again.';
+                    messageEl.className = 'message error';
                 }
             };
-            
-            window.logout = () => {
-                localStorage.removeItem('isLoggedIn');
-                window.location.reload();
-            };
 
-            window.toggleMenu = () => document.getElementById('nav-menu').classList.toggle('open');
-
-            // Particle background
-            let scene, camera, renderer, particles;
-            window.threeJsInitialized = false;
-            function initThreeJs() {
+            // --- Effects Initialization ---
+            function initEffects() {
+                 // Cursor effects
+                const cursorDot = document.querySelector('.cursor-dot');
+                const cursorOutline = document.querySelector('.cursor-outline');
+                window.addEventListener('mousemove', (e) => {
+                    cursorDot.style.left = `${e.clientX}px`;
+                    cursorDot.style.top = `${e.clientY}px`;
+                    cursorOutline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
+                });
+                
+                // Particle background
+                let scene, camera, renderer, particles;
+                const canvas = document.getElementById('bg-canvas');
+                if (!canvas) return;
                 scene = new THREE.Scene();
                 camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
                 camera.position.z = 1000;
@@ -339,20 +142,19 @@
                 pGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
                 particles = new THREE.Points(pGeometry, pMaterial);
                 scene.add(particles);
-                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true });
+                renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true });
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 renderer.setPixelRatio(window.devicePixelRatio);
-                animateThreeJs();
-                window.threeJsInitialized = true;
+                
+                function animate() {
+                    requestAnimationFrame(animate);
+                    particles.rotation.y += 0.0001;
+                    renderer.render(scene, camera);
+                }
+                animate();
             }
-            function animateThreeJs() {
-                if(!document.documentElement.classList.contains('dark')) return;
-                requestAnimationFrame(animateThreeJs);
-                particles.rotation.y += 0.0001;
-                renderer.render(scene, camera);
-            }
-            
-            App.init();
+
+            initEffects();
         });
     </script>
 </body>
