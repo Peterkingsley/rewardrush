@@ -396,7 +396,7 @@
     </div>
     
     <!-- Custom Notification/Toast -->
-    <div id="notification-toast" class="fixed bottom-8 right-8 bg-gray-800 text-white py-3 px-6 rounded-lg shadow-xl z-50 hidden">
+    <div id="notification-toast" class="fixed bottom-24 md:bottom-8 right-8 bg-gray-800 text-white py-3 px-6 rounded-lg shadow-xl z-50 hidden">
         <p id="notification-message">Notification message</p>
     </div>
 
@@ -433,11 +433,9 @@
             // --- API Service Layer ---
             const ApiService = {
                 async fetch(endpoint, options = {}) {
-                    // The base URL is empty because the server is on the same origin.
-                    // In a real-world scenario, this might come from a config file.
-                    const baseUrl = 'https://rewardrushapp.onrender.com'; 
+                    // Use relative paths for API calls. This works for both local dev and deployment.
                     try {
-                        const response = await fetch(baseUrl + endpoint, {
+                        const response = await fetch(endpoint, {
                             ...options,
                             headers: {
                                 'Content-Type': 'application/json',
@@ -453,51 +451,33 @@
                         console.error(`API Error on ${endpoint}:`, error);
                         App.showNotification(error.message, 'error');
                         if (error.message.toLowerCase().includes('unauthorized')) {
-                            // Redirect to login if not authorized
                             window.location.href = '/auth.html';
                         }
                         throw error;
                     }
                 },
 
-                checkSession() {
-                    return this.fetch('/check-session');
-                },
-
-                getProfile(userId) {
-                    return this.fetch(`/api/profile/${userId}`);
-                },
-
-                getQuests() {
-                    return this.fetch('/quests');
-                },
-
-                getQuestQuestions(questId) {
-                    return this.fetch(`/quests/${questId}/questions`);
-                },
-
-                submitQuiz(questId, answers) {
-                    return this.fetch(`/submit-quiz/${questId}`, {
-                        method: 'POST',
-                        body: JSON.stringify({ answers }),
-                    });
-                },
-
-                withdraw(amount) {
-                    return this.fetch('/withdraw', {
-                        method: 'POST',
-                        body: JSON.stringify({ amount }),
-                    });
-                }
+                checkSession: () => ApiService.fetch('/check-session'),
+                getProfile: (userId) => ApiService.fetch(`/api/profile/${userId}`),
+                getQuests: () => ApiService.fetch('/quests'),
+                getQuestQuestions: (questId) => ApiService.fetch(`/quests/${questId}/questions`),
+                submitQuiz: (questId, answers) => ApiService.fetch(`/submit-quiz/${questId}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ answers }),
+                }),
+                withdraw: (amount) => ApiService.fetch('/withdraw', {
+                    method: 'POST',
+                    body: JSON.stringify({ amount }),
+                })
             };
 
-            // Encapsulate all logic in an App object to avoid global scope pollution
+            // Encapsulate all logic in an App object
             const App = {
                 // --- STATE ---
                 user: {
                     name: '',
                     balance: 0.00,
-                    completedQuests: [],
+                    completedQuests: new Set(), // Use a Set for efficient lookup
                     recentActivity: [],
                 },
                 state: {
@@ -546,9 +526,6 @@
                 
                 // --- METHODS ---
                 
-                /**
-                 * Initializes the application, sets up event listeners and renders initial data.
-                 */
                 async init() {
                     this.initTheme();
                     this.bindEvents();
@@ -568,14 +545,20 @@
                             ApiService.getQuests()
                         ]);
                         
-                        // Populate user data
-                        this.user.name = profileData.fullName;
-                        this.user.balance = profileData.totalEarnings;
+                        // **FIX**: Populate user data from the correct server structure
+                        this.user.name = profileData.user.fullName;
+                        this.user.balance = profileData.stats.totalEarnings;
                         this.user.recentActivity = profileData.recentActivity;
 
-                        // Populate quests using the correct completedQuestIds from the server
+                        // **FIX**: Determine completed quests by checking transaction history
+                        const completedQuestTitles = new Set(
+                            profileData.transactions
+                                .filter(tx => tx.desc?.startsWith('Completed: '))
+                                .map(tx => tx.desc.replace('Completed: ', ''))
+                        );
+
                         this.quests = questsData.quests.map(quest => {
-                            const isCompleted = profileData.completedQuestIds.includes(quest.id);
+                            const isCompleted = completedQuestTitles.has(quest.title);
                             return { ...quest, status: isCompleted ? 'completed' : 'not-started' };
                         });
 
@@ -586,19 +569,14 @@
 
                     } catch (error) {
                         console.error("Initialization failed:", error);
-                        // The ApiService will show a notification
                     }
                 },
 
-                /**
-                 * Initializes and binds events for the theme toggle.
-                 */
                 initTheme() {
                     const themeToggleBtn = this.elements.themeToggleBtn;
                     const themeIcon = this.elements.themeIcon;
                     const htmlEl = document.documentElement;
 
-                    // Check for saved theme in localStorage
                     if (localStorage.getItem('theme') === 'dark') {
                         htmlEl.classList.add('dark');
                         themeIcon.classList.replace('fa-moon', 'fa-sun');
@@ -630,23 +608,16 @@
                     });
                 },
 
-                /**
-                 * Binds the click event for the sidebar toggle button.
-                 */
                 bindSidebarToggle() {
-                    if (!this.elements.sidebarToggleBtn) return; // Guard clause for mobile view
-
+                    if (!this.elements.sidebarToggleBtn) return;
                     this.elements.sidebarToggleBtn.addEventListener('click', () => {
                         document.body.classList.toggle('sidebar-collapsed');
                     });
                 },
 
-                /**
-                 * Displays a greeting message based on the time of day.
-                 */
                 displayGreeting() {
                     const hour = new Date().getHours();
-                    const name = this.user.name.split(' ')[0]; // Get first name
+                    const name = this.user.name?.split(' ')[0] || 'User';
                     let greetingText = '';
 
                     if (hour < 12) {
@@ -656,20 +627,13 @@
                     } else {
                         greetingText = `Good evening, ${name}`;
                     }
-
                     this.elements.greeting.innerHTML = greetingText;
                 },
 
-                /**
-                 * Updates the header with current user information.
-                 */
                 updateHeader() {
                     this.updateBalanceDisplay();
                 },
 
-                /**
-                 * Updates the balance display based on visibility state.
-                 */
                 updateBalanceDisplay() {
                     if (this.state.isBalanceVisible) {
                         this.elements.carouselBalance.textContent = `$${this.user.balance.toFixed(2)}`;
@@ -680,24 +644,19 @@
                     }
                 },
                 
-                /**
-                 * Filters, sorts, and displays quests based on UI controls.
-                 */
                 displayQuests() {
-                    this.elements.questList.innerHTML = ''; // Clear previous list
+                    this.elements.questList.innerHTML = '';
                     
                     const searchTerm = this.elements.searchInput.value.toLowerCase();
                     const statusFilter = this.elements.statusFilter.value;
                     const sortOrder = this.elements.sortFilter.value;
                     
-                    // 1. Filter
                     let filteredQuests = this.quests.filter(quest => {
                        const matchesSearch = (quest.title?.toLowerCase().includes(searchTerm) || quest.description?.toLowerCase().includes(searchTerm));
                         const matchesStatus = (statusFilter === 'all') || (quest.status === statusFilter);
                         return matchesSearch && matchesStatus;
                     });
                     
-                    // 2. Sort
                     const parseReward = (rewardString) => {
                          if (typeof rewardString !== 'string') return 0;
                          const match = rewardString.match(/\$?(\d+(\.\d+)?)/);
@@ -710,12 +669,10 @@
                         filteredQuests.sort((a, b) => parseReward(a.reward) - parseReward(b.reward));
                     }
                     
-                    // 3. Paginate
                     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
                     const endIndex = startIndex + this.itemsPerPage;
                     const paginatedQuests = filteredQuests.slice(startIndex, endIndex);
 
-                    // 4. Render
                     if (paginatedQuests.length === 0) {
                         this.elements.questList.innerHTML = `<p class="text-gray-500 md:col-span-2 lg:col-span-3 text-center py-8">No quests found.</p>`;
                     } else {
@@ -728,12 +685,10 @@
                     this.renderPagination(filteredQuests.length);
                 },
 
-                /**
-                 * Displays the list of completed quests in the history section.
-                 */
                 displayHistory() {
-                    this.elements.historyList.innerHTML = ''; // Clear previous list
+                    this.elements.historyList.innerHTML = '';
                     
+                    // **FIX**: Use the `recentActivity` array from the server, which has `text` and `time`.
                     if (!this.user.recentActivity || this.user.recentActivity.length === 0) {
                         this.elements.historyList.innerHTML = `<p class="text-gray-500 text-center py-4">No recent activity yet.</p>`;
                     } else {
@@ -741,35 +696,18 @@
                             const historyItem = document.createElement('div');
                             historyItem.className = 'flex justify-between items-center p-3 border-b border-gray-200 last:border-b-0';
                             
-                            const formattedDate = new Date(activity.created_at).toLocaleDateString('en-US', {
-                                year: 'numeric', month: 'long', day: 'numeric'
-                            });
-
-                            let amountHtml = '';
-                            const amount = parseFloat(activity.amount);
-                            if (activity.type === 'credit') {
-                                amountHtml = `<p class="font-semibold text-green-600">+$${amount.toFixed(2)}</p>`;
-                            } else if (activity.type === 'debit') {
-                                amountHtml = `<p class="font-semibold text-red-600">-$${amount.toFixed(2)}</p>`;
-                            }
-
                             historyItem.innerHTML = `
                                 <div>
-                                    <p class="font-semibold text-gray-800">${activity.details}</p>
-                                    <p class="text-xs text-gray-500">${formattedDate}</p>
+                                    <p class="font-semibold text-gray-800">${activity.text}</p>
+                                    <p class="text-xs text-gray-500">${activity.time}</p>
                                 </div>
-                                ${amountHtml}
+                                <i class="fas ${activity.icon} ${activity.color}"></i>
                             `;
                             this.elements.historyList.appendChild(historyItem);
                         });
                     }
                 },
 
-                /**
-                 * Creates a quest card element safely.
-                 * @param {object} quest - The quest data object.
-                 * @returns {HTMLElement} - The quest card element.
-                 */
                 createQuestCard(quest) {
                     const card = document.createElement('div');
                     card.className = 'quest-card bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col justify-between transition-shadow hover:shadow-md';
@@ -787,14 +725,14 @@
                     const cardContent = `
                         <div class="flex-grow">
                             <div class="flex justify-between items-start mb-2">
-                                <h3 class="text-base font-bold text-gray-800">${quest.title}</h3>
+                                <h3 class="text-base font-bold text-gray-800">${quest.title || 'Untitled Quest'}</h3>
                                 ${statusBadge}
                             </div>
-                            <p class="text-gray-600 mb-3 text-xs">${quest.description}</p>
+                            <p class="text-gray-600 mb-3 text-xs">${quest.description || 'No description available.'}</p>
                         </div>
                         <div class="mt-3 pt-3 border-t border-gray-200">
                              <div class="flex justify-between items-center mb-3">
-                                <p class="font-bold text-green-600 text-base">${quest.reward}</p>
+                                <p class="font-bold text-green-600 text-base">${quest.reward || '$0.00'}</p>
                                 <button class="details-btn text-purple-600 hover:underline text-xs font-semibold">View Details</button>
                             </div>
                             <button class="start-quiz-btn w-full py-2 px-4 rounded-lg text-sm font-semibold transition ${isCompleted ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}" ${isCompleted ? 'disabled' : ''}>
@@ -806,15 +744,11 @@
                     return card;
                 },
 
-                /**
-                 * Renders pagination controls.
-                 * @param {number} totalItems - Total number of items to paginate.
-                 */
                 renderPagination(totalItems) {
                     this.elements.pagination.innerHTML = '';
                     const pageCount = Math.ceil(totalItems / this.itemsPerPage);
 
-                    if (pageCount <= 1) return; // Don't show pagination if only one page
+                    if (pageCount <= 1) return;
 
                     for (let i = 1; i <= pageCount; i++) {
                         const pageLink = document.createElement('button');
@@ -828,20 +762,16 @@
                     }
                 },
 
-                // --- QUIZ LOGIC ---
                 async startQuiz(questId) {
                     try {
                         const questData = this.quests.find(q => q.id === questId);
-
                         if (!questData) {
-                            console.error(`Could not find quest data in the local state for ID: ${questId}`);
-                            this.showNotification('Could not load quest details. Please try refreshing the page.', 'error');
+                            this.showNotification('Could not load quest details.', 'error');
                             return;
                         }
 
                         const questionsData = await ApiService.getQuestQuestions(questId);
-
-                        if (!questionsData || !questionsData.questions || questionsData.questions.length === 0) {
+                        if (!questionsData?.questions?.length) {
                             this.showNotification('Quiz not available for this quest yet.', 'error');
                             return;
                         }
@@ -860,8 +790,6 @@
                         this.showQuestion();
                         this.openModal(this.elements.quizModal);
                     } catch (error) {
-                        // The ApiService.fetch method already shows a notification for API errors.
-                        // This catch block will handle other potential errors, but logging is sufficient for debugging.
                         console.error("Failed to start quiz:", error);
                     }
                 },
@@ -872,57 +800,37 @@
                     const quizOptions = document.getElementById('quiz-options');
                     const quizBackground = document.getElementById('quiz-background');
 
-                    // --- BACKGROUND VIDEO LOGIC ---
-                    quizBackground.innerHTML = ''; // Clear previous background
-
-                    // A placeholder list of videos to cycle through.
+                    quizBackground.innerHTML = '';
                     const backgroundVideos = [
                         'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
                         'https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4',
                         'https://test-videos.co.uk/vids/elephantsdream/mp4/h264/360/Elephants_Dream_360_10s_1MB.mp4'
                     ];
-                    // Use the question index to pick a video, looping if necessary
                     const videoUrl = backgroundVideos[this.currentQuestionIndex % backgroundVideos.length];
 
                     const video = document.createElement('video');
                     video.src = videoUrl;
                     video.className = 'absolute inset-0 w-full h-full object-cover';
-                    video.autoplay = true;
-                    video.loop = true;
-                    video.muted = true;
-                    video.playsInline = true;
+                    video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true;
                     quizBackground.appendChild(video);
-                    const playPromise = video.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(error => {
-                            console.error("Video autoplay was prevented:", error);
-                        });
-                    }
+                    video.play().catch(error => console.error("Video autoplay prevented:", error));
 
-                    // --- QUESTION & OPTIONS LOGIC ---
                     quizContent.innerHTML = `<p class="text-lg font-semibold text-white">${question.question_text}</p>`;
                     quizOptions.innerHTML = '';
 
-                    // FIX: Check the question_type field directly from the data.
                     const is_open_ended = question.question_type === 'open-ended';
 
                     if (is_open_ended) {
-                        // Render a textarea for open-ended questions
                         const textArea = document.createElement('textarea');
                         textArea.id = 'open-ended-answer';
                         textArea.className = 'w-full p-4 border border-white/30 rounded-lg bg-white/10 text-white backdrop-blur-sm transition focus:ring-2 focus:ring-purple-500 focus:border-transparent';
                         textArea.placeholder = 'Type your answer here...';
                         textArea.rows = 4;
                         quizOptions.appendChild(textArea);
-                        // Ensure the container is single-column for the textarea
                         quizOptions.className = 'grid grid-cols-1 gap-4 my-6';
                     } else {
-                        // Render buttons for multiple-choice questions
                         quizOptions.className = 'grid grid-cols-1 sm:grid-cols-2 gap-4 my-6';
-                        
-                        // The 'options' from the DB is a JSONB array of strings.
-                        const optionsArray = question.options; 
-
+                        const optionsArray = Array.isArray(question.options) ? question.options : [];
                         optionsArray.forEach(optionText => {
                             const optionButton = document.createElement('button');
                             optionButton.textContent = optionText.trim();
@@ -949,7 +857,6 @@
 
                 nextQuestion() {
                     const question = this.currentQuiz.questions[this.currentQuestionIndex];
-                    // FIX: Use the same robust check here.
                     const is_open_ended = question.question_type === 'open-ended';
 
                     if (is_open_ended) {
@@ -971,7 +878,6 @@
 
                 async submitQuiz() {
                     const question = this.currentQuiz.questions[this.currentQuestionIndex];
-                    // FIX: Use the same robust check here.
                     const is_open_ended = question.question_type === 'open-ended';
 
                     if (is_open_ended) {
@@ -995,7 +901,6 @@
                         if (result.success) {
                             const quest = this.quests.find(q => q.id === this.currentQuiz.id);
                             this.showQuestCompletion(quest, result.referralLink);
-                            // Refresh data to reflect completion and new balance
                             this.init(); 
                         } else {
                             this.showNotification(result.message || 'Quiz failed. Please try again later.', 'error');
@@ -1005,11 +910,6 @@
                     }
                 },
 
-                /**
-                 * Shows the quest completion modal with referral options.
-                 * @param {object} quest - The completed quest object.
-                 * @param {string} referralLink - The referral link from the server.
-                 */
                 showQuestCompletion(quest, referralLink) {
                     this.elements.completionTitle.textContent = `Quest Complete: ${quest.title}`;
                     this.elements.completionReward.textContent = `You've earned ${quest.reward}!`;
@@ -1017,7 +917,6 @@
                     this.openModal(this.elements.questCompleteModal);
                 },
 
-                // --- MODAL & NOTIFICATION LOGIC ---
                 openModal(modal) {
                     modal.classList.remove('hidden');
                     modal.classList.add('flex');
@@ -1038,18 +937,12 @@
                 
                 showNotification(message, type = 'success') {
                     this.elements.notificationMessage.textContent = message;
-                    
                     const toast = this.elements.notificationToast;
                     toast.className = `fixed bottom-24 md:bottom-8 right-8 text-white py-3 px-6 rounded-lg shadow-xl z-50 toast-in ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
-                    
                     toast.classList.remove('hidden');
-                    
-                    setTimeout(() => {
-                        toast.classList.add('hidden');
-                    }, 3000);
+                    setTimeout(() => toast.classList.add('hidden'), 3000);
                 },
                 
-                // --- CAROUSEL LOGIC ---
                 initCarousel() {
                     const carouselItems = [
                         { img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop' },
@@ -1095,57 +988,37 @@
                     setInterval(nextSlide, 5000);
                 },
 
-                // --- EVENT BINDINGS ---
                 bindEvents() {
-                    // Filter and Sort listeners
                     this.elements.searchInput.addEventListener('input', () => { this.currentPage = 1; this.displayQuests(); });
                     this.elements.statusFilter.addEventListener('change', () => { this.currentPage = 1; this.displayQuests(); });
                     this.elements.sortFilter.addEventListener('change', () => { this.currentPage = 1; this.displayQuests(); });
                     
-                    // Balance toggle listener
                     this.elements.toggleBalanceBtn.addEventListener('click', () => {
                         this.state.isBalanceVisible = !this.state.isBalanceVisible;
                         this.updateBalanceDisplay();
                     });
 
-                    // History button listener
                     this.elements.historyBtn.addEventListener('click', () => {
                         this.elements.historySection.scrollIntoView({ behavior: 'smooth' });
                     });
 
-                    // Event delegation for quest cards
                     this.elements.questList.addEventListener('click', e => {
-                        let target = e.target;
-                        // If the click target is a text node, use its parent element for `closest()` checks.
-                        if (target.nodeType === 3) { // Node.TEXT_NODE
-                            target = target.parentNode;
-                        }
-
-                        const startButton = target.closest('.start-quiz-btn:not([disabled])');
+                        const startButton = e.target.closest('.start-quiz-btn:not([disabled])');
                         if (startButton) {
                             const card = startButton.closest('.quest-card');
-                            if (card) {
-                                const questId = parseInt(card.dataset.questId, 10);
-                                this.startQuiz(questId);
-                            }
+                            if (card) this.startQuiz(parseInt(card.dataset.questId, 10));
                             return; 
                         }
-
-                        const detailsButton = target.closest('.details-btn');
-                        if (detailsButton) {
-                            this.showNotification('Quest details page is a work in progress!', 'info');
-                            return;
-                        }
+                        const detailsButton = e.target.closest('.details-btn');
+                        if (detailsButton) this.showNotification('Quest details page is a work in progress!', 'info');
                     });
 
-                    // Quiz modal controls
                     document.getElementById('next-btn').addEventListener('click', () => this.nextQuestion());
                     document.getElementById('submit-btn').addEventListener('click', () => this.submitQuiz());
                     this.elements.quizModal.addEventListener('click', (e) => {
                        if (e.target === this.elements.quizModal) this.closeModal(this.elements.quizModal);
                     });
 
-                    // Withdrawal modal controls
                     this.elements.withdrawBtns.forEach(btn => {
                         btn.addEventListener('click', () => {
                              document.getElementById('withdraw-balance').textContent = `$${this.user.balance.toFixed(2)}`;
@@ -1156,21 +1029,14 @@
                     document.getElementById('confirm-withdrawal-btn').addEventListener('click', async () => {
                         const amountInput = document.getElementById('withdraw-amount');
                         const amount = parseFloat(amountInput.value);
-                        if (isNaN(amount) || amount <= 0) {
-                            this.showNotification('Please enter a valid amount.', 'error');
-                            return;
-                        }
-                        if (amount > this.user.balance) {
-                             this.showNotification('Insufficient funds.', 'error');
-                             return;
-                        }
+                        if (isNaN(amount) || amount <= 0) return this.showNotification('Please enter a valid amount.', 'error');
+                        if (amount > this.user.balance) return this.showNotification('Insufficient funds.', 'error');
                         
                         try {
                             const result = await ApiService.withdraw(amount);
                             this.showNotification(`Withdrawal successful! Your code is: ${result.code}`, 'success');
                             this.closeModal(this.elements.withdrawModal);
                             amountInput.value = '';
-                            // Refresh user data
                             this.init();
                         } catch (error) {
                             console.error("Withdrawal failed:", error);
@@ -1181,7 +1047,6 @@
                        if (e.target === this.elements.withdrawModal) this.closeModal(this.elements.withdrawModal);
                     });
 
-                    // Completion Modal Controls
                     this.elements.closeCompletionModalBtn.addEventListener('click', () => this.closeModal(this.elements.questCompleteModal));
                     this.elements.copyLinkBtn.addEventListener('click', () => {
                         this.elements.referralLinkInput.select();
@@ -1194,25 +1059,15 @@
             // --- Additional Animations ---
             window.threeJsInitialized = false;
 
-            // Scroll reveal animation
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                    }
+                    if (entry.isIntersecting) entry.target.classList.add('visible');
                 });
-            }, {
-                threshold: 0.1
-            });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-            document.querySelectorAll('.reveal').forEach(el => {
-                observer.observe(el);
-            });
-
-            // Three.js Particle Background
             let scene, camera, renderer, particles, mouseX = 0, mouseY = 0;
-            let windowHalfX = window.innerWidth / 2;
-            let windowHalfY = window.innerHeight / 2;
+            let windowHalfX = window.innerWidth / 2, windowHalfY = window.innerHeight / 2;
 
             function initThreeJs() {
                 scene = new THREE.Scene();
@@ -1222,34 +1077,20 @@
                 const particleCount = 2000;
                 const particlesGeometry = new THREE.BufferGeometry();
                 const posArray = new Float32Array(particleCount * 3);
-                
-                for (let i = 0; i < particleCount * 3; i++) {
-                    posArray[i] = (Math.random() - 0.5) * (Math.random() * 2000);
-                }
+                for (let i = 0; i < particleCount * 3; i++) posArray[i] = (Math.random() - 0.5) * (Math.random() * 2000);
                 particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
                 
-                const material = new THREE.PointsMaterial({
-                    size: 1.5,
-                    color: 0x8b00ff,
-                    transparent: true,
-                    opacity: 0.7,
-                    blending: THREE.AdditiveBlending
-                });
-
+                const material = new THREE.PointsMaterial({ size: 1.5, color: 0x8b00ff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending });
                 particles = new THREE.Points(particlesGeometry, material);
                 scene.add(particles);
 
-                renderer = new THREE.WebGLRenderer({
-                    canvas: document.getElementById('bg-canvas'),
-                    alpha: true
-                });
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true });
                 renderer.setPixelRatio(window.devicePixelRatio);
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 renderer.setClearColor(0x000000, 0);
 
                 document.body.addEventListener('pointermove', onDocumentMouseMove, false);
                 window.addEventListener('resize', onWindowResize, false);
-
                 animateThreeJs();
             }
 
@@ -1258,17 +1099,14 @@
                 renderThreeJs();
             }
 
-
             function renderThreeJs() {
                 if (!renderer) return;
                 const time = Date.now() * 0.00005;
                 camera.position.x += (mouseX - camera.position.x) * 0.05;
                 camera.position.y += (-mouseY - camera.position.y) * 0.05;
                 camera.lookAt(scene.position);
-                
                 particles.rotation.x = time * 0.1;
                 particles.rotation.y = time * 0.2;
-
                 renderer.render(scene, camera);
             }
 
@@ -1286,21 +1124,12 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
             }
             
-            // Custom cursor
             const cursorDot = document.querySelector('.cursor-dot');
             const cursorOutline = document.querySelector('.cursor-outline');
-
             window.addEventListener('mousemove', (e) => {
-                const posX = e.clientX;
-                const posY = e.clientY;
-
-                cursorDot.style.left = `${posX}px`;
-                cursorDot.style.top = `${posY}px`;
-                
-                cursorOutline.animate({
-                    left: `${posX}px`,
-                    top: `${posY}px`
-                }, { duration: 500, fill: "forwards" });
+                cursorDot.style.left = `${e.clientX}px`;
+                cursorDot.style.top = `${e.clientY}px`;
+                cursorOutline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
             });
             
             document.querySelectorAll('a, button, input, .quest-card, .withdraw-btn, #history-btn').forEach(el => {
@@ -1309,7 +1138,6 @@
                     cursorDot.style.backgroundColor = 'var(--secondary-glow)';
                     cursorOutline.style.transform = 'translate(-50%, -50%) scale(1.2)';
                 });
-                
                 el.addEventListener('mouseleave', () => {
                     cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
                     cursorDot.style.backgroundColor = 'var(--accent-glow)';
