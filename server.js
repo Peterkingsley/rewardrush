@@ -731,7 +731,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             type: t.type,
             amount: parseFloat(t.amount).toFixed(2),
             desc: t.desc,
-            date: new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2025' })
+            date: new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
         }));
         
         // 5. Fetch expert bookings
@@ -1364,3 +1364,4 @@ app.use((req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
 });
+GET /api/profile/:userId
