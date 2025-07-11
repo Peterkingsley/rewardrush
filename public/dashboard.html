@@ -25,6 +25,9 @@
         .nav-link.active {
             background-color: #374151; /* gray-700 */
         }
+        .metric-value {
+            min-height: 36px; /* Prevent layout shift while loading */
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -80,7 +83,7 @@
                 </button>
                 <h1 class="text-xl font-semibold text-gray-800">Dashboard</h1>
                 <div class="flex items-center space-x-4">
-                    <span class="text-gray-600">Admin</span>
+                    <span id="admin-username" class="text-gray-600">Admin</span>
                     <img src="https://placehold.co/40x40/E2E8F0/4A5568?text=A" alt="Admin" class="rounded-full">
                 </div>
             </header>
@@ -91,7 +94,7 @@
                     <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-500">Total Users</p>
-                            <p class="text-3xl font-bold text-gray-800">10,240</p>
+                            <p id="total-users" class="metric-value text-3xl font-bold text-gray-800">Loading...</p>
                         </div>
                         <div class="bg-indigo-100 p-3 rounded-full">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21a6 6 0 00-9-5.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-3-5.197m0 0A4 4 0 0112 4.354m0 5.292a4 4 0 010-5.292" /></svg>
@@ -100,7 +103,7 @@
                     <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-500">Quest Participants</p>
-                            <p class="text-3xl font-bold text-gray-800">3,450</p>
+                            <p id="quest-participants" class="metric-value text-3xl font-bold text-gray-800">Loading...</p>
                         </div>
                          <div class="bg-green-100 p-3 rounded-full">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
@@ -109,7 +112,7 @@
                     <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-500">Job Applicants</p>
-                            <p class="text-3xl font-bold text-gray-800">1,203</p>
+                            <p id="job-applicants" class="metric-value text-3xl font-bold text-gray-800">Loading...</p>
                         </div>
                         <div class="bg-blue-100 p-3 rounded-full">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
@@ -118,7 +121,7 @@
                     <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-500">Learn Participants</p>
-                            <p class="text-3xl font-bold text-gray-800">856</p>
+                            <p id="learn-participants" class="metric-value text-3xl font-bold text-gray-800">Loading...</p>
                         </div>
                         <div class="bg-teal-100 p-3 rounded-full">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-teal-500">
@@ -129,7 +132,7 @@
                     <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-500">Build Participants</p>
-                            <p class="text-3xl font-bold text-gray-800">412</p>
+                            <p id="build-participants" class="metric-value text-3xl font-bold text-gray-800">Loading...</p>
                         </div>
                         <div class="bg-orange-100 p-3 rounded-full">
                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-orange-500">
@@ -140,7 +143,7 @@
                      <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-500">Job Earnings</p>
-                            <p class="text-3xl font-bold text-gray-800">$55,000</p>
+                            <p id="job-earnings" class="metric-value text-3xl font-bold text-gray-800">Loading...</p>
                         </div>
                         <div class="bg-purple-100 p-3 rounded-full">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-purple-500">
@@ -152,7 +155,7 @@
                     <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-500">Quest Earnings</p>
-                            <p class="text-3xl font-bold text-gray-800">$25,300</p>
+                            <p id="quest-earnings" class="metric-value text-3xl font-bold text-gray-800">Loading...</p>
                         </div>
                         <div class="bg-pink-100 p-3 rounded-full">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-pink-500">
@@ -164,7 +167,7 @@
                     <div class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
                         <div>
                             <p class="text-sm font-medium text-gray-500">Total Withdrawn</p>
-                            <p class="text-3xl font-bold text-gray-800">$70,000</p>
+                            <p id="total-withdrawn" class="metric-value text-3xl font-bold text-gray-800">Loading...</p>
                         </div>
                         <div class="bg-red-100 p-3 rounded-full">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-red-500">
@@ -197,6 +200,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const menuButton = document.getElementById('menu-button');
             const sidebar = document.getElementById('sidebar');
+            let userRegistrationChart, questCompletionChart;
 
             // --- Mobile Sidebar Toggle ---
             if (menuButton) {
@@ -204,18 +208,70 @@
                     sidebar.classList.toggle('open');
                 });
             }
+
+            // --- Check Auth and Fetch Data ---
+            async function checkAuthAndFetchData() {
+                try {
+                    const sessionRes = await fetch('/check-session');
+                    if (!sessionRes.ok) throw new Error('Auth check failed');
+                    
+                    const sessionData = await sessionRes.json();
+                    if (!sessionData.loggedIn || !sessionData.isAdmin) {
+                        window.location.href = '/auth.html';
+                        return;
+                    }
+
+                    document.getElementById('admin-username').textContent = sessionData.userId;
+                    fetchDashboardData();
+
+                } catch (error) {
+                    console.error('Error checking session:', error);
+                    window.location.href = '/auth.html';
+                }
+            }
             
-            // --- Chart.js Initializations ---
-            // User Registration Chart
-            if (document.getElementById('userRegistrationChart')) {
+            // --- Fetch and Render Dashboard Data ---
+            async function fetchDashboardData() {
+                try {
+                    const res = await fetch('/api/dashboard-stats');
+                    if (!res.ok) {
+                        throw new Error(`Failed to fetch dashboard stats: ${res.statusText}`);
+                    }
+                    const data = await res.json();
+
+                    // Populate Key Metrics
+                    document.getElementById('total-users').textContent = parseInt(data.keyMetrics.totalUsers).toLocaleString();
+                    document.getElementById('quest-participants').textContent = parseInt(data.keyMetrics.questParticipants).toLocaleString();
+                    document.getElementById('job-applicants').textContent = parseInt(data.keyMetrics.jobApplicants).toLocaleString();
+                    document.getElementById('learn-participants').textContent = parseInt(data.keyMetrics.learnParticipants).toLocaleString();
+                    document.getElementById('build-participants').textContent = parseInt(data.keyMetrics.buildParticipants).toLocaleString();
+                    document.getElementById('job-earnings').textContent = `$${parseFloat(data.keyMetrics.jobEarnings).toLocaleString()}`;
+                    document.getElementById('quest-earnings').textContent = `$${parseFloat(data.keyMetrics.questEarnings).toLocaleString()}`;
+                    document.getElementById('total-withdrawn').textContent = `$${parseFloat(data.keyMetrics.totalWithdrawn).toLocaleString()}`;
+
+                    // Update Charts
+                    updateUserRegistrationChart(data.charts.userRegistration);
+                    updateQuestCompletionChart(data.charts.questCompletion);
+
+                } catch (error) {
+                    console.error('Error fetching dashboard data:', error);
+                    // You could display an error message to the user here
+                }
+            }
+
+            // --- Chart.js Initializations and Updates ---
+            function updateUserRegistrationChart(chartData) {
                 const userCtx = document.getElementById('userRegistrationChart').getContext('2d');
-                new Chart(userCtx, {
+                if (userRegistrationChart) {
+                    userRegistrationChart.destroy();
+                }
+                userRegistrationChart = new Chart(userCtx, {
                     type: 'line',
                     data: {
-                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                        labels: chartData.labels,
                         datasets: [{
                             label: 'New Users',
-                            data: [45, 52, 68, 72, 80, 88, 95],
+                            data: chartData.data,
                             fill: false,
                             borderColor: 'rgb(79, 70, 229)',
                             tension: 0.1
@@ -228,20 +284,21 @@
                 });
             }
 
-            // Quest Completion Chart
-            if(document.getElementById('questCompletionChart')) {
+            function updateQuestCompletionChart(chartData) {
                 const questCtx = document.getElementById('questCompletionChart').getContext('2d');
-                new Chart(questCtx, {
+                 if (questCompletionChart) {
+                    questCompletionChart.destroy();
+                }
+                questCompletionChart = new Chart(questCtx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Completed', 'In Progress', 'Expired'],
+                        labels: chartData.labels,
                         datasets: [{
                             label: 'Quests',
-                            data: [300, 150, 50],
+                            data: chartData.data,
                             backgroundColor: [
                                 'rgb(16, 185, 129)',
-                                'rgb(245, 158, 11)',
-                                'rgb(239, 68, 68)'
+                                'rgb(245, 158, 11)'
                             ],
                             hoverOffset: 4
                         }]
@@ -252,6 +309,9 @@
                     }
                 });
             }
+
+            // Initial call
+            checkAuthAndFetchData();
         });
     </script>
 </body>

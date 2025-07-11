@@ -102,6 +102,75 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// --- NEW DASHBOARD API ENDPOINT ---
+app.get('/api/dashboard-stats', requireAdmin, async (req, res) => {
+    try {
+        const queries = {
+            totalUsers: 'SELECT COUNT(*) FROM users',
+            questParticipants: 'SELECT COUNT(DISTINCT user_id) FROM user_quests',
+            jobApplicants: 'SELECT COUNT(*) FROM affiliate_clicks', // Assumption: Job applicants are affiliate clicks
+            learnParticipants: 'SELECT COUNT(DISTINCT user_id) FROM user_material_progress',
+            buildParticipants: 'SELECT COUNT(DISTINCT user_id) FROM bookings', // Assumption: Build participants have booked experts
+            jobEarnings: `SELECT SUM(payout_amount) as total FROM conversions`,
+            questEarnings: `SELECT SUM(public.parse_payout(q.reward)) as total FROM user_quests uq JOIN quests q ON uq.quest_id = q.id`,
+            totalWithdrawn: `SELECT SUM(amount) as total FROM redeemable_codes WHERE is_used = true`,
+            userRegistrationGrowth: `SELECT date_trunc('month', created_at) as month, COUNT(*) as count FROM users WHERE created_at IS NOT NULL GROUP BY 1 ORDER BY 1`,
+            questCompletions: `SELECT COUNT(*) FROM user_quests`,
+            totalQuests: `SELECT COUNT(*) FROM quests`
+        };
+
+        const results = await Promise.all(Object.values(queries).map(q => pool.query(q)));
+        const [
+            totalUsersResult,
+            questParticipantsResult,
+            jobApplicantsResult,
+            learnParticipantsResult,
+            buildParticipantsResult,
+            jobEarningsResult,
+            questEarningsResult,
+            totalWithdrawnResult,
+            userRegistrationGrowthResult,
+            questCompletionsResult,
+            totalQuestsResult
+        ] = results.map(r => r.rows);
+
+        const userRegistrationChartData = {
+            labels: userRegistrationGrowthResult.map(r => new Date(r.month).toLocaleString('default', { month: 'short' })),
+            data: userRegistrationGrowthResult.map(r => r.count)
+        };
+        
+        const totalQuests = parseInt(totalQuestsResult[0].count, 10);
+        const completedQuests = parseInt(questCompletionsResult[0].count, 10);
+
+        const questCompletionChartData = {
+            labels: ['Completed', 'Not Completed'],
+            data: [completedQuests, totalQuests - completedQuests]
+        };
+
+        res.json({
+            keyMetrics: {
+                totalUsers: totalUsersResult[0].count,
+                questParticipants: questParticipantsResult[0].count,
+                jobApplicants: jobApplicantsResult[0].count,
+                learnParticipants: learnParticipantsResult[0].count,
+                buildParticipants: buildParticipantsResult[0].count,
+                jobEarnings: parseFloat(jobEarningsResult[0].total || 0).toFixed(2),
+                questEarnings: parseFloat(questEarningsResult[0].total || 0).toFixed(2),
+                totalWithdrawn: parseFloat(totalWithdrawnResult[0].total || 0).toFixed(2)
+            },
+            charts: {
+                userRegistration: userRegistrationChartData,
+                questCompletion: questCompletionChartData
+            }
+        });
+
+    } catch (err) {
+        console.error('Error fetching dashboard stats:', err);
+        res.status(500).json({ error: 'Failed to fetch dashboard statistics' });
+    }
+});
+
+
 // --- BUILD PAGE API ENDPOINT ---
 app.get('/api/build-data', requireLogin, async (req, res) => {
     try {
