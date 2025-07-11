@@ -16,18 +16,19 @@ const PORT = process.env.PORT || 3000;
 // Tell Express to trust the proxy that Render uses
 app.set('trust proxy', 1);
 
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+// --- UPDATED: Hardcoded Admin Credentials for testing ---
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'kingslayer';
 const saltRounds = 10;
 
-// --- NEW: Hashed Admin Password ---
+// --- Hashed Admin Password ---
 let ADMIN_PASSWORD_HASH;
 (async () => {
     if (ADMIN_PASSWORD) {
         ADMIN_PASSWORD_HASH = await bcrypt.hash(ADMIN_PASSWORD, saltRounds);
         console.log("Admin password hashed successfully.");
     } else {
-        console.error("ADMIN_PASSWORD environment variable not set!");
+        console.error("ADMIN_PASSWORD is not set!");
     }
 })();
 
@@ -75,7 +76,7 @@ const requireLogin = async (req, res, next) => {
         return res.status(401).json({ error: 'Unauthorized, please log in' });
     }
     if (req.session.isAdmin) {
-        if (req.session.userId === process.env.ADMIN_USERNAME) {
+        if (req.session.userId === ADMIN_USERNAME) {
             return next(); 
         } else {
             return res.status(401).json({ error: 'Unauthorized' });
@@ -96,7 +97,7 @@ const requireLogin = async (req, res, next) => {
 };
 
 const requireAdmin = (req, res, next) => {
-    if (req.session.userId && req.session.isAdmin && req.session.userId === process.env.ADMIN_USERNAME) {
+    if (req.session.userId && req.session.isAdmin && req.session.userId === ADMIN_USERNAME) {
         return next();
     }
     return res.status(403).json({ error: 'Forbidden: Requires admin privileges' });
