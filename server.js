@@ -239,6 +239,7 @@ app.get('/api/users-data', requireAdmin, async (req, res) => {
         const usersWithStats = usersResult.rows.map(user => ({
             id: user.id,
             name: user.full_name || user.username,
+            username: user.username,
             avatar: user.avatar || `https://placehold.co/40x40/E2E8F0/4A5568?text=${(user.full_name || user.username).charAt(0).toUpperCase()}`,
             email: user.email,
             registeredDate: new Date(user.created_at).toLocaleDateString(),
@@ -1427,6 +1428,20 @@ app.post('/block-user', requireAdmin, async (req, res) => {
     } catch(err) {
         console.error("Error blocking user:", err);
         res.status(500).json({error: 'Failed to block user'});
+    }
+});
+
+// --- NEW: UNBLOCK USER ENDPOINT ---
+app.post('/unblock-user', requireAdmin, async (req, res) => {
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ error: 'Username required' });
+    try {
+        const result = await pool.query('UPDATE users SET blocked = false WHERE username = $1 RETURNING *', [username]);
+        if(result.rowCount === 0) return res.status(404).json({error: 'User not found'});
+        res.json({ message: `User ${username} unblocked` });
+    } catch(err) {
+        console.error("Error unblocking user:", err);
+        res.status(500).json({error: 'Failed to unblock user'});
     }
 });
 
