@@ -198,6 +198,67 @@ app.get('/api/dashboard-stats', requireAdmin, async (req, res) => {
     }
 });
 
+// --- NEW: USERS PAGE API ENDPOINT ---
+app.get('/api/users-data', requireAdmin, async (req, res) => {
+    try {
+        // A more optimized query to get all data at once
+        const query = `
+            SELECT 
+                u.id,
+                u.username,
+                u.full_name,
+                u.email,
+                u.avatar,
+                u.points,
+                u.blocked,
+                u.created_at,
+                COALESCE(uq.quest_count, 0) AS quests_joined,
+                COALESCE(ac.click_count, 0) AS jobs_in_progress,
+                COALESCE(c.conversion_count, 0) AS jobs_done
+            FROM users u
+            LEFT JOIN (
+                SELECT user_id, COUNT(*) as quest_count 
+                FROM user_quests 
+                GROUP BY user_id
+            ) uq ON u.id = uq.user_id
+            LEFT JOIN (
+                SELECT affiliate_username, COUNT(*) as click_count 
+                FROM affiliate_clicks 
+                GROUP BY affiliate_username
+            ) ac ON u.username = ac.affiliate_username
+            LEFT JOIN (
+                SELECT affiliate_username, COUNT(*) as conversion_count 
+                FROM conversions 
+                GROUP BY affiliate_username
+            ) c ON u.username = c.affiliate_username
+            ORDER BY u.created_at DESC;
+        `;
+
+        const usersResult = await pool.query(query);
+        
+        const usersWithStats = usersResult.rows.map(user => ({
+            id: user.id,
+            name: user.full_name || user.username,
+            avatar: user.avatar || `https://placehold.co/40x40/E2E8F0/4A5568?text=${(user.full_name || user.username).charAt(0).toUpperCase()}`,
+            email: user.email,
+            registeredDate: new Date(user.created_at).toLocaleDateString(),
+            status: user.blocked ? 'Banned' : 'Active',
+            questsJoined: parseInt(user.quests_joined, 10),
+            // Note: jobs_in_progress is simplified to total clicks for this view.
+            jobsInProgress: parseInt(user.jobs_in_progress, 10),
+            jobsDone: parseInt(user.jobs_done, 10),
+            allTimeEarning: parseFloat(user.points).toFixed(2),
+            balance: parseFloat(user.points).toFixed(2)
+        }));
+
+        res.json({ users: usersWithStats });
+
+    } catch (err) {
+        console.error('Error fetching users data:', err);
+        res.status(500).json({ error: 'Failed to fetch users data' });
+    }
+});
+
 
 // --- BUILD PAGE API ENDPOINT ---
 app.get('/api/build-data', requireLogin, async (req, res) => {

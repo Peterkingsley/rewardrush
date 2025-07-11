@@ -24,10 +24,31 @@
         .nav-link.active {
             background-color: #374151; /* gray-700 */
         }
+        #loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-left: -20px;
+            margin-top: -20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .content-hidden {
+            display: none;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
-    <div class="flex h-screen">
+    <div id="loader"></div>
+    <div id="content" class="flex h-screen content-hidden">
         <!-- Sidebar -->
         <div id="sidebar" class="sidebar fixed z-30 inset-y-0 left-0 w-64 bg-gray-900 text-white p-6 space-y-6 md:relative md:translate-x-0">
             <a href="dashboard.html" class="text-white text-2xl font-bold flex items-center space-x-2">
@@ -79,8 +100,8 @@
                 </button>
                 <h1 class="text-xl font-semibold text-gray-800">Users</h1>
                 <div class="flex items-center space-x-4">
-                    <span class="text-gray-600">Admin</span>
-                    <img src="https://placehold.co/40x40/E2E8F0/4A5568?text=A" alt="Admin" class="rounded-full">
+                    <span id="admin-username" class="text-gray-600">Admin</span>
+                    <img id="admin-avatar" src="https://placehold.co/40x40/E2E8F0/4A5568?text=A" alt="Admin" class="rounded-full">
                 </div>
             </header>
             
@@ -95,6 +116,10 @@
                     </button>
                  </div>
                  <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div id="error-container" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4" role="alert">
+                        <strong class="font-bold">Error:</strong>
+                        <span class="block sm:inline" id="error-text"></span>
+                    </div>
                     <div class="mb-4">
                         <input id="user-search-input" type="text" placeholder="Search by name or email..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
@@ -121,29 +146,67 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', async function () {
+            const loader = document.getElementById('loader');
+            const content = document.getElementById('content');
+            let allUsers = []; // To store the master list of users
+
+            // --- Client-side Authentication Check ---
+            try {
+                const response = await fetch('/check-session');
+                if (!response.ok) {
+                    window.location.href = '/admin-login.html';
+                    return;
+                }
+                const session = await response.json();
+                if (!session.loggedIn || !session.isAdmin) {
+                    window.location.href = '/admin-login.html';
+                    return;
+                }
+                
+                document.getElementById('admin-username').textContent = session.userId;
+                loader.style.display = 'none';
+                content.classList.remove('content-hidden');
+                
+                fetchUsersData();
+
+            } catch (error) {
+                console.error('Session check failed:', error);
+                window.location.href = '/admin-login.html';
+                return;
+            }
+
             const menuButton = document.getElementById('menu-button');
             const sidebar = document.getElementById('sidebar');
+            const userTableBody = document.getElementById('user-table-body');
+            const searchInput = document.getElementById('user-search-input');
 
-            // --- Mobile Sidebar Toggle ---
             if (menuButton) {
                 menuButton.addEventListener('click', () => {
                     sidebar.classList.toggle('open');
                 });
             }
 
-            // --- Mock Data ---
-            const mockUsers = [
-                { id: 1, name: 'John Doe', avatar: 'https://placehold.co/40x40/E2E8F0/4A5568?text=JD', email: 'john.doe@example.com', registeredDate: '2024-01-15', status: 'Active', questsJoined: 12, jobsInProgress: 2, jobsDone: 5, allTimeEarning: 1200, balance: 150 },
-                { id: 2, name: 'Jane Smith', avatar: 'https://placehold.co/40x40/E2E8F0/4A5568?text=JS', email: 'jane.smith@example.com', registeredDate: '2024-02-20', status: 'Active', questsJoined: 25, jobsInProgress: 1, jobsDone: 10, allTimeEarning: 2500, balance: 300 },
-                { id: 3, name: 'Sam Wilson', avatar: 'https://placehold.co/40x40/E2E8F0/4A5568?text=SW', email: 'sam.wilson@example.com', registeredDate: '2024-03-10', status: 'Banned', questsJoined: 5, jobsInProgress: 0, jobsDone: 1, allTimeEarning: 300, balance: 50 },
-                { id: 4, name: 'Alice Johnson', avatar: 'https://placehold.co/40x40/E2E8F0/4A5568?text=AJ', email: 'alice.j@example.com', registeredDate: '2024-04-05', status: 'Active', questsJoined: 30, jobsInProgress: 3, jobsDone: 12, allTimeEarning: 3500, balance: 500 },
-                { id: 5, name: 'Bob Brown', avatar: 'https://placehold.co/40x40/E2E8F0/4A5568?text=BB', email: 'bob.brown@example.com', registeredDate: '2024-05-21', status: 'Active', questsJoined: 8, jobsInProgress: 0, jobsDone: 3, allTimeEarning: 800, balance: 100 },
-                { id: 6, name: 'Chris Green', avatar: 'https://placehold.co/40x40/E2E8F0/4A5568?text=CG', email: 'chris.g@example.com', registeredDate: '2024-06-30', status: 'Banned', questsJoined: 2, jobsInProgress: 0, jobsDone: 0, allTimeEarning: 50, balance: 0 },
-            ];
-
-            const userTableBody = document.getElementById('user-table-body');
-            const searchInput = document.getElementById('user-search-input');
+            async function fetchUsersData() {
+                try {
+                    const response = await fetch('/api/users-data');
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || `Server responded with status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    allUsers = data.users;
+                    renderUsers(allUsers);
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                    const errorContainer = document.getElementById('error-container');
+                    const errorText = document.getElementById('error-text');
+                    if (errorContainer && errorText) {
+                        errorText.textContent = `Could not load user data. ${error.message}`;
+                        errorContainer.classList.remove('hidden');
+                    }
+                }
+            }
 
             function renderUsers(users) {
                 userTableBody.innerHTML = '';
@@ -157,7 +220,7 @@
                         <tr>
                             <td class="py-3 px-4 border-b border-gray-200">
                                 <div class="flex items-center">
-                                    <img src="${user.avatar}" alt="${user.name}" class="h-10 w-10 rounded-full mr-4">
+                                    <img src="${user.avatar}" alt="${user.name}" class="h-10 w-10 rounded-full mr-4" onerror="this.onerror=null;this.src='https://placehold.co/40x40/E2E8F0/4A5568?text=U';">
                                     <div>
                                         <span class="font-medium">${user.name}</span>
                                         <p class="text-sm text-gray-500">${user.email}</p>
@@ -168,8 +231,8 @@
                             <td class="py-3 px-4 border-b border-gray-200 text-center">${user.jobsDone} / ${user.jobsInProgress}</td>
                             <td class="py-3 px-4 border-b border-gray-200">
                                 <div>
-                                    <span class="font-medium">$${user.allTimeEarning.toLocaleString()}</span>
-                                    <p class="text-sm text-gray-500">Balance: $${user.balance.toLocaleString()}</p>
+                                    <span class="font-medium">$${parseFloat(user.allTimeEarning).toLocaleString()}</span>
+                                    <p class="text-sm text-gray-500">Balance: $${parseFloat(user.balance).toLocaleString()}</p>
                                 </div>
                             </td>
                             <td class="py-3 px-4 border-b border-gray-200">
@@ -177,13 +240,13 @@
                             </td>
                             <td class="py-3 px-4 border-b border-gray-200">
                                 <div class="flex items-center space-x-2">
-                                    <button class="text-gray-500 hover:text-indigo-600 p-1 rounded-full focus:outline-none">
+                                    <button class="text-gray-500 hover:text-indigo-600 p-1 rounded-full focus:outline-none" title="View User">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
                                     </button>
-                                    <button class="text-gray-500 hover:text-blue-600 p-1 rounded-full focus:outline-none">
+                                    <button class="text-gray-500 hover:text-blue-600 p-1 rounded-full focus:outline-none" title="Edit User">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
                                     </button>
-                                    <button class="text-gray-500 hover:text-red-600 p-1 rounded-full focus:outline-none">
+                                    <button class="text-gray-500 hover:text-red-600 p-1 rounded-full focus:outline-none" title="Ban User">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
                                     </button>
                                 </div>
@@ -197,16 +260,13 @@
             if (searchInput) {
                 searchInput.addEventListener('input', (e) => {
                     const searchTerm = e.target.value.toLowerCase();
-                    const filteredUsers = mockUsers.filter(user => 
+                    const filteredUsers = allUsers.filter(user => 
                         user.name.toLowerCase().includes(searchTerm) ||
                         user.email.toLowerCase().includes(searchTerm)
                     );
                     renderUsers(filteredUsers);
                 });
             }
-
-            // Initial render
-            renderUsers(mockUsers);
         });
     </script>
 </body>
