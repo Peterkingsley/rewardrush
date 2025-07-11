@@ -233,13 +233,13 @@
                 const response = await fetch('/check-session');
                 if (!response.ok) {
                     // If response is not ok (e.g., 500 server error), redirect
-                    window.location.href = '/auth.html';
+                    window.location.href = '/admin-login.html ';
                     return;
                 }
                 const session = await response.json();
                 if (!session.loggedIn || !session.isAdmin) {
                     // If not logged in or not an admin, redirect
-                    window.location.href = '/auth.html';
+                    window.location.href = '/admin-login.html ';
                     return;
                 }
                 
@@ -254,7 +254,7 @@
             } catch (error) {
                 console.error('Session check failed:', error);
                 // Redirect on any error during the check
-                window.location.href = '/auth.html';
+                window.location.href = '/admin-login.html ';
                 return;
             }
 
@@ -276,7 +276,7 @@
                     e.preventDefault();
                     try {
                         await fetch('/logout');
-                        window.location.href = '/auth.html';
+                        window.location.href = '/admin-login.html ';
                     } catch (error) {
                         console.error('Logout failed:', error);
                     }
@@ -364,3 +364,4 @@
     </script>
 </body>
 </html>
+admin-login.html 
