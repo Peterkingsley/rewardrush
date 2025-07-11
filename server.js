@@ -198,7 +198,7 @@ app.get('/api/dashboard-stats', requireAdmin, async (req, res) => {
     }
 });
 
-// --- NEW: USERS PAGE API ENDPOINT ---
+// --- USERS PAGE API ENDPOINT ---
 app.get('/api/users-data', requireAdmin, async (req, res) => {
     try {
         // A more optimized query to get all data at once
