@@ -227,34 +227,32 @@
         document.addEventListener('DOMContentLoaded', async function () {
             const loader = document.getElementById('loader');
             const content = document.getElementById('content');
+            let userRegistrationChart = null;
+            let questCompletionChart = null;
 
-            // --- NEW: Client-side Authentication Check ---
+
+            // --- Client-side Authentication Check ---
             try {
                 const response = await fetch('/check-session');
                 if (!response.ok) {
-                    // If response is not ok (e.g., 500 server error), redirect
-                    window.location.href = '/admin-login.html ';
+                    window.location.href = '/admin-login.html';
                     return;
                 }
                 const session = await response.json();
                 if (!session.loggedIn || !session.isAdmin) {
-                    // If not logged in or not an admin, redirect
-                    window.location.href = '/admin-login.html ';
+                    window.location.href = '/admin-login.html';
                     return;
                 }
                 
-                // If authenticated, show content and fetch data
                 document.getElementById('admin-username').textContent = session.userId;
                 loader.style.display = 'none';
                 content.classList.remove('content-hidden');
                 
-                // Now that we're authenticated, fetch the dashboard data
                 fetchDashboardData();
 
             } catch (error) {
                 console.error('Session check failed:', error);
-                // Redirect on any error during the check
-                window.location.href = '/admin-login.html ';
+                window.location.href = '/admin-login.html';
                 return;
             }
 
@@ -263,20 +261,18 @@
             const sidebar = document.getElementById('sidebar');
             const logoutButton = document.getElementById('logout-button');
 
-            // --- Mobile Sidebar Toggle ---
             if (menuButton) {
                 menuButton.addEventListener('click', () => {
                     sidebar.classList.toggle('open');
                 });
             }
 
-            // --- Logout functionality ---
             if(logoutButton) {
                 logoutButton.addEventListener('click', async (e) => {
                     e.preventDefault();
                     try {
                         await fetch('/logout');
-                        window.location.href = '/admin-login.html ';
+                        window.location.href = '/admin-login.html';
                     } catch (error) {
                         console.error('Logout failed:', error);
                     }
@@ -286,43 +282,44 @@
             // --- Function to fetch and populate dashboard data ---
             async function fetchDashboardData() {
                 try {
-                    // In a real application, you would fetch this data from your API
-                    // For now, we'll use a mix of static and dynamic data
+                    const response = await fetch('/api/dashboard-stats');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
                     
-                    // Fetch total users dynamically
-                    const usersResponse = await fetch('/total-users');
-                    const usersData = await usersResponse.json();
-                    document.getElementById('total-users').textContent = usersData.totalUsers.toLocaleString() || '0';
+                    // Populate Key Metrics
+                    const { keyMetrics, charts } = data;
+                    document.getElementById('total-users').textContent = parseInt(keyMetrics.totalUsers).toLocaleString();
+                    document.getElementById('quest-participants').textContent = parseInt(keyMetrics.questParticipants).toLocaleString();
+                    document.getElementById('job-applicants').textContent = parseInt(keyMetrics.jobApplicants).toLocaleString();
+                    document.getElementById('learn-participants').textContent = parseInt(keyMetrics.learnParticipants).toLocaleString();
+                    document.getElementById('build-participants').textContent = parseInt(keyMetrics.buildParticipants).toLocaleString();
+                    document.getElementById('job-earnings').textContent = `$${parseFloat(keyMetrics.jobEarnings).toLocaleString()}`;
+                    document.getElementById('quest-earnings').textContent = `$${parseFloat(keyMetrics.questEarnings).toLocaleString()}`;
+                    document.getElementById('total-withdrawn').textContent = `$${parseFloat(keyMetrics.totalWithdrawn).toLocaleString()}`;
                     
-                    // Using placeholder data for other metrics as endpoints don't exist yet
-                    document.getElementById('quest-participants').textContent = '3,450';
-                    document.getElementById('job-applicants').textContent = '1,203';
-                    document.getElementById('learn-participants').textContent = '856';
-                    document.getElementById('build-participants').textContent = '412';
-                    document.getElementById('job-earnings').textContent = '$55,000';
-                    document.getElementById('quest-earnings').textContent = '$25,300';
-                    document.getElementById('total-withdrawn').textContent = '$70,000';
-
-                    // --- Chart.js Initializations ---
-                    initializeCharts();
+                    // Initialize or Update Charts
+                    initializeCharts(charts);
 
                 } catch (error) {
                     console.error('Error fetching dashboard data:', error);
-                    // Handle error, e.g., show a message to the user
+                    // Optionally display an error message on the page
                 }
             }
 
-            function initializeCharts() {
+            function initializeCharts(chartData) {
                 // User Registration Chart
                 if (document.getElementById('userRegistrationChart')) {
                     const userCtx = document.getElementById('userRegistrationChart').getContext('2d');
-                    new Chart(userCtx, {
+                    if (userRegistrationChart) userRegistrationChart.destroy();
+                    userRegistrationChart = new Chart(userCtx, {
                         type: 'line',
                         data: {
-                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                            labels: chartData.userRegistration.labels,
                             datasets: [{
                                 label: 'New Users',
-                                data: [45, 52, 68, 72, 80, 88, 95],
+                                data: chartData.userRegistration.data,
                                 fill: false,
                                 borderColor: 'rgb(79, 70, 229)',
                                 tension: 0.1
@@ -338,17 +335,17 @@
                 // Quest Completion Chart
                 if(document.getElementById('questCompletionChart')) {
                     const questCtx = document.getElementById('questCompletionChart').getContext('2d');
-                    new Chart(questCtx, {
+                    if (questCompletionChart) questCompletionChart.destroy();
+                    questCompletionChart = new Chart(questCtx, {
                         type: 'doughnut',
                         data: {
-                            labels: ['Completed', 'In Progress', 'Expired'],
+                            labels: chartData.questCompletion.labels,
                             datasets: [{
                                 label: 'Quests',
-                                data: [300, 150, 50],
+                                data: chartData.questCompletion.data,
                                 backgroundColor: [
                                     'rgb(16, 185, 129)',
                                     'rgb(245, 158, 11)',
-                                    'rgb(239, 68, 68)'
                                 ],
                                 hoverOffset: 4
                             }]
@@ -364,4 +361,3 @@
     </script>
 </body>
 </html>
-admin-login.html 
