@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const fs = require('fs').promises;
-const path = require('path');
+const path = path = require('path');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
@@ -19,6 +19,18 @@ app.set('trust proxy', 1);
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const saltRounds = 10;
+
+// --- NEW: Hashed Admin Password ---
+let ADMIN_PASSWORD_HASH;
+(async () => {
+    if (ADMIN_PASSWORD) {
+        ADMIN_PASSWORD_HASH = await bcrypt.hash(ADMIN_PASSWORD, saltRounds);
+        console.log("Admin password hashed successfully.");
+    } else {
+        console.error("ADMIN_PASSWORD environment variable not set!");
+    }
+})();
+
 
 const pool = new Pool({
     user: process.env.DB_USER,
@@ -639,6 +651,7 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+// --- UPDATED: /login endpoint ---
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     
@@ -646,13 +659,21 @@ app.post('/login', async (req, res) => {
         return res.status(400).json({ error: 'Credentials required' });
     }
 
-    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-        req.session.userId = username;
-        req.session.isAdmin = true;
-        req.session.lastActivity = Date.now();
-        return res.json({ message: 'Logged in', userId: username, isAdmin: true });
+    // --- Admin Login Logic ---
+    if (username === ADMIN_USERNAME) {
+        if (!ADMIN_PASSWORD_HASH) {
+            return res.status(500).json({ error: 'Admin password not configured on server.' });
+        }
+        const adminMatch = await bcrypt.compare(password, ADMIN_PASSWORD_HASH);
+        if (adminMatch) {
+            req.session.userId = username;
+            req.session.isAdmin = true;
+            req.session.lastActivity = Date.now();
+            return res.json({ message: 'Logged in', userId: username, isAdmin: true });
+        }
     }
 
+    // --- Regular User Login Logic ---
     try {
         const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
         const user = result.rows[0];
@@ -694,6 +715,7 @@ app.post('/login', async (req, res) => {
         res.status(500).json({error: 'Server error during login.'});
     }
 });
+
 
 app.get('/logout', (req, res) => {
     req.session.destroy(() => res.json({ message: 'Logged out' }));
