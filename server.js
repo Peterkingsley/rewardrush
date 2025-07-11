@@ -670,6 +670,8 @@ app.post('/login', async (req, res) => {
             req.session.isAdmin = true;
             req.session.lastActivity = Date.now();
             return res.json({ message: 'Logged in', userId: username, isAdmin: true });
+        } else {
+            return res.status(401).json({ error: 'Invalid credentials' });
         }
     }
 
