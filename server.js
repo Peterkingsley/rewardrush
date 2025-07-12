@@ -1151,7 +1151,7 @@ app.post('/quests', requireAdmin, async (req, res) => {
     res.status(501).json({ message: "Admin quest management not yet implemented with database." });
 });
 
-app.get('/quests/:questId/questions', requireLogin, async (req, res) => {
+app.get('/api/quests/:questId/questions', requireLogin, async (req, res) => {
     const { questId } = req.params;
     try {
         const result = await pool.query('SELECT * FROM quest_questions WHERE quest_id = $1 ORDER BY id ASC', [questId]);
