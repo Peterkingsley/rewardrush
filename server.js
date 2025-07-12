@@ -1456,11 +1456,11 @@ app.get('/api/admin/jobs', requireAdmin, async (req, res) => {
 });
 
 app.post('/api/admin/jobs', requireAdmin, async (req, res) => {
-    const { title, category, payout, destination_url, guidelines, details, pros, cons, status } = req.body;
+    const { title, category, payout, destination_url, guidelines, details, pros, cons } = req.body;
     try {
         const newProgram = await pool.query(
-            'INSERT INTO affiliate_programs (title, category, payout, destination_url, guidelines, details, pros, cons, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
-            [title, category, payout, destination_url, guidelines, details, pros, cons, status || 'Active']
+            'INSERT INTO affiliate_programs (title, category, payout, destination_url, guidelines, details, pros, cons) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+            [title, category, payout, destination_url, guidelines, details, pros, cons]
         );
         res.status(201).json(newProgram.rows[0]);
     } catch (err) {
@@ -1471,11 +1471,11 @@ app.post('/api/admin/jobs', requireAdmin, async (req, res) => {
 
 app.put('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
-    const { title, category, payout, destination_url, guidelines, details, pros, cons, status } = req.body;
+    const { title, category, payout, destination_url, guidelines, details, pros, cons } = req.body;
     try {
         const updatedProgram = await pool.query(
-            'UPDATE affiliate_programs SET title = $1, category = $2, payout = $3, destination_url = $4, guidelines = $5, details = $6, pros = $7, cons = $8, status = $9 WHERE id = $10 RETURNING *',
-            [title, category, payout, destination_url, guidelines, details, pros, cons, status, id]
+            'UPDATE affiliate_programs SET title = $1, category = $2, payout = $3, destination_url = $4, guidelines = $5, details = $6, pros = $7, cons = $8 WHERE id = $9 RETURNING *',
+            [title, category, payout, destination_url, guidelines, details, pros, cons, id]
         );
         if (updatedProgram.rows.length === 0) {
             return res.status(404).json({ error: 'Affiliate program not found' });
