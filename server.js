@@ -1292,10 +1292,23 @@ app.put('/api/quests/:id', requireAdmin, upload.single('questBackground'), async
     try {
         // If a new file is uploaded, we need to delete the old one.
         if (req.file) {
-            const oldQuestResult = await pool.query('SELECT quiz_background_url FROM quests WHERE id = $1', [id]);
-            const oldUrl = oldQuestResult.rows[0]?.quiz_background_url;
-            if (oldUrl) {
-                await fs.unlink(path.join(__dirname, 'public', oldUrl)).catch(e => console.error("Failed to delete old background file:", e));
+            try {
+                const oldQuestResult = await pool.query('SELECT quiz_background_url FROM quests WHERE id = $1', [id]);
+                const oldUrl = oldQuestResult.rows[0]?.quiz_background_url;
+                
+                // Check if the old URL exists and is a non-empty string
+                if (oldUrl && typeof oldUrl === 'string') {
+                    const oldPath = path.join(__dirname, 'public', oldUrl);
+        
+                    // IMPORTANT: Check if the file actually exists on the disk before trying to delete it
+                    if (fsSync.existsSync(oldPath)) {
+                        await fs.unlink(oldPath);
+                        console.log(`Successfully deleted old background file: ${oldPath}`);
+                    }
+                }
+            } catch (fileError) {
+                // Log the file deletion error, but don't let it stop the entire request
+                console.error("A non-critical error occurred while trying to delete the old background file:", fileError);
             }
         }
 
@@ -1333,7 +1346,10 @@ app.delete('/api/quests/:id', requireAdmin, async (req, res) => {
         const oldQuestResult = await pool.query('SELECT quiz_background_url FROM quests WHERE id = $1', [id]);
         const oldUrl = oldQuestResult.rows[0]?.quiz_background_url;
         if (oldUrl) {
-            await fs.unlink(path.join(__dirname, 'public', oldUrl)).catch(e => console.error("Failed to delete background file on quest deletion:", e));
+            const oldPath = path.join(__dirname, 'public', oldUrl);
+            if (fsSync.existsSync(oldPath)) {
+                await fs.unlink(oldPath).catch(e => console.error("Failed to delete background file on quest deletion:", e));
+            }
         }
 
         const deleteOp = await pool.query('DELETE FROM quests WHERE id = $1 RETURNING *', [id]);
