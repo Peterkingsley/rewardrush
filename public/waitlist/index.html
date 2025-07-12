@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RewardRush - Join the Waitlist</title>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T43CPCK2WV"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-T43CPCK2WV');
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-glow: #8b00ff;
+            --secondary-glow: #00f0ff;
+            --accent-glow: #39ff14;
+            --dark-bg: #0a0a15;
+            --mid-bg: #1a1a2e;
+            --light-bg: #2a2a3e;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #e0e0e0;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.7;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(139, 0, 255, 0.3), 0 0 25px rgba(0, 240, 255, 0.2);
+        }
+        
+        .glass-card {
+            background: rgba(26, 26, 46, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(139, 0, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .neon-button {
+            background: linear-gradient(45deg, var(--primary-glow), var(--secondary-glow));
+            box-shadow: 0 0 15px rgba(139, 0, 255, 0.4), 0 0 25px rgba(0, 240, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        .neon-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 25px rgba(139, 0, 255, 0.7), 0 0 40px rgba(0, 240, 255, 0.5);
+        }
+        
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .underline-animation {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .underline-animation::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.3s ease-out;
+        }
+        
+        .underline-animation:hover::after, .active-link::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+
+        .input-field {
+             background-color: rgba(26, 26, 46, 0.7);
+             border: 1px solid rgba(139, 0, 255, 0.3);
+             transition: all 0.3s ease;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--secondary-glow);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+        
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0e0e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.2em;
+        }
+        
+        @media (max-width: 768px) {
+            #bg-canvas {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark-bg text-gray-200 antialiased">
+
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-dark-bg/80 backdrop-blur-md border-b border-primary-glow/20">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="text-2xl md:text-3xl font-bold font-orbitron flex items-center">
+                <a href="/" class="gradient-text flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                    RewardRush
+                </a>
+            </div>
+            <div class="hidden lg:flex items-center space-x-8 font-orbitron text-sm">
+                <a href="/quest/" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Quests</a>
+                <a href="/jobs/" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Jobs</a>
+                <a href="/learn/" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Learn</a>
+                <a href="/build/" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Build</a>
+            </div>
+            <div class="hidden sm:flex items-center space-x-4">
+                <a href="/waitlist/" class="neon-button text-white font-orbitron text-sm font-bold px-6 py-2.5 rounded-md">
+                    Join Waitlist
+                </a>
+            </div>
+            <button id="mobile-menu-button" class="lg:hidden text-gray-300 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden lg:hidden px-6 pb-4 font-orbitron text-sm">
+             <a href="/quest/" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Quests</a>
+             <a href="/jobs/" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Jobs</a>
+             <a href="/learn/" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Learn</a>
+             <a href="/build/" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Build</a>
+             <a href="/waitlist/" class="block mt-2 neon-button text-white font-orbitron text-sm text-center font-bold px-6 py-2.5 rounded-md">
+                    Join Waitlist
+             </a>
+        </div>
+    </header>
+
+    <main class="relative z-10">
+        <!-- Waitlist Form Section -->
+        <section class="relative flex items-center justify-center min-h-screen py-20 md:py-32 px-4">
+            <div class="container mx-auto px-4">
+                <div id="waitlist-container" class="max-w-2xl mx-auto">
+                    <div class="text-center">
+                        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-gray-100 leading-tight font-orbitron reveal">
+                            Be the First to Know <br>
+                            <span class="gradient-text">Join the Waitlist.</span>
+                        </h1>
+                        <p class="mt-6 text-lg sm:text-xl text-gray-300 max-w-3xl mx-auto font-roboto reveal" style="transition-delay: 200ms;">
+                            Get exclusive early access to RewardRush. Sign up now to be at the front of the line for the future of work, learning, and earning.
+                        </p>
+                    </div>
+
+                    <div class="mt-12 glass-card p-8 sm:p-10 rounded-2xl reveal" style="transition-delay: 400ms;">
+                        <!-- === UPDATED FORM TAG === -->
+                        <form id="waitlist-form" action="https://docs.google.com/forms/d/e/1FAIpQLSdFUwBw0w8JMNWNxHkLeANO47PumH9QcGsxr1dRU0mlKHs6jA/formResponse" method="post" target="hidden_iframe">
+                            <div class="space-y-6">
+                                <div>
+                                    <label for="fullName" class="block text-sm font-medium text-gray-300 font-roboto mb-2">Full Name</label>
+                                    <input type="text" id="fullName" name="entry.1569568137" required placeholder="e.g., Ada Lovelace" class="w-full p-3 rounded-lg input-field text-gray-200 placeholder-gray-500">
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-300 font-roboto mb-2">Email Address</label>
+                                    <input type="email" id="email" name="entry.321327919" required placeholder="you@example.com" class="w-full p-3 rounded-lg input-field text-gray-200 placeholder-gray-500">
+                                </div>
+                                <div>
+                                    <label for="interest" class="block text-sm font-medium text-gray-300 font-roboto mb-2">What interests you most?</label>
+                                    <select id="interest" name="entry.828574056" class="w-full p-3 rounded-lg input-field text-gray-200">
+                                        <option>Earning with Quests</option>
+                                        <option>Finding skilled Jobs</option>
+                                        <option>Learning new skills</option>
+                                        <option>Building a project/startup</option>
+                                        <option>All of the above!</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="comments" class="block text-sm font-medium text-gray-300 font-roboto mb-2">Anything else? (Optional)</label>
+                                    <textarea id="comments" name="entry.1655091895" rows="3" placeholder="Tell us what you're excited to achieve..." class="w-full p-3 rounded-lg input-field text-gray-200 placeholder-gray-500"></textarea>
+                                </div>
+                            </div>
+                            <div class="mt-8">
+                                <button type="submit" class="w-full neon-button text-white font-bold text-lg py-3.5 rounded-lg">
+                                    Join the Waitlist
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Thank You Message -->
+                <div id="thank-you-message" class="hidden max-w-2xl mx-auto text-center glass-card p-10 rounded-2xl">
+                     <div class="flex items-center justify-center w-24 h-24 bg-accent-glow/10 rounded-full mb-6 mx-auto border border-accent-glow/30">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--accent-glow)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        </div>
+                    <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-100 font-orbitron">
+                        You're on the list!
+                    </h2>
+                    <p class="mt-4 text-lg text-gray-300 font-roboto">
+                        Thank you for joining the RewardRush waitlist. We're thrilled to have you with us. Keep an eye on your inbox for updates and your exclusive invitation.
+                    </p>
+                    <div class="mt-8">
+                        <a href="/" class="inline-block neon-button text-white font-semibold px-8 py-3 rounded-md">
+                           Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark-bg border-t border-primary-glow/20">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
+                <div class="col-span-full md:col-span-1 mb-6 md:mb-0">
+                    <h3 class="text-2xl font-bold font-orbitron gradient-text flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                        RewardRush
+                    </h3>
+                    <p class="mt-2 text-gray-500 font-roboto text-sm">Redefining work, learning, and growth through blockchain technology.</p>
+                </div>
+                <!-- ... other footer content ... -->
+            </div>
+            <div class="mt-12 border-t border-primary-glow/20 pt-6 text-center text-gray-500 font-roboto text-sm">
+                &copy; 2025 RewardRush. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- === ADD THIS HIDDEN IFRAME === -->
+    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;" onload="if(submitted) {}"></iframe>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Scroll reveal animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        // --- NEW Google Form Submission Script ---
+        const waitlistForm = document.getElementById('waitlist-form');
+        const waitlistContainer = document.getElementById('waitlist-container');
+        const thankYouMessage = document.getElementById('thank-you-message');
+        let submitted = false;
+
+        waitlistForm.addEventListener('submit', (e) => {
+            // No e.preventDefault() needed, the form will submit to the iframe
+            waitlistContainer.classList.add('hidden');
+            thankYouMessage.classList.remove('hidden');
+            submitted = true;
+        });
+
+
+        // Three.js Particle Background
+        let scene, camera, renderer, particles, mouseX = 0, mouseY = 0;
+        let windowHalfX = window.innerWidth / 2;
+        let windowHalfY = window.innerHeight / 2;
+
+        function init() {
+            const canvas = document.getElementById('bg-canvas');
+            if (!canvas) return;
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+            camera.position.z = 1000;
+
+            const particleCount = 4000;
+            const particlesGeometry = new THREE.BufferGeometry();
+            const posArray = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 2500;
+            }
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            
+            const material = new THREE.PointsMaterial({
+                size: 2,
+                color: 0x8b00ff,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+
+            particles = new THREE.Points(particlesGeometry, material);
+            scene.add(particles);
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                alpha: true
+            });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+
+            document.body.addEventListener('pointermove', onDocumentMouseMove, false);
+            window.addEventListener('resize', onWindowResize, false);
+            
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            render();
+        }
+
+        function render() {
+            const time = Date.now() * 0.00008;
+            camera.position.x += (mouseX - camera.position.x) * 0.03;
+            camera.position.y += (-mouseY - camera.position.y) * 0.03;
+            camera.lookAt(scene.position);
+            
+            particles.rotation.y = time * 0.1;
+
+            renderer.render(scene, camera);
+        }
+
+        function onDocumentMouseMove(event) {
+            mouseX = event.clientX - windowHalfX;
+            mouseY = event.clientY - windowHalfY;
+        }
+
+        function onWindowResize() {
+            windowHalfX = window.innerWidth / 2;
+            windowHalfY = window.innerHeight / 2;
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

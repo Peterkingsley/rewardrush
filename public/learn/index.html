@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RewardRush Learn - From Novice to Pro</title>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T43CPCK2WV"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-T43CPCK2WV');
+</script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-glow: #8b00ff;
+            --secondary-glow: #00f0ff;
+            --accent-glow: #39ff14;
+            --dark-bg: #0a0a15;
+            --mid-bg: #1a1a2e;
+            --light-bg: #2a2a3e;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #e0e0e0;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.7;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(139, 0, 255, 0.3), 0 0 25px rgba(0, 240, 255, 0.2);
+        }
+        
+        .glass-card {
+            background: rgba(26, 26, 46, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(139, 0, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .neon-button {
+            background: linear-gradient(45deg, var(--primary-glow), var(--secondary-glow));
+            box-shadow: 0 0 15px rgba(139, 0, 255, 0.4), 0 0 25px rgba(0, 240, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        .neon-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 25px rgba(139, 0, 255, 0.7), 0 0 40px rgba(0, 240, 255, 0.5);
+        }
+
+        .secondary-button {
+             background: transparent;
+             border: 2px solid var(--accent-glow);
+             color: var(--accent-glow);
+             transition: all 0.3s ease;
+             box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+        }
+        .secondary-button:hover {
+            background-color: rgba(57, 255, 20, 0.1);
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.6);
+            transform: translateY(-3px);
+        }
+
+        .feature-card {
+            background: rgba(26, 26, 46, 0.6);
+            border: 1px solid rgba(139, 0, 255, 0.2);
+            backdrop-filter: blur(8px);
+            transition: all 0.4s ease;
+            position: relative;
+            /* overflow: hidden; */ /* <-- THIS LINE IS THE FIX */
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary-glow);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(139, 0, 255, 0.4);
+        }
+        
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .underline-animation {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .underline-animation::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.3s ease-out;
+        }
+        
+        .underline-animation:hover::after, .active-link::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+        
+        @media (max-width: 768px) {
+            #bg-canvas {
+                opacity: 0.5;
+            }
+            .feature-card:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark-bg text-gray-200 antialiased">
+
+    <canvas id="bg-canvas"></canvas>
+
+    <header class="sticky top-0 z-50 bg-dark-bg/80 backdrop-blur-md border-b border-primary-glow/20">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="text-2xl md:text-3xl font-bold font-orbitron flex items-center">
+                <a href="/" class="gradient-text flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                    RewardRush
+                </a>
+            </div>
+            <div class="hidden lg:flex items-center space-x-8 font-orbitron text-sm">
+                <a href="/quest/" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Quests</a>
+                <a href="/jobs/" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Jobs</a>
+                <a href="/learn/" class="tracking-wider text-primary-glow transition-colors duration-300 underline-animation active-link">Learn</a>
+                <a href="/build/" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Build</a>
+            </div>
+            <div class="hidden sm:flex items-center space-x-4">
+                <a href="/waitlist/" class="neon-button text-white font-orbitron text-sm font-bold px-6 py-2.5 rounded-md">
+                    Start Earning
+                </a>
+            </div>
+            <button id="mobile-menu-button" class="lg:hidden text-gray-300 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden lg:hidden px-6 pb-4 font-orbitron text-sm">
+             <a href="/quest/" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Quests</a>
+             <a href="/jobs/" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Jobs</a>
+             <a href="/learn/" class="block py-2 tracking-wider text-primary-glow">Learn</a>
+             <a href="/build/" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Build</a>
+             <a href="/waitlist/" class="block mt-2 neon-button text-white font-orbitron text-sm text-center font-bold px-6 py-2.5 rounded-md">
+                    Start Earning
+             </a>
+        </div>
+    </header>
+
+    <main class="relative z-10">
+        <!-- Hero Section -->
+        <section class="relative text-center overflow-hidden py-20 md:py-32 px-4">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto">
+                    <div class="inline-flex items-center bg-primary-glow/10 text-primary-glow font-orbitron text-xs sm:text-sm px-4 py-2 rounded-full mb-6 border border-primary-glow/30 reveal">
+                       <span>FROM LEARNER TO EARNER</span>
+                    </div>
+                    
+                    <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-100 leading-tight font-orbitron reveal">
+                        Your Roadmap from Learning<br> 
+                        <span class="gradient-text"> to Earning </span>
+                    </h1>
+                    
+                    <p class="mt-6 text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto font-roboto reveal" style="transition-delay: 200ms;">
+                        Imagine knowing exactly what to learn, every single day, to land your dream job. That's what we do. We turn your career goal into a simple, daily checklist of high-quality learning materials.
+                    </p>
+                    
+                    <div class="mt-10 max-w-2xl mx-auto reveal" style="transition-delay: 400ms;">
+                        <div class="relative">
+                            <input type="text" placeholder="Search for a role, e.g., 'AI Engineer'" class="w-full bg-mid-bg/80 border-2 border-primary-glow/30 rounded-lg text-lg px-6 py-4 text-white placeholder-gray-500 focus:ring-2 focus:ring-secondary-glow focus:border-secondary-glow outline-none transition-all duration-300">
+                            <button class="absolute right-2 top-1/2 -translate-y-1/2 neon-button text-white font-bold px-6 py-2.5 rounded-md">
+                                Find My Path
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="py-16 md:py-24 bg-gradient-to-b from-dark-bg to-mid-bg/50">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16 reveal">
+                    <span class="font-orbitron text-primary-glow font-semibold tracking-widest text-sm">YOUR PATH TO MASTERY</span>
+                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-100 mt-2">Your Career Roadmap, Simplified</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+                    <div class="feature-card p-8 rounded-2xl reveal">
+                        <div class="flex items-center justify-center w-20 h-20 bg-primary-glow/10 rounded-full mb-6 mx-auto border border-primary-glow/30">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-4 text-center">1. Choose Your Destination</h3>
+                        <p class="text-sm md:text-base text-gray-400 font-roboto text-center">Select the high-demand role you want to achieve. We've mapped out the skills you'll need to succeed.</p>
+                    </div>
+                    
+                    <div class="feature-card p-8 rounded-2xl reveal" style="transition-delay: 200ms;">
+                        <div class="flex items-center justify-center w-20 h-20 bg-primary-glow/10 rounded-full mb-6 mx-auto border border-primary-glow/30">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-4 text-center">2. Follow Your Pro Path</h3>
+                        <p class="text-sm md:text-base text-gray-400 font-roboto text-center">We curate the best articles, videos, and tutorials from the internet into one seamless learning experience, from fundamentals to advanced topics.</p>
+                    </div>
+                    
+                    <div class="feature-card p-8 rounded-2xl reveal" style="transition-delay: 400ms;">
+                        <div class="flex items-center justify-center w-20 h-20 bg-primary-glow/10 rounded-full mb-6 mx-auto border border-primary-glow/30">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow"><path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z"></path></svg>
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-4 text-center">3. Become Market-Ready</h3>
+                        <p class="text-sm md:text-base text-gray-400 font-roboto text-center">Apply your knowledge with real-world projects and connect with industry experts to validate your skills and land your dream job.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Expert Mentorship Section -->
+        <section class="py-16 md:py-24">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16 reveal">
+                    <span class="font-orbitron text-secondary-glow font-semibold tracking-widest text-sm">ACCELERATE YOUR GROWTH</span>
+                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-100 mt-2">Talk to Someone <span class="gradient-text">Who’s Already Succeeded</span></h2>
+                    <p class="mt-4 text-base md:text-lg text-gray-400 max-w-2xl mx-auto font-roboto">Endless tutorials can't answer your specific questions. When you're feeling lost, talk to a real person who has the job you want. Get clarity and confidence in a single call.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 pt-16">
+                    <!-- Expert Card 1 -->
+                    <div class="feature-card p-6 rounded-2xl reveal text-center">
+                        <img src="https://media.licdn.com/dms/image/v2/D5603AQHGVpUfDdBdkw/profile-displayphoto-shrink_200_200/B56ZVM4C4RGsAo-/0/1740751515697?e=1756944000&v=beta&t=WFM1eGj0EvKNryln_aQ4Sw0Xwmzq2pWmM6WoIqgKT04" alt="Expert 1" class="w-32 h-32 rounded-full mx-auto border-4 border-primary-glow/40 -mt-20 mb-4 object-cover">
+                        <h3 class="text-xl font-bold text-gray-100">Harrison G.</h3>
+                        <p class="text-sm text-secondary-glow font-orbitron mb-3">Business Developer, Veraswap.io</p>
+                        <p class="text-xs text-gray-400 font-roboto mb-4">Angel Investor, Lead Partnerships officer, Serial Bear Market Survivor.</p>
+                        <button class="w-full neon-button font-semibold px-4 py-2 rounded-md text-sm">Book a Call</button>
+                    </div>
+                     <!-- Expert Card 2 -->
+                    <div class="feature-card p-6 rounded-2xl reveal text-center" style="transition-delay: 200ms;">
+                        <img src="https://media.licdn.com/dms/image/v2/C5603AQGFsnO91g1LEA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1518353264723?e=1756944000&v=beta&t=bevMExNM2ggmX2N4ejufFLEdWpkaSpZZdTOg_8EDeKM" alt="Expert 2" class="w-32 h-32 rounded-full mx-auto border-4 border-primary-glow/40 -mt-20 mb-4 object-cover">
+                        <h3 class="text-xl font-bold text-gray-100">Javier Ortuño</h3>
+                        <p class="text-sm text-secondary-glow font-orbitron mb-3">Software Developer, Akkodis</p>
+                        <p class="text-xs text-gray-400 font-roboto mb-4">Full-Stack Web Development and AI Specialization.</p>
+                        <button class="w-full neon-button font-semibold px-4 py-2 rounded-md text-sm">Book a Call</button>
+                    </div>
+                     <!-- Expert Card 3 -->
+                    <div class="feature-card p-6 rounded-2xl reveal text-center" style="transition-delay: 400ms;">
+                        <img src="https://media.licdn.com/dms/image/v2/D4D03AQHVLt2JiLAavw/profile-displayphoto-shrink_200_200/B4DZVnICE2GkAY-/0/1741191914169?e=1756944000&v=beta&t=xpEMK-9nZ5Crg05n2ovuAdJ1HvKK9eMJmz2pEjHdyiU" alt="Expert 3" class="w-32 h-32 rounded-full mx-auto border-4 border-primary-glow/40 -mt-20 mb-4 object-cover">
+                        <h3 class="text-xl font-bold text-gray-100">Noam Nisand</h3>
+                        <p class="text-sm text-secondary-glow font-orbitron mb-3">Brand Ambasador, EasyGen</p>
+                        <p class="text-xs text-gray-400 font-roboto mb-4">I’m helping Salespeople and Founders generate warm leads with LinkedIn.</p>
+                        <button class="w-full neon-button font-semibold px-4 py-2 rounded-md text-sm">Book a Call</button>
+                    </div>
+                     <!-- Expert Card 4 -->
+                    <div class="feature-card p-6 rounded-2xl reveal text-center" style="transition-delay: 600ms;">
+                        <img src="https://media.licdn.com/dms/image/v2/D5603AQHp0tr6n8ln0Q/profile-displayphoto-shrink_200_200/B56ZdEov0YGoAY-/0/1749203223117?e=1756944000&v=beta&t=lN3kcnt_wqeQSfpa6Ot9R5HLQDZcaR1J0v3iOqB3oYQ" alt="Expert 4" class="w-32 h-32 rounded-full mx-auto border-4 border-primary-glow/40 -mt-20 mb-4 object-cover">
+                        <h3 class="text-xl font-bold text-gray-100">Austin Heaton</h3>
+                        <p class="text-sm text-secondary-glow font-orbitron mb-3">Head of Content & Marketing, Rise</p>
+                        <p class="text-xs text-gray-400 font-roboto mb-4">Focuses on user experience, product strategy, and DeFi applications.</p>
+                        <button class="w-full neon-button font-semibold px-4 py-2 rounded-md text-sm">Book a Call</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Become a Mentor CTA -->
+        <section class="py-16 md:py-24 bg-mid-bg/50">
+            <div class="container mx-auto px-6">
+                <div class="glass-card rounded-2xl p-8 md:p-12 flex flex-col lg:flex-row items-center justify-between gap-8 reveal">
+                    <div class="lg:w-2/3 text-center lg:text-left">
+                         <h2 class="text-3xl md:text-4xl font-bold text-gray-100">Are You an <span class="gradient-text">Industry Leader?</span></h2>
+                         <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">Share your expertise, make a lasting impact, and get paid for your time. Join our exclusive network of mentors and help shape the next generation of talent.</p>
+                    </div>
+                    <div class="lg:w-1/3 text-center lg:text-right flex-shrink-0">
+                        <a href="./waitlist/" class="neon-button text-white font-bold text-base sm:text-lg px-8 py-4 rounded-lg shadow-lg transition-all inline-block">
+                            Become a Mentor
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section id="signup" class="py-16 md:py-24">
+            <div class="container mx-auto px-6 text-center reveal">
+                <div class="max-w-3xl mx-auto">
+                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-100 mt-2">Ready to Become <span class="gradient-text">Indispensable?</span></h2>
+                    <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">Your future is built on the skills you master today. Stop wandering and start building. Your professional-grade learning path is waiting.</p>
+            
+                    <div class="mt-10">
+                        <a href="./waitlist/" class="inline-block neon-button text-white font-bold text-lg px-10 py-4 rounded-lg">
+                            Find Your Path Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-dark-bg border-t border-primary-glow/20">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
+                <div class="col-span-full md:col-span-1 mb-6 md:mb-0">
+                    <h3 class="text-2xl font-bold font-orbitron gradient-text flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                        RewardRush
+                    </h3>
+                    <p class="mt-2 text-gray-500 font-roboto text-sm">Redefining work, learning, and growth through blockchain technology.</p>
+                    
+                    <div class="mt-4 flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-primary-glow transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary-glow transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary-glow transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary-glow transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12.41V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-8.41"></path><path d="M18 12.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"></path><path d="M15 7h3a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-3"></path></svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-span-1">
+                    <h4 class="font-semibold font-orbitron text-gray-200">Platform</h4>
+                    <ul class="mt-4 space-y-2 font-roboto text-sm">
+                        <li><a href="/quest/" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Quests</a></li>
+                        <li><a href="/jobs/" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Gigs</a></li>
+                        <li><a href="/learn/" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Learn</a></li>
+                        <li><a href="/build/" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Build</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-span-1">
+                    <h4 class="font-semibold font-orbitron text-gray-200">Company</h4>
+                    <ul class="mt-4 space-y-2 font-roboto text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">For Brands</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Press</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-span-1">
+                    <h4 class="font-semibold font-orbitron text-gray-200">Support</h4>
+                    <ul class="mt-4 space-y-2 font-roboto text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Help Center</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Contact Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Community</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Status</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-span-1">
+                    <h4 class="font-semibold font-orbitron text-gray-200">Legal</h4>
+                    <ul class="mt-4 space-y-2 font-roboto text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Terms</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Privacy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Cookies</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Licenses</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mt-12 border-t border-primary-glow/20 pt-6 text-center text-gray-500 font-roboto text-sm">
+                &copy; 2025 RewardRush. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Scroll reveal animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Three.js Particle Background
+        let scene, camera, renderer, particles, mouseX = 0, mouseY = 0;
+        let windowHalfX = window.innerWidth / 2;
+        let windowHalfY = window.innerHeight / 2;
+
+        function init() {
+            const canvas = document.getElementById('bg-canvas');
+            if (!canvas) return;
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+            camera.position.z = 1000;
+
+            const particleCount = 3000;
+            const particlesGeometry = new THREE.BufferGeometry();
+            const posArray = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 2500;
+            }
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            
+            const material = new THREE.PointsMaterial({
+                size: 2,
+                color: 0x8b00ff,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+
+            particles = new THREE.Points(particlesGeometry, material);
+            scene.add(particles);
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                alpha: true
+            });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+
+            document.body.addEventListener('pointermove', onDocumentMouseMove, false);
+            window.addEventListener('resize', onWindowResize, false);
+            
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            render();
+        }
+
+        function render() {
+            const time = Date.now() * 0.00008;
+            camera.position.x += (mouseX - camera.position.x) * 0.03;
+            camera.position.y += (-mouseY - camera.position.y) * 0.03;
+            camera.lookAt(scene.position);
+            
+            const positions = particles.geometry.attributes.position.array;
+            for(let i = 0; i < positions.length; i+= 3) {
+                 positions[i+1] += Math.sin(time + i) * 0.2;
+            }
+            particles.geometry.attributes.position.needsUpdate = true;
+
+            renderer.render(scene, camera);
+        }
+
+        function onDocumentMouseMove(event) {
+            mouseX = event.clientX - windowHalfX;
+            mouseY = event.clientY - windowHalfY;
+        }
+
+        function onWindowResize() {
+            windowHalfX = window.innerWidth / 2;
+            windowHalfY = window.innerHeight / 2;
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+
+        window.onload = init;
+    </script>
+</body>
+</html>

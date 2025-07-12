@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RewardRush Admin - Users</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+        .nav-link.active {
+            background-color: #374151; /* gray-700 */
+        }
+        #loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-left: -20px;
+            margin-top: -20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .content-hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div id="loader"></div>
+    <div id="content" class="flex h-screen content-hidden">
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar fixed z-30 inset-y-0 left-0 w-64 bg-gray-900 text-white p-6 space-y-6 md:relative md:translate-x-0">
+            <a href="dashboard.html" class="text-white text-2xl font-bold flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span>RewardRush</span>
+            </a>
+
+            <nav class="space-y-2">
+                <a href="dashboard.html" class="nav-link flex items-center space-x-3 py-2 px-3 rounded-lg hover:bg-gray-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="users.html" class="nav-link active flex items-center space-x-3 py-2 px-3 rounded-lg hover:bg-gray-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21a6 6 0 00-9-5.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-3-5.197m0 0A4 4 0 0112 4.354m0 5.292a4 4 0 010-5.292" /></svg>
+                    <span>Users</span>
+                </a>
+                <a href="quests.html" class="nav-link flex items-center space-x-3 py-2 px-3 rounded-lg hover:bg-gray-700 transition-colors">
+                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    <span>Quests</span>
+                </a>
+                <a href="jobs.html" class="nav-link flex items-center space-x-3 py-2 px-3 rounded-lg hover:bg-gray-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    <span>Jobs</span>
+                </a>
+                <a href="finance.html" class="nav-link flex items-center space-x-3 py-2 px-3 rounded-lg hover:bg-gray-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                    <span>Financial</span>
+                </a>
+                <a href="analytics.html" class="nav-link flex items-center space-x-3 py-2 px-3 rounded-lg hover:bg-gray-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg>
+                    <span>Analytics</span>
+                </a>
+                <a href="settings.html" class="nav-link flex items-center space-x-3 py-2 px-3 rounded-lg hover:bg-gray-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="bg-white shadow-md p-4 flex justify-between items-center">
+                <button id="menu-button" class="md:hidden text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <h1 class="text-xl font-semibold text-gray-800">Users</h1>
+                <div class="flex items-center space-x-4">
+                    <span id="admin-username" class="text-gray-600">Admin</span>
+                    <img id="admin-avatar" src="https://placehold.co/40x40/E2E8F0/4A5568?text=A" alt="Admin" class="rounded-full">
+                </div>
+            </header>
+            
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                 <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-800">User Management</h2>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Add User
+                    </button>
+                 </div>
+                 <div class="bg-white p-6 rounded-lg shadow-md">
+                    <div id="error-container" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-4" role="alert">
+                        <strong class="font-bold">Error:</strong>
+                        <span class="block sm:inline" id="error-text"></span>
+                    </div>
+                    <div class="mb-4">
+                        <input id="user-search-input" type="text" placeholder="Search by name or email..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">User</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Quests</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Jobs (Done/In Progress)</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Earnings / Balance</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Status</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-table-body" class="text-gray-700">
+                                <!-- User rows will be injected here by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                 </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            const loader = document.getElementById('loader');
+            const content = document.getElementById('content');
+            let allUsers = []; // To store the master list of users
+
+            // --- Client-side Authentication Check ---
+            try {
+                const response = await fetch('/check-session');
+                if (!response.ok) {
+                    window.location.href = '/admin-login.html';
+                    return;
+                }
+                const session = await response.json();
+                if (!session.loggedIn || !session.isAdmin) {
+                    window.location.href = '/admin-login.html';
+                    return;
+                }
+                
+                document.getElementById('admin-username').textContent = session.userId;
+                loader.style.display = 'none';
+                content.classList.remove('content-hidden');
+                
+                fetchUsersData();
+
+            } catch (error) {
+                console.error('Session check failed:', error);
+                window.location.href = '/admin-login.html';
+                return;
+            }
+
+            const menuButton = document.getElementById('menu-button');
+            const sidebar = document.getElementById('sidebar');
+            const userTableBody = document.getElementById('user-table-body');
+            const searchInput = document.getElementById('user-search-input');
+
+            if (menuButton) {
+                menuButton.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                });
+            }
+
+            async function fetchUsersData() {
+                try {
+                    const response = await fetch('/api/users-data');
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || `Server responded with status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    allUsers = data.users;
+                    renderUsers(allUsers);
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                    const errorContainer = document.getElementById('error-container');
+                    const errorText = document.getElementById('error-text');
+                    if (errorContainer && errorText) {
+                        errorText.textContent = `Could not load user data. ${error.message}`;
+                        errorContainer.classList.remove('hidden');
+                    }
+                }
+            }
+
+            function renderUsers(users) {
+                userTableBody.innerHTML = '';
+                if (users.length === 0) {
+                    userTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4">No users found.</td></tr>`;
+                    return;
+                }
+                users.forEach(user => {
+                    const statusColor = user.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                    const row = `
+                        <tr>
+                            <td class="py-3 px-4 border-b border-gray-200">
+                                <div class="flex items-center">
+                                    <img src="${user.avatar}" alt="${user.name}" class="h-10 w-10 rounded-full mr-4" onerror="this.onerror=null;this.src='https://placehold.co/40x40/E2E8F0/4A5568?text=U';">
+                                    <div>
+                                        <span class="font-medium">${user.name}</span>
+                                        <p class="text-sm text-gray-500">${user.email}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3 px-4 border-b border-gray-200 text-center">${user.questsJoined}</td>
+                            <td class="py-3 px-4 border-b border-gray-200 text-center">${user.jobsDone} / ${user.jobsInProgress}</td>
+                            <td class="py-3 px-4 border-b border-gray-200">
+                                <div>
+                                    <span class="font-medium">$${parseFloat(user.allTimeEarning).toLocaleString()}</span>
+                                    <p class="text-sm text-gray-500">Balance: $${parseFloat(user.balance).toLocaleString()}</p>
+                                </div>
+                            </td>
+                            <td class="py-3 px-4 border-b border-gray-200">
+                                <span class="px-2 py-1 font-semibold leading-tight text-sm rounded-full ${statusColor}">${user.status}</span>
+                            </td>
+                            <td class="py-3 px-4 border-b border-gray-200">
+                                <div class="flex items-center space-x-2">
+                                    <button class="text-gray-500 hover:text-indigo-600 p-1 rounded-full focus:outline-none" title="View User">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                    <button class="text-gray-500 hover:text-blue-600 p-1 rounded-full focus:outline-none" title="Edit User">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                    <button class="text-gray-500 hover:text-red-600 p-1 rounded-full focus:outline-none" title="Ban User">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    userTableBody.innerHTML += row;
+                });
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const filteredUsers = allUsers.filter(user => 
+                        user.name.toLowerCase().includes(searchTerm) ||
+                        user.email.toLowerCase().includes(searchTerm)
+                    );
+                    renderUsers(filteredUsers);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

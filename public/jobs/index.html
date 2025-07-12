@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RewardRush Jobs - The Future of Work</title>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T43CPCK2WV"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-T43CPCK2WV');
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-glow: #8b00ff;
+            --secondary-glow: #00f0ff;
+            --accent-glow: #39ff14;
+            --dark-bg: #0a0a15;
+            --mid-bg: #1a1a2e;
+            --light-bg: #2a2a3e;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: #e0e0e0;
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 15px rgba(139, 0, 255, 0.3), 0 0 25px rgba(0, 240, 255, 0.2);
+        }
+        
+        .glass-card {
+            background: rgba(26, 26, 46, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(139, 0, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .neon-button {
+            background: linear-gradient(45deg, var(--primary-glow), var(--secondary-glow));
+            box-shadow: 0 0 15px rgba(139, 0, 255, 0.4), 0 0 25px rgba(0, 240, 255, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .neon-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 25px rgba(139, 0, 255, 0.7), 0 0 40px rgba(0, 240, 255, 0.5);
+        }
+
+        .secondary-button {
+             background: transparent;
+             border: 2px solid var(--accent-glow);
+             color: var(--accent-glow);
+             transition: all 0.3s ease;
+             box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+        }
+        .secondary-button:hover {
+            background-color: rgba(57, 255, 20, 0.1);
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.6);
+            transform: translateY(-3px);
+        }
+
+        .feature-card {
+            background: rgba(26, 26, 46, 0.6);
+            border: 1px solid rgba(139, 0, 255, 0.2);
+            backdrop-filter: blur(8px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary-glow);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(139, 0, 255, 0.4);
+        }
+        
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .underline-animation {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .underline-animation::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+            transform: scaleX(0);
+            transform-origin: bottom right;
+            transition: transform 0.3s ease-out;
+        }
+        
+        .underline-animation:hover::after, .active-link::after {
+            transform: scaleX(1);
+            transform-origin: bottom left;
+        }
+
+        .contract-card {
+            background: rgba(10, 10, 21, 0.7);
+            border: 1px solid rgba(139, 0, 255, 0.3);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        .terminal-header {
+            background: #1e1e3e;
+            border-bottom: 1px solid rgba(139, 0, 255, 0.3);
+        }
+
+        .terminal-body {
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        @media (max-width: 768px) {
+            #bg-canvas {
+                opacity: 0.5;
+            }
+            .feature-card:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark-bg text-gray-200 antialiased">
+
+    <canvas id="bg-canvas"></canvas>
+
+    <header class="sticky top-0 z-50 bg-dark-bg/80 backdrop-blur-md border-b border-primary-glow/20">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="text-2xl md:text-3xl font-bold font-orbitron flex items-center">
+                <a href="/" class="gradient-text flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                    RewardRush
+                </a>
+            </div>
+            <div class="hidden lg:flex items-center space-x-8 font-orbitron text-sm">
+                <a href="/quest/" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Quests</a>
+                <a href="/jobs/" class="tracking-wider text-primary-glow transition-colors duration-300 underline-animation active-link">Jobs</a>
+                <a href="/learn/" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Learn</a>
+                <a href="/build/" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Build</a>
+            </div>
+            <div class="hidden sm:flex items-center space-x-4">
+                <a href="/waitlist/" class="neon-button text-white font-orbitron text-sm font-bold px-6 py-2.5 rounded-md">
+                    Start Earning
+                </a>
+            </div>
+            <button id="mobile-menu-button" class="lg:hidden text-gray-300 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden lg:hidden px-6 pb-4 font-orbitron text-sm">
+             <a href="/quest/" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Quests</a>
+             <a href="/jobs/" class="block py-2 tracking-wider text-primary-glow">Jobs</a>
+             <a href="/learn/" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Learn</a>
+             <a href="/build/" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow">Build</a>
+             <a href="/waitlist/" class="block mt-2 neon-button text-white font-orbitron text-sm text-center font-bold px-6 py-2.5 rounded-md">
+                    Start Earning
+             </a>
+        </div>
+    </header>
+
+    <main class="relative z-10">
+        <section class="relative text-center overflow-hidden py-20 md:py-32 px-4">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto">
+                    <div class="inline-flex items-center bg-accent-glow/10 text-accent-glow font-orbitron text-xs sm:text-sm px-4 py-2 rounded-full mb-6 border border-accent-glow/30 reveal">
+                       <span>FORGET RESUMES. DELIVER RESULTS.</span>
+                    </div>
+                    
+                    <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-100 leading-tight font-orbitron reveal">
+                        Stop Applying. <br> 
+                        <span class="gradient-text">Start Delivering.</span>
+                    </h1>
+                    
+                    <p class="mt-6 text-lg sm:text-xl text-gray-300 max-w-2xl mx-auto font-roboto reveal" style="transition-delay: 200ms;">
+                        Your skills are your only resume here. Pick a contract, deliver the work, and get paid. It's time to let your results do the talking.
+                    </p>
+                    
+                    <div class="mt-10 flex justify-center items-center flex-col sm:flex-row gap-6 reveal" style="transition-delay: 400ms;">
+                        <a href="/waitlist/" class="w-full sm:w-auto neon-button text-white font-bold text-base sm:text-lg px-8 py-4 rounded-lg shadow-lg transition-all flex items-center justify-center">
+                            <span>Browse Live Contracts</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contracts" class="py-16 md:py-24">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16 reveal">
+                    <span class="font-orbitron text-secondary-glow font-semibold tracking-widest text-sm">WORK ON YOUR OWN TERMS</span>
+                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-100 mt-2">The Job Board is Dead.<br/>Welcome to the <span class="gradient-text">Contract Board.</span></h2>
+                    <p class="mt-4 text-base md:text-lg text-gray-400 max-w-3xl mx-auto font-roboto">No applications, no interviews. See the goal, see the reward. If you can deliver, the job is yours. Here’s how it looks.</p>
+                </div>
+                
+                <div class="flex flex-col lg:flex-row gap-8 items-stretch">
+                    <div class="w-full lg:w-3/5 reveal">
+                        <div class="contract-card rounded-xl h-full flex flex-col">
+                            <div class="terminal-header p-3 flex items-center gap-2">
+                                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <p class="ml-auto text-xs font-orbitron text-gray-400">CONTRACT_ID: #8A4F9E</p>
+                            </div>
+                            <div class="terminal-body p-6 text-sm flex-grow">
+                                <p class="mb-2"><span class="text-secondary-glow">> INIT CONTRACT</span></p>
+                                <p class="mb-2"><span class="text-gray-400">BRAND:</span> <span class="text-white">Zenith DeFi</span></p>
+                                <p class="mb-4"><span class="text-gray-400">STATUS:</span> <span class="text-accent-glow">ACTIVE</span></p>
+                                
+                                <p class="mb-2"><span class="text-secondary-glow">> OBJECTIVE</span></p>
+                                <p class="mb-4 text-white">Drive 1,000 new wallet connections that execute at least one swap on our platform.</p>
+
+                                <p class="mb-2"><span class="text-secondary-glow">> KPIs & PAYOUT TIERS</span></p>
+                                <ul class="list-disc list-inside text-gray-300 space-y-1">
+                                    <li><span class="text-white">Tier 1 (0-250 Signups):</span> 10 USDT per qualifying signup.</li>
+                                    <li><span class="text-white">Tier 2 (251-750 Signups):</span> 12 USDT per qualifying signup.</li>
+                                    <li><span class="text-white">Tier 3 (751-1000 Signups):</span> 15 USDT per qualifying signup.</li>
+                                    <li><span class="text-accent-glow">Completion Bonus:</span> 5,000 USDT upon hitting 1,000 signups.</li>
+                                </ul>
+
+                                <p class="mt-4 mb-2"><span class="text-secondary-glow">> TIMEFRAME</span></p>
+                                <p class="mb-4 text-white">30 Days from acceptance.</p>
+
+                                <p class="mt-4 mb-2 text-yellow-400">> EXECUTE_AGREEMENT? (Y/N)</p>
+                                <div class="w-full mt-6">
+                                     <button class="w-full neon-button text-white font-bold py-3 rounded-lg">Accept Contract</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full lg:w-2/5 reveal" style="transition-delay: 200ms;">
+                        <div class="contract-card rounded-xl h-full flex flex-col">
+                           <div class="terminal-header p-3 flex items-center gap-2">
+                                <p class="font-orbitron text-gray-300">PAYOUT_SIMULATOR</p>
+                            </div>
+                            <div class="p-6 flex-grow flex flex-col justify-center items-center text-center">
+                                <p class="font-orbitron text-accent-glow text-sm">DELIVERABLES MET: 850 SIGNUPS</p>
+                                <h3 class="text-6xl md:text-7xl font-orbitron font-bold my-4">
+                                    <span class="gradient-text">10,200</span>
+                                </h3>
+                                <p class="font-orbitron text-2xl text-gray-300">USDT</p>
+                                <div class="w-full h-px bg-primary-glow/30 my-6"></div>
+                                <p class="text-xs text-gray-400">PAYOUT BREAKDOWN</p>
+                                <p class="text-sm text-gray-200">850 Signups x 12 USDT (Tier 2 Rate)</p>
+                                <p class="mt-4 font-roboto text-gray-300">Payment is settled instantly to your connected wallet upon validation of results. No invoices. No delays.</p>
+                                 <div class="mt-6 w-full">
+                                    <a href="./waitlist/" class="w-full neon-button font-semibold px-4 py-2 rounded-md text-sm block">Learn About Payouts</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-16 md:py-24 bg-gradient-to-b from-dark-bg to-mid-bg/50">
+            <div class="container mx-auto px-6">
+                 <div class="flex flex-col lg:flex-row-reverse items-center gap-12 lg:gap-20 reveal">
+                    <div class="lg:w-1/2 w-full text-center lg:text-left">
+                        <span class="font-orbitron text-primary-glow font-semibold tracking-widest text-sm">THE OLD WAY IS BROKEN</span>
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-100 mt-2">Ever Felt Your Skills<span class="gradient-text"> Were Overlooked?</span></h2>
+                        <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">You're a top-tier performer, but you're tired of the endless cycle of applications, interviews, and ghosting. You know you can deliver, if only someone would give you the chance.</p>
+                        <ul class="mt-6 space-y-4 font-roboto text-left">
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-accent-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v10"></path></svg>
+                                <span><strong class="text-gray-100">The Black Hole of Resumes:</strong> Your CV disappears into an abyss, never to be seen again.</span>
+                            </li>
+                            <li class="flex items-start">
+                               <svg class="w-6 h-6 text-accent-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v10"></path></svg>
+                                <span><strong class="text-gray-100">The "Sell Yourself" Pressure:</strong> You're a doer, not a salesperson, but interviews demand a perfect pitch.</span>
+                            </li>
+                             <li class="flex items-start">
+                               <svg class="w-6 h-6 text-accent-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v10"></path></svg>
+                                <span><strong class="text-gray-100">The Waiting Game:</strong> Weeks turn into months with no clear feedback or decision.</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="lg:w-1/2 w-full">
+                       <div class="grid grid-cols-1 gap-6 reveal" style="transition-delay: 200ms;">
+                           <div class="glass-card p-6 rounded-xl">
+                               <h3 class="text-2xl font-orbitron gradient-text">90%</h3>
+                               <p class="mt-2 text-gray-400 text-sm font-roboto">Of professionals feel their true skills aren't reflected on their resume.</p>
+                           </div>
+                           <div class="glass-card p-6 rounded-xl">
+                               <h3 class="text-2xl font-orbitron gradient-text">60%</h3>
+                               <p class="mt-2 text-gray-400 text-sm font-roboto">Of professionals are in the wrong role because their resume didn't speak volume.</p>
+                           </div>
+                           
+                           <div class="glass-card p-6 rounded-xl">
+                               <h3 class="text-2xl font-orbitron gradient-text">75%</h3>
+                               <p class="mt-2 text-gray-400 text-sm font-roboto">Of applicants never hear back after applying for a job.</p>
+                           </div>
+                       </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+
+        <section class="py-16 md:py-24 bg-mid-bg/50">
+            <div class="container mx-auto px-6">
+                <div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 reveal">
+                    <div class="lg:w-1/2 w-full text-center lg:text-left">
+                        <span class="font-orbitron text-secondary-glow font-semibold tracking-widest text-sm">FOR BRANDS</span>
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-100 mt-2">Stop Hiring for Resumes.<br> <span class="gradient-text">Start Paying for Results.</span></h2>
+                        <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">Why spend months on hiring cycles with no guaranteed outcome? On RewardRush, you define the result, and our global network of skilled professionals delivers. You only pay for what gets done.</p>
+                        <ul class="mt-6 space-y-4 font-roboto text-left">
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-primary-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span><strong class="text-gray-100">Zero-Risk Recruitment:</strong> You only pay when your specific KPIs are met. No result, no cost.</span>
+                            </li>
+                            <li class="flex items-start">
+                               <svg class="w-6 h-6 text-primary-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span><strong class="text-gray-100">Access a Global Talent Pool:</strong> Instantly tap into a motivated, skilled workforce ready to execute.</span>
+                            </li>
+                             <li class="flex items-start">
+                               <svg class="w-6 h-6 text-primary-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <span><strong class="text-gray-100">Scale Your Growth:</strong> Drive sign-ups, transaction volume, social engagement, and more with unparalleled efficiency.</span>
+                            </li>
+                        </ul>
+                         <div class="mt-8">
+                            <a href="./waitlist/" class="neon-button text-white font-semibold px-6 py-3 rounded-md text-center">
+                                Create Your First Contract
+                            </a>
+                        </div>
+                    </div>
+                     <div class="lg:w-1/2 w-full">
+                       <div class="glass-card p-8 rounded-xl text-center reveal" style="transition-delay: 200ms;">
+                           <h3 class="text-4xl font-orbitron gradient-text">40%</h3>
+                           <p class="mt-2 text-gray-300 text-lg font-roboto">Higher ROI than traditional marketing spend.</p>
+                           <div class="w-full h-px bg-primary-glow/30 my-6"></div>
+                            <h3 class="text-4xl font-orbitron gradient-text">50%</h3>
+                           <p class="mt-2 text-gray-300 text-lg font-roboto">Reduction in hiring time and costs.</p>
+                       </div>
+                       <div class="glass-card p-8 rounded-xl text-center reveal" style="transition-delay: 200ms;">
+                           <h3 class="text-4xl font-orbitron gradient-text">200%</h3>
+                           <p class="mt-2 text-gray-300 text-lg font-roboto">Increase in productivity.</p>
+                           <div class="w-full h-px bg-primary-glow/30 my-6"></div>
+                            <h3 class="text-4xl font-orbitron gradient-text">20%</h3>
+                           <p class="mt-2 text-gray-300 text-lg font-roboto">Reduction in team management costs.>
+                       </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="signup" class="py-16 md:py-24">
+            <div class="container mx-auto px-6 text-center reveal">
+                <div class="max-w-3xl mx-auto">
+                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-100 mt-2">Your Work is Your Worth. <br/><span class="gradient-text">Prove It.</span></h2>
+                    <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">Step into a world where your ability to deliver is the only thing that matters. The best opportunities are waiting for those who can execute.</p>
+            
+                    <div class="mt-10">
+                        <a href="./waitlist/" class="inline-block neon-button text-white font-bold text-lg px-10 py-4 rounded-lg">
+                            Accept Your First Contract
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+       <footer class="bg-dark-bg border-t border-primary-glow/20">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
+                <div class="col-span-full md:col-span-1 mb-6 md:mb-0">
+                    <h3 class="text-2xl font-bold font-orbitron gradient-text flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                        RewardRush
+                    </h3>
+                    <p class="mt-2 text-gray-500 font-roboto text-sm">Redefining work, learning, and growth through blockchain technology.</p>
+                    
+                    <div class="mt-4 flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-primary-glow transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary-glow transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary-glow transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary-glow transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12.41V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-8.41"></path><path d="M18 12.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"></path><path d="M15 7h3a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-3"></path></svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-span-1">
+                    <h4 class="font-semibold font-orbitron text-gray-200">Platform</h4>
+                    <ul class="mt-4 space-y-2 font-roboto text-sm">
+                        <li><a href="/quest/" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Quests</a></li>
+                        <li><a href="/jobs/" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Gigs</a></li>
+                        <li><a href="/learn/" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Learn</a></li>
+                        <li><a href="/build/" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Build</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-span-1">
+                    <h4 class="font-semibold font-orbitron text-gray-200">Company</h4>
+                    <ul class="mt-4 space-y-2 font-roboto text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">For Brands</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Press</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-span-1">
+                    <h4 class="font-semibold font-orbitron text-gray-200">Support</h4>
+                    <ul class="mt-4 space-y-2 font-roboto text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Help Center</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Contact Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Community</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Status</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-span-1">
+                    <h4 class="font-semibold font-orbitron text-gray-200">Legal</h4>
+                    <ul class="mt-4 space-y-2 font-roboto text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Terms</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Privacy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Cookies</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Licenses</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mt-12 border-t border-primary-glow/20 pt-6 text-center text-gray-500 font-roboto text-sm">
+                &copy; 2025 RewardRush. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Scroll reveal animation
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Three.js Particle Background
+        let scene, camera, renderer, particles, mouseX = 0, mouseY = 0;
+        let windowHalfX = window.innerWidth / 2;
+        let windowHalfY = window.innerHeight / 2;
+
+        function init() {
+            const canvas = document.getElementById('bg-canvas');
+            if (!canvas) return;
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+            camera.position.z = 1000;
+
+            const particleCount = 4000;
+            const particlesGeometry = new THREE.BufferGeometry();
+            const posArray = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 2500;
+            }
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            
+            const material = new THREE.PointsMaterial({
+                size: 2,
+                color: 0x8b00ff,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+
+            particles = new THREE.Points(particlesGeometry, material);
+            scene.add(particles);
+
+            renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                alpha: true
+            });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+
+            document.body.addEventListener('pointermove', onDocumentMouseMove, false);
+            window.addEventListener('resize', onWindowResize, false);
+            
+            animate();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            render();
+        }
+
+        function render() {
+            const time = Date.now() * 0.00008;
+            camera.position.x += (mouseX - camera.position.x) * 0.03;
+            camera.position.y += (-mouseY - camera.position.y) * 0.03;
+            camera.lookAt(scene.position);
+            
+            particles.rotation.y = time * 0.15;
+
+            renderer.render(scene, camera);
+        }
+
+        function onDocumentMouseMove(event) {
+            mouseX = event.clientX - windowHalfX;
+            mouseY = event.clientY - windowHalfY;
+        }
+
+        function onWindowResize() {
+            windowHalfX = window.innerWidth / 2;
+            windowHalfY = window.innerHeight / 2;
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

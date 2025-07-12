@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrowEasy - Gamified Learning & Rewards</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Three.js for Particle Background -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts using <link> for better performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+         :root {
+            --primary-glow: #8b00ff;
+            --secondary-glow: #00f0ff;
+            --accent-glow: #39ff14;
+            --dark-bg: #0a0a15;
+            --mid-bg: #1a1a2e;
+            --light-bg: #2a2a3e;
+        }
+        /* Custom styles to complement Tailwind */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5; /* Lighter gray background */
+            cursor: none; /* Hide the default cursor */
+            transition: background-color 0.3s ease;
+        }
+        .dark body {
+            background-color: var(--dark-bg);
+        }
+        .font-montserrat {
+            font-family: 'Montserrat', sans-serif;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #2a2a3e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #555;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* Styles for the carousel */
+        .carousel-item {
+            display: none;
+            transition: opacity 1s ease-in-out;
+        }
+        .carousel-item.active {
+            display: block;
+        }
+        /* Animation for notification toast */
+        @keyframes toast-in {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .toast-in {
+            animation: toast-in 0.5s ease-out forwards;
+        }
+        /* Custom shadow for the top of an element */
+        .shadow-t-md {
+            box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1), 0 -2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        /* Sidebar collapsed state styles */
+        .sidebar-collapsed #desktop-sidebar {
+            width: 5.5rem; /* 88px */
+        }
+        .sidebar-collapsed #main-content-wrapper {
+            margin-left: 5.5rem;
+        }
+        .sidebar-collapsed .sidebar-text {
+            display: none;
+        }
+        .sidebar-collapsed #sidebar-toggle i {
+            transform: rotate(180deg);
+        }
+        .sidebar-collapsed .nav-link {
+            justify-content: center;
+        }
+        .sidebar-collapsed .nav-link i {
+            margin-right: 0;
+        }
+        /* Particle background canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            display: none; /* Hidden by default */
+        }
+        .dark #bg-canvas {
+            display: block; /* Shown in dark mode */
+        }
+
+        /* Custom Cursor Styles */
+        .cursor-dot, .cursor-outline {
+            pointer-events: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            border-radius: 50%;
+            opacity: 1;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-glow);
+            z-index: 10001;
+        }
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(139, 0, 255, 0.2);
+            z-index: 10000;
+        }
+        /* Scroll Reveal Animation */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Dark Mode Styles */
+        .dark .bg-white { background-color: var(--mid-bg) !important; }
+        .dark .bg-gray-100 { background-color: var(--dark-bg) !important; }
+        .dark .bg-gray-50 { background-color: var(--light-bg) !important; }
+        .dark .text-gray-900 { color: #f0f2f5 !important; }
+        .dark .text-gray-800 { color: #e2e8f0 !important; }
+        .dark .text-gray-700 { color: #a0aec0 !important; }
+        .dark .text-gray-600 { color: #cbd5e0 !important; }
+        .dark .text-gray-500 { color: #a0aec0 !important; }
+        .dark .border-gray-200 { border-color: #4a5568 !important; }
+        .dark .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2); }
+        .dark .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2); }
+        .dark .bg-gray-100\/80 { background-color: rgba(10, 10, 21, 0.8) !important; }
+        .dark .nav-link.text-gray-600:hover { color: #f0f2f5 !important; }
+        .dark .nav-link.text-gray-600:hover { background-color: var(--light-bg) !important; }
+        .dark .active-nav { background-color: var(--primary-glow) !important; color: white !important; }
+        .dark input, .dark select, .dark textarea { background-color: var(--light-bg); border-color: #4a5568; color: white; }
+    </style>
+</head>
+<body class="text-gray-800">
+    
+    <!-- Background Canvas and Custom Cursor -->
+    <canvas id="bg-canvas"></canvas>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- Sidebar (Desktop Only) -->
+    <aside id="desktop-sidebar" class="hidden md:flex flex-col justify-between w-64 bg-white fixed top-0 left-0 h-full z-40 transition-all duration-300">
+        <div>
+            <!-- Sidebar Header -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <div class="flex items-center text-2xl font-semibold text-gray-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                    <span class="sidebar-text ml-2">RewardRush</span>
+                </div>
+                <button id="sidebar-toggle" class="p-2 rounded-md hover:bg-gray-100">
+                    <i class="fas fa-chevron-left transition-transform duration-300"></i>
+                </button>
+            </div>
+            <!-- Navigation -->
+            <nav class="p-4">
+                <ul>
+                    <li class="mb-4"><a href="groweasy.html" class="nav-link flex items-center text-lg font-semibold py-3 px-4 rounded-lg active-nav"><i class="fas fa-compass w-6 text-center mr-4"></i><span class="sidebar-text">Quests</span></a></li>
+                    <li class="mb-4"><a href="affiliate.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-briefcase w-6 text-center mr-4"></i><span class="sidebar-text">Jobs</span></a></li>
+                    <li class="mb-4"><a href="education.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-book-open w-6 text-center mr-4"></i><span class="sidebar-text">Learn</span></a></li>
+                    <li class="mb-4"><a href="founder.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-tools w-6 text-center mr-4"></i><span class="sidebar-text">Build</span></a></li>
+                    <li class="mb-4"><a href="profile.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-user w-6 text-center mr-4"></i><span class="sidebar-text">Profile</span></a></li>
+                </ul>
+            </nav>
+        </div>
+        <!-- Social & Theme Toggle -->
+        <div class="p-4">
+            <div class="sidebar-text border-t border-gray-200 pt-4">
+                <h3 class="text-xs uppercase text-gray-500 font-bold mb-4">Follow Us</h3>
+                <ul>
+                    <li class="mb-3"><a href="#" class="flex items-center text-gray-700 hover:text-purple-600 font-bold"><i class="fab fa-facebook-f w-6 text-center mr-3 text-lg"></i><span>Facebook</span></a></li>
+                    <li class="mb-3"><a href="#" class="flex items-center text-gray-700 hover:text-purple-600 font-bold"><i class="fab fa-twitter w-6 text-center mr-3 text-lg"></i><span>X</span></a></li>
+                    <li><a href="#" class="flex items-center text-gray-700 hover:text-purple-600 font-bold"><i class="fab fa-linkedin-in w-6 text-center mr-3 text-lg"></i><span>LinkedIn</span></a></li>
+                </ul>
+            </div>
+            <div class="sidebar-text border-t border-gray-200 pt-4 mt-4">
+                <button id="theme-toggle" class="w-full flex items-center text-gray-700 hover:text-purple-600 font-bold">
+                    <i id="theme-icon" class="fas fa-moon w-6 text-center mr-3 text-lg"></i>
+                    <span>Switch Theme</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
+        
+        <!-- Header Section (Mobile Only, Sticky) -->
+        <div class="md:hidden sticky top-0 z-30 bg-gray-100/80 backdrop-blur-sm pt-4">
+             <div class="px-4">
+                <header class="bg-white shadow-md p-4 flex items-center justify-center rounded-2xl">
+                    <div class="text-xl font-semibold flex items-center">
+                        <a href="/" class="gradient-text flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                            RewardRush
+                        </a>
+                    </div>
+                </header>
+            </div>
+        </div>
+
+        <!-- App Container -->
+        <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 md:pt-8">
+
+            <!-- Time-based Greeting -->
+            <div id="time-based-greeting" class="text-2xl font-bold text-gray-900 mb-6 px-2 font-montserrat reveal"></div>
+
+            <!-- Main Content -->
+            <main>
+                <!-- Carousel Section with Balance Overlay -->
+                <div class="relative mb-6 shadow-lg rounded-2xl overflow-hidden reveal">
+                    <div id="carousel" class="relative w-full h-48 md:h-64">
+                        <!-- Carousel items will be injected by JS -->
+                    </div>
+                    <div id="carousel-dots" class="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-2 z-20">
+                        <!-- Carousel dots will be injected by JS -->
+                    </div>
+                    <!-- Static Balance Overlay -->
+                    <div class="absolute inset-0 flex flex-col justify-center items-center z-10 bg-black bg-opacity-50 text-white">
+                        <div class="flex items-center text-sm text-gray-200">
+                            <span>Quest Balance</span>
+                            <button id="toggle-balance-btn" class="ml-2 text-lg">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <p id="carousel-balance" class="text-4xl font-bold font-montserrat mt-1">$0.00</p>
+                    </div>
+                </div>
+
+                <!-- Dashboard Overview -->
+                <div class="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-6 mb-6 reveal">
+                    <!-- Card 1: Invite -->
+                    <div id="invite-btn" class="bg-white py-3 px-2 rounded-lg shadow-md flex flex-col items-center justify-center text-center cursor-pointer">
+                        <i class="fas fa-user-plus text-purple-500 text-lg mb-1"></i>
+                        <p class="text-gray-500 text-xs font-medium">Invite</p>
+                    </div>
+                    <!-- Card 2: History -->
+                    <div id="history-btn" class="bg-white py-3 px-2 rounded-lg shadow-md flex flex-col items-center justify-center text-center cursor-pointer">
+                        <i class="fas fa-history text-yellow-500 text-lg mb-1"></i>
+                        <p class="text-gray-500 text-xs font-medium">History</p>
+                    </div>
+                    <!-- Card 3: Withdraw -->
+                    <div class="bg-white py-3 px-2 rounded-lg shadow-md flex flex-col items-center justify-center text-center cursor-pointer withdraw-btn hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-wallet text-green-500 text-lg mb-1"></i>
+                        <p class="text-gray-500 text-xs font-medium">Withdraw</p>
+                    </div>
+                </div>
+                
+                <!-- Quests Section -->
+                <div class="bg-white rounded-2xl shadow-md p-5 reveal">
+                    <h2 class="text-lg font-bold mb-4">Available Quests</h2>
+                    
+                    <!-- Filters -->
+                    <div class="grid grid-cols-3 gap-2 md:gap-4 mb-4">
+                        <input type="text" id="quest-search-input" placeholder="Search quests..." class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <select id="filter-status" class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="all">All Statuses</option>
+                            <option value="not-started">Not Started</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                        <select id="sort-reward" class="w-full p-2 md:p-3 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="default">Sort by Reward</option>
+                            <option value="high-to-low">High to Low</option>
+                            <option value="low-to-high">Low to High</option>
+                        </select>
+                    </div>
+
+                    <!-- Quest List -->
+                    <div id="quest-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Quest cards will be dynamically inserted here -->
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav id="pagination" class="flex justify-center items-center mt-6 space-x-2">
+                        <!-- Pagination controls will be dynamically inserted here -->
+                    </nav>
+                </div>
+
+                <!-- [UPDATED] Transaction History Section -->
+                <div id="history-section" class="bg-white rounded-2xl shadow-md p-5 mt-6 reveal">
+                    <h2 class="text-lg font-bold mb-4">Transaction History</h2>
+                    <!-- History Tabs -->
+                    <div class="flex border-b border-gray-200 mb-4">
+                        <button data-history-tab="all" class="history-tab-btn px-4 py-2 -mb-px border-b-2 border-purple-600 text-purple-600 font-semibold">All</button>
+                        <button data-history-tab="quests" class="history-tab-btn px-4 py-2 text-gray-500 font-semibold border-b-2 border-transparent hover:border-gray-300">Quests</button>
+                        <button data-history-tab="withdrawals" class="history-tab-btn px-4 py-2 text-gray-500 font-semibold border-b-2 border-transparent hover:border-gray-300">Withdrawals</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left p-2 font-semibold">Date</th>
+                                    <th class="text-left p-2 font-semibold">Description</th>
+                                    <th class="text-left p-2 font-semibold">Amount</th>
+                                    <th class="text-left p-2 font-semibold">Status / Tx Hash</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transaction-history-list">
+                                <!-- History items will be dynamically inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- [NEW] Container for the "See More" button -->
+                    <div id="history-footer" class="text-center mt-4"></div>
+                </div>
+
+                <!-- Spacer for mobile footer -->
+                <div class="h-20 md:hidden"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal for Quiz -->
+    <div id="quiz-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="modal-content-wrapper relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-transform scale-95">
+            <!-- Background Media Container -->
+            <div id="quiz-background" class="absolute inset-0 w-full h-full z-0"></div>
+            
+            <!-- Content Overlay -->
+            <div class="relative z-10 bg-black/50 p-8 text-white">
+                <h2 id="quiz-title" class="text-2xl font-bold mb-2">Quiz Title</h2>
+                <p id="quiz-description" class="text-gray-300 mb-6">Answer the questions below.</p>
+                <div id="quiz-content" class="text-white">
+                    <!-- Question will be injected here -->
+                </div>
+                <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
+                     <!-- Options will be injected here -->
+                </div>
+                <div class="flex justify-between items-center mt-6">
+                     <p id="quiz-progress" class="text-gray-300 font-semibold"></p>
+                     <div>
+                        <button id="next-btn" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700 transition">Next</button>
+                        <button id="submit-btn" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition hidden">Submit</button>
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- [UPDATED] Modal for Withdrawal -->
+    <div id="withdraw-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="modal-content-wrapper bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-transform scale-95">
+             <h2 class="text-xl font-bold mb-4">Request Withdrawal</h2>
+             <p class="mb-4 text-sm text-gray-600">Your current balance is <span id="withdraw-balance" class="font-bold text-gray-800">$0.00</span>.</p>
+             
+             <div class="space-y-4">
+                <div>
+                    <label for="withdraw-amount" class="block text-sm font-medium text-gray-700">Amount (USD)</label>
+                    <input type="number" id="withdraw-amount" placeholder="0.00" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div>
+                    <label for="withdraw-chain" class="block text-sm font-medium text-gray-700">Select Network</label>
+                    <select id="withdraw-chain" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <option value="BSC">BSC (Binance Smart Chain)</option>
+                        <option value="TRX">TRX (TRON)</option>
+                        <option value="ERC-20">ERC-20 (Ethereum)</option>
+                    </select>
+                </div>
+                 <div>
+                    <label for="withdraw-address" class="block text-sm font-medium text-gray-700">Your Wallet Address</label>
+                    <input type="text" id="withdraw-address" placeholder="Enter your wallet address" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+             </div>
+
+             <div class="flex justify-end space-x-4 mt-6">
+                 <button id="cancel-withdrawal-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Cancel</button>
+                 <button id="confirm-withdrawal-btn" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700">Submit Request</button>
+             </div>
+        </div>
+    </div>
+
+    <!-- Quest Completion Modal -->
+    <div id="quest-complete-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="modal-content-wrapper bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center transform transition-transform scale-95">
+             <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check text-green-500 text-3xl"></i>
+             </div>
+             <h2 id="completion-title" class="text-2xl font-bold mb-2">Quest Complete!</h2>
+             <p id="completion-reward" class="text-lg text-gray-600 mb-4">You've earned $5.00!</p>
+             <p class="text-sm text-gray-500 mb-4">Invite more friends to benefit with your referral link.</p>
+             <div class="flex items-center mb-6">
+                <input type="text" id="referral-link" value="https://rewardrush.app/ref/johndoe123" readonly class="w-full p-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm">
+                <button id="copy-link-btn" class="bg-purple-600 text-white p-2 rounded-r-lg hover:bg-purple-700">
+                    <i class="fas fa-copy"></i>
+                </button>
+             </div>
+             <div class="flex justify-center space-x-4 mb-6">
+                <a href="#" class="social-share-btn text-2xl text-blue-600 hover:text-blue-800"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="social-share-btn text-2xl text-black hover:text-gray-700"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-share-btn text-2xl text-blue-700 hover:text-blue-900"><i class="fab fa-linkedin-in"></i></a>
+             </div>
+             <button id="close-completion-modal-btn" class="w-full bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Done</button>
+        </div>
+    </div>
+    
+    <!-- Referral Modal -->
+    <div id="referral-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="modal-content-wrapper bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 transform transition-transform scale-95">
+            <h2 class="text-xl font-bold mb-4">My Referrals</h2>
+            
+            <!-- Platform Referral Link Section -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold mb-2">Your Platform Referral Link</h3>
+                <p class="text-sm text-gray-500 mb-2">Share this link to invite new users to RewardRush.</p>
+                <div class="flex items-center">
+                    <input type="text" id="platform-referral-link" readonly class="w-full p-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm">
+                    <button id="copy-platform-link-btn" class="bg-purple-600 text-white p-2 rounded-r-lg hover:bg-purple-700">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="referral-stats" class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <p class="text-sm text-gray-500">Total Referrals</p>
+                    <p id="total-referrals" class="text-2xl font-bold">0</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Total Earnings</p>
+                    <p id="total-earnings" class="text-2xl font-bold">$0.00</p>
+                </div>
+            </div>
+            <h3 class="text-lg font-bold mb-2">Referral History</h3>
+            <div class="overflow-auto max-h-64">
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="text-left p-2 font-semibold">User</th>
+                            <th class="text-left p-2 font-semibold">Type</th>
+                            <th class="text-left p-2 font-semibold">Quest</th>
+                            <th class="text-left p-2 font-semibold">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="referral-history-list">
+                        <!-- Referral history will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-end mt-6">
+                <button id="close-referral-modal-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Notification/Toast -->
+    <div id="notification-toast" class="fixed bottom-24 md:bottom-8 right-8 bg-gray-800 text-white py-3 px-6 rounded-lg shadow-xl z-50 hidden">
+        <p id="notification-message">Notification message</p>
+    </div>
+
+    <!-- Bottom Navigation Bar (Mobile Only) -->
+    <footer class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-t-md p-2 z-40">
+        <div class="flex justify-around items-center">
+            <a href="groweasy.html" class="flex flex-col items-center text-purple-600 w-1/5">
+                <i class="fas fa-compass text-lg"></i>
+                <span class="text-xs font-semibold mt-1">Quests</span>
+            </a>
+            <a href="affiliate.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
+                <i class="fas fa-briefcase text-lg"></i>
+                <span class="text-xs mt-1">Jobs</span>
+            </a>
+            <a href="education.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
+                <i class="fas fa-book-open text-lg"></i>
+                <span class="text-xs mt-1">Learn</span>
+            </a>
+            <a href="founder.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
+                <i class="fas fa-tools text-lg"></i>
+                <span class="text-xs mt-1">Build</span>
+            </a>
+            <a href="profile.html" class="flex flex-col items-center text-gray-500 hover:text-purple-600 w-1/5">
+                <i class="fas fa-user text-lg"></i>
+                <span class="text-xs mt-1">Profile</span>
+            </a>
+        </div>
+    </footer>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- API Service Layer ---
+            const ApiService = {
+                async fetch(endpoint, options = {}) {
+                    // Use relative paths for API calls. This works for both local dev and deployment.
+                    try {
+                        const response = await fetch(endpoint, {
+                            ...options,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                ...options.headers,
+                            },
+                        });
+                        const data = await response.json();
+                        if (!response.ok) {
+                            throw new Error(data.error || `HTTP error! status: ${response.status}`);
+                        }
+                        return data;
+                    } catch (error) {
+                        console.error(`API Error on ${endpoint}:`, error);
+                        App.showNotification(error.message, 'error');
+                        if (error.message.toLowerCase().includes('unauthorized')) {
+                            window.location.href = '/auth.html';
+                        }
+                        throw error;
+                    }
+                },
+
+                checkSession: () => ApiService.fetch('/check-session'),
+                getProfile: (userId) => ApiService.fetch(`/api/profile/${userId}`),
+                getQuests: () => ApiService.fetch('/quests'),
+                getQuestQuestions: (questId) => ApiService.fetch(`/api/quests/${questId}/questions`),
+                submitQuiz: (questId, answers) => ApiService.fetch(`/submit-quiz/${questId}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ answers }),
+                }),
+                withdraw: (amount, walletAddress, chain) => ApiService.fetch('/withdraw', {
+                    method: 'POST',
+                    body: JSON.stringify({ amount, walletAddress, chain }),
+                }),
+                getReferrals: () => ApiService.fetch('/api/referrals'),
+                generateReferralLink: (questId) => {
+                    let url = '/generate-referral-link';
+                    if (questId) {
+                        url += `?questId=${questId}`;
+                    }
+                    return ApiService.fetch(url);
+                },
+            };
+
+            // Encapsulate all logic in an App object
+            const App = {
+                // --- STATE ---
+                user: {
+                    name: '',
+                    balance: 0.00,
+                    transactions: [],
+                },
+                state: {
+                    userId: null,
+                    isBalanceVisible: true,
+                    activeHistoryTab: 'all',
+                    historyItemsToShow: 4,
+                },
+                quests: [],
+                
+                // --- PAGINATION & QUIZ STATE ---
+                currentPage: 1,
+                itemsPerPage: 6,
+                currentQuiz: null,
+                currentQuestionIndex: 0,
+                userAnswers: [],
+
+                // --- UI ELEMENTS ---
+                elements: {
+                    greeting: document.getElementById('time-based-greeting'),
+                    carouselBalance: document.getElementById('carousel-balance'),
+                    toggleBalanceBtn: document.getElementById('toggle-balance-btn'),
+                    questList: document.getElementById('quest-list'),
+                    pagination: document.getElementById('pagination'),
+                    searchInput: document.getElementById('quest-search-input'),
+                    statusFilter: document.getElementById('filter-status'),
+                    sortFilter: document.getElementById('sort-reward'),
+                    withdrawBtns: document.querySelectorAll('.withdraw-btn'),
+                    quizModal: document.getElementById('quiz-modal'),
+                    withdrawModal: document.getElementById('withdraw-modal'),
+                    questCompleteModal: document.getElementById('quest-complete-modal'),
+                    referralModal: document.getElementById('referral-modal'),
+                    notificationToast: document.getElementById('notification-toast'),
+                    notificationMessage: document.getElementById('notification-message'),
+                    carousel: document.getElementById('carousel'),
+                    carouselDots: document.getElementById('carousel-dots'),
+                    sidebarToggleBtn: document.getElementById('sidebar-toggle'),
+                    historyBtn: document.getElementById('history-btn'),
+                    inviteBtn: document.getElementById('invite-btn'),
+                    historySection: document.getElementById('history-section'),
+                    historyTabs: document.querySelectorAll('.history-tab-btn'),
+                    transactionHistoryList: document.getElementById('transaction-history-list'),
+                    historyFooter: document.getElementById('history-footer'),
+                    themeToggleBtn: document.getElementById('theme-toggle'),
+                    themeIcon: document.getElementById('theme-icon'),
+                    completionTitle: document.getElementById('completion-title'),
+                    completionReward: document.getElementById('completion-reward'),
+                    referralLinkInput: document.getElementById('referral-link'),
+                    copyLinkBtn: document.getElementById('copy-link-btn'),
+                    closeCompletionModalBtn: document.getElementById('close-completion-modal-btn'),
+                    closeReferralModalBtn: document.getElementById('close-referral-modal-btn'),
+                    platformReferralLinkInput: document.getElementById('platform-referral-link'),
+                    copyPlatformLinkBtn: document.getElementById('copy-platform-link-btn'),
+                },
+                
+                // --- METHODS ---
+                
+                async init() {
+                    this.initTheme();
+                    this.bindEvents();
+                    this.bindSidebarToggle();
+                    this.initCarousel();
+                    
+                    try {
+                        const sessionData = await ApiService.checkSession();
+                        if (!sessionData.loggedIn) {
+                            window.location.href = '/auth.html';
+                            return;
+                        }
+                        this.state.userId = sessionData.userId;
+
+                        const [profileData, questsData] = await Promise.all([
+                            ApiService.getProfile(this.state.userId),
+                            ApiService.getQuests(),
+                        ]);
+                        
+                        this.user.name = profileData.user.fullName;
+                        this.user.balance = profileData.stats.totalEarnings;
+                        this.user.transactions = profileData.transactions;
+
+                        const completedQuestTitles = new Set(
+                            this.user.transactions
+                                .filter(tx => tx.desc?.startsWith('Completed: '))
+                                .map(tx => tx.desc.replace('Completed: ', ''))
+                        );
+
+                        this.quests = questsData.quests.map(quest => ({
+                            ...quest,
+                            status: completedQuestTitles.has(quest.title) ? 'completed' : 'not-started'
+                        }));
+
+                        this.displayGreeting();
+                        this.updateHeader();
+                        this.displayQuests();
+                        this.displayTransactionHistory();
+
+                    } catch (error) {
+                        console.error("Initialization failed:", error);
+                    }
+                },
+
+                initTheme() {
+                    const themeToggleBtn = this.elements.themeToggleBtn;
+                    const themeIcon = this.elements.themeIcon;
+                    const htmlEl = document.documentElement;
+
+                    if (localStorage.getItem('theme') === 'dark') {
+                        htmlEl.classList.add('dark');
+                        themeIcon.classList.replace('fa-moon', 'fa-sun');
+                    } else {
+                        htmlEl.classList.remove('dark');
+                        themeIcon.classList.replace('fa-sun', 'fa-moon');
+                    }
+                    
+                    if (htmlEl.classList.contains('dark')) {
+                        if (!window.threeJsInitialized) {
+                            initThreeJs();
+                            window.threeJsInitialized = true;
+                        }
+                    }
+
+                    themeToggleBtn.addEventListener('click', () => {
+                        htmlEl.classList.toggle('dark');
+                        if (htmlEl.classList.contains('dark')) {
+                            localStorage.setItem('theme', 'dark');
+                            themeIcon.classList.replace('fa-moon', 'fa-sun');
+                            if(!window.threeJsInitialized) {
+                                initThreeJs();
+                                window.threeJsInitialized = true;
+                            }
+                        } else {
+                            localStorage.setItem('theme', 'light');
+                            themeIcon.classList.replace('fa-sun', 'fa-moon');
+                        }
+                    });
+                },
+
+                bindSidebarToggle() {
+                    if (!this.elements.sidebarToggleBtn) return;
+                    this.elements.sidebarToggleBtn.addEventListener('click', () => {
+                        document.body.classList.toggle('sidebar-collapsed');
+                    });
+                },
+
+                displayGreeting() {
+                    const hour = new Date().getHours();
+                    const name = this.user.name?.split(' ')[0] || 'User';
+                    let greetingText = '';
+
+                    if (hour < 12) {
+                        greetingText = `Good morning, ${name}`;
+                    } else if (hour < 18) {
+                        greetingText = `Good afternoon, ${name}`;
+                    } else {
+                        greetingText = `Good evening, ${name}`;
+                    }
+                    this.elements.greeting.innerHTML = greetingText;
+                },
+
+                updateHeader() {
+                    this.updateBalanceDisplay();
+                },
+
+                updateBalanceDisplay() {
+                    if (this.state.isBalanceVisible) {
+                        this.elements.carouselBalance.textContent = `$${this.user.balance.toFixed(2)}`;
+                        this.elements.toggleBalanceBtn.innerHTML = `<i class="fas fa-eye"></i>`;
+                    } else {
+                        this.elements.carouselBalance.textContent = '$****.**';
+                        this.elements.toggleBalanceBtn.innerHTML = `<i class="fas fa-eye-slash"></i>`;
+                    }
+                },
+                
+                displayQuests() {
+                    this.elements.questList.innerHTML = '';
+                    
+                    const searchTerm = this.elements.searchInput.value.toLowerCase();
+                    const statusFilter = this.elements.statusFilter.value;
+                    const sortOrder = this.elements.sortFilter.value;
+                    
+                    let filteredQuests = this.quests.filter(quest => {
+                       const matchesSearch = (quest.title?.toLowerCase().includes(searchTerm) || quest.description?.toLowerCase().includes(searchTerm));
+                        const matchesStatus = (statusFilter === 'all') || (quest.status === statusFilter);
+                        return matchesSearch && matchesStatus;
+                    });
+                    
+                    const parseReward = (rewardString) => {
+                         if (typeof rewardString !== 'string') return 0;
+                         const match = rewardString.match(/\$?(\d+(\.\d+)?)/);
+                         return (match && match[1]) ? parseFloat(match[1]) : 0;
+                    }
+
+                    filteredQuests.sort((a, b) => {
+                        if (a.status === 'completed' && b.status !== 'completed') {
+                            return 1;
+                        }
+                        if (a.status !== 'completed' && b.status === 'completed') {
+                            return -1;
+                        }
+                        if (sortOrder === 'high-to-low') {
+                            return parseReward(b.reward) - parseReward(a.reward);
+                        }
+                        if (sortOrder === 'low-to-high') {
+                            return parseReward(a.reward) - parseReward(b.reward);
+                        }
+                        
+                        return 0;
+                    });
+                    
+                    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+                    const endIndex = startIndex + this.itemsPerPage;
+                    const paginatedQuests = filteredQuests.slice(startIndex, endIndex);
+
+                    if (paginatedQuests.length === 0) {
+                        this.elements.questList.innerHTML = `<p class="text-gray-500 md:col-span-2 lg:col-span-3 text-center py-8">No quests found.</p>`;
+                    } else {
+                        paginatedQuests.forEach(quest => {
+                            const card = this.createQuestCard(quest);
+                            this.elements.questList.appendChild(card);
+                        });
+                    }
+                    
+                    this.renderPagination(filteredQuests.length);
+                },
+
+                displayTransactionHistory() {
+                    const list = this.elements.transactionHistoryList;
+                    const footer = this.elements.historyFooter;
+                    list.innerHTML = '';
+                    footer.innerHTML = '';
+
+                    let transactionsToDisplay = this.user.transactions;
+                    const activeTab = this.state.activeHistoryTab;
+
+                    if (activeTab === 'quests') {
+                        transactionsToDisplay = this.user.transactions.filter(tx => tx.desc.startsWith('Completed:'));
+                    } else if (activeTab === 'withdrawals') {
+                        transactionsToDisplay = this.user.transactions.filter(tx => tx.desc === 'Withdrawal');
+                    }
+                    
+                    if (!transactionsToDisplay || transactionsToDisplay.length === 0) {
+                        list.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 p-4">No transactions found for this category.</td></tr>`;
+                        return;
+                    }
+
+                    const itemsToShow = transactionsToDisplay.slice(0, this.state.historyItemsToShow);
+
+                    itemsToShow.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b last:border-0';
+                        
+                        const amountColor = item.type === 'credit' ? 'text-green-600' : 'text-red-600';
+                        const amountPrefix = item.type === 'credit' ? '+' : '-';
+
+                        let statusHtml = 'N/A';
+                        if (item.desc === 'Withdrawal') {
+                            const statusColors = {
+                                pending: 'bg-yellow-100 text-yellow-800',
+                                approved: 'bg-green-100 text-green-800',
+                                rejected: 'bg-red-100 text-red-800'
+                            };
+                            const statusColor = statusColors[item.status] || 'bg-gray-100 text-gray-800';
+                            const statusText = item.status.charAt(0).toUpperCase() + item.status.slice(1);
+                            
+                            let hashHtml = '';
+                            if (item.transaction_hash) {
+                                const shortHash = item.transaction_hash.substring(0, 10) + '...' + item.transaction_hash.substring(item.transaction_hash.length - 4);
+                                hashHtml = `
+                                    <div class="flex items-center space-x-2 mt-1">
+                                        <span class="font-mono text-xs text-gray-500" title="${item.transaction_hash}">${shortHash}</span>
+                                        <button class="copy-tx-hash-btn text-gray-400 hover:text-purple-500" data-hash="${item.transaction_hash}">
+                                            <i class="fas fa-copy text-xs"></i>
+                                        </button>
+                                    </div>
+                                `;
+                            }
+                            
+                            statusHtml = `
+                                <div class="flex flex-col">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColor} w-min">${statusText}</span>
+                                    ${hashHtml}
+                                </div>
+                            `;
+                        } else {
+                             statusHtml = `<span class="text-gray-400">--</span>`;
+                        }
+
+                        row.innerHTML = `
+                            <td class="p-2">${item.date}</td>
+                            <td class="p-2">${item.desc}</td>
+                            <td class="p-2 font-medium ${amountColor}">${amountPrefix}$${item.amount}</td>
+                            <td class="p-2">${statusHtml}</td>
+                        `;
+                        list.appendChild(row);
+                    });
+
+                    if (transactionsToDisplay.length > this.state.historyItemsToShow) {
+                        const seeMoreBtn = document.createElement('button');
+                        seeMoreBtn.id = 'see-more-history-btn';
+                        seeMoreBtn.textContent = 'See More';
+                        seeMoreBtn.className = 'bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition';
+                        footer.appendChild(seeMoreBtn);
+                    }
+                },
+
+                createQuestCard(quest) {
+                    const card = document.createElement('div');
+                    card.className = 'quest-card bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col justify-between transition-shadow hover:shadow-md';
+                    card.dataset.questId = quest.id;
+                    
+                    const isCompleted = quest.status === 'completed';
+                    
+                    let statusBadge;
+                    if (isCompleted) {
+                        statusBadge = `<span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full">Completed</span>`;
+                    } else {
+                         statusBadge = `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">Available</span>`;
+                    }
+
+                    const cardContent = `
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-base font-bold text-gray-800">${quest.title || 'Untitled Quest'}</h3>
+                                ${statusBadge}
+                            </div>
+                            <p class="text-gray-600 mb-3 text-xs">${quest.description || 'No description available.'}</p>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-gray-200">
+                             <div class="flex justify-between items-center mb-3">
+                                <p class="font-bold text-green-600 text-base">${quest.reward || '$0.00'}</p>
+                                <button class="details-btn text-purple-600 hover:underline text-xs font-semibold">View Details</button>
+                            </div>
+                            <button class="start-quiz-btn w-full py-2 px-4 rounded-lg text-sm font-semibold transition ${isCompleted ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}" ${isCompleted ? 'disabled' : ''}>
+                                ${isCompleted ? 'Completed' : 'Start Quiz'}
+                            </button>
+                        </div>
+                    `;
+                    card.innerHTML = cardContent;
+                    return card;
+                },
+
+                renderPagination(totalItems) {
+                    this.elements.pagination.innerHTML = '';
+                    const pageCount = Math.ceil(totalItems / this.itemsPerPage);
+
+                    if (pageCount <= 1) return;
+
+                    for (let i = 1; i <= pageCount; i++) {
+                        const pageLink = document.createElement('button');
+                        pageLink.textContent = i;
+                        pageLink.className = `px-3 py-1 text-sm rounded-md font-semibold transition ${this.currentPage === i ? 'bg-purple-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-200'}`;
+                        pageLink.addEventListener('click', () => {
+                            this.currentPage = i;
+                            this.displayQuests();
+                        });
+                        this.elements.pagination.appendChild(pageLink);
+                    }
+                },
+
+                async startQuiz(questId) {
+                    try {
+                        const questData = this.quests.find(q => q.id === questId);
+                        if (!questData) {
+                            this.showNotification('Could not load quest details.', 'error');
+                            return;
+                        }
+
+                        const questionsData = await ApiService.getQuestQuestions(questId);
+                        if (!questionsData?.questions?.length) {
+                            this.showNotification('Quiz not available for this quest yet.', 'error');
+                            return;
+                        }
+                        
+                        this.currentQuiz = {
+                            id: questId,
+                            title: questData.title,
+                            description: questData.description,
+                            questions: questionsData.questions,
+                            backgroundUrl: questData.quiz_background_url
+                        };
+
+                        this.currentQuestionIndex = 0;
+                        this.userAnswers = [];
+                        document.getElementById('quiz-title').textContent = this.currentQuiz.title;
+                        document.getElementById('quiz-description').textContent = this.currentQuiz.description;
+                        this.showQuestion();
+                        this.openModal(this.elements.quizModal);
+                    } catch (error) {
+                        console.error("Failed to start quiz:", error);
+                    }
+                },
+
+                showQuestion() {
+                    const question = this.currentQuiz.questions[this.currentQuestionIndex];
+                    const quizContent = document.getElementById('quiz-content');
+                    const quizOptions = document.getElementById('quiz-options');
+                    const quizBackground = document.getElementById('quiz-background');
+
+                    quizBackground.innerHTML = '';
+                    const backgroundUrl = this.currentQuiz.backgroundUrl;
+                    
+                    if (backgroundUrl) {
+                        if (backgroundUrl.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+                            const img = document.createElement('img');
+                            img.src = backgroundUrl;
+                            img.className = 'absolute inset-0 w-full h-full object-cover';
+                            quizBackground.appendChild(img);
+                        } else if (backgroundUrl.match(/\.(mp4|webm|ogg)$/) != null) {
+                            const video = document.createElement('video');
+                            video.src = backgroundUrl;
+                            video.className = 'absolute inset-0 w-full h-full object-cover';
+                            video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true;
+                            quizBackground.appendChild(video);
+                            video.play().catch(error => console.error("Video autoplay prevented:", error));
+                        }
+                    }
+
+
+                    quizContent.innerHTML = `<p class="text-lg font-semibold text-white">${question.question_text}</p>`;
+                    quizOptions.innerHTML = '';
+
+                    const is_open_ended = question.question_type === 'open-ended';
+
+                    if (is_open_ended) {
+                        const textArea = document.createElement('textarea');
+                        textArea.id = 'open-ended-answer';
+                        textArea.className = 'w-full p-4 border border-white/30 rounded-lg bg-white/10 text-white backdrop-blur-sm transition focus:ring-2 focus:ring-purple-500 focus:border-transparent';
+                        textArea.placeholder = 'Type your answer here...';
+                        textArea.rows = 4;
+                        quizOptions.appendChild(textArea);
+                        quizOptions.className = 'grid grid-cols-1 gap-4 my-6';
+                    } else {
+                        quizOptions.className = 'grid grid-cols-1 sm:grid-cols-2 gap-4 my-6';
+                        const optionsArray = Array.isArray(question.options) ? question.options : [];
+                        optionsArray.forEach(optionText => {
+                            const optionButton = document.createElement('button');
+                            optionButton.textContent = optionText.trim();
+                            optionButton.className = 'w-full text-left p-4 border border-white/30 rounded-lg bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm transition';
+                            optionButton.addEventListener('click', () => {
+                                this.userAnswers[this.currentQuestionIndex] = optionText.trim();
+                                Array.from(quizOptions.children).forEach(btn => btn.classList.remove('bg-white/30', 'border-purple-400'));
+                                optionButton.classList.add('bg-white/30', 'border-purple-400');
+                            });
+                            quizOptions.appendChild(optionButton);
+                        });
+                    }
+                    
+                    document.getElementById('quiz-progress').textContent = `Question ${this.currentQuestionIndex + 1} of ${this.currentQuiz.questions.length}`;
+                    
+                    if (this.currentQuestionIndex === this.currentQuiz.questions.length - 1) {
+                        document.getElementById('next-btn').classList.add('hidden');
+                        document.getElementById('submit-btn').classList.remove('hidden');
+                    } else {
+                        document.getElementById('next-btn').classList.remove('hidden');
+                        document.getElementById('submit-btn').classList.add('hidden');
+                    }
+                },
+
+                nextQuestion() {
+                    const question = this.currentQuiz.questions[this.currentQuestionIndex];
+                    const is_open_ended = question.question_type === 'open-ended';
+
+                    if (is_open_ended) {
+                        const textArea = document.getElementById('open-ended-answer');
+                        this.userAnswers[this.currentQuestionIndex] = textArea.value.trim();
+                        if (!this.userAnswers[this.currentQuestionIndex]) {
+                            this.showNotification('Please enter an answer.', 'error');
+                            return;
+                        }
+                    } else {
+                        if (this.userAnswers[this.currentQuestionIndex] === undefined) {
+                            this.showNotification('Please select an answer.', 'error');
+                            return;
+                        }
+                    }
+                    this.currentQuestionIndex++;
+                    this.showQuestion();
+                },
+
+                async submitQuiz() {
+                    const question = this.currentQuiz.questions[this.currentQuestionIndex];
+                    const is_open_ended = question.question_type === 'open-ended';
+
+                    if (is_open_ended) {
+                        const textArea = document.getElementById('open-ended-answer');
+                        this.userAnswers[this.currentQuestionIndex] = textArea.value.trim();
+                        if (!this.userAnswers[this.currentQuestionIndex]) {
+                            this.showNotification('Please enter an answer.', 'error');
+                            return;
+                        }
+                    } else {
+                        if (this.userAnswers[this.currentQuestionIndex] === undefined) {
+                            this.showNotification('Please select an answer.', 'error');
+                            return;
+                        }
+                    }
+                    
+                    try {
+                        const result = await ApiService.submitQuiz(this.currentQuiz.id, this.userAnswers);
+                        this.closeModal(this.elements.quizModal);
+
+                        if (result.success) {
+                            const quest = this.quests.find(q => q.id === this.currentQuiz.id);
+                            const referralLinkData = await ApiService.generateReferralLink(quest.id);
+                            this.showQuestCompletion(quest, referralLinkData.referralLink);
+                            this.init(); 
+                        } else {
+                            this.showNotification(result.message || 'Quiz failed. Please try again later.', 'error');
+                        }
+                    } catch (error) {
+                        console.error("Error submitting quiz:", error);
+                    }
+                },
+
+                showQuestCompletion(quest, referralLink) {
+                    this.elements.completionTitle.textContent = `Quest Complete: ${quest.title}`;
+                    this.elements.completionReward.textContent = `You've earned ${quest.reward}!`;
+                    this.elements.referralLinkInput.value = referralLink;
+                    this.openModal(this.elements.questCompleteModal);
+                },
+
+                async showReferralModal() {
+                    try {
+                        const referralData = await ApiService.getReferrals();
+                        document.getElementById('total-referrals').textContent = referralData.stats.total_referrals || 0;
+                        document.getElementById('total-earnings').textContent = `$${parseFloat(referralData.stats.total_earnings || 0).toFixed(2)}`;
+                        
+                        const referralList = document.getElementById('referral-history-list');
+                        referralList.innerHTML = '';
+                        if (referralData.referrals.length === 0) {
+                            referralList.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 p-4">No referral history.</td></tr>`;
+                        } else {
+                            referralData.referrals.forEach(ref => {
+                                const row = document.createElement('tr');
+                                row.className = 'border-b last:border-0';
+                                row.innerHTML = `
+                                    <td class="p-2">${ref.referred_username}</td>
+                                    <td class="p-2">${ref.type}</td>
+                                    <td class="p-2">${ref.quest_title || 'N/A'}</td>
+                                    <td class="p-2">${ref.status}</td>
+                                `;
+                                referralList.appendChild(row);
+                            });
+                        }
+
+                        const platformLinkData = await ApiService.generateReferralLink();
+                        this.elements.platformReferralLinkInput.value = platformLinkData.referralLink;
+
+                        this.openModal(this.elements.referralModal);
+                    } catch (error) {
+                        console.error('Failed to show referral modal:', error);
+                    }
+                },
+
+                openModal(modal) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    setTimeout(() => modal.querySelector('.modal-content-wrapper')?.classList.remove('scale-95'), 10);
+                },
+
+                closeModal(modal) {
+                     modal.querySelector('.modal-content-wrapper')?.classList.add('scale-95');
+                     setTimeout(() => {
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                     }, 200);
+
+                     if (modal.id === 'quiz-modal') {
+                         document.getElementById('quiz-background').innerHTML = '';
+                     }
+                },
+                
+                showNotification(message, type = 'success') {
+                    this.elements.notificationMessage.textContent = message;
+                    const toast = this.elements.notificationToast;
+                    toast.className = `fixed bottom-24 md:bottom-8 right-8 text-white py-3 px-6 rounded-lg shadow-xl z-50 toast-in ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+                    toast.classList.remove('hidden');
+                    setTimeout(() => toast.classList.add('hidden'), 3000);
+                },
+                
+                initCarousel() {
+                    const carouselItems = [
+                        { img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=2070&auto=format&fit=crop' },
+                        { img: 'https://static.vecteezy.com/system/resources/thumbnails/026/185/327/small_2x/waterfall-and-stone-copy-space-blurred-background-ai-generated-photo.jpg' },
+                        { img: 'https://tse1.mm.bing.net/th/id/OIP.fpq_xdUygzj-SN-pn02IWAHaEK?r=0&rs=1&pid=ImgDetMain&o=7&rm=3' }
+                    ];
+                    
+                    this.elements.carousel.innerHTML = '';
+                    this.elements.carouselDots.innerHTML = '';
+                    
+                    carouselItems.forEach((item, index) => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = `carousel-item absolute w-full h-full ${index === 0 ? 'active' : ''}`;
+                        itemDiv.innerHTML = `<img src="${item.img}" class="w-full h-full object-cover">`;
+                        this.elements.carousel.appendChild(itemDiv);
+                        
+                        const dot = document.createElement('button');
+                        dot.className = `carousel-dot w-2.5 h-2.5 rounded-full transition ${index === 0 ? 'bg-white' : 'bg-white/50'}`;
+                        dot.dataset.index = index;
+                        this.elements.carouselDots.appendChild(dot);
+                    });
+
+                    let slideIndex = 0;
+                    const slides = this.elements.carousel.querySelectorAll('.carousel-item');
+                    const dots = this.elements.carouselDots.querySelectorAll('.carousel-dot');
+                    
+                    const showSlide = (n) => {
+                        slideIndex = (n + slides.length) % slides.length;
+                        slides.forEach(slide => slide.classList.remove('active'));
+                        dots.forEach(dot => dot.classList.replace('bg-white', 'bg-white/50'));
+                        slides[slideIndex].classList.add('active');
+                        dots[slideIndex].classList.replace('bg-white/50', 'bg-white');
+                    };
+                    
+                    const nextSlide = () => showSlide(slideIndex + 1);
+                    
+                    this.elements.carouselDots.addEventListener('click', (e) => {
+                        if (e.target.matches('.carousel-dot')) {
+                            showSlide(parseInt(e.target.dataset.index));
+                        }
+                    });
+
+                    setInterval(nextSlide, 5000);
+                },
+
+                bindEvents() {
+                    this.elements.searchInput.addEventListener('input', () => { this.currentPage = 1; this.displayQuests(); });
+                    this.elements.statusFilter.addEventListener('change', () => { this.currentPage = 1; this.displayQuests(); });
+                    this.elements.sortFilter.addEventListener('change', () => { this.currentPage = 1; this.displayQuests(); });
+                    
+                    this.elements.toggleBalanceBtn.addEventListener('click', () => {
+                        this.state.isBalanceVisible = !this.state.isBalanceVisible;
+                        this.updateBalanceDisplay();
+                    });
+
+                    this.elements.historyBtn.addEventListener('click', () => {
+                        this.elements.historySection.scrollIntoView({ behavior: 'smooth' });
+                    });
+                    
+                    this.elements.inviteBtn.addEventListener('click', () => this.showReferralModal());
+
+                    this.elements.historyTabs.forEach(tab => {
+                        tab.addEventListener('click', () => {
+                            this.state.activeHistoryTab = tab.dataset.historyTab;
+                            this.state.historyItemsToShow = 4;
+                            this.elements.historyTabs.forEach(t => {
+                                t.classList.remove('border-purple-600', 'text-purple-600');
+                                t.classList.add('border-transparent', 'text-gray-500');
+                            });
+                            tab.classList.add('border-purple-600', 'text-purple-600');
+                            tab.classList.remove('border-transparent', 'text-gray-500');
+                            this.displayTransactionHistory();
+                        });
+                    });
+
+                    this.elements.historyFooter.addEventListener('click', (e) => {
+                        if (e.target.id === 'see-more-history-btn') {
+                            this.state.historyItemsToShow += 4;
+                            this.displayTransactionHistory();
+                        }
+                    });
+
+                    this.elements.questList.addEventListener('click', e => {
+                        const startButton = e.target.closest('.start-quiz-btn:not([disabled])');
+                        if (startButton) {
+                            const card = startButton.closest('.quest-card');
+                            if (card) this.startQuiz(parseInt(card.dataset.questId, 10));
+                            return; 
+                        }
+                        const detailsButton = e.target.closest('.details-btn');
+                        if (detailsButton) this.showNotification('Quest details page is a work in progress!', 'info');
+                    });
+
+                    this.elements.transactionHistoryList.addEventListener('click', (e) => {
+                        const copyBtn = e.target.closest('.copy-tx-hash-btn');
+                        if (copyBtn) {
+                            const hash = copyBtn.dataset.hash;
+                            const textArea = document.createElement("textarea");
+                            textArea.value = hash;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            try {
+                                document.execCommand('copy');
+                                this.showNotification('Transaction hash copied!', 'success');
+                            } catch (err) {
+                                console.error('Failed to copy text: ', err);
+                                this.showNotification('Failed to copy hash.', 'error');
+                            }
+                            document.body.removeChild(textArea);
+                        }
+                    });
+
+                    document.getElementById('next-btn').addEventListener('click', () => this.nextQuestion());
+                    document.getElementById('submit-btn').addEventListener('click', () => this.submitQuiz());
+                    this.elements.quizModal.addEventListener('click', (e) => {
+                       if (e.target === this.elements.quizModal) this.closeModal(this.elements.quizModal);
+                    });
+
+                    this.elements.withdrawBtns.forEach(btn => {
+                        btn.addEventListener('click', () => {
+                             document.getElementById('withdraw-balance').textContent = `$${this.user.balance.toFixed(2)}`;
+                             this.openModal(this.elements.withdrawModal);
+                        });
+                    });
+                    
+                    document.getElementById('confirm-withdrawal-btn').addEventListener('click', async () => {
+                        const amountInput = document.getElementById('withdraw-amount');
+                        const addressInput = document.getElementById('withdraw-address');
+                        const chainInput = document.getElementById('withdraw-chain');
+
+                        const amount = parseFloat(amountInput.value);
+                        const walletAddress = addressInput.value.trim();
+                        const chain = chainInput.value;
+
+                        if (isNaN(amount) || amount <= 0) return this.showNotification('Please enter a valid amount.', 'error');
+                        if (!walletAddress) return this.showNotification('Please enter a wallet address.', 'error');
+                        if (amount > this.user.balance) return this.showNotification('Insufficient funds.', 'error');
+                        
+                        try {
+                            const result = await ApiService.withdraw(amount, walletAddress, chain);
+                            this.showNotification(result.message, 'success');
+                            this.closeModal(this.elements.withdrawModal);
+                            amountInput.value = '';
+                            addressInput.value = '';
+                            this.init();
+                        } catch (error) {
+                            console.error("Withdrawal failed:", error);
+                        }
+                    });
+                     document.getElementById('cancel-withdrawal-btn').addEventListener('click', () => this.closeModal(this.elements.withdrawModal));
+                     this.elements.withdrawModal.addEventListener('click', (e) => {
+                       if (e.target === this.elements.withdrawModal) this.closeModal(this.elements.withdrawModal);
+                    });
+
+                    this.elements.closeCompletionModalBtn.addEventListener('click', () => this.closeModal(this.elements.questCompleteModal));
+                    this.elements.copyLinkBtn.addEventListener('click', () => {
+                        this.elements.referralLinkInput.select();
+                        document.execCommand('copy');
+                        this.showNotification('Referral link copied!', 'success');
+                    });
+                    this.elements.closeReferralModalBtn.addEventListener('click', () => this.closeModal(this.elements.referralModal));
+                    this.elements.copyPlatformLinkBtn.addEventListener('click', () => {
+                        this.elements.platformReferralLinkInput.select();
+                        document.execCommand('copy');
+                        this.showNotification('Platform referral link copied!', 'success');
+                    });
+                }
+            };
+
+            // --- Additional Animations ---
+            window.threeJsInitialized = false;
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) entry.target.classList.add('visible');
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+            let scene, camera, renderer, particles, mouseX = 0, mouseY = 0;
+            let windowHalfX = window.innerWidth / 2, windowHalfY = window.innerHeight / 2;
+
+            function initThreeJs() {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
+                camera.position.z = 1000;
+
+                const particleCount = 2000;
+                const particlesGeometry = new THREE.BufferGeometry();
+                const posArray = new Float32Array(particleCount * 3);
+                for (let i = 0; i < particleCount * 3; i++) posArray[i] = (Math.random() - 0.5) * (Math.random() * 2000);
+                particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+                
+                const material = new THREE.PointsMaterial({ size: 1.5, color: 0x8b00ff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending });
+                particles = new THREE.Points(particlesGeometry, material);
+                scene.add(particles);
+
+                renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true });
+                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setClearColor(0x000000, 0);
+
+                document.body.addEventListener('pointermove', onDocumentMouseMove, false);
+                window.addEventListener('resize', onWindowResize, false);
+                animateThreeJs();
+            }
+
+            function animateThreeJs() {
+                requestAnimationFrame(animateThreeJs);
+                renderThreeJs();
+            }
+
+            function renderThreeJs() {
+                if (!renderer) return;
+                const time = Date.now() * 0.00005;
+                camera.position.x += (mouseX - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                particles.rotation.x = time * 0.1;
+                particles.rotation.y = time * 0.2;
+                renderer.render(scene, camera);
+            }
+
+            function onDocumentMouseMove(event) {
+                mouseX = event.clientX - windowHalfX;
+                mouseY = event.clientY - windowHalfY;
+            }
+
+            function onWindowResize() {
+                if (!renderer) return;
+                windowHalfX = window.innerWidth / 2;
+                windowHalfY = window.innerHeight / 2;
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+            
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorOutline = document.querySelector('.cursor-outline');
+            window.addEventListener('mousemove', (e) => {
+                cursorDot.style.left = `${e.clientX}px`;
+                cursorDot.style.top = `${e.clientY}px`;
+                cursorOutline.animate({ left: `${e.clientX}px`, top: `${e.clientY}px` }, { duration: 500, fill: "forwards" });
+            });
+            
+            document.querySelectorAll('a, button, input, .quest-card, .withdraw-btn, #history-btn').forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursorDot.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                    cursorDot.style.backgroundColor = 'var(--secondary-glow)';
+                    cursorOutline.style.transform = 'translate(-50%, -50%) scale(1.2)';
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
+                    cursorDot.style.backgroundColor = 'var(--accent-glow)';
+                    cursorOutline.style.transform = 'translate(-50%, -50%) scale(1)';
+                });
+            });
+
+            // Start the application
+            App.init();
+        });
+    </script>
+</body>
+</html>

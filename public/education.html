@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RewardRush - Learn</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6D28D9; /* purple-700 */
+            --secondary-color: #0E7490; /* cyan-700 */
+            --light-bg: #f9fafb; /* gray-50 */
+            --mid-bg: #ffffff;
+            --dark-text: #1f2937; /* gray-800 */
+            --mid-text: #4b5563; /* gray-600 */
+            --light-text: #6b7280; /* gray-500 */
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+        }
+        .font-montserrat {
+            font-family: 'Montserrat', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .glass-card:hover {
+            border-color: rgba(109, 40, 217, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #5B21B6; /* purple-800 */
+            box-shadow: 0 4px 14px 0 rgba(109, 40, 217, 0.39);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            animation: fadeIn 0.3s;
+        }
+        .modal-content {
+            background-color: var(--mid-bg);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 600px;
+            animation: slideIn 0.3s;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(-50px); } to { transform: translateY(0); } }
+        .progress-bar {
+            background-color: #e5e7eb; /* gray-200 */
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        .progress-bar-inner {
+            background-color: var(--primary-color);
+            height: 100%;
+            border-radius: 0.5rem;
+            transition: width 0.5s ease-in-out;
+        }
+        .sidebar-collapsed #desktop-sidebar { width: 5.5rem; }
+        .sidebar-collapsed #main-content-wrapper { margin-left: 5.5rem; }
+        .sidebar-collapsed .sidebar-text { display: none; }
+        .sidebar-collapsed #sidebar-toggle i { transform: rotate(180deg); }
+        .sidebar-collapsed .nav-link { justify-content: center; }
+        .sidebar-collapsed .nav-link i { margin-right: 0; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <aside id="desktop-sidebar" class="hidden md:flex flex-col justify-between w-64 bg-white fixed top-0 left-0 h-full z-40 transition-all duration-300">
+        <div>
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <div class="flex items-center text-2xl font-semibold text-gray-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                    <span class="sidebar-text ml-2">RewardRush</span>
+                </div>
+                <button id="sidebar-toggle" class="p-2 rounded-md hover:bg-gray-100">
+                    <i class="fas fa-chevron-left transition-transform duration-300"></i>
+                </button>
+            </div>
+            <nav class="p-4">
+                <ul>
+                    <li class="mb-4"><a href="groweasy.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-compass w-6 text-center mr-4"></i><span class="sidebar-text">Quests</span></a></li>
+                    <li class="mb-4"><a href="affiliate.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-briefcase w-6 text-center mr-4"></i><span class="sidebar-text">Jobs</span></a></li>
+                    <li class="mb-4"><a href="education.html" class="nav-link flex items-center text-lg font-semibold py-3 px-4 rounded-lg active-nav"><i class="fas fa-book-open w-6 text-center mr-4"></i><span class="sidebar-text">Learn</span></a></li>
+                    <li class="mb-4"><a href="founder.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-tools w-6 text-center mr-4"></i><span class="sidebar-text">Build</span></a></li>
+                    <li class="mb-4"><a href="profile.html" class="nav-link flex items-center text-lg text-gray-600 hover:text-purple-600 hover:bg-purple-50 py-3 px-4 rounded-lg transition-colors"><i class="fas fa-user w-6 text-center mr-4"></i><span class="sidebar-text">Profile</span></a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="p-4">
+            <div class="sidebar-text border-t border-gray-200 pt-4">
+                <h3 class="text-xs uppercase text-gray-500 font-bold mb-4">Follow Us</h3>
+                <ul>
+                    <li class="mb-3"><a href="#" class="flex items-center text-gray-700 hover:text-purple-600 font-bold"><i class="fab fa-facebook-f w-6 text-center mr-3 text-lg"></i><span>Facebook</span></a></li>
+                    <li class="mb-3"><a href="#" class="flex items-center text-gray-700 hover:text-purple-600 font-bold"><i class="fab fa-twitter w-6 text-center mr-3 text-lg"></i><span>X</span></a></li>
+                    <li><a href="#" class="flex items-center text-gray-700 hover:text-purple-600 font-bold"><i class="fab fa-linkedin-in w-6 text-center mr-3 text-lg"></i><span>LinkedIn</span></a></li>
+                </ul>
+            </div>
+            <div class="sidebar-text border-t border-gray-200 pt-4 mt-4">
+                <button id="theme-toggle" class="w-full flex items-center text-gray-700 hover:text-purple-600 font-bold">
+                    <i id="theme-icon" class="fas fa-moon w-6 text-center mr-3 text-lg"></i>
+                    <span>Switch Theme</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <div id="main-content-wrapper" class="md:ml-64 transition-all duration-300">
+        <div class="md:hidden sticky top-0 z-30 bg-light-bg/95 backdrop-blur-sm pt-2 pb-2">
+             <div class="px-4">
+                <header class="bg-white shadow-md p-3 flex items-center justify-center rounded-2xl">
+                    <div class="flex items-center text-xl font-semibold text-gray-800">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 text-purple-600"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                        <span class="ml-2 font-montserrat">RewardRush</span>
+                    </div>
+                </header>
+            </div>
+        </div>
+
+        <div id="page-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div id="skills-page">
+                <header class="mb-8">
+                    <h1 class="text-4xl font-bold font-montserrat text-gray-900">Choose Your Path</h1>
+                    <p class="text-lg text-gray-600 mt-2">Select a skill to start your learning journey.</p>
+                    <div class="mt-6">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </span>
+                            <input type="text" id="skill-search-input" placeholder="Search for skills..." class="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                    </div>
+                </header>
+                <div id="skills-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                </div>
+            </div>
+
+            <div id="skill-detail-page" class="hidden">
+                <button class="mb-6 text-purple-600 hover:text-purple-800 font-semibold" onclick="showSkillsGrid()"><i class="fas fa-arrow-left mr-2"></i> Back to Skills</button>
+                <header class="mb-8 flex flex-col md:flex-row justify-between md:items-center">
+                    <div class="mb-4 md:mb-0">
+                        <h1 id="skill-title" class="text-4xl font-bold font-montserrat text-gray-900"></h1>
+                        <p class="text-lg text-gray-600 mt-2">Your personalized learning path.</p>
+                    </div>
+                    <button id="create-plan-btn" class="btn-primary" onclick="openStudyPlanModal()">Create Study Plan</button>
+                </header>
+                
+                <div id="study-plan-display" class="hidden glass-card p-6 mb-8">
+                     <h3 class="text-xl font-semibold mb-2 text-gray-800">Your Active Plan</h3>
+                     <p class="text-gray-600 mb-4" id="plan-goal-display"></p>
+                     <div class="text-center">
+                         <p class="text-sm text-gray-500 mb-1">Next study session in:</p>
+                         <div id="countdown-timer" class="text-3xl font-bold text-purple-600"></div>
+                     </div>
+                </div>
+
+                <div class="glass-card p-6 mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Your Progress</h3>
+                    <div class="progress-bar h-4 w-full">
+                        <div id="skill-progress-bar" class="progress-bar-inner h-4" style="width: 0%;"></div>
+                    </div>
+                    <p id="skill-progress-text" class="text-right mt-2 text-gray-500">0% Complete</p>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-800">Learning Materials</h3>
+                    <div id="learning-materials" class="space-y-4">
+                    </div>
+                    <div id="pagination-controls" class="flex justify-center items-center mt-6 space-x-2">
+                    </div>
+                </div>
+
+                <div class="glass-card p-6 mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Group Study</h3>
+                    <div id="group-members-avatars" class="flex items-center mb-4">
+                        <!-- Avatars for team members will be injected here -->
+                    </div>
+
+                    <!-- Detailed progress list -->
+                    <div id="group-members-progress-list" class="mt-6 space-y-3">
+                        <!-- Individual progress bars will be injected here -->
+                    </div>
+
+                    <h4 class="font-semibold mb-2 mt-6 text-gray-700">Team Progress</h4>
+                    <div class="progress-bar h-4 w-full">
+                        <div id="team-progress-bar" class="progress-bar-inner h-4" style="width: 0%;"></div>
+                    </div>
+                    <p id="team-progress-text" class="text-right mt-2 text-gray-500">0% Complete</p>
+
+                     <form id="invite-form" class="flex items-center gap-2 mt-6 pt-4 border-t border-gray-200">
+                        <input type="email" id="invite-email" placeholder="Enter friend's email" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-1 focus:ring-purple-500 focus:border-transparent" required>
+                        <button type="submit" class="btn-primary py-2 px-4 text-sm">Invite</button>
+                    </form>
+                    <div id="invitation-history" class="mt-4 space-y-2">
+                        <!-- Invitation history will be injected here -->
+                    </div>
+                </div>
+
+                <div class="glass-card p-6">
+                    <h3 class="text-xl font-bold mb-4 text-gray-800">Book Live Calls with Experts</h3>
+                    <div id="expert-list" class="space-y-4">
+                    </div>
+                </div>
+                
+                <div id="booking-history-section" class="hidden glass-card p-6 mt-8">
+                     <h3 class="text-xl font-semibold mb-4 text-gray-800">Call Request History</h3>
+                     <div id="booking-history-list" class="space-y-4">
+                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-t-md p-2 z-40 border-t border-gray-200">
+        <div class="flex justify-around items-center">
+            <a href="groweasy.html" class="flex flex-col items-center text-gray-500 w-1/5"><i class="fas fa-compass text-lg"></i><span class="text-xs mt-1">Quests</span></a>
+            <a href="affiliate.html" class="flex flex-col items-center text-gray-500 w-1/5"><i class="fas fa-briefcase text-lg"></i><span class="text-xs mt-1">Jobs</span></a>
+            <a href="#" class="flex flex-col items-center text-purple-600 w-1/5"><i class="fas fa-book-open text-lg"></i><span class="text-xs font-semibold mt-1">Learn</span></a>
+            <a href="founder.html" class="flex flex-col items-center text-gray-500 w-1/5"><i class="fas fa-tools text-lg"></i><span class="text-xs mt-1">Build</span></a>
+            <a href="profile.html" class="flex flex-col items-center text-gray-500 w-1/5"><i class="fas fa-user text-lg"></i><span class="text-xs mt-1">Profile</span></a>
+        </div>
+    </footer>
+
+    <!-- Invitations Modal -->
+    <div id="invitations-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Your Study Group Invitations</h2>
+                <span class="text-2xl cursor-pointer text-gray-500" onclick="closeInvitationsModal()">&times;</span>
+            </div>
+            <div id="invitations-list" class="space-y-4">
+                <!-- Invitations will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="study-plan-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Create Your Study Plan</h2>
+                <span class="text-2xl cursor-pointer text-gray-500" onclick="closeStudyPlanModal()">&times;</span>
+            </div>
+            <form id="study-plan-form">
+                <div class="mb-4">
+                    <label for="study-goal" class="block mb-2 text-sm font-medium text-gray-700">What's your goal?</label>
+                    <input type="text" id="study-goal" class="w-full p-3 bg-gray-100 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" placeholder="e.g., Learn Figma in 30 days" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-2 text-sm font-medium text-gray-700">When do you want to study?</label>
+                    <div id="day-selector" class="grid grid-cols-3 md:grid-cols-7 gap-2">
+                        <button type="button" data-day="1" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Mon</button>
+                        <button type="button" data-day="2" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Tue</button>
+                        <button type="button" data-day="3" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Wed</button>
+                        <button type="button" data-day="4" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Thu</button>
+                        <button type="button" data-day="5" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Fri</button>
+                        <button type="button" data-day="6" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Sat</button>
+                        <button type="button" data-day="0" class="day-toggle p-2 bg-gray-200 text-gray-700 rounded-lg">Sun</button>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label for="study-time" class="block mb-2 text-sm font-medium text-gray-700">What time do you want to be reminded?</label>
+                    <input type="time" id="study-time" class="w-full p-3 bg-gray-100 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" required>
+                </div>
+                <button type="submit" class="btn-primary w-full">Save Plan</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="expert-profile-modal" class="modal">
+        <div class="modal-content max-w-2xl">
+            <div class="flex justify-between items-start mb-6">
+                <div class="flex items-center">
+                     <img id="expert-modal-avatar" src="" class="w-24 h-24 rounded-full mr-6 border-4 border-purple-200">
+                     <div>
+                         <h2 id="expert-modal-name" class="text-3xl font-bold text-gray-800"></h2>
+                         <p id="expert-modal-title" class="text-lg text-purple-600 font-semibold"></p>
+                    </div>
+                </div>
+                <span class="text-2xl cursor-pointer text-gray-500" onclick="closeExpertProfileModal()">&times;</span>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <h3 class="text-xl font-semibold mb-2 border-b pb-2">About</h3>
+                    <p id="expert-modal-bio" class="text-gray-600"></p>
+                </div>
+                 <div>
+                    <h3 class="text-xl font-semibold mb-2 border-b pb-2">Socials</h3>
+                    <div id="expert-modal-socials" class="flex items-center gap-4"></div>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-2 border-b pb-2">Portfolio</h3>
+                    <div id="expert-modal-portfolio" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center">
+                 <button id="expert-profile-book-btn" class="btn-primary w-full sm:w-auto">Book a Call</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="booking-modal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Book a Call with <span id="booking-expert-name"></span></h2>
+                <span class="text-2xl cursor-pointer text-gray-500" onclick="closeBookingModal()">&times;</span>
+            </div>
+            <form id="booking-form">
+                <div class="mb-4">
+                    <label for="booking-reason" class="block mb-2 text-sm font-medium text-gray-700">Reason for the call</label>
+                    <textarea id="booking-reason" rows="4" class="w-full p-3 bg-gray-100 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" placeholder="What would you like to discuss?" required></textarea>
+                </div>
+                <div class="mb-6">
+                    <label for="booking-datetime" class="block mb-2 text-sm font-medium text-gray-700">Preferred date & time</label>
+                    <input type="datetime-local" id="booking-datetime" class="w-full p-3 bg-gray-100 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500" required>
+                </div>
+                <button type="submit" class="btn-primary w-full">Submit Request</button>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        // --- State Management ---
+        let currentSkillKey = null;
+        let countdownInterval = null;
+        let currentBookingExpertId = null;
+        let bookingHistoryData = [];
+        let invitationHistory = [];
+        let groupMembers = [];
+        let learningData = {};
+        let expertsData = {};
+        let userProgress = [];
+        let currentPage = 1;
+        const itemsPerPage = 5;
+
+        // --- API Service Layer ---
+        const ApiService = {
+            async fetch(endpoint, options = {}) {
+                try {
+                    const response = await fetch(endpoint, {
+                        ...options,
+                        headers: { 'Content-Type': 'application/json', ...options.headers },
+                    });
+                    if (!response.ok) {
+                        if (response.status === 401) window.location.href = '/auth.html';
+                        const errorData = await response.json().catch(() => ({ message: `HTTP Error: ${response.status}` }));
+                        throw new Error(errorData.message);
+                    }
+                    const text = await response.text();
+                    return text ? JSON.parse(text) : {};
+                } catch (error) {
+                    console.error(`API Error on ${endpoint}:`, error);
+                    throw error;
+                }
+            },
+            checkSession: () => ApiService.fetch('/check-session'),
+            getEducationContent: () => ApiService.fetch('/api/education/content'),
+            getUserDataForSkill: (skillId) => ApiService.fetch(`/api/education/user-data/${skillId}`),
+            updateProgress: (materialId, completed) => ApiService.fetch('/api/education/progress', {
+                method: 'POST',
+                body: JSON.stringify({ materialId, completed })
+            }),
+            saveStudyPlan: (plan) => ApiService.fetch('/api/education/study-plan', {
+                method: 'POST',
+                body: JSON.stringify(plan)
+            }),
+            getGroupStudyData: (skillId) => ApiService.fetch(`/api/education/study-group/${skillId}`),
+            sendInvitation: (skillId, inviteeEmail) => ApiService.fetch('/api/education/study-group/invite', {
+                method: 'POST',
+                body: JSON.stringify({ skillId, inviteeEmail })
+            }),
+            getInvitations: () => ApiService.fetch('/api/education/invitations'),
+            respondToInvitation: (invitationId, response) => ApiService.fetch('/api/education/invitations/respond', {
+                method: 'POST',
+                body: JSON.stringify({ invitationId, response })
+            })
+        };
+
+        const colorMap = {
+            purple: { bg: 'bg-purple-500/10', text: 'text-purple-600' },
+            cyan: { bg: 'bg-cyan-500/10', text: 'text-cyan-600' },
+            red: { bg: 'bg-red-500/10', text: 'text-red-600' },
+            amber: { bg: 'bg-amber-500/10', text: 'text-amber-600' },
+            blue: { bg: 'bg-blue-500/10', text: 'text-blue-600' },
+            green: { bg: 'bg-green-500/10', text: 'text-green-600' },
+            indigo: { bg: 'bg-indigo-500/10', text: 'text-indigo-600' },
+            pink: { bg: 'bg-pink-500/10', text: 'text-pink-600' },
+            teal: { bg: 'bg-teal-500/10', text: 'text-teal-600' },
+            rose: { bg: 'bg-rose-500/10', text: 'text-rose-600' }
+        };
+
+        // --- Page Initialization ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const session = await ApiService.checkSession();
+            if (!session.loggedIn) {
+                window.location.href = '/auth.html';
+                return;
+            }
+            
+            try {
+                const content = await ApiService.getEducationContent();
+                learningData = content.learningData;
+                expertsData = content.expertsData;
+                populateSkillsGrid();
+                setupEventListeners();
+                checkForInvitations();
+            } catch (error) {
+                console.error("Initialization failed", error);
+                document.getElementById('skills-grid').innerHTML = `<p class="text-red-500">Could not load learning content. Please try again later.</p>`;
+            }
+        });
+
+        function populateSkillsGrid(searchTerm = '') {
+            const skillsGrid = document.getElementById('skills-grid');
+            skillsGrid.innerHTML = ''; // Clear existing
+            for (const key in learningData) {
+                const skill = learningData[key];
+                
+                if (searchTerm && !skill.title.toLowerCase().includes(searchTerm)) {
+                    continue; // Skip if it doesn't match search
+                }
+
+                const colors = colorMap[skill.color] || colorMap.purple;
+                const card = document.createElement('div');
+                card.className = 'glass-card p-6 cursor-pointer';
+                card.onclick = () => showSkillDetail(key);
+                card.innerHTML = `
+                    <div class="flex items-center mb-4">
+                        <div class="p-3 ${colors.bg} rounded-lg mr-4"><i class="${skill.icon} text-2xl ${colors.text}"></i></div>
+                        <h2 class="text-xl font-bold text-gray-800">${skill.title}</h2>
+                    </div>
+                    <p class="text-gray-600 mb-4 text-sm">${skill.description}</p>
+                    <div class="flex items-center text-sm text-gray-500">
+                        <i class="fas fa-book mr-2"></i> ${skill.courses} Courses &nbsp;&nbsp; <i class="fas fa-clock mr-2"></i> ${skill.hours} Hours
+                    </div>
+                `;
+                skillsGrid.appendChild(card);
+            }
+        }
+
+        // --- Page Navigation & Detail View ---
+        const skillsPage = document.getElementById('skills-page');
+        const skillDetailPage = document.getElementById('skill-detail-page');
+        const skillTitle = document.getElementById('skill-title');
+        const learningMaterialsContainer = document.getElementById('learning-materials');
+        const paginationControlsContainer = document.getElementById('pagination-controls');
+
+        async function showSkillDetail(skillKey) {
+            currentSkillKey = skillKey;
+            currentPage = 1;
+            const data = learningData[skillKey];
+            if (!data) return;
+
+            try {
+                const userData = await ApiService.getUserDataForSkill(skillKey);
+                userProgress = userData.completedMaterials || [];
+
+                const groupData = await ApiService.getGroupStudyData(skillKey);
+                groupMembers = groupData.members || [];
+                invitationHistory = groupData.invitations || [];
+                
+                skillTitle.textContent = data.title;
+                renderLearningMaterials();
+                renderPaginationControls();
+                updateProgress();
+                renderSkillExperts(data.expertIds);
+                renderGroupStudy();
+                
+                if (userData.activePlan) {
+                    displayStudyPlan(userData.activePlan);
+                } else {
+                    document.getElementById('study-plan-display').classList.add('hidden');
+                    document.getElementById('create-plan-btn').classList.remove('hidden');
+                }
+
+                skillsPage.classList.add('hidden');
+                skillDetailPage.classList.remove('hidden');
+                window.scrollTo(0, 0);
+            } catch (error) {
+                console.error("Could not load skill details:", error);
+                alert(`Failed to load skill details: ${error.message}\n\nPlease check the server logs for more information.`);
+            }
+        }
+        
+        function renderLearningMaterials() {
+            const data = learningData[currentSkillKey];
+            learningMaterialsContainer.innerHTML = '';
+
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedMaterials = data.materials.slice(startIndex, endIndex);
+
+            paginatedMaterials.forEach(material => {
+                const isCompleted = userProgress.includes(material.id);
+                
+                const materialLink = document.createElement('a');
+                materialLink.href = material.link || '#';
+                materialLink.target = '_blank';
+                materialLink.rel = 'noopener noreferrer';
+                materialLink.className = `p-4 rounded-lg flex items-center justify-between transition-all ${isCompleted ? 'bg-green-100' : 'bg-gray-100'} hover:shadow-md`;
+
+                const iconClass = material.type === 'video' ? 'fa-play-circle' : 'fa-file-alt';
+                
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.className = 'flex-shrink-0';
+                checkboxContainer.innerHTML = isCompleted 
+                    ? `<i class="fas fa-check-circle text-green-500 text-xl cursor-pointer"></i>` 
+                    : `<div class="w-5 h-5 border-2 border-gray-400 rounded-full cursor-pointer"></div>`;
+                
+                checkboxContainer.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleMaterialComplete(material.id, !isCompleted);
+                });
+
+                materialLink.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas ${iconClass} text-purple-600 text-2xl mr-4"></i>
+                        <div>
+                            <h4 class="font-semibold text-gray-800">${material.title}</h4>
+                            <p class="text-sm text-gray-500">${material.duration}</p>
+                        </div>
+                    </div>
+                `;
+                materialLink.appendChild(checkboxContainer);
+                learningMaterialsContainer.appendChild(materialLink);
+            });
+        }
+
+        function renderPaginationControls() {
+            const data = learningData[currentSkillKey];
+            const totalItems = data.materials.length;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            paginationControlsContainer.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            // Previous Button
+            const prevButton = document.createElement('button');
+            prevButton.innerHTML = `<i class="fas fa-chevron-left"></i>`;
+            prevButton.className = "px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 disabled:opacity-50";
+            prevButton.disabled = currentPage === 1;
+            prevButton.onclick = () => changePage(currentPage - 1);
+            paginationControlsContainer.appendChild(prevButton);
+
+            // Page Numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.className = `px-3 py-1 rounded-md ${currentPage === i ? 'bg-purple-600 text-white' : 'bg-gray-200 hover:bg-gray-300'}`;
+                pageButton.onclick = () => changePage(i);
+                paginationControlsContainer.appendChild(pageButton);
+            }
+
+            // Next Button
+            const nextButton = document.createElement('button');
+            nextButton.innerHTML = `<i class="fas fa-chevron-right"></i>`;
+            nextButton.className = "px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 disabled:opacity-50";
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.onclick = () => changePage(currentPage + 1);
+            paginationControlsContainer.appendChild(nextButton);
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            renderLearningMaterials();
+            renderPaginationControls();
+        }
+
+        async function toggleMaterialComplete(materialId, isCompleted) {
+            try {
+                await ApiService.updateProgress(materialId, isCompleted);
+                if (isCompleted) {
+                    userProgress.push(materialId);
+                } else {
+                    userProgress = userProgress.filter(id => id !== materialId);
+                }
+                renderLearningMaterials();
+                updateProgress();
+            } catch (error) {
+                console.error("Failed to update progress", error);
+            }
+        }
+
+        function updateProgress() {
+            const skill = learningData[currentSkillKey];
+            const completedCount = userProgress.length;
+            const progress = skill.materials.length > 0 ? (completedCount / skill.materials.length) * 100 : 0;
+            document.getElementById('skill-progress-bar').style.width = `${progress}%`;
+            document.getElementById('skill-progress-text').textContent = `${Math.round(progress)}% Complete`;
+        }
+
+        function showSkillsGrid() {
+            currentSkillKey = null;
+            skillDetailPage.classList.add('hidden');
+            skillsPage.classList.remove('hidden');
+            if (countdownInterval) clearInterval(countdownInterval);
+        }
+
+        // --- Group Study Logic ---
+        function renderGroupStudy() {
+            renderGroupMembers();
+            renderGroupMembersProgressList();
+            renderInvitationHistory();
+            updateTeamProgress();
+        }
+
+        function renderGroupMembers() {
+            const membersContainer = document.getElementById('group-members-avatars');
+            membersContainer.innerHTML = '';
+            if (groupMembers.length === 0) {
+                membersContainer.innerHTML = `<p class="text-sm text-gray-500">No members yet. Invite friends to study together!</p>`;
+                return;
+            }
+            groupMembers.forEach(member => {
+                const avatarImg = document.createElement('img');
+                avatarImg.src = member.avatar || 'https://placehold.co/40x40/cccccc/ffffff?text=?';
+                avatarImg.title = `${member.name} (${member.progress}%)`; // Tooltip on hover
+                avatarImg.className = 'w-10 h-10 rounded-full border-2 border-white -mr-2 cursor-pointer';
+                membersContainer.appendChild(avatarImg);
+            });
+        }
+
+        function renderGroupMembersProgressList() {
+            const listContainer = document.getElementById('group-members-progress-list');
+            listContainer.innerHTML = ''; 
+
+            if (groupMembers.length === 0) {
+                listContainer.style.display = 'none';
+                return;
+            }
+            listContainer.style.display = 'block';
+
+            groupMembers.forEach(member => {
+                const memberDiv = document.createElement('div');
+                memberDiv.className = 'flex items-center';
+
+                memberDiv.innerHTML = `
+                    <img src="${member.avatar || 'https://placehold.co/40x40/cccccc/ffffff?text=?'}" class="w-8 h-8 rounded-full mr-4">
+                    <div class="w-full">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-base font-medium text-gray-700">${member.name}</span>
+                            <span class="text-sm font-medium text-gray-500">${member.progress}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-purple-600 h-2.5 rounded-full" style="width: ${member.progress}%"></div>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(memberDiv);
+            });
+        }
+
+        function renderInvitationHistory() {
+            const historyContainer = document.getElementById('invitation-history');
+            historyContainer.innerHTML = '';
+            if (invitationHistory.length === 0) {
+                historyContainer.innerHTML = '<p class="text-sm text-gray-400 italic">No pending invitations.</p>';
+                return;
+            }
+
+            invitationHistory.forEach(invite => {
+                const statusClass = invite.status === 'pending' ? 'text-amber-600 bg-amber-100' : 'text-green-600 bg-green-100';
+                const historyItem = document.createElement('div');
+                historyItem.className = 'flex justify-between items-center text-sm p-2 bg-gray-50 rounded-md';
+                historyItem.innerHTML = `
+                    <span class="text-gray-600">${invite.email}</span>
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusClass}">${invite.status}</span>
+                `;
+                historyContainer.appendChild(historyItem);
+            });
+        }
+        
+        async function handleInviteSubmit(event) {
+            event.preventDefault();
+            const emailInput = document.getElementById('invite-email');
+            const email = emailInput.value.trim();
+            if (!email) return;
+
+            try {
+                const response = await ApiService.sendInvitation(currentSkillKey, email);
+                if (response.success) {
+                    if (!invitationHistory.some(inv => inv.email === email)) {
+                        invitationHistory.push({ email: email, status: 'pending' });
+                    }
+                    renderInvitationHistory();
+                    emailInput.value = '';
+                    alert("Invitation sent!");
+                }
+            } catch (error) {
+                console.error("Failed to send invitation:", error);
+                alert(`Could not send invitation: ${error.message}`);
+            }
+        }
+        
+        function updateTeamProgress() {
+            if (groupMembers.length === 0) {
+                 document.getElementById('team-progress-bar').style.width = `0%`;
+                 document.getElementById('team-progress-text').textContent = `0% Complete`;
+                return;
+            }
+            const totalProgress = groupMembers.reduce((sum, member) => sum + member.progress, 0);
+            const averageProgress = totalProgress / groupMembers.length;
+            
+            document.getElementById('team-progress-bar').style.width = `${averageProgress}%`;
+            document.getElementById('team-progress-text').textContent = `${Math.round(averageProgress)}% Complete`;
+        }
+
+        // --- Invitation Modal Logic ---
+        const invitationsModal = document.getElementById('invitations-modal');
+        function openInvitationsModal() { invitationsModal.style.display = 'block'; }
+        function closeInvitationsModal() { invitationsModal.style.display = 'none'; }
+
+        async function checkForInvitations() {
+            try {
+                const invitations = await ApiService.getInvitations();
+                if (invitations && invitations.length > 0) {
+                    const list = document.getElementById('invitations-list');
+                    list.innerHTML = '';
+                    invitations.forEach(inv => {
+                        const skillTitle = learningData[inv.skill_id]?.title || 'a skill';
+                        const item = document.createElement('div');
+                        item.className = 'p-4 bg-gray-100 rounded-lg flex justify-between items-center';
+                        item.innerHTML = `
+                            <div>
+                                <p class="text-gray-700"><strong>${inv.inviter_name}</strong> invited you to study <strong>${skillTitle}</strong>.</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="btn-primary py-1 px-3 text-sm" onclick="respondToInvite(${inv.id}, 'accepted')">Accept</button>
+                                <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 py-1 px-3 text-sm rounded-lg" onclick="respondToInvite(${inv.id}, 'declined')">Decline</button>
+                            </div>
+                        `;
+                        list.appendChild(item);
+                    });
+                    openInvitationsModal();
+                }
+            } catch (error) {
+                console.error("Could not check for invitations:", error);
+            }
+        }
+
+        async function respondToInvite(invitationId, response) {
+            try {
+                await ApiService.respondToInvitation(invitationId, response);
+                alert(`Invitation ${response}.`);
+                // Refresh the invitations list
+                const list = document.getElementById('invitations-list');
+                const itemToRemove = list.querySelector(`button[onclick*="respondToInvite(${invitationId},"]`).closest('.p-4');
+                if (itemToRemove) {
+                    itemToRemove.remove();
+                }
+                // If no more invitations, close the modal
+                if (list.children.length === 0) {
+                    closeInvitationsModal();
+                }
+            } catch (error) {
+                alert(`Failed to respond to invitation: ${error.message}`);
+            }
+        }
+
+        // --- Expert Logic ---
+        function renderSkillExperts(expertIds) {
+            const expertList = document.getElementById('expert-list');
+            expertList.innerHTML = '';
+            if (!expertIds || expertIds.length === 0) {
+                expertList.innerHTML = '<p class="text-gray-500">No experts available for this skill yet.</p>';
+                return;
+            }
+
+            expertIds.forEach(id => {
+                const expert = expertsData[id];
+                if (expert) {
+                    const expertCard = document.createElement('div');
+                    expertCard.className = 'flex items-center justify-between p-4 bg-gray-50 rounded-lg';
+                    expertCard.innerHTML = `
+                        <div class="flex items-center">
+                            <img src="${expert.avatar}" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <h4 class="font-semibold text-lg text-gray-800">${expert.name}</h4>
+                                <p class="text-sm text-gray-500">${expert.title}</p>
+                            </div>
+                        </div>
+                        <button class="btn-primary text-sm py-2 px-4" onclick="openExpertProfileModal('${id}')">View Profile</button>
+                    `;
+                    expertList.appendChild(expertCard);
+                }
+            });
+        }
+
+        // --- Modal & Form Logic ---
+        const studyPlanModal = document.getElementById('study-plan-modal');
+        const expertProfileModal = document.getElementById('expert-profile-modal');
+        const bookingModal = document.getElementById('booking-modal');
+
+        function openStudyPlanModal() { studyPlanModal.style.display = 'block'; }
+        function closeStudyPlanModal() { studyPlanModal.style.display = 'none'; }
+        function openExpertProfileModal(expertId) {
+            const expert = expertsData[expertId];
+            if (!expert) return;
+
+            document.getElementById('expert-modal-avatar').src = expert.avatar;
+            document.getElementById('expert-modal-name').textContent = expert.name;
+            document.getElementById('expert-modal-title').textContent = expert.title;
+            document.getElementById('expert-modal-bio').textContent = expert.bio;
+            document.getElementById('expert-profile-book-btn').onclick = () => openBookingModal(expertId);
+
+            const socialsContainer = document.getElementById('expert-modal-socials');
+            socialsContainer.innerHTML = '';
+            for(const social in expert.socials) {
+                const icon = social === 'website' ? 'fas fa-globe' : `fab fa-${social}`;
+                socialsContainer.innerHTML += `<a href="${expert.socials[social]}" target="_blank" class="text-gray-500 hover:text-purple-600 text-2xl"><i class="${icon}"></i></a>`;
+            }
+
+            const portfolioContainer = document.getElementById('expert-modal-portfolio');
+            portfolioContainer.innerHTML = '';
+            expert.portfolio.forEach(item => {
+                portfolioContainer.innerHTML += `<div class="bg-gray-100 p-3 rounded-lg"><h4 class="font-semibold text-gray-800">${item.title}</h4><p class="text-sm text-gray-600">${item.description}</p></div>`;
+            });
+
+            expertProfileModal.style.display = 'block';
+        }
+        function closeExpertProfileModal() { expertProfileModal.style.display = 'none'; }
+        function openBookingModal(expertId) {
+            currentBookingExpertId = expertId;
+            const expert = expertsData[expertId];
+            if (!expert) return;
+            closeExpertProfileModal();
+            document.getElementById('booking-expert-name').textContent = expert.name;
+            const now = new Date();
+            now.setDate(now.getDate() + 2);
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            const minDateTime = `${year}-${month}-${day}T00:00`;
+            document.getElementById('booking-datetime').min = minDateTime;
+            bookingModal.style.display = 'block';
+        }
+        function closeBookingModal() { bookingModal.style.display = 'none'; }
+
+        async function handleStudyPlanSubmit(event) {
+            event.preventDefault();
+            const goal = document.getElementById('study-goal').value;
+            const time = document.getElementById('study-time').value;
+            const selectedDays = [...document.querySelectorAll('.day-toggle.active')].map(el => parseInt(el.dataset.day));
+
+            if (!goal || !time || selectedDays.length === 0) {
+                alert("Please fill out all fields and select at least one day.");
+                return;
+            }
+            
+            try {
+                const plan = { skillId: currentSkillKey, goal, days: selectedDays, time };
+                await ApiService.saveStudyPlan(plan);
+                displayStudyPlan({ goal, days: selectedDays, reminder_time: time });
+                alert("Study plan saved!");
+                closeStudyPlanModal();
+            } catch (error) {
+                alert("Failed to save study plan. Please try again.");
+            }
+        }
+        
+        function displayStudyPlan(plan) {
+            document.getElementById('plan-goal-display').textContent = `Goal: ${plan.goal}`;
+            document.getElementById('study-plan-display').classList.remove('hidden');
+            document.getElementById('create-plan-btn').classList.add('hidden');
+            startCountdown(plan.days, plan.reminder_time);
+        }
+
+        function handleBookingSubmit(event) { /* ... UI logic ... */ }
+        function renderBookingHistory() { /* ... UI logic ... */ }
+        function startCountdown(days, time) { /* ... UI logic ... */ }
+
+        function setupEventListeners() {
+            window.onclick = function(event) {
+                if (event.target == studyPlanModal) closeStudyPlanModal();
+                if (event.target == expertProfileModal) closeExpertProfileModal();
+                if (event.target == bookingModal) closeBookingModal();
+                if (event.target == invitationsModal) closeInvitationsModal();
+            }
+            
+            document.getElementById('sidebar-toggle').addEventListener('click', () => document.body.classList.toggle('sidebar-collapsed'));
+            document.querySelectorAll('.day-toggle').forEach(button => {
+                button.addEventListener('click', () => {
+                    button.classList.toggle('active');
+                    button.classList.toggle('bg-gray-200');
+                    button.classList.toggle('bg-purple-600');
+                    button.classList.toggle('text-gray-700');
+                    button.classList.toggle('text-white');
+                });
+            });
+            document.getElementById('skill-search-input').addEventListener('input', (e) => populateSkillsGrid(e.target.value.toLowerCase()));
+            document.getElementById('study-plan-form').addEventListener('submit', handleStudyPlanSubmit);
+            document.getElementById('invite-form').addEventListener('submit', handleInviteSubmit);
+            document.getElementById('booking-form').addEventListener('submit', handleBookingSubmit);
+        }
+
+    </script>
+</body>
+</html>
