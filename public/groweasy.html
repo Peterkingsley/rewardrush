@@ -333,7 +333,7 @@
                                     <th class="text-left p-2 font-semibold">Date</th>
                                     <th class="text-left p-2 font-semibold">Description</th>
                                     <th class="text-left p-2 font-semibold">Amount</th>
-                                    <th class="text-left p-2 font-semibold">Status/Hash</th>
+                                    <th class="text-left p-2 font-semibold">Status / Tx Hash</th>
                                 </tr>
                             </thead>
                             <tbody id="transaction-history-list">
@@ -760,12 +760,24 @@
                             };
                             const statusColor = statusColors[item.status] || 'bg-gray-100 text-gray-800';
                             const statusText = item.status.charAt(0).toUpperCase() + item.status.slice(1);
-                            const hashText = item.transaction_hash ? item.transaction_hash.substring(0, 15) + '...' : '';
+                            
+                            let hashHtml = '';
+                            if (item.transaction_hash) {
+                                const shortHash = item.transaction_hash.substring(0, 10) + '...' + item.transaction_hash.substring(item.transaction_hash.length - 4);
+                                hashHtml = `
+                                    <div class="flex items-center space-x-2 mt-1">
+                                        <span class="font-mono text-xs text-gray-500" title="${item.transaction_hash}">${shortHash}</span>
+                                        <button class="copy-tx-hash-btn text-gray-400 hover:text-purple-500" data-hash="${item.transaction_hash}">
+                                            <i class="fas fa-copy text-xs"></i>
+                                        </button>
+                                    </div>
+                                `;
+                            }
                             
                             statusHtml = `
                                 <div class="flex flex-col">
                                     <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColor} w-min">${statusText}</span>
-                                    ${hashText ? `<span class="font-mono text-xs text-gray-500 mt-1" title="${item.transaction_hash}">${hashText}</span>` : ''}
+                                    ${hashHtml}
                                 </div>
                             `;
                         } else {
@@ -1098,6 +1110,26 @@
                         }
                         const detailsButton = e.target.closest('.details-btn');
                         if (detailsButton) this.showNotification('Quest details page is a work in progress!', 'info');
+                    });
+
+                    // Event listener for copying transaction hash
+                    this.elements.transactionHistoryList.addEventListener('click', (e) => {
+                        const copyBtn = e.target.closest('.copy-tx-hash-btn');
+                        if (copyBtn) {
+                            const hash = copyBtn.dataset.hash;
+                            const textArea = document.createElement("textarea");
+                            textArea.value = hash;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            try {
+                                document.execCommand('copy');
+                                this.showNotification('Transaction hash copied!', 'success');
+                            } catch (err) {
+                                console.error('Failed to copy text: ', err);
+                                this.showNotification('Failed to copy hash.', 'error');
+                            }
+                            document.body.removeChild(textArea);
+                        }
                     });
 
                     document.getElementById('next-btn').addEventListener('click', () => this.nextQuestion());
