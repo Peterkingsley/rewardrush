@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const fs = require('fs').promises;
+const fsSync = require('fs');
 const path = require('path');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
@@ -16,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 // Tell Express to trust the proxy that Render uses
 app.set('trust proxy', 1);
 
-// --- UPDATED: Hardcoded Admin Credentials for testing ---
+// --- Hardcoded Admin Credentials for testing ---
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = 'kingslayer';
 const saltRounds = 10;
@@ -66,6 +67,26 @@ app.use(session({
         sameSite: 'lax'
     }
 }));
+
+// --- [NEW] Multer setup for file uploads ---
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadPath = path.join(__dirname, 'public/uploads');
+    // Create the directory if it doesn't exist synchronously to ensure it's there before saving
+    if (!fsSync.existsSync(uploadPath)) {
+        fsSync.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    // Create a unique filename to avoid overwrites
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
+
 
 // Middleware functions (requireLogin, requireAdmin, etc.)
 const requireLogin = async (req, res, next) => {
@@ -359,6 +380,7 @@ app.get('/api/quests-data', requireAdmin, async (req, res) => {
                 q.title,
                 q.reward,
                 q.status,
+                q.quiz_background_url,
                 COALESCE(uq.participants_count, 0) AS participants
             FROM 
                 quests q
@@ -1367,7 +1389,7 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
         await client.query('BEGIN');
 
         // 1. Check if quest is already completed
-        const existingCompletion = await client.query(
+        const existingCompletion = await pool.query(
             'SELECT 1 FROM user_quests WHERE user_id = $1 AND quest_id = $2',
             [userDbId, questId]
         );
@@ -1793,7 +1815,7 @@ app.get('/founder/:id', async (req, res) => {
         const result = await pool.query("SELECT * FROM professionals WHERE id = $1 AND type = 'founder'", [id]);
         const founder = result.rows[0];
         if (!founder) return res.status(404).json({ error: 'Expert not found' });
-        res.json(founder);
+        res.json(expert);
     } catch (err) {
         console.error('Error fetching founder:', err);
         res.status(500).json({ error: 'Failed to fetch founder' });
@@ -1845,4 +1867,3 @@ app.use((req, res, next) => {
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
-});
