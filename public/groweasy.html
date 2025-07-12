@@ -317,11 +317,23 @@
                     </nav>
                 </div>
 
-                <!-- History Section -->
+                <!-- [UPDATED] Withdrawal History Section -->
                 <div id="history-section" class="bg-white rounded-2xl shadow-md p-5 mt-6 reveal">
-                    <h2 class="text-lg font-bold mb-4">Quest History</h2>
-                    <div id="history-list">
-                        <!-- History items will be dynamically inserted here -->
+                    <h2 class="text-lg font-bold mb-4">Withdrawal History</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full text-sm">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left p-2 font-semibold">Date</th>
+                                    <th class="text-left p-2 font-semibold">Amount</th>
+                                    <th class="text-left p-2 font-semibold">Status</th>
+                                    <th class="text-left p-2 font-semibold">Tx Hash</th>
+                                </tr>
+                            </thead>
+                            <tbody id="withdrawal-history-list">
+                                <!-- History items will be dynamically inserted here -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -358,15 +370,34 @@
         </div>
     </div>
     
-    <!-- Modal for Withdrawal -->
+    <!-- [UPDATED] Modal for Withdrawal -->
     <div id="withdraw-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="modal-content-wrapper bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-transform scale-95">
-             <h2 class="text-xl font-bold mb-4">Withdraw Funds</h2>
-             <p class="mb-4 text-sm">Enter the amount you wish to withdraw. Your current balance is <span id="withdraw-balance" class="font-bold">$0.00</span>.</p>
-             <input type="number" id="withdraw-amount" placeholder="0.00" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-purple-500">
-             <div class="flex justify-end space-x-4">
+             <h2 class="text-xl font-bold mb-4">Request Withdrawal</h2>
+             <p class="mb-4 text-sm text-gray-600">Your current balance is <span id="withdraw-balance" class="font-bold text-gray-800">$0.00</span>.</p>
+             
+             <div class="space-y-4">
+                <div>
+                    <label for="withdraw-amount" class="block text-sm font-medium text-gray-700">Amount (USD)</label>
+                    <input type="number" id="withdraw-amount" placeholder="0.00" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div>
+                    <label for="withdraw-chain" class="block text-sm font-medium text-gray-700">Select Network</label>
+                    <select id="withdraw-chain" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <option value="BSC">BSC (Binance Smart Chain)</option>
+                        <option value="TRX">TRX (TRON)</option>
+                        <option value="ERC-20">ERC-20 (Ethereum)</option>
+                    </select>
+                </div>
+                 <div>
+                    <label for="withdraw-address" class="block text-sm font-medium text-gray-700">Your Wallet Address</label>
+                    <input type="text" id="withdraw-address" placeholder="Enter your wallet address" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+             </div>
+
+             <div class="flex justify-end space-x-4 mt-6">
                  <button id="cancel-withdrawal-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Cancel</button>
-                 <button id="confirm-withdrawal-btn" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700">Confirm</button>
+                 <button id="confirm-withdrawal-btn" class="bg-purple-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-purple-700">Submit Request</button>
              </div>
         </div>
     </div>
@@ -465,10 +496,13 @@
                     method: 'POST',
                     body: JSON.stringify({ answers }),
                 }),
-                withdraw: (amount) => ApiService.fetch('/withdraw', {
+                // UPDATED: withdraw now sends more data
+                withdraw: (amount, walletAddress, chain) => ApiService.fetch('/withdraw', {
                     method: 'POST',
-                    body: JSON.stringify({ amount }),
-                })
+                    body: JSON.stringify({ amount, walletAddress, chain }),
+                }),
+                // NEW: fetch withdrawal history
+                getWithdrawalHistory: () => ApiService.fetch('/withdrawal-history'),
             };
 
             // Encapsulate all logic in an App object
@@ -479,6 +513,7 @@
                     balance: 0.00,
                     completedQuests: new Set(), // Use a Set for efficient lookup
                     recentActivity: [],
+                    withdrawalHistory: [],
                 },
                 state: {
                     userId: null,
@@ -514,7 +549,7 @@
                     sidebarToggleBtn: document.getElementById('sidebar-toggle'),
                     historyBtn: document.getElementById('history-btn'),
                     historySection: document.getElementById('history-section'),
-                    historyList: document.getElementById('history-list'),
+                    withdrawalHistoryList: document.getElementById('withdrawal-history-list'),
                     themeToggleBtn: document.getElementById('theme-toggle'),
                     themeIcon: document.getElementById('theme-icon'),
                     completionTitle: document.getElementById('completion-title'),
@@ -540,17 +575,17 @@
                         }
                         this.state.userId = sessionData.userId;
 
-                        const [profileData, questsData] = await Promise.all([
+                        const [profileData, questsData, withdrawalData] = await Promise.all([
                             ApiService.getProfile(this.state.userId),
-                            ApiService.getQuests()
+                            ApiService.getQuests(),
+                            ApiService.getWithdrawalHistory()
                         ]);
                         
-                        // **FIX**: Populate user data from the correct server structure
                         this.user.name = profileData.user.fullName;
                         this.user.balance = profileData.stats.totalEarnings;
                         this.user.recentActivity = profileData.recentActivity;
+                        this.user.withdrawalHistory = withdrawalData.history;
 
-                        // **FIX**: Determine completed quests by checking transaction history
                         const completedQuestTitles = new Set(
                             profileData.transactions
                                 .filter(tx => tx.desc?.startsWith('Completed: '))
@@ -565,7 +600,7 @@
                         this.displayGreeting();
                         this.updateHeader();
                         this.displayQuests();
-                        this.displayHistory();
+                        this.displayWithdrawalHistory();
 
                     } catch (error) {
                         console.error("Initialization failed:", error);
@@ -685,27 +720,41 @@
                     this.renderPagination(filteredQuests.length);
                 },
 
-                displayHistory() {
-                    this.elements.historyList.innerHTML = '';
+                // NEW: displayWithdrawalHistory
+                displayWithdrawalHistory() {
+                    const list = this.elements.withdrawalHistoryList;
+                    list.innerHTML = '';
                     
-                    // **FIX**: Use the `recentActivity` array from the server, which has `text` and `time`.
-                    if (!this.user.recentActivity || this.user.recentActivity.length === 0) {
-                        this.elements.historyList.innerHTML = `<p class="text-gray-500 text-center py-4">No recent activity yet.</p>`;
-                    } else {
-                        this.user.recentActivity.forEach(activity => {
-                            const historyItem = document.createElement('div');
-                            historyItem.className = 'flex justify-between items-center p-3 border-b border-gray-200 last:border-b-0';
-                            
-                            historyItem.innerHTML = `
-                                <div>
-                                    <p class="font-semibold text-gray-800">${activity.text}</p>
-                                    <p class="text-xs text-gray-500">${activity.time}</p>
-                                </div>
-                                <i class="fas ${activity.icon} ${activity.color}"></i>
-                            `;
-                            this.elements.historyList.appendChild(historyItem);
-                        });
+                    if (!this.user.withdrawalHistory || this.user.withdrawalHistory.length === 0) {
+                        list.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 p-4">No withdrawal history.</td></tr>`;
+                        return;
                     }
+
+                    this.user.withdrawalHistory.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.className = 'border-b last:border-0';
+                        
+                        const statusColors = {
+                            pending: 'bg-yellow-100 text-yellow-800',
+                            approved: 'bg-green-100 text-green-800',
+                            rejected: 'bg-red-100 text-red-800'
+                        };
+                        const statusColor = statusColors[item.status] || 'bg-gray-100 text-gray-800';
+
+                        row.innerHTML = `
+                            <td class="p-2">${new Date(item.created_at).toLocaleDateString()}</td>
+                            <td class="p-2 font-medium">$${parseFloat(item.amount).toFixed(2)}</td>
+                            <td class="p-2">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColor}">
+                                    ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                                </span>
+                            </td>
+                            <td class="p-2 font-mono text-xs truncate" title="${item.transaction_hash || ''}">
+                                ${item.transaction_hash ? item.transaction_hash.substring(0, 15) + '...' : 'N/A'}
+                            </td>
+                        `;
+                        list.appendChild(row);
+                    });
                 },
 
                 createQuestCard(quest) {
@@ -1028,16 +1077,24 @@
                     
                     document.getElementById('confirm-withdrawal-btn').addEventListener('click', async () => {
                         const amountInput = document.getElementById('withdraw-amount');
+                        const addressInput = document.getElementById('withdraw-address');
+                        const chainInput = document.getElementById('withdraw-chain');
+
                         const amount = parseFloat(amountInput.value);
+                        const walletAddress = addressInput.value.trim();
+                        const chain = chainInput.value;
+
                         if (isNaN(amount) || amount <= 0) return this.showNotification('Please enter a valid amount.', 'error');
+                        if (!walletAddress) return this.showNotification('Please enter a wallet address.', 'error');
                         if (amount > this.user.balance) return this.showNotification('Insufficient funds.', 'error');
                         
                         try {
-                            const result = await ApiService.withdraw(amount);
-                            this.showNotification(`Withdrawal successful! Your code is: ${result.code}`, 'success');
+                            const result = await ApiService.withdraw(amount, walletAddress, chain);
+                            this.showNotification(result.message, 'success');
                             this.closeModal(this.elements.withdrawModal);
                             amountInput.value = '';
-                            this.init();
+                            addressInput.value = '';
+                            this.init(); // Re-initialize to fetch updated balance and history
                         } catch (error) {
                             console.error("Withdrawal failed:", error);
                         }

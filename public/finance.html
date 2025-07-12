@@ -110,8 +110,9 @@
                      </div>
                  </div>
                  
+                 <!-- [UPDATED] Withdrawal Requests Section -->
                  <div>
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Payout Management</h2>
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Withdrawal Requests</h2>
                      <div class="bg-white p-6 rounded-lg shadow-md">
                         <div class="overflow-x-auto">
                             <table class="min-w-full bg-white">
@@ -120,11 +121,12 @@
                                         <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Request Date</th>
                                         <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Username</th>
                                         <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Amount</th>
-                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Code</th>
+                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Chain</th>
+                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Wallet Address</th>
                                         <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="payout-table-body" class="text-gray-700">
+                                <tbody id="withdrawal-table-body" class="text-gray-700">
                                     <!-- Dynamic content here -->
                                 </tbody>
                             </table>
@@ -147,10 +149,10 @@
             }
 
             let allTransactions = [];
-            let allPayouts = [];
+            let allWithdrawals = [];
 
             const transactionTableBody = document.getElementById('transaction-table-body');
-            const payoutTableBody = document.getElementById('payout-table-body');
+            const withdrawalTableBody = document.getElementById('withdrawal-table-body');
             const searchInput = document.getElementById('transaction-search-input');
 
             // --- API Service ---
@@ -170,15 +172,15 @@
                     }
                 },
                 getFinancialData: () => Api.fetch('/api/admin/financial-summary'),
-                approvePayout: (payoutId) => Api.fetch(`/api/admin/payouts/approve`, { 
+                approveWithdrawal: (withdrawalId, transactionHash) => Api.fetch(`/api/admin/withdrawals/approve`, { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ payoutId })
+                    body: JSON.stringify({ withdrawalId, transactionHash })
                 }),
-                rejectPayout: (payoutId) => Api.fetch(`/api/admin/payouts/reject`, { 
+                rejectWithdrawal: (withdrawalId) => Api.fetch(`/api/admin/withdrawals/reject`, { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ payoutId })
+                    body: JSON.stringify({ withdrawalId })
                 }),
             };
 
@@ -203,19 +205,20 @@
                 });
             }
 
-            function renderPayouts(payouts) {
-                payoutTableBody.innerHTML = '';
-                 if (!payouts || payouts.length === 0) {
-                    payoutTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4">No pending payouts.</td></tr>`;
+            function renderWithdrawals(withdrawals) {
+                withdrawalTableBody.innerHTML = '';
+                 if (!withdrawals || withdrawals.length === 0) {
+                    withdrawalTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4">No pending withdrawals.</td></tr>`;
                     return;
                 }
-                payouts.forEach(payout => {
+                withdrawals.forEach(withdrawal => {
                     const row = `
-                        <tr data-id="${payout.id}">
-                            <td class="py-3 px-4 border-b border-gray-200">${new Date(payout.created_at).toLocaleDateString()}</td>
-                            <td class="py-3 px-4 border-b border-gray-200">${payout.username}</td>
-                            <td class="py-3 px-4 border-b border-gray-200">$${parseFloat(payout.amount).toFixed(2)}</td>
-                            <td class="py-3 px-4 border-b border-gray-200 font-mono">${payout.code}</td>
+                        <tr data-id="${withdrawal.id}">
+                            <td class="py-3 px-4 border-b border-gray-200">${new Date(withdrawal.created_at).toLocaleDateString()}</td>
+                            <td class="py-3 px-4 border-b border-gray-200">${withdrawal.username}</td>
+                            <td class="py-3 px-4 border-b border-gray-200">$${parseFloat(withdrawal.amount).toFixed(2)}</td>
+                            <td class="py-3 px-4 border-b border-gray-200 font-mono text-sm">${withdrawal.chain}</td>
+                            <td class="py-3 px-4 border-b border-gray-200 font-mono text-xs">${withdrawal.wallet_address}</td>
                             <td class="py-3 px-4 border-b border-gray-200">
                                 <div class="flex items-center space-x-2">
                                     <button class="approve-btn bg-green-500 hover:bg-green-600 text-white text-sm py-1 px-3 rounded-lg">Approve</button>
@@ -224,29 +227,32 @@
                             </td>
                         </tr>
                     `;
-                    payoutTableBody.innerHTML += row;
+                    withdrawalTableBody.innerHTML += row;
                 });
             }
 
-            payoutTableBody.addEventListener('click', async (e) => {
+            withdrawalTableBody.addEventListener('click', async (e) => {
                 const row = e.target.closest('tr');
                 if (!row) return;
                 
-                const payoutId = row.dataset.id;
+                const withdrawalId = row.dataset.id;
 
                 if (e.target.matches('.approve-btn')) {
-                    if (confirm(`Approve this payout of $${row.cells[2].innerText.slice(1)} for user ${row.cells[1].innerText}?`)) {
+                    const transactionHash = prompt(`Please enter the transaction hash for this withdrawal of $${row.cells[2].innerText.slice(1)} for user ${row.cells[1].innerText}:`);
+                    if (transactionHash) {
                         try {
-                            await Api.approvePayout(payoutId);
-                            alert('Payout approved.');
+                            await Api.approveWithdrawal(withdrawalId, transactionHash);
+                            alert('Withdrawal approved.');
                             loadFinancialData(); // Refresh data
                         } catch(err) { /* handled in Api.fetch */ }
+                    } else if (transactionHash !== null) { // User didn't click cancel
+                        alert('Transaction hash is required to approve.');
                     }
                 } else if (e.target.matches('.reject-btn')) {
-                     if (confirm(`Reject this payout of $${row.cells[2].innerText.slice(1)} for user ${row.cells[1].innerText}? The funds will be returned to the user's balance.`)) {
+                     if (confirm(`Reject this withdrawal of $${row.cells[2].innerText.slice(1)} for user ${row.cells[1].innerText}? The funds will be returned to the user's balance.`)) {
                         try {
-                            await Api.rejectPayout(payoutId);
-                            alert('Payout rejected and funds returned to user.');
+                            await Api.rejectWithdrawal(withdrawalId);
+                            alert('Withdrawal rejected and funds returned to user.');
                             loadFinancialData(); // Refresh data
                         } catch(err) { /* handled in Api.fetch */ }
                     }
@@ -266,12 +272,12 @@
                 try {
                     const data = await Api.getFinancialData();
                     allTransactions = data.transactions;
-                    allPayouts = data.payouts;
+                    allWithdrawals = data.payouts; // The backend sends withdrawal requests in the 'payouts' key
                     renderTransactions(allTransactions);
-                    renderPayouts(allPayouts);
+                    renderWithdrawals(allWithdrawals);
                 } catch (error) {
                     transactionTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-red-500">Failed to load transaction data.</td></tr>`;
-                    payoutTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-red-500">Failed to load payout data.</td></tr>`;
+                    withdrawalTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Failed to load withdrawal data.</td></tr>`;
                 }
             }
 

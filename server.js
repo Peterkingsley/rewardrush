@@ -115,7 +115,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// --- [NEW] FINANCIAL ADMIN API ENDPOINTS ---
+// --- [NEW & UPDATED] FINANCIAL ADMIN API ENDPOINTS ---
 app.get('/api/admin/financial-summary', requireAdmin, async (req, res) => {
     try {
         const transactionsQuery = `
@@ -123,16 +123,17 @@ app.get('/api/admin/financial-summary', requireAdmin, async (req, res) => {
             UNION ALL
             (SELECT c.affiliate_username AS username, 'Job Conversion: ' || ap.title AS description, c.payout_amount AS amount, 'credit' as type, c.timestamp AS date FROM conversions c JOIN affiliate_programs ap ON c.program_id = ap.id)
             UNION ALL
-            (SELECT u.username, 'Withdrawal' AS description, rc.amount, 'debit' as type, rc.created_at AS date FROM redeemable_codes rc JOIN users u ON rc.user_id = u.id WHERE rc.is_used = true)
+            (SELECT u.username, 'Withdrawal' AS description, w.amount, 'debit' as type, w.created_at AS date FROM withdrawals w JOIN users u ON w.user_id = u.id WHERE w.status = 'approved')
             ORDER BY date DESC;
         `;
         
+        // This now fetches from the 'withdrawals' table
         const payoutsQuery = `
-            SELECT rc.id, u.username, rc.amount, rc.code, rc.created_at
-            FROM redeemable_codes rc
-            JOIN users u ON rc.user_id = u.id
-            WHERE rc.is_used = false
-            ORDER BY rc.created_at ASC;
+            SELECT w.id, u.username, w.amount, w.wallet_address, w.chain, w.status, w.created_at
+            FROM withdrawals w
+            JOIN users u ON w.user_id = u.id
+            WHERE w.status = 'pending'
+            ORDER BY w.created_at ASC;
         `;
 
         const [transactionsResult, payoutsResult] = await Promise.all([
@@ -142,7 +143,7 @@ app.get('/api/admin/financial-summary', requireAdmin, async (req, res) => {
 
         res.json({
             transactions: transactionsResult.rows,
-            payouts: payoutsResult.rows
+            payouts: payoutsResult.rows // Renamed to payouts for consistency, but this is withdrawals
         });
 
     } catch (err) {
@@ -151,48 +152,53 @@ app.get('/api/admin/financial-summary', requireAdmin, async (req, res) => {
     }
 });
 
-app.post('/api/admin/payouts/approve', requireAdmin, async (req, res) => {
-    const { payoutId } = req.body;
+// UPDATED: Approve withdrawal endpoint
+app.post('/api/admin/withdrawals/approve', requireAdmin, async (req, res) => {
+    const { withdrawalId, transactionHash } = req.body;
+    if (!withdrawalId || !transactionHash) {
+        return res.status(400).json({ error: 'Withdrawal ID and Transaction Hash are required.' });
+    }
     try {
         const result = await pool.query(
-            'UPDATE redeemable_codes SET is_used = true WHERE id = $1 AND is_used = false RETURNING *',
-            [payoutId]
+            "UPDATE withdrawals SET status = 'approved', transaction_hash = $1 WHERE id = $2 AND status = 'pending' RETURNING *",
+            [transactionHash, withdrawalId]
         );
         if (result.rowCount === 0) {
-            return res.status(404).json({ error: 'Payout not found or already processed.' });
+            return res.status(404).json({ error: 'Withdrawal not found or already processed.' });
         }
-        res.json({ success: true, message: 'Payout approved.' });
+        res.json({ success: true, message: 'Withdrawal approved and transaction hash stored.' });
     } catch (err) {
-        console.error('Error approving payout:', err);
-        res.status(500).json({ error: 'Failed to approve payout.' });
+        console.error('Error approving withdrawal:', err);
+        res.status(500).json({ error: 'Failed to approve withdrawal.' });
     }
 });
 
-app.post('/api/admin/payouts/reject', requireAdmin, async (req, res) => {
-    const { payoutId } = req.body;
+// UPDATED: Reject withdrawal endpoint
+app.post('/api/admin/withdrawals/reject', requireAdmin, async (req, res) => {
+    const { withdrawalId } = req.body;
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
-        // Get the payout details before deleting
-        const payoutResult = await client.query('SELECT user_id, amount FROM redeemable_codes WHERE id = $1 FOR UPDATE', [payoutId]);
-        if (payoutResult.rows.length === 0) {
-            throw new Error('Payout not found.');
+        // Get the withdrawal details before updating
+        const withdrawalResult = await client.query("SELECT user_id, amount FROM withdrawals WHERE id = $1 AND status = 'pending' FOR UPDATE", [withdrawalId]);
+        if (withdrawalResult.rows.length === 0) {
+            throw new Error('Withdrawal not found or already processed.');
         }
-        const payout = payoutResult.rows[0];
+        const withdrawal = withdrawalResult.rows[0];
 
-        // Refund the user
-        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [payout.amount, payout.user_id]);
+        // Refund the user's points
+        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [withdrawal.amount, withdrawal.user_id]);
 
-        // Delete the redeemable code
-        await client.query('DELETE FROM redeemable_codes WHERE id = $1', [payoutId]);
+        // Mark the withdrawal as rejected
+        await client.query("UPDATE withdrawals SET status = 'rejected' WHERE id = $1", [withdrawalId]);
 
         await client.query('COMMIT');
-        res.json({ success: true, message: 'Payout rejected and funds returned to user.' });
+        res.json({ success: true, message: 'Withdrawal rejected and funds returned to user.' });
     } catch (err) {
         await client.query('ROLLBACK');
-        console.error('Error rejecting payout:', err);
-        res.status(500).json({ error: 'Failed to reject payout.' });
+        console.error('Error rejecting withdrawal:', err);
+        res.status(500).json({ error: 'Failed to reject withdrawal.' });
     } finally {
         client.release();
     }
@@ -210,7 +216,7 @@ app.get('/api/dashboard-stats', requireAdmin, async (req, res) => {
             buildParticipants: pool.query('SELECT COUNT(DISTINCT user_id) FROM bookings'),
             jobEarnings: pool.query(`SELECT SUM(payout_amount) as total FROM conversions`),
             questEarnings: pool.query(`SELECT SUM(public.parse_payout(q.reward)) as total FROM user_quests uq JOIN quests q ON uq.quest_id = q.id`),
-            totalWithdrawn: pool.query(`SELECT SUM(amount) as total FROM redeemable_codes WHERE is_used = true`),
+            totalWithdrawn: pool.query(`SELECT SUM(amount) as total FROM withdrawals WHERE status = 'approved'`),
             userRegistrationGrowth: pool.query(`SELECT date_trunc('month', created_at) as month, COUNT(*) as count FROM users WHERE created_at IS NOT NULL GROUP BY 1 ORDER BY 1`),
             questCompletions: pool.query(`SELECT COUNT(*) FROM user_quests`),
             totalQuests: pool.query(`SELECT COUNT(*) FROM quests`)
@@ -1006,13 +1012,13 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             return { name: skill.skill_name, progress };
         }));
 
-        // 4. Fetch transaction history
+        // 4. Fetch transaction history (UPDATED to include withdrawals)
         const historyQuery = `
-            (SELECT 'Completed: ' || q.title AS desc, parse_payout(q.reward) AS amount, uq.completed_at AS date, 'credit' as type FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
+            (SELECT 'Completed: ' || q.title AS desc, parse_payout(q.reward) AS amount, uq.completed_at AS date, 'credit' as type, NULL as status, NULL as transaction_hash FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
             UNION ALL
-            (SELECT 'Conversion: ' || ap.title AS desc, c.payout_amount AS amount, c.timestamp AS date, 'credit' as type FROM conversions c JOIN affiliate_programs ap ON c.program_id = ap.id WHERE c.affiliate_username = $2)
+            (SELECT 'Conversion: ' || ap.title AS desc, c.payout_amount AS amount, c.timestamp AS date, 'credit' as type, NULL as status, NULL as transaction_hash FROM conversions c JOIN affiliate_programs ap ON c.program_id = ap.id WHERE c.affiliate_username = $2)
             UNION ALL
-            (SELECT 'Withdrawal' AS desc, rc.amount, rc.created_at AS date, 'debit' as type FROM redeemable_codes rc WHERE rc.user_id = $1)
+            (SELECT 'Withdrawal' AS desc, w.amount, w.created_at AS date, 'debit' as type, w.status, w.transaction_hash FROM withdrawals w WHERE w.user_id = $1)
             ORDER BY date DESC LIMIT 20;
         `;
         const transactionHistoryResult = await pool.query(historyQuery, [user.id, user.username]);
@@ -1020,7 +1026,9 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             type: t.type,
             amount: parseFloat(t.amount).toFixed(2),
             desc: t.desc,
-            date: new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            date: new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            status: t.status,
+            transaction_hash: t.transaction_hash
         }));
         
         // 5. Fetch expert bookings
@@ -1148,12 +1156,14 @@ app.get('/quest-overview', requireLogin, async (req, res) => {
         const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [userId]);
         const user = userResult.rows[0];
         const completedQuestsResult = await pool.query('SELECT * FROM user_quests WHERE user_id = $1', [user.id]);
-        const redeemableCodesResult = await pool.query('SELECT COUNT(*) FROM redeemable_codes WHERE user_id = $1 AND is_used = FALSE', [user.id]);
+        // Updated to query the new withdrawals table
+        const pendingWithdrawalsResult = await pool.query("SELECT COUNT(*) FROM withdrawals WHERE user_id = $1 AND status = 'pending'", [user.id]);
 
         res.json({
             totalEarnings: user.points || 0,
             questsCompleted: completedQuestsResult.rows,
-            redeemableCodes: parseInt(redeemableCodesResult.rows[0].count, 10)
+            // This now represents pending withdrawals, not redeemable codes
+            pendingWithdrawals: parseInt(pendingWithdrawalsResult.rows[0].count, 10)
         });
     } catch (err) {
         console.error('Quest-overview error:', err);
@@ -1161,13 +1171,17 @@ app.get('/quest-overview', requireLogin, async (req, res) => {
     }
 });
 
+// --- [REWRITTEN] /withdraw ENDPOINT ---
 app.post('/withdraw', requireLogin, async (req, res) => {
-    const { amount } = req.body;
-    const userDbId = req.user.id; 
+    const { amount, walletAddress, chain } = req.body;
+    const userDbId = req.user.id;
     const withdrawalAmount = parseFloat(amount);
 
     if (isNaN(withdrawalAmount) || withdrawalAmount <= 0) {
         return res.status(400).json({ error: 'Invalid withdrawal amount.' });
+    }
+    if (!walletAddress || !chain) {
+        return res.status(400).json({ error: 'Wallet address and chain are required.' });
     }
 
     const client = await pool.connect();
@@ -1182,43 +1196,42 @@ app.post('/withdraw', requireLogin, async (req, res) => {
             return res.status(400).json({ error: 'Insufficient balance.' });
         }
 
+        // Deduct points from user
         await client.query('UPDATE users SET points = points - $1 WHERE id = $2', [withdrawalAmount, userDbId]);
 
-        const code = crypto.randomBytes(8).toString('hex').toUpperCase();
+        // Insert into the new withdrawals table
         await client.query(
-            'INSERT INTO redeemable_codes (user_id, code, amount) VALUES ($1, $2, $3)',
-            [userDbId, code, withdrawalAmount]
+            'INSERT INTO withdrawals (user_id, amount, wallet_address, chain, status) VALUES ($1, $2, $3, $4, $5)',
+            [userDbId, withdrawalAmount, walletAddress, chain, 'pending']
         );
 
         await client.query('COMMIT');
-        res.json({ message: 'Withdrawal successful!', code });
+        res.json({ message: 'Withdrawal request submitted successfully! It is now pending approval.' });
 
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Withdrawal error:', err);
-        res.status(500).json({ error: 'Failed to process withdrawal.' });
+        res.status(500).json({ error: 'Failed to process withdrawal request.' });
     } finally {
         client.release();
     }
 });
 
-app.get('/redeemable-codes', requireLogin, async (req, res) => {
-    const userId = req.query.userId;
-     if (!userId || userId !== req.session.userId) {
-        return res.status(400).json({ error: 'Invalid user ID' });
-    }
+// --- [NEW] /withdrawal-history ENDPOINT ---
+app.get('/withdrawal-history', requireLogin, async (req, res) => {
+    const userId = req.user.id;
     try {
-        const userResult = await pool.query('SELECT id FROM users WHERE username = $1', [userId]);
-        if (userResult.rows.length === 0) return res.status(404).json({error: "User not found"});
-        const userDbId = userResult.rows[0].id;
-        
-        const codesResult = await pool.query('SELECT code, amount, created_at FROM redeemable_codes WHERE user_id = $1 AND is_used = FALSE ORDER BY created_at DESC', [userDbId]);
-        res.json({ codes: codesResult.rows });
+        const historyResult = await pool.query(
+            'SELECT amount, status, transaction_hash, created_at FROM withdrawals WHERE user_id = $1 ORDER BY created_at DESC', 
+            [userId]
+        );
+        res.json({ history: historyResult.rows });
     } catch (err) {
-        console.error('Error fetching redeemable codes:', err);
-        res.status(500).json({ error: 'Failed to fetch redeemable codes.' });
+        console.error('Error fetching withdrawal history:', err);
+        res.status(500).json({ error: 'Failed to fetch withdrawal history.' });
     }
 });
+
 
 
 app.get('/quests', requireLogin, async (req, res) => {
