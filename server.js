@@ -260,6 +260,40 @@ app.get('/api/users-data', requireAdmin, async (req, res) => {
     }
 });
 
+// --- QUESTS PAGE API ENDPOINT ---
+app.get('/api/quests-data', requireAdmin, async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                q.id,
+                q.title,
+                q.reward,
+                q.status,
+                COALESCE(uq.participants_count, 0) AS participants
+            FROM 
+                quests q
+            LEFT JOIN (
+                SELECT 
+                    quest_id, 
+                    COUNT(DISTINCT user_id) as participants_count 
+                FROM 
+                    user_quests 
+                GROUP BY 
+                    quest_id
+            ) uq ON q.id = uq.quest_id
+            ORDER BY 
+                q.id ASC;
+        `;
+
+        const questsResult = await pool.query(query);
+        
+        res.json({ quests: questsResult.rows });
+
+    } catch (err) {
+        console.error('Error fetching quests data:', err);
+        res.status(500).json({ error: 'Failed to fetch quests data' });
+    }
+});
 
 // --- BUILD PAGE API ENDPOINT ---
 app.get('/api/build-data', requireLogin, async (req, res) => {
@@ -1545,3 +1579,4 @@ app.use((req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
 });
+api/users-data
