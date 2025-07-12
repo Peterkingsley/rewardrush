@@ -1426,6 +1426,91 @@ app.get('/affiliate-programs', requireLogin, async (req, res) => {
     }
 });
 
+// --- [NEW] ADMIN JOBS (AFFILIATE PROGRAMS) API ENDPOINTS ---
+app.get('/api/admin/jobs', requireAdmin, async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                ap.*,
+                COALESCE(ac.click_count, 0) AS participants
+            FROM 
+                affiliate_programs ap
+            LEFT JOIN (
+                SELECT 
+                    program_id, 
+                    COUNT(*) as click_count 
+                FROM 
+                    affiliate_clicks 
+                GROUP BY 
+                    program_id
+            ) ac ON ap.id = ac.program_id
+            ORDER BY 
+                ap.id ASC;
+        `;
+        const result = await pool.query(query);
+        res.json({ programs: result.rows });
+    } catch (err) {
+        console.error('Error fetching admin jobs data:', err);
+        res.status(500).json({ error: 'Failed to fetch jobs data' });
+    }
+});
+
+app.post('/api/admin/jobs', requireAdmin, async (req, res) => {
+    const { title, category, payout, destination_url, guidelines, details, pros, cons, status } = req.body;
+    try {
+        const newProgram = await pool.query(
+            'INSERT INTO affiliate_programs (title, category, payout, destination_url, guidelines, details, pros, cons, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+            [title, category, payout, destination_url, guidelines, details, pros, cons, status || 'Active']
+        );
+        res.status(201).json(newProgram.rows[0]);
+    } catch (err) {
+        console.error('Error creating affiliate program:', err);
+        res.status(500).json({ error: 'Failed to create affiliate program' });
+    }
+});
+
+app.put('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { title, category, payout, destination_url, guidelines, details, pros, cons, status } = req.body;
+    try {
+        const updatedProgram = await pool.query(
+            'UPDATE affiliate_programs SET title = $1, category = $2, payout = $3, destination_url = $4, guidelines = $5, details = $6, pros = $7, cons = $8, status = $9 WHERE id = $10 RETURNING *',
+            [title, category, payout, destination_url, guidelines, details, pros, cons, status, id]
+        );
+        if (updatedProgram.rows.length === 0) {
+            return res.status(404).json({ error: 'Affiliate program not found' });
+        }
+        res.json(updatedProgram.rows[0]);
+    } catch (err) {
+        console.error('Error updating affiliate program:', err);
+        res.status(500).json({ error: 'Failed to update affiliate program' });
+    }
+});
+
+app.delete('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+        await client.query('DELETE FROM affiliate_clicks WHERE program_id = $1', [id]);
+        await client.query('DELETE FROM conversions WHERE program_id = $1', [id]);
+        const deleteOp = await client.query('DELETE FROM affiliate_programs WHERE id = $1 RETURNING *', [id]);
+        await client.query('COMMIT');
+        
+        if (deleteOp.rowCount === 0) {
+            return res.status(404).json({ error: 'Affiliate program not found' });
+        }
+        res.json({ message: 'Affiliate program and related data deleted successfully' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Error deleting affiliate program:', err);
+        res.status(500).json({ error: 'Failed to delete affiliate program' });
+    } finally {
+        client.release();
+    }
+});
+
+
 app.get('/track', async (req, res) => {
     const { programId, affiliate_id } = req.query;
     if (!programId || !affiliate_id) {
