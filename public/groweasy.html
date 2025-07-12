@@ -499,7 +499,8 @@
                 checkSession: () => ApiService.fetch('/check-session'),
                 getProfile: (userId) => ApiService.fetch(`/api/profile/${userId}`),
                 getQuests: () => ApiService.fetch('/quests'),
-                getQuestQuestions: (questId) => ApiService.fetch(`/quests/${questId}/questions`),
+                // [FIXED] Added /api/ prefix to the URL
+                getQuestQuestions: (questId) => ApiService.fetch(`/api/quests/${questId}/questions`),
                 submitQuiz: (questId, answers) => ApiService.fetch(`/submit-quiz/${questId}`, {
                     method: 'POST',
                     body: JSON.stringify({ answers }),
@@ -898,7 +899,8 @@
                             id: questId,
                             title: questData.title,
                             description: questData.description,
-                            questions: questionsData.questions
+                            questions: questionsData.questions,
+                            backgroundUrl: questData.quiz_background_url // [NEW] Get background URL
                         };
 
                         this.currentQuestionIndex = 0;
@@ -919,19 +921,25 @@
                     const quizBackground = document.getElementById('quiz-background');
 
                     quizBackground.innerHTML = '';
-                    const backgroundVideos = [
-                        'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4',
-                        'https://test-videos.co.uk/vids/sintel/mp4/h264/360/Sintel_360_10s_1MB.mp4',
-                        'https://test-videos.co.uk/vids/elephantsdream/mp4/h264/360/Elephants_Dream_360_10s_1MB.mp4'
-                    ];
-                    const videoUrl = backgroundVideos[this.currentQuestionIndex % backgroundVideos.length];
+                    // [UPDATED] Use dynamic background
+                    const backgroundUrl = this.currentQuiz.backgroundUrl;
+                    
+                    if (backgroundUrl) {
+                        if (backgroundUrl.match(/\.(jpeg|jpg|gif|png)$/) != null) {
+                            const img = document.createElement('img');
+                            img.src = backgroundUrl;
+                            img.className = 'absolute inset-0 w-full h-full object-cover';
+                            quizBackground.appendChild(img);
+                        } else if (backgroundUrl.match(/\.(mp4|webm|ogg)$/) != null) {
+                            const video = document.createElement('video');
+                            video.src = backgroundUrl;
+                            video.className = 'absolute inset-0 w-full h-full object-cover';
+                            video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true;
+                            quizBackground.appendChild(video);
+                            video.play().catch(error => console.error("Video autoplay prevented:", error));
+                        }
+                    }
 
-                    const video = document.createElement('video');
-                    video.src = videoUrl;
-                    video.className = 'absolute inset-0 w-full h-full object-cover';
-                    video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true;
-                    quizBackground.appendChild(video);
-                    video.play().catch(error => console.error("Video autoplay prevented:", error));
 
                     quizContent.innerHTML = `<p class="text-lg font-semibold text-white">${question.question_text}</p>`;
                     quizOptions.innerHTML = '';
