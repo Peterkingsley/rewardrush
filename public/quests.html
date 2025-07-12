@@ -125,7 +125,7 @@
         </div>
     </div>
 
-    <!-- Add/Edit Quest Modal -->
+    <!-- [UPDATED] Add/Edit Quest Modal -->
     <div id="quest-modal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center p-4 z-50">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto">
             <h2 id="modal-title" class="text-2xl font-bold mb-6">Add Quest</h2>
@@ -155,7 +155,7 @@
                         <input type="datetime-local" id="quest-end-time" class="w-full p-3 border border-gray-300 rounded-lg">
                     </div>
                 </div>
-                <div class="mb-6">
+                <div class="mb-4">
                     <label for="quest-status" class="block text-gray-700 text-sm font-bold mb-2">Status</label>
                     <select id="quest-status" class="w-full p-3 border border-gray-300 rounded-lg">
                         <option value="Available">Available</option>
@@ -164,7 +164,12 @@
                         <option value="Expired">Expired</option>
                     </select>
                 </div>
-                <!-- [REMOVED] File upload for quiz background is now handled on the server -->
+                <!-- [NEW] File upload for quiz background -->
+                <div class="mb-6">
+                    <label for="quest-background" class="block text-gray-700 text-sm font-bold mb-2">Quiz Background (Image/Video)</label>
+                    <input type="file" id="quest-background" name="questBackground" class="w-full p-2 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" accept="image/*,video/*">
+                    <span id="current-background" class="text-xs text-gray-500 mt-1 block"></span>
+                </div>
                 <div class="flex justify-end space-x-4">
                     <button type="button" id="cancel-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Cancel</button>
                     <button type="submit" id="save-btn" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700">Save</button>
@@ -260,6 +265,8 @@
             const questStatusInput = document.getElementById('quest-status');
             const questStartTimeInput = document.getElementById('quest-start-time');
             const questEndTimeInput = document.getElementById('quest-end-time');
+            const questBackgroundInput = document.getElementById('quest-background'); // [NEW]
+            const currentBackgroundSpan = document.getElementById('current-background'); // [NEW]
             
             // Questions Modal Elements
             const questionsModal = document.getElementById('questions-modal');
@@ -309,7 +316,7 @@
                         <tr data-id="${quest.id}">
                             <td class="py-3 px-4 border-b border-gray-200"><span class="font-medium">${quest.title}</span></td>
                             <td class="py-3 px-4 border-b border-gray-200">${quest.reward}</td>
-                            <td class="py-3 px-4 border-b border-gray-200 text-center">${quest.participants_count}</td>
+                            <td class="py-3 px-4 border-b border-gray-200 text-center">${quest.participants}</td>
                             <td class="py-3 px-4 border-b border-gray-200"><span class="px-2 py-1 font-semibold leading-tight text-sm rounded-full ${statusColor}">${quest.status}</span></td>
                             <td class="py-3 px-4 border-b border-gray-200">
                                 <div class="flex items-center space-x-2">
@@ -326,6 +333,7 @@
 
             function openQuestModal(quest = null) {
                 questForm.reset();
+                currentBackgroundSpan.textContent = ''; // [NEW] Clear current background text
                 if (quest) {
                     modalTitle.textContent = 'Edit Quest';
                     questIdInput.value = quest.id;
@@ -335,6 +343,10 @@
                     questStatusInput.value = quest.status;
                     questStartTimeInput.value = quest.start_time ? new Date(quest.start_time).toISOString().slice(0, 16) : '';
                     questEndTimeInput.value = quest.end_time ? new Date(quest.end_time).toISOString().slice(0, 16) : '';
+                    // [NEW] Show current background if it exists
+                    if (quest.quiz_background_url) {
+                        currentBackgroundSpan.textContent = `Current: ${quest.quiz_background_url.split('/').pop()}`;
+                    }
                 } else {
                     modalTitle.textContent = 'Add Quest';
                     questIdInput.value = '';
@@ -349,30 +361,32 @@
             addQuestBtn.addEventListener('click', () => openQuestModal());
             cancelBtn.addEventListener('click', closeQuestModal);
 
-            // [UPDATED] Form submission to send JSON instead of FormData
+            // [UPDATED] Form submission to handle file upload
             questForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const id = questIdInput.value;
                 
-                const questData = {
-                    title: questTitleInput.value,
-                    description: questDescriptionInput.value,
-                    reward: questRewardInput.value,
-                    status: questStatusInput.value,
-                    start_time: questStartTimeInput.value || null,
-                    end_time: questEndTimeInput.value || null,
-                };
+                const formData = new FormData();
+                formData.append('title', questTitleInput.value);
+                formData.append('description', questDescriptionInput.value);
+                formData.append('reward', questRewardInput.value);
+                formData.append('status', questStatusInput.value);
+                formData.append('start_time', questStartTimeInput.value || null);
+                formData.append('end_time', questEndTimeInput.value || null);
+
+                if (questBackgroundInput.files.length > 0) {
+                    formData.append('questBackground', questBackgroundInput.files[0]);
+                }
 
                 const url = id ? `/api/quests/${id}` : '/api/quests';
                 const method = id ? 'PUT' : 'POST';
 
                 try {
+                    // Note: When using FormData with fetch, you DO NOT set the Content-Type header manually.
+                    // The browser does it automatically with the correct boundary.
                     const response = await fetch(url, {
                         method: method,
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(questData) 
+                        body: formData 
                     });
                     const result = await response.json();
                     if (!response.ok) throw new Error(result.error || 'Failed to save quest');
