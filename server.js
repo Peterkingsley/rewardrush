@@ -841,7 +841,7 @@ app.get('/check-session', (req, res) => {
 });
 
 app.post('/signup', async (req, res) => {
-    const { username, password, fullName, email } = req.body;
+    const { username, password, fullName, email, referralCode } = req.body;
     if (!username || !password || !fullName || !email) {
         return res.status(400).json({ error: 'All fields are required' });
     }
@@ -852,15 +852,42 @@ app.post('/signup', async (req, res) => {
     if (!emailRegex.test(email)) return res.status(400).json({ error: 'Invalid email' });
     if (password.length < 6) return res.status(400).json({ error: 'Password too short' });
     
+    const client = await pool.connect();
     try {
-        const existingUserResult = await pool.query('SELECT * FROM users WHERE username = $1 OR email = $2', [username, email]);
+        await client.query('BEGIN');
+
+        const existingUserResult = await client.query('SELECT * FROM users WHERE username = $1 OR email = $2', [username, email]);
         if (existingUserResult.rows.length > 0) {
             return res.status(400).json({ error: 'Username or email already exists' });
         }
+
+        let referrerId = null;
+        if (referralCode) {
+            const referrerResult = await client.query('SELECT id FROM users WHERE referral_code = $1', [referralCode]);
+            if (referrerResult.rows.length > 0) {
+                referrerId = referrerResult.rows[0].id;
+            }
+        }
+
         const passwordHash = await bcrypt.hash(password, saltRounds);
-        const newUserQuery = `INSERT INTO users (username, email, password_hash, full_name) VALUES ($1, $2, $3, $4) RETURNING id, username;`;
-        const newUserResult = await pool.query(newUserQuery, [username, email, passwordHash, fullName]);
-        const { id, username: newUsername } = newUserResult.rows[0];
+        const ownReferralCode = crypto.randomBytes(8).toString('hex');
+
+        const newUserQuery = `INSERT INTO users (username, email, password_hash, full_name, referral_code, referrer_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username;`;
+        const newUserResult = await client.query(newUserQuery, [username, email, passwordHash, fullName, ownReferralCode, referrerId]);
+        const { id: newUserId, username: newUsername } = newUserResult.rows[0];
+
+        if (referrerId) {
+            const referralInsertQuery = `INSERT INTO referrals (referrer_id, referred_id, type, status) VALUES ($1, $2, 'platform', 'completed') RETURNING id`;
+            const referralResult = await client.query(referralInsertQuery, [referrerId, newUserId]);
+            const newReferralId = referralResult.rows[0].id;
+
+            // Award bonus to referrer
+            const referralBonus = 5.00; // Example bonus
+            await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [referralBonus, referrerId]);
+            await client.query('INSERT INTO referral_earnings (user_id, referral_id, amount) VALUES ($1, $2, $3)', [referrerId, newReferralId, referralBonus]);
+        }
+        
+        await client.query('COMMIT');
 
         req.session.userId = newUsername;
         req.session.isAdmin = false;
@@ -868,8 +895,11 @@ app.post('/signup', async (req, res) => {
         
         res.status(201).json({ message: 'Signed up', userId: newUsername });
     } catch (err) {
+        await client.query('ROLLBACK');
         console.error('Error during signup:', err);
         res.status(500).json({error: 'Server error during registration.'});
+    } finally {
+        client.release();
     }
 });
 
@@ -1453,6 +1483,21 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
                 'INSERT INTO user_quests (user_id, quest_id, completed_at) VALUES ($1, $2, NOW())',
                 [userDbId, questId]
             );
+             // Handle quest referral
+            const referralResult = await client.query(
+                `UPDATE referrals SET status = 'completed' 
+                 WHERE referred_id = $1 AND quest_id = $2 AND status = 'pending' 
+                 RETURNING id, referrer_id`,
+                [userDbId, questId]
+            );
+
+            if (referralResult.rows.length > 0) {
+                const { id: referralId, referrer_id: referrerId } = referralResult.rows[0];
+                const referralBonus = 2.00; // Example quest referral bonus
+                await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [referralBonus, referrerId]);
+                await client.query('INSERT INTO referral_earnings (user_id, referral_id, amount) VALUES ($1, $2, $3)', [referrerId, referralId, referralBonus]);
+            }
+
             await client.query('COMMIT');
 
             const referralLink = `${process.env.BASE_URL || `http://localhost:${PORT}`}/referral?questId=${questId}&referrerId=${encodeURIComponent(req.user.username)}`;
@@ -1487,33 +1532,81 @@ app.get('/quests/:questId/responses', requireAdmin, async (req, res) => {
     res.json({});
 });
 
-app.get('/referrals', requireLogin, async (req, res) => {
-     const userId = req.query.userId;
-     if (!userId || userId !== req.session.userId) {
-        return res.status(400).json({ error: 'Invalid user ID' });
+app.get('/api/referrals', requireLogin, async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const referralStatsQuery = `
+            SELECT 
+                (SELECT COUNT(*) FROM referrals WHERE referrer_id = $1) as total_referrals,
+                (SELECT SUM(amount) FROM referral_earnings WHERE user_id = $1) as total_earnings
+        `;
+        const referralStatsResult = await pool.query(referralStatsQuery, [userId]);
+
+        const referralsQuery = `
+            SELECT r.type, r.status, u.username as referred_username, q.title as quest_title 
+            FROM referrals r 
+            JOIN users u ON r.referred_id = u.id 
+            LEFT JOIN quests q ON r.quest_id = q.id 
+            WHERE r.referrer_id = $1 
+            ORDER BY r.created_at DESC
+        `;
+        const referralsResult = await pool.query(referralsQuery, [userId]);
+
+        res.json({
+            stats: referralStatsResult.rows[0],
+            referrals: referralsResult.rows
+        });
+    } catch (err) {
+        console.error('Error fetching referral data:', err);
+        res.status(500).json({ error: 'Failed to fetch referral data' });
     }
-    res.json({});
 });
+
 
 app.get('/generate-referral-link', requireLogin, async (req, res) => {
     const { questId } = req.query;
-    const userId = req.user.username;
-    if (!questId || !userId) {
-        return res.status(400).json({ error: 'Invalid quest or user ID' });
+    const user = req.user;
+    if (!user.referral_code) {
+        return res.status(400).json({ error: 'User does not have a referral code.' });
     }
     const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
-    const referralLink = `${baseUrl}/referral?questId=${questId}&referrerId=${encodeURIComponent(userId)}`;
+    let referralLink = `${baseUrl}/signup.html?referralCode=${user.referral_code}`;
+    if (questId) {
+        referralLink += `&questId=${questId}`;
+    }
     res.json({ referralLink });
 });
 
 app.get('/referral', async (req, res) => {
-    const questId = parseInt(req.query.questId);
-    const referrerId = req.query.referrerId;
+    const { questId, referralCode } = req.query;
     try {
+        if (referralCode) {
+            const referrerResult = await pool.query('SELECT id FROM users WHERE referral_code = $1', [referralCode]);
+            if (referrerResult.rows.length > 0) {
+                const referrerId = referrerResult.rows[0].id;
+                // If a user is logged in, create a pending quest referral
+                if (req.session.userId) {
+                    const loggedInUserResult = await pool.query('SELECT id FROM users WHERE username = $1', [req.session.userId]);
+                    const loggedInUserId = loggedInUserResult.rows[0].id;
+                    await pool.query(
+                        `INSERT INTO referrals (referrer_id, referred_id, quest_id, type) 
+                         VALUES ($1, $2, $3, 'quest') 
+                         ON CONFLICT(referrer_id, referred_id, quest_id) DO NOTHING`,
+                        [referrerId, loggedInUserId, questId]
+                    );
+                }
+            }
+        }
+
         const questResult = await pool.query('SELECT * FROM quests WHERE id = $1', [questId]);
         const quest = questResult.rows[0];
         if (!quest || !quest.quiz_page) return res.status(404).json({ error: 'Quest not found' });
-        res.redirect(quest.quiz_page);
+        
+        let redirectUrl = quest.quiz_page;
+        if (referralCode) {
+            redirectUrl += `?referralCode=${referralCode}`;
+        }
+        res.redirect(redirectUrl);
     } catch (err) {
         console.error('Referral error:', err);
         res.status(500).json({ error: 'Failed to process referral' });

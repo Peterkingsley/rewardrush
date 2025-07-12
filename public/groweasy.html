@@ -271,7 +271,7 @@
                 <!-- Dashboard Overview -->
                 <div class="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-6 mb-6 reveal">
                     <!-- Card 1: Invite -->
-                    <div class="bg-white py-3 px-2 rounded-lg shadow-md flex flex-col items-center justify-center text-center">
+                    <div id="invite-btn" class="bg-white py-3 px-2 rounded-lg shadow-md flex flex-col items-center justify-center text-center cursor-pointer">
                         <i class="fas fa-user-plus text-purple-500 text-lg mb-1"></i>
                         <p class="text-gray-500 text-xs font-medium">Invite</p>
                     </div>
@@ -434,6 +434,42 @@
         </div>
     </div>
     
+    <!-- Referral Modal -->
+    <div id="referral-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="modal-content-wrapper bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 transform transition-transform scale-95">
+            <h2 class="text-xl font-bold mb-4">My Referrals</h2>
+            <div id="referral-stats" class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <p class="text-sm text-gray-500">Total Referrals</p>
+                    <p id="total-referrals" class="text-2xl font-bold">0</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Total Earnings</p>
+                    <p id="total-earnings" class="text-2xl font-bold">$0.00</p>
+                </div>
+            </div>
+            <h3 class="text-lg font-bold mb-2">Referral History</h3>
+            <div class="overflow-auto max-h-64">
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="text-left p-2 font-semibold">User</th>
+                            <th class="text-left p-2 font-semibold">Type</th>
+                            <th class="text-left p-2 font-semibold">Quest</th>
+                            <th class="text-left p-2 font-semibold">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="referral-history-list">
+                        <!-- Referral history will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-end mt-6">
+                <button id="close-referral-modal-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Custom Notification/Toast -->
     <div id="notification-toast" class="fixed bottom-24 md:bottom-8 right-8 bg-gray-800 text-white py-3 px-6 rounded-lg shadow-xl z-50 hidden">
         <p id="notification-message">Notification message</p>
@@ -499,7 +535,6 @@
                 checkSession: () => ApiService.fetch('/check-session'),
                 getProfile: (userId) => ApiService.fetch(`/api/profile/${userId}`),
                 getQuests: () => ApiService.fetch('/quests'),
-                // [FIXED] Added /api/ prefix to the URL
                 getQuestQuestions: (questId) => ApiService.fetch(`/api/quests/${questId}/questions`),
                 submitQuiz: (questId, answers) => ApiService.fetch(`/submit-quiz/${questId}`, {
                     method: 'POST',
@@ -509,9 +544,8 @@
                     method: 'POST',
                     body: JSON.stringify({ amount, walletAddress, chain }),
                 }),
-                // The /api/profile endpoint now provides all transaction history.
-                // This specific endpoint is no longer needed but kept for reference.
-                getWithdrawalHistory: () => ApiService.fetch('/withdrawal-history'),
+                getReferrals: () => ApiService.fetch('/api/referrals'),
+                generateReferralLink: (questId) => ApiService.fetch(`/generate-referral-link?questId=${questId}`),
             };
 
             // Encapsulate all logic in an App object
@@ -520,13 +554,13 @@
                 user: {
                     name: '',
                     balance: 0.00,
-                    transactions: [], // This will hold ALL transactions (quests, withdrawals, etc.)
+                    transactions: [],
                 },
                 state: {
                     userId: null,
                     isBalanceVisible: true,
-                    activeHistoryTab: 'all', // 'all', 'quests', or 'withdrawals'
-                    historyItemsToShow: 4, // [NEW] State for "See More"
+                    activeHistoryTab: 'all',
+                    historyItemsToShow: 4,
                 },
                 quests: [],
                 
@@ -551,16 +585,18 @@
                     quizModal: document.getElementById('quiz-modal'),
                     withdrawModal: document.getElementById('withdraw-modal'),
                     questCompleteModal: document.getElementById('quest-complete-modal'),
+                    referralModal: document.getElementById('referral-modal'),
                     notificationToast: document.getElementById('notification-toast'),
                     notificationMessage: document.getElementById('notification-message'),
                     carousel: document.getElementById('carousel'),
                     carouselDots: document.getElementById('carousel-dots'),
                     sidebarToggleBtn: document.getElementById('sidebar-toggle'),
                     historyBtn: document.getElementById('history-btn'),
+                    inviteBtn: document.getElementById('invite-btn'),
                     historySection: document.getElementById('history-section'),
                     historyTabs: document.querySelectorAll('.history-tab-btn'),
                     transactionHistoryList: document.getElementById('transaction-history-list'),
-                    historyFooter: document.getElementById('history-footer'), // [NEW] Footer for button
+                    historyFooter: document.getElementById('history-footer'),
                     themeToggleBtn: document.getElementById('theme-toggle'),
                     themeIcon: document.getElementById('theme-icon'),
                     completionTitle: document.getElementById('completion-title'),
@@ -568,6 +604,7 @@
                     referralLinkInput: document.getElementById('referral-link'),
                     copyLinkBtn: document.getElementById('copy-link-btn'),
                     closeCompletionModalBtn: document.getElementById('close-completion-modal-btn'),
+                    closeReferralModalBtn: document.getElementById('close-referral-modal-btn'),
                 },
                 
                 // --- METHODS ---
@@ -586,7 +623,6 @@
                         }
                         this.state.userId = sessionData.userId;
 
-                        // Fetch all necessary data in parallel
                         const [profileData, questsData] = await Promise.all([
                             ApiService.getProfile(this.state.userId),
                             ApiService.getQuests(),
@@ -708,17 +744,13 @@
                          return (match && match[1]) ? parseFloat(match[1]) : 0;
                     }
 
-                    // UPDATED: Combined sorting logic
                     filteredQuests.sort((a, b) => {
-                        // Primary sort: move completed quests to the bottom
                         if (a.status === 'completed' && b.status !== 'completed') {
-                            return 1; // a comes after b
+                            return 1;
                         }
                         if (a.status !== 'completed' && b.status === 'completed') {
-                            return -1; // a comes before b
+                            return -1;
                         }
-
-                        // Secondary sort: by reward, if status is the same
                         if (sortOrder === 'high-to-low') {
                             return parseReward(b.reward) - parseReward(a.reward);
                         }
@@ -726,7 +758,7 @@
                             return parseReward(a.reward) - parseReward(b.reward);
                         }
                         
-                        return 0; // Default: no change in order
+                        return 0;
                     });
                     
                     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
@@ -745,12 +777,11 @@
                     this.renderPagination(filteredQuests.length);
                 },
 
-                // UPDATED: Now displays all transactions based on the active tab
                 displayTransactionHistory() {
                     const list = this.elements.transactionHistoryList;
                     const footer = this.elements.historyFooter;
                     list.innerHTML = '';
-                    footer.innerHTML = ''; // Clear footer on each render
+                    footer.innerHTML = '';
 
                     let transactionsToDisplay = this.user.transactions;
                     const activeTab = this.state.activeHistoryTab;
@@ -817,7 +848,6 @@
                         list.appendChild(row);
                     });
 
-                    // [NEW] Add "See More" button if needed
                     if (transactionsToDisplay.length > this.state.historyItemsToShow) {
                         const seeMoreBtn = document.createElement('button');
                         seeMoreBtn.id = 'see-more-history-btn';
@@ -900,7 +930,7 @@
                             title: questData.title,
                             description: questData.description,
                             questions: questionsData.questions,
-                            backgroundUrl: questData.quiz_background_url // [NEW] Get background URL
+                            backgroundUrl: questData.quiz_background_url
                         };
 
                         this.currentQuestionIndex = 0;
@@ -921,7 +951,6 @@
                     const quizBackground = document.getElementById('quiz-background');
 
                     quizBackground.innerHTML = '';
-                    // [UPDATED] Use dynamic background
                     const backgroundUrl = this.currentQuiz.backgroundUrl;
                     
                     if (backgroundUrl) {
@@ -1026,7 +1055,8 @@
 
                         if (result.success) {
                             const quest = this.quests.find(q => q.id === this.currentQuiz.id);
-                            this.showQuestCompletion(quest, result.referralLink);
+                            const referralLinkData = await ApiService.generateReferralLink(quest.id);
+                            this.showQuestCompletion(quest, referralLinkData.referralLink);
                             this.init(); 
                         } else {
                             this.showNotification(result.message || 'Quiz failed. Please try again later.', 'error');
@@ -1041,6 +1071,35 @@
                     this.elements.completionReward.textContent = `You've earned ${quest.reward}!`;
                     this.elements.referralLinkInput.value = referralLink;
                     this.openModal(this.elements.questCompleteModal);
+                },
+
+                async showReferralModal() {
+                    try {
+                        const referralData = await ApiService.getReferrals();
+                        document.getElementById('total-referrals').textContent = referralData.stats.total_referrals || 0;
+                        document.getElementById('total-earnings').textContent = `$${parseFloat(referralData.stats.total_earnings || 0).toFixed(2)}`;
+                        
+                        const referralList = document.getElementById('referral-history-list');
+                        referralList.innerHTML = '';
+                        if (referralData.referrals.length === 0) {
+                            referralList.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 p-4">No referral history.</td></tr>`;
+                        } else {
+                            referralData.referrals.forEach(ref => {
+                                const row = document.createElement('tr');
+                                row.className = 'border-b last:border-0';
+                                row.innerHTML = `
+                                    <td class="p-2">${ref.referred_username}</td>
+                                    <td class="p-2">${ref.type}</td>
+                                    <td class="p-2">${ref.quest_title || 'N/A'}</td>
+                                    <td class="p-2">${ref.status}</td>
+                                `;
+                                referralList.appendChild(row);
+                            });
+                        }
+                        this.openModal(this.elements.referralModal);
+                    } catch (error) {
+                        console.error('Failed to show referral modal:', error);
+                    }
                 },
 
                 openModal(modal) {
@@ -1127,11 +1186,13 @@
                     this.elements.historyBtn.addEventListener('click', () => {
                         this.elements.historySection.scrollIntoView({ behavior: 'smooth' });
                     });
+                    
+                    this.elements.inviteBtn.addEventListener('click', () => this.showReferralModal());
 
                     this.elements.historyTabs.forEach(tab => {
                         tab.addEventListener('click', () => {
                             this.state.activeHistoryTab = tab.dataset.historyTab;
-                            this.state.historyItemsToShow = 4; // [NEW] Reset count on tab change
+                            this.state.historyItemsToShow = 4;
                             this.elements.historyTabs.forEach(t => {
                                 t.classList.remove('border-purple-600', 'text-purple-600');
                                 t.classList.add('border-transparent', 'text-gray-500');
@@ -1142,7 +1203,6 @@
                         });
                     });
 
-                    // [NEW] Event delegation for "See More" button
                     this.elements.historyFooter.addEventListener('click', (e) => {
                         if (e.target.id === 'see-more-history-btn') {
                             this.state.historyItemsToShow += 4;
@@ -1161,7 +1221,6 @@
                         if (detailsButton) this.showNotification('Quest details page is a work in progress!', 'info');
                     });
 
-                    // Event listener for copying transaction hash
                     this.elements.transactionHistoryList.addEventListener('click', (e) => {
                         const copyBtn = e.target.closest('.copy-tx-hash-btn');
                         if (copyBtn) {
@@ -1213,7 +1272,7 @@
                             this.closeModal(this.elements.withdrawModal);
                             amountInput.value = '';
                             addressInput.value = '';
-                            this.init(); // Re-initialize to fetch updated balance and history
+                            this.init();
                         } catch (error) {
                             console.error("Withdrawal failed:", error);
                         }
@@ -1229,6 +1288,7 @@
                         document.execCommand('copy');
                         this.showNotification('Referral link copied!', 'success');
                     });
+                    this.elements.closeReferralModalBtn.addEventListener('click', () => this.closeModal(this.elements.referralModal));
                 }
             };
 
