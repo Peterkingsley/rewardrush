@@ -378,11 +378,7 @@ app.get('/api/quests-data', requireAdmin, async (req, res) => {
         // [FIXED] Changed alias for participant count to avoid conflict
         const query = `
             SELECT 
-                q.id,
-                q.title,
-                q.reward,
-                q.status,
-                q.quiz_background_url,
+                q.*,
                 COALESCE(uq.participants_count, 0) AS participants_count
             FROM 
                 quests q
