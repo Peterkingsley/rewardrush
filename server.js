@@ -1147,10 +1147,55 @@ app.get('/quests', requireLogin, async (req, res) => {
     }
 });
 
-app.post('/quests', requireAdmin, async (req, res) => {
-    res.status(501).json({ message: "Admin quest management not yet implemented with database." });
+// --- [NEW] FULL CRUD FOR QUESTS ---
+app.post('/api/quests', requireAdmin, async (req, res) => {
+    const { title, description, reward, status, start_time, end_time } = req.body;
+    try {
+        const newQuest = await pool.query(
+            'INSERT INTO quests (title, description, reward, status, start_time, end_time) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [title, description, reward, status, start_time || null, end_time || null]
+        );
+        res.status(201).json(newQuest.rows[0]);
+    } catch (err) {
+        console.error('Error creating quest:', err);
+        res.status(500).json({ error: 'Failed to create quest' });
+    }
 });
 
+app.put('/api/quests/:id', requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { title, description, reward, status, start_time, end_time } = req.body;
+    try {
+        const updatedQuest = await pool.query(
+            'UPDATE quests SET title = $1, description = $2, reward = $3, status = $4, start_time = $5, end_time = $6 WHERE id = $7 RETURNING *',
+            [title, description, reward, status, start_time || null, end_time || null, id]
+        );
+        if (updatedQuest.rows.length === 0) {
+            return res.status(404).json({ error: 'Quest not found' });
+        }
+        res.json(updatedQuest.rows[0]);
+    } catch (err) {
+        console.error('Error updating quest:', err);
+        res.status(500).json({ error: 'Failed to update quest' });
+    }
+});
+
+app.delete('/api/quests/:id', requireAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const deleteOp = await pool.query('DELETE FROM quests WHERE id = $1 RETURNING *', [id]);
+        if (deleteOp.rowCount === 0) {
+            return res.status(404).json({ error: 'Quest not found' });
+        }
+        res.json({ message: 'Quest deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting quest:', err);
+        res.status(500).json({ error: 'Failed to delete quest' });
+    }
+});
+
+
+// --- [NEW] FULL CRUD FOR QUEST QUESTIONS ---
 app.get('/api/quests/:questId/questions', requireLogin, async (req, res) => {
     const { questId } = req.params;
     try {
@@ -1162,13 +1207,53 @@ app.get('/api/quests/:questId/questions', requireLogin, async (req, res) => {
     }
 });
 
-app.post('/quests/:questId/questions', requireAdmin, async (req, res) => {
-    res.status(501).json({ message: "Admin question management not yet implemented with database." });
+app.post('/api/quests/:questId/questions', requireAdmin, async (req, res) => {
+    const { questId } = req.params;
+    const { question_text, question_type, options, correct_answer } = req.body;
+    try {
+        const newQuestion = await pool.query(
+            'INSERT INTO quest_questions (quest_id, question_text, question_type, options, correct_answer) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [questId, question_text, question_type, options, correct_answer]
+        );
+        res.status(201).json(newQuestion.rows[0]);
+    } catch (err) {
+        console.error('Error creating question:', err);
+        res.status(500).json({ error: 'Failed to create question' });
+    }
 });
 
-app.delete('/quests/:questId/questions/:questionId', requireAdmin, async (req, res) => {
-    res.status(501).json({ message: "Admin question management not yet implemented with database." });
+app.put('/api/quests/:questId/questions/:questionId', requireAdmin, async (req, res) => {
+    const { questionId } = req.params;
+    const { question_text, question_type, options, correct_answer } = req.body;
+    try {
+        const updatedQuestion = await pool.query(
+            'UPDATE quest_questions SET question_text = $1, question_type = $2, options = $3, correct_answer = $4 WHERE id = $5 RETURNING *',
+            [question_text, question_type, options, correct_answer, questionId]
+        );
+        if (updatedQuestion.rows.length === 0) {
+            return res.status(404).json({ error: 'Question not found' });
+        }
+        res.json(updatedQuestion.rows[0]);
+    } catch (err) {
+        console.error('Error updating question:', err);
+        res.status(500).json({ error: 'Failed to update question' });
+    }
 });
+
+app.delete('/api/quests/:questId/questions/:questionId', requireAdmin, async (req, res) => {
+    const { questionId } = req.params;
+    try {
+        const deleteOp = await pool.query('DELETE FROM quest_questions WHERE id = $1 RETURNING *', [questionId]);
+        if (deleteOp.rowCount === 0) {
+            return res.status(404).json({ error: 'Question not found' });
+        }
+        res.json({ message: 'Question deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting question:', err);
+        res.status(500).json({ error: 'Failed to delete question' });
+    }
+});
+
 
 // === UPDATED /submit-quiz ENDPOINT (SURVEY LOGIC) ===
 app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
