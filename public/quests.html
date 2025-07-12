@@ -316,7 +316,7 @@
                         <tr data-id="${quest.id}">
                             <td class="py-3 px-4 border-b border-gray-200"><span class="font-medium">${quest.title}</span></td>
                             <td class="py-3 px-4 border-b border-gray-200">${quest.reward}</td>
-                            <td class="py-3 px-4 border-b border-gray-200 text-center">${quest.participants}</td>
+                            <td class="py-3 px-4 border-b border-gray-200 text-center">${quest.participants_count}</td>
                             <td class="py-3 px-4 border-b border-gray-200"><span class="px-2 py-1 font-semibold leading-tight text-sm rounded-full ${statusColor}">${quest.status}</span></td>
                             <td class="py-3 px-4 border-b border-gray-200">
                                 <div class="flex items-center space-x-2">
@@ -333,17 +333,16 @@
 
             function openQuestModal(quest = null) {
                 questForm.reset();
-                currentBackgroundSpan.textContent = ''; // [NEW] Clear current background text
+                currentBackgroundSpan.textContent = '';
                 if (quest) {
                     modalTitle.textContent = 'Edit Quest';
                     questIdInput.value = quest.id;
-                    questTitleInput.value = quest.title;
-                    questDescriptionInput.value = quest.description;
-                    questRewardInput.value = quest.reward;
-                    questStatusInput.value = quest.status;
+                    questTitleInput.value = quest.title || '';
+                    questDescriptionInput.value = quest.description || '';
+                    questRewardInput.value = quest.reward || '';
+                    questStatusInput.value = quest.status || 'Available';
                     questStartTimeInput.value = quest.start_time ? new Date(quest.start_time).toISOString().slice(0, 16) : '';
                     questEndTimeInput.value = quest.end_time ? new Date(quest.end_time).toISOString().slice(0, 16) : '';
-                    // [NEW] Show current background if it exists
                     if (quest.quiz_background_url) {
                         currentBackgroundSpan.textContent = `Current: ${quest.quiz_background_url.split('/').pop()}`;
                     }

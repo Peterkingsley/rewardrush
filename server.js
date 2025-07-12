@@ -1897,4 +1897,3 @@ app.use((req, res, next) => {
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
-});
