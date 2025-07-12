@@ -317,20 +317,26 @@
                     </nav>
                 </div>
 
-                <!-- [UPDATED] Withdrawal History Section -->
+                <!-- [UPDATED] Transaction History Section -->
                 <div id="history-section" class="bg-white rounded-2xl shadow-md p-5 mt-6 reveal">
-                    <h2 class="text-lg font-bold mb-4">Withdrawal History</h2>
+                    <h2 class="text-lg font-bold mb-4">Transaction History</h2>
+                    <!-- History Tabs -->
+                    <div class="flex border-b border-gray-200 mb-4">
+                        <button data-history-tab="all" class="history-tab-btn px-4 py-2 -mb-px border-b-2 border-purple-600 text-purple-600 font-semibold">All</button>
+                        <button data-history-tab="quests" class="history-tab-btn px-4 py-2 text-gray-500 font-semibold border-b-2 border-transparent hover:border-gray-300">Quests</button>
+                        <button data-history-tab="withdrawals" class="history-tab-btn px-4 py-2 text-gray-500 font-semibold border-b-2 border-transparent hover:border-gray-300">Withdrawals</button>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full text-sm">
                             <thead>
                                 <tr class="border-b">
                                     <th class="text-left p-2 font-semibold">Date</th>
+                                    <th class="text-left p-2 font-semibold">Description</th>
                                     <th class="text-left p-2 font-semibold">Amount</th>
-                                    <th class="text-left p-2 font-semibold">Status</th>
-                                    <th class="text-left p-2 font-semibold">Tx Hash</th>
+                                    <th class="text-left p-2 font-semibold">Status/Hash</th>
                                 </tr>
                             </thead>
-                            <tbody id="withdrawal-history-list">
+                            <tbody id="transaction-history-list">
                                 <!-- History items will be dynamically inserted here -->
                             </tbody>
                         </table>
@@ -496,12 +502,12 @@
                     method: 'POST',
                     body: JSON.stringify({ answers }),
                 }),
-                // UPDATED: withdraw now sends more data
                 withdraw: (amount, walletAddress, chain) => ApiService.fetch('/withdraw', {
                     method: 'POST',
                     body: JSON.stringify({ amount, walletAddress, chain }),
                 }),
-                // NEW: fetch withdrawal history
+                // The /api/profile endpoint now provides all transaction history.
+                // This specific endpoint is no longer needed but kept for reference.
                 getWithdrawalHistory: () => ApiService.fetch('/withdrawal-history'),
             };
 
@@ -511,13 +517,12 @@
                 user: {
                     name: '',
                     balance: 0.00,
-                    completedQuests: new Set(), // Use a Set for efficient lookup
-                    recentActivity: [],
-                    withdrawalHistory: [],
+                    transactions: [], // This will hold ALL transactions (quests, withdrawals, etc.)
                 },
                 state: {
                     userId: null,
                     isBalanceVisible: true,
+                    activeHistoryTab: 'all', // 'all', 'quests', or 'withdrawals'
                 },
                 quests: [],
                 
@@ -549,7 +554,8 @@
                     sidebarToggleBtn: document.getElementById('sidebar-toggle'),
                     historyBtn: document.getElementById('history-btn'),
                     historySection: document.getElementById('history-section'),
-                    withdrawalHistoryList: document.getElementById('withdrawal-history-list'),
+                    historyTabs: document.querySelectorAll('.history-tab-btn'),
+                    transactionHistoryList: document.getElementById('transaction-history-list'),
                     themeToggleBtn: document.getElementById('theme-toggle'),
                     themeIcon: document.getElementById('theme-icon'),
                     completionTitle: document.getElementById('completion-title'),
@@ -575,32 +581,31 @@
                         }
                         this.state.userId = sessionData.userId;
 
-                        const [profileData, questsData, withdrawalData] = await Promise.all([
+                        // Fetch all necessary data in parallel
+                        const [profileData, questsData] = await Promise.all([
                             ApiService.getProfile(this.state.userId),
                             ApiService.getQuests(),
-                            ApiService.getWithdrawalHistory()
                         ]);
                         
                         this.user.name = profileData.user.fullName;
                         this.user.balance = profileData.stats.totalEarnings;
-                        this.user.recentActivity = profileData.recentActivity;
-                        this.user.withdrawalHistory = withdrawalData.history;
+                        this.user.transactions = profileData.transactions;
 
                         const completedQuestTitles = new Set(
-                            profileData.transactions
+                            this.user.transactions
                                 .filter(tx => tx.desc?.startsWith('Completed: '))
                                 .map(tx => tx.desc.replace('Completed: ', ''))
                         );
 
-                        this.quests = questsData.quests.map(quest => {
-                            const isCompleted = completedQuestTitles.has(quest.title);
-                            return { ...quest, status: isCompleted ? 'completed' : 'not-started' };
-                        });
+                        this.quests = questsData.quests.map(quest => ({
+                            ...quest,
+                            status: completedQuestTitles.has(quest.title) ? 'completed' : 'not-started'
+                        }));
 
                         this.displayGreeting();
                         this.updateHeader();
                         this.displayQuests();
-                        this.displayWithdrawalHistory();
+                        this.displayTransactionHistory();
 
                     } catch (error) {
                         console.error("Initialization failed:", error);
@@ -720,38 +725,58 @@
                     this.renderPagination(filteredQuests.length);
                 },
 
-                // NEW: displayWithdrawalHistory
-                displayWithdrawalHistory() {
-                    const list = this.elements.withdrawalHistoryList;
+                // UPDATED: Now displays all transactions based on the active tab
+                displayTransactionHistory() {
+                    const list = this.elements.transactionHistoryList;
                     list.innerHTML = '';
+
+                    let transactionsToDisplay = this.user.transactions;
+                    const activeTab = this.state.activeHistoryTab;
+
+                    if (activeTab === 'quests') {
+                        transactionsToDisplay = this.user.transactions.filter(tx => tx.desc.startsWith('Completed:'));
+                    } else if (activeTab === 'withdrawals') {
+                        transactionsToDisplay = this.user.transactions.filter(tx => tx.desc === 'Withdrawal');
+                    }
                     
-                    if (!this.user.withdrawalHistory || this.user.withdrawalHistory.length === 0) {
-                        list.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 p-4">No withdrawal history.</td></tr>`;
+                    if (!transactionsToDisplay || transactionsToDisplay.length === 0) {
+                        list.innerHTML = `<tr><td colspan="4" class="text-center text-gray-500 p-4">No transactions found for this category.</td></tr>`;
                         return;
                     }
 
-                    this.user.withdrawalHistory.forEach(item => {
+                    transactionsToDisplay.forEach(item => {
                         const row = document.createElement('tr');
                         row.className = 'border-b last:border-0';
                         
-                        const statusColors = {
-                            pending: 'bg-yellow-100 text-yellow-800',
-                            approved: 'bg-green-100 text-green-800',
-                            rejected: 'bg-red-100 text-red-800'
-                        };
-                        const statusColor = statusColors[item.status] || 'bg-gray-100 text-gray-800';
+                        const amountColor = item.type === 'credit' ? 'text-green-600' : 'text-red-600';
+                        const amountPrefix = item.type === 'credit' ? '+' : '-';
+
+                        let statusHtml = 'N/A';
+                        if (item.desc === 'Withdrawal') {
+                            const statusColors = {
+                                pending: 'bg-yellow-100 text-yellow-800',
+                                approved: 'bg-green-100 text-green-800',
+                                rejected: 'bg-red-100 text-red-800'
+                            };
+                            const statusColor = statusColors[item.status] || 'bg-gray-100 text-gray-800';
+                            const statusText = item.status.charAt(0).toUpperCase() + item.status.slice(1);
+                            const hashText = item.transaction_hash ? item.transaction_hash.substring(0, 15) + '...' : '';
+                            
+                            statusHtml = `
+                                <div class="flex flex-col">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColor} w-min">${statusText}</span>
+                                    ${hashText ? `<span class="font-mono text-xs text-gray-500 mt-1" title="${item.transaction_hash}">${hashText}</span>` : ''}
+                                </div>
+                            `;
+                        } else {
+                             statusHtml = `<span class="text-gray-400">--</span>`;
+                        }
 
                         row.innerHTML = `
-                            <td class="p-2">${new Date(item.created_at).toLocaleDateString()}</td>
-                            <td class="p-2 font-medium">$${parseFloat(item.amount).toFixed(2)}</td>
-                            <td class="p-2">
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${statusColor}">
-                                    ${item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                                </span>
-                            </td>
-                            <td class="p-2 font-mono text-xs truncate" title="${item.transaction_hash || ''}">
-                                ${item.transaction_hash ? item.transaction_hash.substring(0, 15) + '...' : 'N/A'}
-                            </td>
+                            <td class="p-2">${item.date}</td>
+                            <td class="p-2">${item.desc}</td>
+                            <td class="p-2 font-medium ${amountColor}">${amountPrefix}$${item.amount}</td>
+                            <td class="p-2">${statusHtml}</td>
                         `;
                         list.appendChild(row);
                     });
@@ -1049,6 +1074,19 @@
 
                     this.elements.historyBtn.addEventListener('click', () => {
                         this.elements.historySection.scrollIntoView({ behavior: 'smooth' });
+                    });
+
+                    this.elements.historyTabs.forEach(tab => {
+                        tab.addEventListener('click', () => {
+                            this.state.activeHistoryTab = tab.dataset.historyTab;
+                            this.elements.historyTabs.forEach(t => {
+                                t.classList.remove('border-purple-600', 'text-purple-600');
+                                t.classList.add('border-transparent', 'text-gray-500');
+                            });
+                            tab.classList.add('border-purple-600', 'text-purple-600');
+                            tab.classList.remove('border-transparent', 'text-gray-500');
+                            this.displayTransactionHistory();
+                        });
                     });
 
                     this.elements.questList.addEventListener('click', e => {
