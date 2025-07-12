@@ -17,6 +17,20 @@ const PORT = process.env.PORT || 3000;
 // Tell Express to trust the proxy that Render uses
 app.set('trust proxy', 1);
 
+// --- [NEW] Hardcoded mapping for Quest Backgrounds ---
+// To add a background for a quest, add an entry here.
+// The key must EXACTLY match the quest's title.
+// The value is the path to the file inside the `public` folder.
+const QUEST_BACKGROUND_MAP = {
+    "Crypto Trivia Challenge": "/backgrounds/crypto.mp4",
+    "Gaming Gear Quiz": "/backgrounds/gaming.jpg",
+    "Fintech Facts": "/backgrounds/fintech.jpg",
+    "Blockchain Basics": "/backgrounds/blockchain.mp4",
+    "eSports Trivia": "/backgrounds/esports.jpg",
+    // Add new quest titles and their background paths here
+};
+
+
 // --- Hardcoded Admin Credentials for testing ---
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = 'kingslayer';
@@ -68,18 +82,16 @@ app.use(session({
     }
 }));
 
-// --- Multer setup for file uploads ---
+// --- Multer setup for file uploads (Still used for profile pictures, etc.) ---
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = path.join(__dirname, 'public/uploads');
-    // Create the directory if it doesn't exist synchronously to ensure it's there before saving
     if (!fsSync.existsSync(uploadPath)) {
         fsSync.mkdirSync(uploadPath, { recursive: true });
     }
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
-    // Create a unique filename to avoid overwrites
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
@@ -98,7 +110,7 @@ const requireLogin = async (req, res, next) => {
     }
     if (req.session.isAdmin) {
         if (req.session.userId === ADMIN_USERNAME) {
-            req.user = { id: 'admin', username: 'admin' }; // Create a mock admin user object
+            req.user = { id: 'admin', username: 'admin' };
             return next(); 
         } else {
             return res.status(401).json({ error: 'Unauthorized' });
@@ -149,7 +161,6 @@ app.get('/api/admin/financial-summary', requireAdmin, async (req, res) => {
             ORDER BY date DESC;
         `;
         
-        // This now fetches from the 'withdrawals' table
         const payoutsQuery = `
             SELECT w.id, u.username, w.amount, w.wallet_address, w.chain, w.status, w.created_at
             FROM withdrawals w
@@ -165,7 +176,7 @@ app.get('/api/admin/financial-summary', requireAdmin, async (req, res) => {
 
         res.json({
             transactions: transactionsResult.rows,
-            payouts: payoutsResult.rows // Renamed to payouts for consistency, but this is withdrawals
+            payouts: payoutsResult.rows
         });
 
     } catch (err) {
@@ -174,7 +185,6 @@ app.get('/api/admin/financial-summary', requireAdmin, async (req, res) => {
     }
 });
 
-// UPDATED: Approve withdrawal endpoint
 app.post('/api/admin/withdrawals/approve', requireAdmin, async (req, res) => {
     const { withdrawalId, transactionHash } = req.body;
     if (!withdrawalId || !transactionHash) {
@@ -195,26 +205,18 @@ app.post('/api/admin/withdrawals/approve', requireAdmin, async (req, res) => {
     }
 });
 
-// UPDATED: Reject withdrawal endpoint
 app.post('/api/admin/withdrawals/reject', requireAdmin, async (req, res) => {
     const { withdrawalId } = req.body;
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-
-        // Get the withdrawal details before updating
         const withdrawalResult = await client.query("SELECT user_id, amount FROM withdrawals WHERE id = $1 AND status = 'pending' FOR UPDATE", [withdrawalId]);
         if (withdrawalResult.rows.length === 0) {
             throw new Error('Withdrawal not found or already processed.');
         }
         const withdrawal = withdrawalResult.rows[0];
-
-        // Refund the user's points
         await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [withdrawal.amount, withdrawal.user_id]);
-
-        // Mark the withdrawal as rejected
         await client.query("UPDATE withdrawals SET status = 'rejected' WHERE id = $1", [withdrawalId]);
-
         await client.query('COMMIT');
         res.json({ success: true, message: 'Withdrawal rejected and funds returned to user.' });
     } catch (err) {
@@ -313,7 +315,6 @@ app.get('/api/dashboard-stats', requireAdmin, async (req, res) => {
 // --- USERS PAGE API ENDPOINT ---
 app.get('/api/users-data', requireAdmin, async (req, res) => {
     try {
-        // A more optimized query to get all data at once
         const query = `
             SELECT 
                 u.id,
@@ -357,7 +358,6 @@ app.get('/api/users-data', requireAdmin, async (req, res) => {
             registeredDate: new Date(user.created_at).toLocaleDateString(),
             status: user.blocked ? 'Banned' : 'Active',
             questsJoined: parseInt(user.quests_joined, 10),
-            // Note: jobs_in_progress is simplified to total clicks for this view.
             jobsInProgress: parseInt(user.jobs_in_progress, 10),
             jobsDone: parseInt(user.jobs_done, 10),
             allTimeEarning: parseFloat(user.points).toFixed(2),
@@ -375,7 +375,6 @@ app.get('/api/users-data', requireAdmin, async (req, res) => {
 // --- QUESTS PAGE API ENDPOINT ---
 app.get('/api/quests-data', requireAdmin, async (req, res) => {
     try {
-        // [FIXED] Changed alias for participant count to avoid conflict
         const query = `
             SELECT 
                 q.id,
@@ -579,7 +578,6 @@ app.post('/api/education/study-plan', requireLogin, async (req, res) => {
 
 // --- Group Study API Endpoints ---
 
-// Invite a user to a study group
 app.post('/api/education/study-group/invite', requireLogin, async (req, res) => {
     const { skillId, inviteeEmail } = req.body;
     const inviterId = req.user.id;
@@ -589,7 +587,6 @@ app.post('/api/education/study-group/invite', requireLogin, async (req, res) => 
     }
 
     try {
-        // Find the user being invited
         const inviteeResult = await pool.query('SELECT id FROM users WHERE email = $1', [inviteeEmail]);
         if (inviteeResult.rows.length === 0) {
             return res.status(404).json({ message: 'User with that email does not exist.' });
@@ -600,18 +597,15 @@ app.post('/api/education/study-group/invite', requireLogin, async (req, res) => 
             return res.status(400).json({ message: 'You cannot invite yourself.' });
         }
 
-        // Find or create the study group
         let groupResult = await pool.query('SELECT id FROM study_groups WHERE skill_id = $1 AND creator_id = $2', [skillId, inviterId]);
         let groupId;
 
         if (groupResult.rows.length === 0) {
-            // Create a new group if one doesn't exist
             const newGroupResult = await pool.query(
                 'INSERT INTO study_groups (skill_id, creator_id) VALUES ($1, $2) RETURNING id',
                 [skillId, inviterId]
             );
             groupId = newGroupResult.rows[0].id;
-            // The creator is automatically a member
             await pool.query(
                 'INSERT INTO study_group_invitations (study_group_id, inviter_id, invitee_id, status) VALUES ($1, $2, $3, $4)',
                 [groupId, inviterId, inviterId, 'accepted']
@@ -620,7 +614,6 @@ app.post('/api/education/study-group/invite', requireLogin, async (req, res) => 
             groupId = groupResult.rows[0].id;
         }
 
-        // Create the invitation
         const invitationResult = await pool.query(
             'INSERT INTO study_group_invitations (study_group_id, inviter_id, invitee_id) VALUES ($1, $2, $3) ON CONFLICT (study_group_id, invitee_id) DO NOTHING RETURNING *',
             [groupId, inviterId, inviteeId]
@@ -638,7 +631,6 @@ app.post('/api/education/study-group/invite', requireLogin, async (req, res) => 
     }
 });
 
-// Get data for a specific study group
 app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) => {
     const { skillId } = req.params;
     const userId = req.user.id;
@@ -648,7 +640,6 @@ app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) =>
     }
     
     try {
-        // Find the group the user is part of for this skill
         const groupMembership = await pool.query(`
             SELECT sg.id FROM study_groups sg
             JOIN study_group_invitations sgi ON sg.id = sgi.study_group_id
@@ -656,17 +647,14 @@ app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) =>
         `, [userId, skillId]);
 
         if (groupMembership.rows.length === 0) {
-            // If the user isn't an accepted member, check if they are the creator of a group for this skill
              const creatorGroup = await pool.query('SELECT id FROM study_groups WHERE creator_id = $1 AND skill_id = $2', [userId, skillId]);
              if (creatorGroup.rows.length === 0) {
-                // If they are not in a group and not a creator, return empty data
                 return res.json({ members: [], invitations: [] }); 
              }
              groupMembership.rows.push(creatorGroup.rows[0]);
         }
         const groupId = groupMembership.rows[0].id;
 
-        // Get all accepted members and their progress using a more robust LEFT JOIN
         const membersResult = await pool.query(`
             SELECT
                 u.id,
@@ -685,7 +673,6 @@ app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) =>
             GROUP BY u.id, u.username, u.avatar
         `, [groupId, skillId]);
 
-        // Get total materials for progress calculation
         const materialsResult = await pool.query('SELECT COUNT(*) as total FROM education_materials WHERE skill_id = $1', [skillId]);
         const totalMaterials = parseInt(materialsResult.rows[0].total, 10);
 
@@ -694,7 +681,6 @@ app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) =>
             progress: totalMaterials > 0 ? Math.round((parseInt(m.completed_count, 10) / totalMaterials) * 100) : 0
         }));
 
-        // Get all invitations for this group
         const invitationsResult = await pool.query(`
             SELECT i.id, u.email, i.status FROM study_group_invitations i
             JOIN users u ON i.invitee_id = u.id
@@ -709,7 +695,6 @@ app.get('/api/education/study-group/:skillId', requireLogin, async (req, res) =>
     }
 });
 
-// Get all pending invitations for the logged-in user
 app.get('/api/education/invitations', requireLogin, async (req, res) => {
     const userId = req.user.id;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
@@ -729,9 +714,8 @@ app.get('/api/education/invitations', requireLogin, async (req, res) => {
     }
 });
 
-// Respond to an invitation
 app.post('/api/education/invitations/respond', requireLogin, async (req, res) => {
-    const { invitationId, response } = req.body; // response should be 'accepted' or 'declined'
+    const { invitationId, response } = req.body;
     const userId = req.user.id;
     if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
@@ -810,10 +794,6 @@ app.post('/api/jobs/:jobId/complete', requireLogin, async (req, res) => {
             return res.status(404).json({ error: 'Job not found.' });
         }
         
-        // NOTE: The database does not have a table to track completed jobs per user.
-        // This action only awards points but does not create a permanent record of the completion.
-        // The "Jobs Finished" stat on the profile page is therefore a placeholder.
-
         const payoutAmount = parsePayout(job.payout);
         
         await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [payoutAmount, userDbId]);
@@ -877,7 +857,6 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-// --- UPDATED: /login endpoint ---
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     
@@ -885,7 +864,6 @@ app.post('/login', async (req, res) => {
         return res.status(400).json({ error: 'Credentials required' });
     }
 
-    // --- Admin Login Logic ---
     if (username === ADMIN_USERNAME) {
         if (!ADMIN_PASSWORD_HASH) {
             return res.status(500).json({ error: 'Admin password not configured on server.' });
@@ -901,7 +879,6 @@ app.post('/login', async (req, res) => {
         }
     }
 
-    // --- Regular User Login Logic ---
     try {
         const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
         const user = result.rows[0];
@@ -987,7 +964,6 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 
-// --- [UPDATED] PROFILE API ENDPOINT ---
 app.get('/api/profile/:userId', requireLogin, async (req, res) => {
     const { userId } = req.params;
 
@@ -996,21 +972,17 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
     }
 
     try {
-        // 1. Fetch primary user data
         const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [userId]);
         const user = userResult.rows[0];
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // 2. Fetch aggregate stats
         const completedQuestsResult = await pool.query('SELECT COUNT(*) FROM user_quests WHERE user_id = $1', [user.id]);
         const questsCompleted = parseInt(completedQuestsResult.rows[0].count, 10);
         
-        // NOTE: The database schema does not track completed jobs. Returning a static value to match profile.html mock data.
         const jobsFinished = 8;
 
-        // 3. Fetch learning/skill progress
         const userSkillsResult = await pool.query(`
             SELECT DISTINCT em.skill_id, es.title AS skill_name
             FROM user_material_progress ump
@@ -1036,7 +1008,6 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             return { name: skill.skill_name, progress };
         }));
 
-        // 4. Fetch transaction history (UPDATED to include withdrawals)
         const historyQuery = `
             (SELECT 'Completed: ' || q.title AS desc, parse_payout(q.reward) AS amount, uq.completed_at AS date, 'credit' as type, NULL as status, NULL as transaction_hash FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
             UNION ALL
@@ -1055,7 +1026,6 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             transaction_hash: t.transaction_hash
         }));
         
-        // 5. Fetch expert bookings
         const bookingsResult = await pool.query(`
             SELECT p.name, b.status, b.preferred_date AS date
             FROM bookings b
@@ -1063,7 +1033,6 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             WHERE b.user_id = $1 ORDER BY b.created_at DESC
         `, [user.id]);
 
-        // 6. Fetch earnings chart data for the last year
         const earningsHistoryResult = await pool.query(`
             SELECT TO_CHAR(date_trunc('month', d), 'Mon') AS label, COALESCE(SUM(amount), 0) AS value
             FROM GENERATE_SERIES(date_trunc('year', CURRENT_DATE), date_trunc('year', CURRENT_DATE) + '1 year'::interval - '1 day'::interval, '1 month'::interval) d
@@ -1075,10 +1044,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             GROUP BY date_trunc('month', d) ORDER BY date_trunc('month', d);
         `, [user.id, user.username]);
         
-        // 7. Assemble the final JSON payload
-        // ...
 res.json({
-    // Wrap user-specific data in a 'user' object
     user: {
         fullName: user.full_name,
         username: user.username,
@@ -1087,7 +1053,6 @@ res.json({
         joinDate: new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         bio: "Lifelong learner and digital creator. Exploring the worlds of design, code, and marketing. Let's connect!",
     },
-    // Keep other data outside the 'user' object
     stats: {
         totalEarnings: parseFloat(user.points) || 0,
         questsCompleted: questsCompleted,
@@ -1155,7 +1120,6 @@ app.get('/api/profile/:userId/earnings-history', requireLogin, async (req, res) 
     }
 });
 
-// [FIXED] Removed duplicate upload constant declaration
 app.post('/api/user/upload-picture', requireLogin, upload.single('profilePicture'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded.' });
@@ -1180,13 +1144,11 @@ app.get('/quest-overview', requireLogin, async (req, res) => {
         const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [userId]);
         const user = userResult.rows[0];
         const completedQuestsResult = await pool.query('SELECT * FROM user_quests WHERE user_id = $1', [user.id]);
-        // Updated to query the new withdrawals table
         const pendingWithdrawalsResult = await pool.query("SELECT COUNT(*) FROM withdrawals WHERE user_id = $1 AND status = 'pending'", [user.id]);
 
         res.json({
             totalEarnings: user.points || 0,
             questsCompleted: completedQuestsResult.rows,
-            // This now represents pending withdrawals, not redeemable codes
             pendingWithdrawals: parseInt(pendingWithdrawalsResult.rows[0].count, 10)
         });
     } catch (err) {
@@ -1195,7 +1157,6 @@ app.get('/quest-overview', requireLogin, async (req, res) => {
     }
 });
 
-// --- [REWRITTEN] /withdraw ENDPOINT ---
 app.post('/withdraw', requireLogin, async (req, res) => {
     const { amount, walletAddress, chain } = req.body;
     const userDbId = req.user.id;
@@ -1220,10 +1181,8 @@ app.post('/withdraw', requireLogin, async (req, res) => {
             return res.status(400).json({ error: 'Insufficient balance.' });
         }
 
-        // Deduct points from user
         await client.query('UPDATE users SET points = points - $1 WHERE id = $2', [withdrawalAmount, userDbId]);
 
-        // Insert into the new withdrawals table
         await client.query(
             'INSERT INTO withdrawals (user_id, amount, wallet_address, chain, status) VALUES ($1, $2, $3, $4, $5)',
             [userDbId, withdrawalAmount, walletAddress, chain, 'pending']
@@ -1241,7 +1200,6 @@ app.post('/withdraw', requireLogin, async (req, res) => {
     }
 });
 
-// --- [NEW] /withdrawal-history ENDPOINT ---
 app.get('/withdrawal-history', requireLogin, async (req, res) => {
     const userId = req.user.id;
     try {
@@ -1268,10 +1226,12 @@ app.get('/quests', requireLogin, async (req, res) => {
     }
 });
 
-// --- [UPDATED] FULL CRUD FOR QUESTS WITH FILE UPLOAD ---
-app.post('/api/quests', requireAdmin, upload.single('questBackground'), async (req, res) => {
+// --- [REMODELED] QUEST CRUD ENDPOINTS ---
+// Create a new quest (No file upload, uses map)
+app.post('/api/quests', requireAdmin, async (req, res) => {
     const { title, description, reward, status, start_time, end_time } = req.body;
-    const backgroundUrl = req.file ? `/uploads/${req.file.filename}` : null;
+    // Look up the background URL from the hardcoded map
+    const backgroundUrl = QUEST_BACKGROUND_MAP[title] || null;
 
     try {
         const newQuest = await pool.query(
@@ -1285,46 +1245,21 @@ app.post('/api/quests', requireAdmin, upload.single('questBackground'), async (r
     }
 });
 
-app.put('/api/quests/:id', requireAdmin, upload.single('questBackground'), async (req, res) => {
+// Update a quest (No file upload, uses map)
+app.put('/api/quests/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
     const { title, description, reward, status, start_time, end_time } = req.body;
+    
+    // Look up the new background URL from the map based on the new title
+    const backgroundUrl = QUEST_BACKGROUND_MAP[title] || null;
 
     try {
-        // If a new file is uploaded, we need to delete the old one.
-        if (req.file) {
-            try {
-                const oldQuestResult = await pool.query('SELECT quiz_background_url FROM quests WHERE id = $1', [id]);
-                const oldUrl = oldQuestResult.rows[0]?.quiz_background_url;
-                
-                // Check if the old URL exists and is a non-empty string
-                if (oldUrl && typeof oldUrl === 'string') {
-                    const oldPath = path.join(__dirname, 'public', oldUrl);
+        const queryText = `
+            UPDATE quests 
+            SET title = $1, description = $2, reward = $3, status = $4, start_time = $5, end_time = $6, quiz_background_url = $7 
+            WHERE id = $8 RETURNING *`;
         
-                    // IMPORTANT: Check if the file actually exists on the disk before trying to delete it
-                    if (fsSync.existsSync(oldPath)) {
-                        await fs.unlink(oldPath);
-                        console.log(`Successfully deleted old background file: ${oldPath}`);
-                    }
-                }
-            } catch (fileError) {
-                // Log the file deletion error, but don't let it stop the entire request
-                console.error("A non-critical error occurred while trying to delete the old background file:", fileError);
-            }
-        }
-
-        const backgroundUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
-
-        // Dynamically build the query to only update the background if a new one was provided
-        let queryText = 'UPDATE quests SET title = $1, description = $2, reward = $3, status = $4, start_time = $5, end_time = $6';
-        const queryParams = [title, description, reward, status, start_time || null, end_time || null];
-        
-        if (backgroundUrl !== undefined) {
-            queryText += `, quiz_background_url = $${queryParams.length + 1}`;
-            queryParams.push(backgroundUrl);
-        }
-        
-        queryText += ` WHERE id = $${queryParams.length + 1} RETURNING *`;
-        queryParams.push(id);
+        const queryParams = [title, description, reward, status, start_time || null, end_time || null, backgroundUrl, id];
 
         const updatedQuest = await pool.query(queryText, queryParams);
 
@@ -1342,16 +1277,7 @@ app.put('/api/quests/:id', requireAdmin, upload.single('questBackground'), async
 app.delete('/api/quests/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
     try {
-        // [NEW] Also delete the background file associated with the quest
-        const oldQuestResult = await pool.query('SELECT quiz_background_url FROM quests WHERE id = $1', [id]);
-        const oldUrl = oldQuestResult.rows[0]?.quiz_background_url;
-        if (oldUrl) {
-            const oldPath = path.join(__dirname, 'public', oldUrl);
-            if (fsSync.existsSync(oldPath)) {
-                await fs.unlink(oldPath).catch(e => console.error("Failed to delete background file on quest deletion:", e));
-            }
-        }
-
+        // No need to delete a file from the filesystem anymore
         const deleteOp = await pool.query('DELETE FROM quests WHERE id = $1 RETURNING *', [id]);
         if (deleteOp.rowCount === 0) {
             return res.status(404).json({ error: 'Quest not found' });
@@ -1438,7 +1364,6 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 1. Check if quest is already completed
         const existingCompletion = await pool.query(
             'SELECT 1 FROM user_quests WHERE user_id = $1 AND quest_id = $2',
             [userDbId, questId]
@@ -1448,7 +1373,6 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
             return res.status(400).json({ error: 'You have already completed this quest.' });
         }
 
-        // 2. Fetch quest and its questions
         const questResult = await client.query('SELECT * FROM quests WHERE id = $1', [questId]);
         const quest = questResult.rows[0];
         if (!quest) {
@@ -1462,11 +1386,9 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
         );
         const questions = questionsResult.rows;
 
-        // 3. Check for completion (survey-style) - ensure every question has a non-empty answer
         const allAnswered = answers.length === questions.length && answers.every(ans => ans !== undefined && ans !== null && ans !== '');
         
         if (allAnswered) {
-            // 4. Award points and mark as complete (Success)
             const rewardValue = parsePayout(quest.reward);
             await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardValue, userDbId]);
             await client.query(
@@ -1485,7 +1407,6 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
             });
 
         } else {
-            // User did not answer all questions
             await client.query('ROLLBACK');
             res.json({
                 success: false,
@@ -1804,7 +1725,6 @@ app.post('/block-user', requireAdmin, async (req, res) => {
     }
 });
 
-// --- NEW: UNBLOCK USER ENDPOINT ---
 app.post('/unblock-user', requireAdmin, async (req, res) => {
     const { username } = req.body;
     if (!username) return res.status(400).json({ error: 'Username required' });
@@ -1890,18 +1810,14 @@ app.post('/founders', requireAdmin, async (req, res) => {
     res.status(501).json({ message: "Admin founder management not yet implemented with database." });
 });
 
-// NEW: Endpoint for Growth Settings
 app.post('/api/users/:userId/settings', requireLogin, async (req, res) => {
     const { userId } = req.params;
     const { settings } = req.body;
 
-    if (req.params.userId !== req.session.userId.toString()) { // Ensure correct user
+    if (req.params.userId !== req.session.userId.toString()) { 
         return res.status(403).json({ error: 'Forbidden' });
     }
     
-    // Note: The database schema provided has no table for user settings.
-    // This endpoint simulates a successful save. For a real application,
-    // you would update the user's settings in the database here.
     console.log(`Received settings for user ${userId}:`, settings);
     
     res.json({ success: true, message: 'Settings saved successfully (simulated)!' });
