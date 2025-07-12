@@ -68,7 +68,7 @@ app.use(session({
     }
 }));
 
-// --- [NEW] Multer setup for file uploads ---
+// --- Multer setup for file uploads ---
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = path.join(__dirname, 'public/uploads');
@@ -98,6 +98,7 @@ const requireLogin = async (req, res, next) => {
     }
     if (req.session.isAdmin) {
         if (req.session.userId === ADMIN_USERNAME) {
+            req.user = { id: 'admin', username: 'admin' }; // Create a mock admin user object
             return next(); 
         } else {
             return res.status(401).json({ error: 'Unauthorized' });
@@ -1153,7 +1154,7 @@ app.get('/api/profile/:userId/earnings-history', requireLogin, async (req, res) 
     }
 });
 
-const upload = multer({ dest: 'public/uploads/' });
+// [FIXED] Removed duplicate upload constant declaration
 app.post('/api/user/upload-picture', requireLogin, upload.single('profilePicture'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded.' });
