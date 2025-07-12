@@ -89,22 +89,21 @@
                     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Transaction History</h2>
                      <div class="bg-white p-6 rounded-lg shadow-md">
                         <div class="mb-4">
-                            <input id="transaction-search-input" type="text" placeholder="Search by user ID or transaction type..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input id="transaction-search-input" type="text" placeholder="Search by username or description..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full bg-white">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Transaction ID</th>
-                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">User ID</th>
+                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Date</th>
+                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Username</th>
+                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Description</th>
                                         <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Amount</th>
                                         <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Type</th>
-                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Status</th>
-                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Timestamp</th>
                                     </tr>
                                 </thead>
                                 <tbody id="transaction-table-body" class="text-gray-700">
-                                    <!-- Transaction rows will be injected here by JavaScript -->
+                                    <!-- Dynamic content here -->
                                 </tbody>
                             </table>
                         </div>
@@ -118,14 +117,15 @@
                             <table class="min-w-full bg-white">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">User ID</th>
-                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Amount</th>
                                         <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Request Date</th>
+                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Username</th>
+                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Amount</th>
+                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Code</th>
                                         <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="payout-table-body" class="text-gray-700">
-                                    <!-- Payout rows will be injected here by JavaScript -->
+                                    <!-- Dynamic content here -->
                                 </tbody>
                             </table>
                         </div>
@@ -146,46 +146,57 @@
                 });
             }
 
-            // --- Mock Data ---
-            const mockTransactions = [
-                { id: 'txn_123', userId: 1, amount: 50.00, type: 'Quest Reward', status: 'Completed', timestamp: '2025-07-10 10:00:00' },
-                { id: 'txn_124', userId: 2, amount: 25.50, type: 'Affiliate Payout', status: 'Completed', timestamp: '2025-07-10 11:30:00' },
-                { id: 'txn_125', userId: 3, amount: 100.00, type: 'Withdrawal', status: 'Pending', timestamp: '2025-07-11 09:00:00' },
-                { id: 'txn_126', userId: 1, amount: 15.00, type: 'Job Payment', status: 'Completed', timestamp: '2025-07-11 14:00:00' },
-                { id: 'txn_127', userId: 4, amount: 75.00, type: 'Withdrawal', status: 'Failed', timestamp: '2025-07-11 15:00:00' }
-            ];
-
-            const mockPayouts = [
-                { userId: 3, amount: 100.00, requestDate: '2025-07-11 09:00:00' },
-                { userId: 5, amount: 250.00, requestDate: '2025-07-11 12:00:00' }
-            ];
+            let allTransactions = [];
+            let allPayouts = [];
 
             const transactionTableBody = document.getElementById('transaction-table-body');
             const payoutTableBody = document.getElementById('payout-table-body');
             const searchInput = document.getElementById('transaction-search-input');
 
+            // --- API Service ---
+            const Api = {
+                async fetch(endpoint, options = {}) {
+                    try {
+                        const response = await fetch(endpoint, options);
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            throw new Error(errorData.error || 'An unknown error occurred');
+                        }
+                        return response.json();
+                    } catch (error) {
+                        console.error(`API Error on ${endpoint}:`, error);
+                        alert(`Error: ${error.message}`);
+                        throw error;
+                    }
+                },
+                getFinancialData: () => Api.fetch('/api/admin/financial-summary'),
+                approvePayout: (payoutId) => Api.fetch(`/api/admin/payouts/approve`, { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ payoutId })
+                }),
+                rejectPayout: (payoutId) => Api.fetch(`/api/admin/payouts/reject`, { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ payoutId })
+                }),
+            };
+
             function renderTransactions(transactions) {
                 transactionTableBody.innerHTML = '';
-                if (transactions.length === 0) {
-                    transactionTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4">No transactions found.</td></tr>`;
+                if (!transactions || transactions.length === 0) {
+                    transactionTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4">No transactions found.</td></tr>`;
                     return;
                 }
                 transactions.forEach(tx => {
-                    let statusColor;
-                    switch(tx.status) {
-                        case 'Completed': statusColor = 'bg-green-100 text-green-800'; break;
-                        case 'Pending': statusColor = 'bg-yellow-100 text-yellow-800'; break;
-                        case 'Failed': statusColor = 'bg-red-100 text-red-800'; break;
-                    }
-                    
+                    const typeColor = tx.type === 'credit' ? 'text-green-600' : 'text-red-600';
                     const row = `
                         <tr>
-                            <td class="py-3 px-4 border-b border-gray-200">${tx.id}</td>
-                            <td class="py-3 px-4 border-b border-gray-200">${tx.userId}</td>
-                            <td class="py-3 px-4 border-b border-gray-200">$${tx.amount.toFixed(2)}</td>
-                            <td class="py-3 px-4 border-b border-gray-200">${tx.type}</td>
-                            <td class="py-3 px-4 border-b border-gray-200"><span class="px-2 py-1 font-semibold leading-tight text-sm rounded-full ${statusColor}">${tx.status}</span></td>
-                            <td class="py-3 px-4 border-b border-gray-200">${tx.timestamp}</td>
+                            <td class="py-3 px-4 border-b border-gray-200">${new Date(tx.date).toLocaleDateString()}</td>
+                            <td class="py-3 px-4 border-b border-gray-200">${tx.username}</td>
+                            <td class="py-3 px-4 border-b border-gray-200">${tx.description}</td>
+                            <td class="py-3 px-4 border-b border-gray-200 font-medium ${typeColor}">${tx.type === 'credit' ? '+' : '-'}$${parseFloat(tx.amount).toFixed(2)}</td>
+                            <td class="py-3 px-4 border-b border-gray-200 capitalize">${tx.type}</td>
                         </tr>
                     `;
                     transactionTableBody.innerHTML += row;
@@ -194,20 +205,21 @@
 
             function renderPayouts(payouts) {
                 payoutTableBody.innerHTML = '';
-                 if (payouts.length === 0) {
-                    payoutTableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4">No pending payouts.</td></tr>`;
+                 if (!payouts || payouts.length === 0) {
+                    payoutTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4">No pending payouts.</td></tr>`;
                     return;
                 }
                 payouts.forEach(payout => {
                     const row = `
-                        <tr>
-                            <td class="py-3 px-4 border-b border-gray-200">${payout.userId}</td>
-                            <td class="py-3 px-4 border-b border-gray-200">$${payout.amount.toFixed(2)}</td>
-                            <td class="py-3 px-4 border-b border-gray-200">${payout.requestDate}</td>
+                        <tr data-id="${payout.id}">
+                            <td class="py-3 px-4 border-b border-gray-200">${new Date(payout.created_at).toLocaleDateString()}</td>
+                            <td class="py-3 px-4 border-b border-gray-200">${payout.username}</td>
+                            <td class="py-3 px-4 border-b border-gray-200">$${parseFloat(payout.amount).toFixed(2)}</td>
+                            <td class="py-3 px-4 border-b border-gray-200 font-mono">${payout.code}</td>
                             <td class="py-3 px-4 border-b border-gray-200">
                                 <div class="flex items-center space-x-2">
-                                    <button class="bg-green-500 hover:bg-green-600 text-white text-sm py-1 px-3 rounded-lg">Approve</button>
-                                    <button class="bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded-lg">Reject</button>
+                                    <button class="approve-btn bg-green-500 hover:bg-green-600 text-white text-sm py-1 px-3 rounded-lg">Approve</button>
+                                    <button class="reject-btn bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded-lg">Reject</button>
                                 </div>
                             </td>
                         </tr>
@@ -216,21 +228,54 @@
                 });
             }
 
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const filteredTransactions = mockTransactions.filter(tx => 
-                        tx.id.toLowerCase().includes(searchTerm) ||
-                        String(tx.userId).includes(searchTerm) ||
-                        tx.type.toLowerCase().includes(searchTerm)
-                    );
-                    renderTransactions(filteredTransactions);
-                });
+            payoutTableBody.addEventListener('click', async (e) => {
+                const row = e.target.closest('tr');
+                if (!row) return;
+                
+                const payoutId = row.dataset.id;
+
+                if (e.target.matches('.approve-btn')) {
+                    if (confirm(`Approve this payout of $${row.cells[2].innerText.slice(1)} for user ${row.cells[1].innerText}?`)) {
+                        try {
+                            await Api.approvePayout(payoutId);
+                            alert('Payout approved.');
+                            loadFinancialData(); // Refresh data
+                        } catch(err) { /* handled in Api.fetch */ }
+                    }
+                } else if (e.target.matches('.reject-btn')) {
+                     if (confirm(`Reject this payout of $${row.cells[2].innerText.slice(1)} for user ${row.cells[1].innerText}? The funds will be returned to the user's balance.`)) {
+                        try {
+                            await Api.rejectPayout(payoutId);
+                            alert('Payout rejected and funds returned to user.');
+                            loadFinancialData(); // Refresh data
+                        } catch(err) { /* handled in Api.fetch */ }
+                    }
+                }
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredTransactions = allTransactions.filter(tx => 
+                    tx.username.toLowerCase().includes(searchTerm) ||
+                    tx.description.toLowerCase().includes(searchTerm)
+                );
+                renderTransactions(filteredTransactions);
+            });
+
+            async function loadFinancialData() {
+                try {
+                    const data = await Api.getFinancialData();
+                    allTransactions = data.transactions;
+                    allPayouts = data.payouts;
+                    renderTransactions(allTransactions);
+                    renderPayouts(allPayouts);
+                } catch (error) {
+                    transactionTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-red-500">Failed to load transaction data.</td></tr>`;
+                    payoutTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-red-500">Failed to load payout data.</td></tr>`;
+                }
             }
 
-            // Initial render
-            renderTransactions(mockTransactions);
-            renderPayouts(mockPayouts);
+            loadFinancialData();
         });
     </script>
 </body>

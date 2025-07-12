@@ -115,7 +115,91 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// --- UPDATED: DASHBOARD API ENDPOINT with Promise.allSettled ---
+// --- [NEW] FINANCIAL ADMIN API ENDPOINTS ---
+app.get('/api/admin/financial-summary', requireAdmin, async (req, res) => {
+    try {
+        const transactionsQuery = `
+            (SELECT u.username, 'Quest Reward: ' || q.title AS description, public.parse_payout(q.reward) AS amount, 'credit' as type, uq.completed_at AS date FROM user_quests uq JOIN users u ON uq.user_id = u.id JOIN quests q ON uq.quest_id = q.id)
+            UNION ALL
+            (SELECT c.affiliate_username AS username, 'Job Conversion: ' || ap.title AS description, c.payout_amount AS amount, 'credit' as type, c.timestamp AS date FROM conversions c JOIN affiliate_programs ap ON c.program_id = ap.id)
+            UNION ALL
+            (SELECT u.username, 'Withdrawal' AS description, rc.amount, 'debit' as type, rc.created_at AS date FROM redeemable_codes rc JOIN users u ON rc.user_id = u.id WHERE rc.is_used = true)
+            ORDER BY date DESC;
+        `;
+        
+        const payoutsQuery = `
+            SELECT rc.id, u.username, rc.amount, rc.code, rc.created_at
+            FROM redeemable_codes rc
+            JOIN users u ON rc.user_id = u.id
+            WHERE rc.is_used = false
+            ORDER BY rc.created_at ASC;
+        `;
+
+        const [transactionsResult, payoutsResult] = await Promise.all([
+            pool.query(transactionsQuery),
+            pool.query(payoutsQuery)
+        ]);
+
+        res.json({
+            transactions: transactionsResult.rows,
+            payouts: payoutsResult.rows
+        });
+
+    } catch (err) {
+        console.error('Error fetching financial summary:', err);
+        res.status(500).json({ error: 'Failed to fetch financial data' });
+    }
+});
+
+app.post('/api/admin/payouts/approve', requireAdmin, async (req, res) => {
+    const { payoutId } = req.body;
+    try {
+        const result = await pool.query(
+            'UPDATE redeemable_codes SET is_used = true WHERE id = $1 AND is_used = false RETURNING *',
+            [payoutId]
+        );
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Payout not found or already processed.' });
+        }
+        res.json({ success: true, message: 'Payout approved.' });
+    } catch (err) {
+        console.error('Error approving payout:', err);
+        res.status(500).json({ error: 'Failed to approve payout.' });
+    }
+});
+
+app.post('/api/admin/payouts/reject', requireAdmin, async (req, res) => {
+    const { payoutId } = req.body;
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Get the payout details before deleting
+        const payoutResult = await client.query('SELECT user_id, amount FROM redeemable_codes WHERE id = $1 FOR UPDATE', [payoutId]);
+        if (payoutResult.rows.length === 0) {
+            throw new Error('Payout not found.');
+        }
+        const payout = payoutResult.rows[0];
+
+        // Refund the user
+        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [payout.amount, payout.user_id]);
+
+        // Delete the redeemable code
+        await client.query('DELETE FROM redeemable_codes WHERE id = $1', [payoutId]);
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Payout rejected and funds returned to user.' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Error rejecting payout:', err);
+        res.status(500).json({ error: 'Failed to reject payout.' });
+    } finally {
+        client.release();
+    }
+});
+
+
+// --- DASHBOARD API ENDPOINT ---
 app.get('/api/dashboard-stats', requireAdmin, async (req, res) => {
     try {
         const queries = {
