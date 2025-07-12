@@ -872,8 +872,9 @@ app.post('/signup', async (req, res) => {
         const passwordHash = await bcrypt.hash(password, saltRounds);
         const ownReferralCode = crypto.randomBytes(8).toString('hex');
 
-        const newUserQuery = `INSERT INTO users (username, email, password_hash, full_name, referral_code, referrer_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username;`;
-        const newUserResult = await client.query(newUserQuery, [username, email, passwordHash, fullName, ownReferralCode, referrerId]);
+        // [FIXED] Removed referrer_id from the INSERT statement to match the user's schema
+        const newUserQuery = `INSERT INTO users (username, email, password_hash, full_name, referral_code) VALUES ($1, $2, $3, $4, $5) RETURNING id, username;`;
+        const newUserResult = await client.query(newUserQuery, [username, email, passwordHash, fullName, ownReferralCode]);
         const { id: newUserId, username: newUsername } = newUserResult.rows[0];
 
         if (referrerId) {

@@ -440,6 +440,9 @@
             const formError = document.getElementById('form-error');
             let isSignUp = false;
             
+            // [FIXED] Variable to hold the referral code from the URL
+            let referralCode = null;
+
             function setFormState(signUp) {
                 isSignUp = signUp;
                 formToggle.checked = isSignUp;
@@ -463,6 +466,12 @@
                     submitBtnText.textContent = 'Log In';
                     forgotPasswordLink.style.display = 'block';
                 }
+            }
+            
+            // [FIXED] Function to get referral code from URL
+            function getReferralCodeFromURL() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('referralCode');
             }
 
             formToggle.addEventListener('change', () => setFormState(formToggle.checked));
@@ -494,8 +503,10 @@
                 const password = document.getElementById('password').value;
 
                 const endpoint = isSignUp ? '/signup' : '/login';
+                
+                // [FIXED] Include referralCode in the signup payload if it exists
                 const body = isSignUp 
-                    ? { fullName, username, email, password } 
+                    ? { fullName, username, email, password, referralCode } 
                     : { username, password };
 
                 try {
@@ -530,6 +541,15 @@
             // --- INITIALIZATION ---
             initTheme();
             setFormState(false); // Initial state is login
+            
+            // [FIXED] Get the referral code on page load
+            referralCode = getReferralCodeFromURL();
+            if (referralCode) {
+                console.log('Referral code found:', referralCode);
+                // Automatically switch to the sign-up form if a referral code is present
+                setFormState(true);
+            }
+
 
             const styleSheet = document.createElement("style");
             styleSheet.type = "text/css";
