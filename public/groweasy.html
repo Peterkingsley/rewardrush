@@ -438,6 +438,19 @@
     <div id="referral-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="modal-content-wrapper bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 transform transition-transform scale-95">
             <h2 class="text-xl font-bold mb-4">My Referrals</h2>
+            
+            <!-- Platform Referral Link Section -->
+            <div class="mb-6">
+                <h3 class="text-lg font-bold mb-2">Your Platform Referral Link</h3>
+                <p class="text-sm text-gray-500 mb-2">Share this link to invite new users to RewardRush.</p>
+                <div class="flex items-center">
+                    <input type="text" id="platform-referral-link" readonly class="w-full p-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm">
+                    <button id="copy-platform-link-btn" class="bg-purple-600 text-white p-2 rounded-r-lg hover:bg-purple-700">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+
             <div id="referral-stats" class="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <p class="text-sm text-gray-500">Total Referrals</p>
@@ -545,7 +558,13 @@
                     body: JSON.stringify({ amount, walletAddress, chain }),
                 }),
                 getReferrals: () => ApiService.fetch('/api/referrals'),
-                generateReferralLink: (questId) => ApiService.fetch(`/generate-referral-link?questId=${questId}`),
+                generateReferralLink: (questId) => {
+                    let url = '/generate-referral-link';
+                    if (questId) {
+                        url += `?questId=${questId}`;
+                    }
+                    return ApiService.fetch(url);
+                },
             };
 
             // Encapsulate all logic in an App object
@@ -605,6 +624,8 @@
                     copyLinkBtn: document.getElementById('copy-link-btn'),
                     closeCompletionModalBtn: document.getElementById('close-completion-modal-btn'),
                     closeReferralModalBtn: document.getElementById('close-referral-modal-btn'),
+                    platformReferralLinkInput: document.getElementById('platform-referral-link'),
+                    copyPlatformLinkBtn: document.getElementById('copy-platform-link-btn'),
                 },
                 
                 // --- METHODS ---
@@ -1096,6 +1117,10 @@
                                 referralList.appendChild(row);
                             });
                         }
+
+                        const platformLinkData = await ApiService.generateReferralLink();
+                        this.elements.platformReferralLinkInput.value = platformLinkData.referralLink;
+
                         this.openModal(this.elements.referralModal);
                     } catch (error) {
                         console.error('Failed to show referral modal:', error);
@@ -1289,6 +1314,11 @@
                         this.showNotification('Referral link copied!', 'success');
                     });
                     this.elements.closeReferralModalBtn.addEventListener('click', () => this.closeModal(this.elements.referralModal));
+                    this.elements.copyPlatformLinkBtn.addEventListener('click', () => {
+                        this.elements.platformReferralLinkInput.select();
+                        document.execCommand('copy');
+                        this.showNotification('Platform referral link copied!', 'success');
+                    });
                 }
             };
 
