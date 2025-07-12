@@ -1153,7 +1153,6 @@ app.get('/api/profile/:userId/earnings-history', requireLogin, async (req, res) 
     }
 });
 
-const upload = multer({ dest: 'public/uploads/' });
 app.post('/api/user/upload-picture', requireLogin, upload.single('profilePicture'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded.' });
@@ -1266,13 +1265,15 @@ app.get('/quests', requireLogin, async (req, res) => {
     }
 });
 
-// --- [NEW] FULL CRUD FOR QUESTS ---
-app.post('/api/quests', requireAdmin, async (req, res) => {
+// --- [UPDATED] FULL CRUD FOR QUESTS WITH FILE UPLOAD ---
+app.post('/api/quests', requireAdmin, upload.single('questBackground'), async (req, res) => {
     const { title, description, reward, status, start_time, end_time } = req.body;
+    const backgroundUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
     try {
         const newQuest = await pool.query(
-            'INSERT INTO quests (title, description, reward, status, start_time, end_time) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [title, description, reward, status, start_time || null, end_time || null]
+            'INSERT INTO quests (title, description, reward, status, start_time, end_time, quiz_background_url) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [title, description, reward, status, start_time || null, end_time || null, backgroundUrl]
         );
         res.status(201).json(newQuest.rows[0]);
     } catch (err) {
@@ -1281,14 +1282,36 @@ app.post('/api/quests', requireAdmin, async (req, res) => {
     }
 });
 
-app.put('/api/quests/:id', requireAdmin, async (req, res) => {
+app.put('/api/quests/:id', requireAdmin, upload.single('questBackground'), async (req, res) => {
     const { id } = req.params;
     const { title, description, reward, status, start_time, end_time } = req.body;
+
     try {
-        const updatedQuest = await pool.query(
-            'UPDATE quests SET title = $1, description = $2, reward = $3, status = $4, start_time = $5, end_time = $6 WHERE id = $7 RETURNING *',
-            [title, description, reward, status, start_time || null, end_time || null, id]
-        );
+        // If a new file is uploaded, we need to delete the old one.
+        if (req.file) {
+            const oldQuestResult = await pool.query('SELECT quiz_background_url FROM quests WHERE id = $1', [id]);
+            const oldUrl = oldQuestResult.rows[0]?.quiz_background_url;
+            if (oldUrl) {
+                await fs.unlink(path.join(__dirname, 'public', oldUrl)).catch(e => console.error("Failed to delete old background file:", e));
+            }
+        }
+
+        const backgroundUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
+
+        // Dynamically build the query to only update the background if a new one was provided
+        let queryText = 'UPDATE quests SET title = $1, description = $2, reward = $3, status = $4, start_time = $5, end_time = $6';
+        const queryParams = [title, description, reward, status, start_time || null, end_time || null];
+        
+        if (backgroundUrl !== undefined) {
+            queryText += `, quiz_background_url = $${queryParams.length + 1}`;
+            queryParams.push(backgroundUrl);
+        }
+        
+        queryText += ` WHERE id = $${queryParams.length + 1} RETURNING *`;
+        queryParams.push(id);
+
+        const updatedQuest = await pool.query(queryText, queryParams);
+
         if (updatedQuest.rows.length === 0) {
             return res.status(404).json({ error: 'Quest not found' });
         }
@@ -1299,9 +1322,17 @@ app.put('/api/quests/:id', requireAdmin, async (req, res) => {
     }
 });
 
+
 app.delete('/api/quests/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
     try {
+        // [NEW] Also delete the background file associated with the quest
+        const oldQuestResult = await pool.query('SELECT quiz_background_url FROM quests WHERE id = $1', [id]);
+        const oldUrl = oldQuestResult.rows[0]?.quiz_background_url;
+        if (oldUrl) {
+            await fs.unlink(path.join(__dirname, 'public', oldUrl)).catch(e => console.error("Failed to delete background file on quest deletion:", e));
+        }
+
         const deleteOp = await pool.query('DELETE FROM quests WHERE id = $1 RETURNING *', [id]);
         if (deleteOp.rowCount === 0) {
             return res.status(404).json({ error: 'Quest not found' });
