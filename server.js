@@ -1576,7 +1576,7 @@ app.get('/generate-referral-link', requireLogin, async (req, res) => {
         }
 
         const baseUrl = process.env.BASE_URL || `https://rewardrushapp.onrender.com`;
-        let referralLink = `${baseUrl}/signup.html?referralCode=${user.referral_code}`;
+        let referralLink = `${baseUrl}/auth.html?referralCode=${user.referral_code}`;
         if (questId) {
             referralLink += `&questId=${questId}`;
         }

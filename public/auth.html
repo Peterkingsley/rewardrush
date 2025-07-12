@@ -5,16 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RewardRush - Welcome</title>
     
-    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Three.js for Particle Background -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
@@ -152,12 +148,10 @@
 </head>
 <body class="text-gray-800">
 
-    <!-- Background Canvas and Custom Cursor -->
     <canvas id="bg-canvas"></canvas>
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
 
-    <!-- Theme Toggle Button -->
     <button id="theme-toggle" class="fixed top-4 right-4 z-50 p-3 rounded-full bg-white/50 dark:bg-black/50 backdrop-blur-sm shadow-md text-gray-800 dark:text-gray-200">
         <i id="theme-icon" class="fas fa-moon"></i>
     </button>
@@ -165,7 +159,6 @@
     <div class="min-h-screen flex items-center justify-center p-4">
         <div class="w-full max-w-6xl mx-auto grid lg:grid-cols-2 bg-white shadow-lg rounded-2xl overflow-hidden">
             
-            <!-- Hero Section -->
             <div class="hero-section relative hidden lg:flex flex-col justify-center p-12 bg-gray-50 text-gray-900">
                 <div class="relative z-10">
                     <div class="flex items-center text-3xl font-bold font-montserrat mb-2">
@@ -176,8 +169,7 @@
                     <h2 class="text-4xl font-bold font-montserrat text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-cyan-400 leading-tight mb-8">Unlock Your Crypto Potential.</h2>
                     
                     <div id="benefits-carousel" class="relative h-32">
-                        <!-- Benefits will be injected here by JS -->
-                    </div>
+                        </div>
 
                     <div class="mt-12 text-center">
                         <a href="#" class="text-sm text-gray-500 hover:text-purple-600 dark:hover:text-cyan-400 transition-colors">
@@ -187,10 +179,8 @@
                 </div>
             </div>
 
-            <!-- Form Section -->
             <div class="form-section p-8 md:p-12">
                 <div class="max-w-md mx-auto">
-                    <!-- Mobile Header -->
                     <div class="lg:hidden text-center mb-6">
                         <div class="flex items-center justify-center text-2xl font-bold font-montserrat text-gray-900 dark:text-white">
                              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-600 dark:text-purple-400 mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
@@ -198,7 +188,6 @@
                         </div>
                     </div>
 
-                    <!-- Form Toggle -->
                     <div class="form-toggle-bg flex justify-between items-center mb-8">
                         <input type="checkbox" id="form-toggle" class="hidden form-toggle-input">
                         <div class="form-toggle-slider"></div>
@@ -209,7 +198,6 @@
                     <h2 id="form-title" class="text-3xl font-bold text-gray-900 mb-2 text-center font-montserrat">Welcome Back</h2>
                     <p id="form-subtitle" class="text-gray-600 mb-8 text-center">Log in to continue your journey.</p>
 
-                    <!-- Main Auth Form -->
                     <form id="auth-form" class="space-y-4">
                         <div id="fullName-container" class="form-group-container">
                             <label for="fullName" class="sr-only">Full Name</label>
@@ -252,7 +240,6 @@
                         </button>
                     </form>
                     
-                    <!-- Social Login -->
                     <div class="relative flex py-5 items-center">
                         <div class="flex-grow border-t border-gray-300"></div>
                         <span class="flex-shrink mx-4 text-gray-500 text-sm">Or continue with</span>
@@ -273,7 +260,6 @@
         </div>
     </div>
 
-    <!-- Custom Notification/Toast -->
     <div id="notification-toast" class="fixed bottom-8 right-8 bg-gray-800 text-white py-3 px-6 rounded-lg shadow-xl z-50 hidden">
         <p id="notification-message">Notification message</p>
     </div>
@@ -542,11 +528,11 @@
             initTheme();
             setFormState(false); // Initial state is login
             
-            // [FIXED] Get the referral code on page load
+            // [FIXED] Get the referral code on page load and switch to sign-up if present
             referralCode = getReferralCodeFromURL();
             if (referralCode) {
                 console.log('Referral code found:', referralCode);
-                // Automatically switch to the sign-up form if a referral code is present
+                // Automatically switch to the sign-up form
                 setFormState(true);
             }
 
