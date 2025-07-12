@@ -1153,6 +1153,7 @@ app.get('/api/profile/:userId/earnings-history', requireLogin, async (req, res) 
     }
 });
 
+const upload = multer({ dest: 'public/uploads/' });
 app.post('/api/user/upload-picture', requireLogin, upload.single('profilePicture'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded.' });
@@ -1899,3 +1900,5 @@ app.use((req, res, next) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);
 });
+
+// Serve static files from the public directory
