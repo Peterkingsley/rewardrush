@@ -703,11 +703,26 @@
                          return (match && match[1]) ? parseFloat(match[1]) : 0;
                     }
 
-                    if (sortOrder === 'high-to-low') {
-                        filteredQuests.sort((a, b) => parseReward(b.reward) - parseReward(a.reward));
-                    } else if (sortOrder === 'low-to-high') {
-                        filteredQuests.sort((a, b) => parseReward(a.reward) - parseReward(b.reward));
-                    }
+                    // UPDATED: Combined sorting logic
+                    filteredQuests.sort((a, b) => {
+                        // Primary sort: move completed quests to the bottom
+                        if (a.status === 'completed' && b.status !== 'completed') {
+                            return 1; // a comes after b
+                        }
+                        if (a.status !== 'completed' && b.status === 'completed') {
+                            return -1; // a comes before b
+                        }
+
+                        // Secondary sort: by reward, if status is the same
+                        if (sortOrder === 'high-to-low') {
+                            return parseReward(b.reward) - parseReward(a.reward);
+                        }
+                        if (sortOrder === 'low-to-high') {
+                            return parseReward(a.reward) - parseReward(b.reward);
+                        }
+                        
+                        return 0; // Default: no change in order
+                    });
                     
                     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
                     const endIndex = startIndex + this.itemsPerPage;
