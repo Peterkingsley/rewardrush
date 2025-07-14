@@ -678,6 +678,20 @@
                         this.displayQuests();
                         this.displayTransactionHistory();
 
+                        // Check for questId in URL and open quiz if present
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const questIdFromUrl = urlParams.get('questId');
+                        if (questIdFromUrl) {
+                            const questToOpen = this.quests.find(q => q.id === parseInt(questIdFromUrl, 10));
+                            if (questToOpen && questToOpen.status !== 'completed') { // Only open if not already completed
+                                this.startQuiz(parseInt(questIdFromUrl, 10));
+                                // Remove questId from URL to prevent reopening on refresh
+                                urlParams.delete('questId');
+                                const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+                                window.history.replaceState({}, document.title, newUrl);
+                            }
+                        }
+
                     } catch (error) {
                         console.error("Initialization failed:", error);
                     }
