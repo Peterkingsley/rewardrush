@@ -1216,7 +1216,8 @@ app.get('/quest-overview', requireLogin, async (req, res) => {
         const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [userId]);
         const user = userResult.rows[0];
         // MODIFIED: Select referral_link from user_quests
-        const completedQuestsResult = await pool.query('SELECT uq.*, q.title, q.reward, uq.referral_link FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1', [user.id]);
+        // FIX: Explicitly select columns from user_quests to avoid potential ambiguity
+        const completedQuestsResult = await pool.query('SELECT uq.id, uq.user_id, uq.quest_id, uq.completed_at, uq.referral_link, q.title, q.reward FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1', [user.id]);
         // Updated to query the new withdrawals table
         const pendingWithdrawalsResult = await pool.query("SELECT COUNT(*) FROM withdrawals WHERE user_id = $1 AND status = 'pending'", [user.id]);
 
