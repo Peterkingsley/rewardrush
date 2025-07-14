@@ -1469,7 +1469,7 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
         }
 
         // 2. Fetch quest and its questions
-        const questResult = await client.query('SELECT * FROM quests WHERE id = $1', [questId]);
+        const questResult = await pool.query('SELECT * FROM quests WHERE id = $1', [questId]);
         const quest = questResult.rows[0];
         if (!quest) {
             await client.query('ROLLBACK');
@@ -1631,8 +1631,15 @@ app.get('/referral', async (req, res) => {
         if (!quest || !quest.quiz_page) return res.status(404).json({ error: 'Quest not found' });
         
         let redirectUrl = quest.quiz_page;
+        const params = new URLSearchParams();
         if (referralCode) {
-            redirectUrl += `?referralCode=${referralCode}`;
+            params.append('referralCode', referralCode);
+        }
+        if (questId) { // Add this condition to include questId
+            params.append('questId', questId);
+        }
+        if (params.toString()) {
+            redirectUrl += `?${params.toString()}`;
         }
         res.redirect(redirectUrl);
     } catch (err) {
@@ -1816,7 +1823,7 @@ app.post('/api/affiliate/conversion', async (req, res) => {
              await client.query('ROLLBACK');
             return res.status(404).json({ error: 'Program not found.' });
         }
-        const userResult = await client.query('SELECT id FROM users WHERE username = $1', [affiliateId]);
+        const userResult = await pool.query('SELECT id FROM users WHERE username = $1', [affiliateId]);
         if (userResult.rows.length === 0) {
             await client.query('ROLLBACK');
             return res.status(404).json({error: 'Affiliate user not found'});
