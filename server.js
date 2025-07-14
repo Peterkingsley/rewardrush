@@ -807,7 +807,7 @@ app.post('/api/jobs/:jobId/complete', requireLogin, async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        const jobResult = await client.query('SELECT * FROM affiliate_programs WHERE id = $1', [jobId]);
+        const jobResult = await pool.query('SELECT * FROM affiliate_programs WHERE id = $1', [jobId]);
         const job = jobResult.rows[0];
 
         if (!job) {
@@ -1248,7 +1248,7 @@ app.post('/withdraw', requireLogin, async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        const userResult = await client.query('SELECT points FROM users WHERE id = $1 FOR UPDATE', [userDbId]);
+        const userResult = await pool.query('SELECT points FROM users WHERE id = $1 FOR UPDATE', [userDbId]);
         const user = userResult.rows[0];
 
         if (!user || user.points < withdrawalAmount) {
@@ -1293,10 +1293,32 @@ app.get('/withdrawal-history', requireLogin, async (req, res) => {
 });
 
 
-
+// --- [UPDATED] /quests ENDPOINT to include user referral count ---
 app.get('/quests', requireLogin, async (req, res) => {
     try {
-        const questsResult = await pool.query('SELECT * FROM quests ORDER BY id ASC');
+        const userId = req.user.id; // Get the logged-in user's database ID
+
+        const questsResult = await pool.query(`
+            SELECT 
+                q.*,
+                COALESCE(qr.referral_count, 0) AS user_referral_count
+            FROM 
+                quests q
+            LEFT JOIN (
+                SELECT 
+                    quest_id, 
+                    COUNT(*) AS referral_count
+                FROM 
+                    referrals
+                WHERE 
+                    referrer_id = $1 AND type = 'quest'
+                GROUP BY 
+                    quest_id
+            ) qr ON q.id = qr.quest_id
+            ORDER BY 
+                q.id ASC;
+        `, [userId]); // Pass userId as a parameter
+
         res.json({ quests: questsResult.rows });
     } catch (err) {
         console.error('Error reading quests:', err);

@@ -547,7 +547,7 @@
 
                 checkSession: () => ApiService.fetch('/check-session'),
                 getProfile: (userId) => ApiService.fetch(`/api/profile/${userId}`),
-                getQuests: () => ApiService.fetch('/quests'),
+                getQuests: () => ApiService.fetch('/quests'), // This will now include referral counts
                 getQuestQuestions: (questId) => ApiService.fetch(`/api/quests/${questId}/questions`),
                 submitQuiz: (questId, answers) => ApiService.fetch(`/submit-quiz/${questId}`, {
                     method: 'POST',
@@ -647,7 +647,7 @@
 
                         const [profileData, questsData] = await Promise.all([
                             ApiService.getProfile(this.state.userId),
-                            ApiService.getQuests(),
+                            ApiService.getQuests(), // This now returns user_referral_count
                         ]);
                         
                         this.user.name = profileData.user.fullName;
@@ -670,7 +670,8 @@
 
                         this.quests = questsData.quests.map(quest => ({
                             ...quest,
-                            status: completedQuestTitles.has(quest.title) ? 'completed' : 'not-started'
+                            status: completedQuestTitles.has(quest.title) ? 'completed' : 'not-started',
+                            userReferralCount: quest.user_referral_count || 0 // Assign the new referral count
                         }));
 
                         this.displayGreeting();
@@ -908,7 +909,8 @@
                     
                     const isCompleted = quest.status === 'completed';
                     const referralLink = this.user.completedQuestsWithReferral[quest.id];
-                    
+                    const userReferralCount = quest.userReferralCount; // Get the new referral count
+
                     let statusBadge;
                     if (isCompleted) {
                         statusBadge = `<span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full">Completed</span>`;
@@ -931,6 +933,16 @@
                         `;
                     }
 
+                    let referralCountHtml = '';
+                    if (isCompleted && userReferralCount > 0) {
+                        referralCountHtml = `
+                            <p class="text-xs text-gray-500 mt-2">
+                                <i class="fas fa-users mr-1 text-purple-500"></i>Referred: ${userReferralCount} user(s)
+                            </p>
+                        `;
+                    }
+
+
                     const cardContent = `
                         <div class="flex-grow">
                             <div class="flex justify-between items-start mb-2">
@@ -949,6 +961,7 @@
                             </button>
                         </div>
                         ${referralLinkHtml} <!-- Inject referral link HTML here -->
+                        ${referralCountHtml} <!-- Inject referral count HTML here -->
                     `;
                     card.innerHTML = cardContent;
                     return card;
@@ -1138,7 +1151,7 @@
                 async showReferralModal() {
                     try {
                         const referralData = await ApiService.getReferrals();
-                        document.getElementById('total-referrals').textContent = referralData.stats.total_referrals || 0;
+                        document.getElementById('total-referrals').textContent = referralData.stats.total_app_referrals || 0; // Updated to show platform referrals
                         document.getElementById('total-earnings').textContent = `$${parseFloat(referralData.stats.total_earnings || 0).toFixed(2)}`;
                         
                         const referralList = document.getElementById('referral-history-list');
