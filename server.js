@@ -324,6 +324,12 @@ app.get('/api/users-data', requireAdmin, async (req, res) => {
                 u.points,
                 u.blocked,
                 u.created_at,
+                -- Referred By: Find the username of the referrer
+                (SELECT r_by.username FROM users r_by JOIN referrals r ON r_by.id = r.referrer_id WHERE r.referred_id = u.id LIMIT 1) AS referred_by,
+                -- Total App Referrals: Count referrals of type 'platform' where this user is the referrer
+                COALESCE((SELECT COUNT(*) FROM referrals WHERE referrer_id = u.id AND type = 'platform'), 0) AS total_app_referrals,
+                -- Total Quest Referrals: Count referrals of type 'quest' where this user is the referrer
+                COALESCE((SELECT COUNT(*) FROM referrals WHERE referrer_id = u.id AND type = 'quest'), 0) AS total_quest_referrals,
                 COALESCE(uq.quest_count, 0) AS quests_joined,
                 COALESCE(ac.click_count, 0) AS jobs_in_progress,
                 COALESCE(c.conversion_count, 0) AS jobs_done
@@ -356,11 +362,14 @@ app.get('/api/users-data', requireAdmin, async (req, res) => {
             email: user.email,
             registeredDate: new Date(user.created_at).toLocaleDateString(),
             status: user.blocked ? 'Banned' : 'Active',
+            referredBy: user.referred_by, // New field
+            totalAppReferrals: parseInt(user.total_app_referrals, 10), // New field
+            totalQuestReferrals: parseInt(user.total_quest_referrals, 10), // New field
             questsJoined: parseInt(user.quests_joined, 10),
             // Note: jobs_in_progress is simplified to total clicks for this view.
             jobsInProgress: parseInt(user.jobs_in_progress, 10),
             jobsDone: parseInt(user.jobs_done, 10),
-            allTimeEarning: parseFloat(user.points).toFixed(2),
+            totalEarnings: parseFloat(user.points).toFixed(2), // Renamed from allTimeEarning for consistency with filter
             balance: parseFloat(user.points).toFixed(2)
         }));
 
@@ -1467,7 +1476,7 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
             return res.status(404).json({ error: 'Quest not found.' });
         }
 
-        const questionsResult = await client.query(
+        const questionsResult = await pool.query(
             'SELECT id FROM quest_questions WHERE quest_id = $1',
             [questId]
         );
@@ -1487,7 +1496,7 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
              // Handle quest referral
             const referralResult = await client.query(
                 `UPDATE referrals SET status = 'completed' 
-                 WHERE referred_id = $1 AND quest_id = $2 AND status = 'pending' 
+                 WHERE referred_id = $1 AND quest_id = $2 AND type = 'quest' AND status = 'pending' 
                  RETURNING id, referrer_id`,
                 [userDbId, questId]
             );
@@ -1538,7 +1547,8 @@ app.get('/api/referrals', requireLogin, async (req, res) => {
     try {
         const referralStatsQuery = `
             SELECT 
-                (SELECT COUNT(*) FROM referrals WHERE referrer_id = $1) as total_referrals,
+                (SELECT COUNT(*) FROM referrals WHERE referrer_id = $1 AND type = 'platform') as total_app_referrals,
+                (SELECT COUNT(*) FROM referrals WHERE referrer_id = $1 AND type = 'quest') as total_quest_referrals,
                 (SELECT SUM(amount) FROM referral_earnings WHERE user_id = $1) as total_earnings
         `;
         const referralStatsResult = await pool.query(referralStatsQuery, [userId]);
@@ -1554,7 +1564,11 @@ app.get('/api/referrals', requireLogin, async (req, res) => {
         const referralsResult = await pool.query(referralsQuery, [userId]);
 
         res.json({
-            stats: referralStatsResult.rows[0],
+            stats: {
+                totalAppReferrals: parseInt(referralStatsResult.rows[0].total_app_referrals, 10) || 0,
+                totalQuestReferrals: parseInt(referralStatsResult.rows[0].total_quest_referrals, 10) || 0,
+                totalEarnings: parseFloat(referralStatsResult.rows[0].total_earnings) || 0
+            },
             referrals: referralsResult.rows
         });
     } catch (err) {
@@ -1599,12 +1613,15 @@ app.get('/referral', async (req, res) => {
                 if (req.session.userId) {
                     const loggedInUserResult = await pool.query('SELECT id FROM users WHERE username = $1', [req.session.userId]);
                     const loggedInUserId = loggedInUserResult.rows[0].id;
-                    await pool.query(
-                        `INSERT INTO referrals (referrer_id, referred_id, quest_id, type) 
-                         VALUES ($1, $2, $3, 'quest') 
-                         ON CONFLICT(referrer_id, referred_id, quest_id) DO NOTHING`,
-                        [referrerId, loggedInUserId, questId]
-                    );
+                    // Only insert if the referred user is not the referrer
+                    if (loggedInUserId !== referrerId) {
+                        await pool.query(
+                            `INSERT INTO referrals (referrer_id, referred_id, quest_id, type) 
+                             VALUES ($1, $2, $3, 'quest') 
+                             ON CONFLICT (referrer_id, referred_id, quest_id) DO NOTHING`,
+                            [referrerId, loggedInUserId, questId]
+                        );
+                    }
                 }
             }
         }

@@ -120,14 +120,28 @@
                         <strong class="font-bold">Error:</strong>
                         <span class="block sm:inline" id="error-text"></span>
                     </div>
-                    <div class="mb-4">
-                        <input id="user-search-input" type="text" placeholder="Search by name or email..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <div class="mb-4 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                        <input id="user-search-input" type="text" placeholder="Search by name or email..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <select id="user-filter-select" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="registeredDateDesc">Registered Date (Newest)</option>
+                            <option value="registeredDateAsc">Registered Date (Oldest)</option>
+                            <option value="appReferralsDesc">Highest App Referrals</option>
+                            <option value="questReferralsDesc">Highest Quest Referrals</option>
+                            <option value="balanceDesc">Highest Balance</option>
+                            <option value="totalEarningsDesc">Highest Total Earnings</option>
+                            <option value="questsCompletedDesc">Quests Completed</option>
+                            <option value="jobsInProgressDesc">Jobs In Progress</option>
+                            <option value="jobsDoneDesc">Jobs Done</option>
+                        </select>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full bg-white">
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">User</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Referred By</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">App Referrals</th>
+                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Quest Referrals</th>
                                     <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Quests</th>
                                     <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Jobs (Done/In Progress)</th>
                                     <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Earnings / Balance</th>
@@ -150,6 +164,7 @@
             const loader = document.getElementById('loader');
             const content = document.getElementById('content');
             let allUsers = []; // To store the master list of users
+            let displayedUsers = []; // To store users currently displayed after search/filter
 
             // --- Client-side Authentication Check ---
             try {
@@ -180,6 +195,7 @@
             const sidebar = document.getElementById('sidebar');
             const userTableBody = document.getElementById('user-table-body');
             const searchInput = document.getElementById('user-search-input');
+            const filterSelect = document.getElementById('user-filter-select');
 
             if (menuButton) {
                 menuButton.addEventListener('click', () => {
@@ -196,7 +212,7 @@
                     }
                     const data = await response.json();
                     allUsers = data.users;
-                    renderUsers(allUsers);
+                    applyFiltersAndSort(); // Apply default sorting after fetching
                 } catch (error) {
                     console.error('Error fetching user data:', error);
                     const errorContainer = document.getElementById('error-container');
@@ -211,7 +227,7 @@
             function renderUsers(users) {
                 userTableBody.innerHTML = '';
                 if (users.length === 0) {
-                    userTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4">No users found.</td></tr>`;
+                    userTableBody.innerHTML = `<tr><td colspan="9" class="text-center py-4">No users found.</td></tr>`;
                     return;
                 }
                 users.forEach(user => {
@@ -227,12 +243,15 @@
                                     </div>
                                 </div>
                             </td>
+                            <td class="py-3 px-4 border-b border-gray-200">${user.referredBy || 'N/A'}</td>
+                            <td class="py-3 px-4 border-b border-gray-200 text-center">${user.totalAppReferrals}</td>
+                            <td class="py-3 px-4 border-b border-gray-200 text-center">${user.totalQuestReferrals}</td>
                             <td class="py-3 px-4 border-b border-gray-200 text-center">${user.questsJoined}</td>
                             <td class="py-3 px-4 border-b border-gray-200 text-center">${user.jobsDone} / ${user.jobsInProgress}</td>
                             <td class="py-3 px-4 border-b border-gray-200">
                                 <div>
-                                    <span class="font-medium">$${parseFloat(user.allTimeEarning).toLocaleString()}</span>
-                                    <p class="text-sm text-gray-500">Balance: $${parseFloat(user.balance).toLocaleString()}</p>
+                                    <span class="font-medium">$${parseFloat(user.totalEarnings).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    <p class="text-sm text-gray-500">Balance: $${parseFloat(user.balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                 </div>
                             </td>
                             <td class="py-3 px-4 border-b border-gray-200">
@@ -257,15 +276,55 @@
                 });
             }
 
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const filteredUsers = allUsers.filter(user => 
+            function applyFiltersAndSort() {
+                let filteredAndSortedUsers = [...allUsers]; // Start with a copy of all users
+
+                // Apply search filter
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm) {
+                    filteredAndSortedUsers = filteredAndSortedUsers.filter(user => 
                         user.name.toLowerCase().includes(searchTerm) ||
-                        user.email.toLowerCase().includes(searchTerm)
+                        user.email.toLowerCase().includes(searchTerm) ||
+                        (user.referredBy && user.referredBy.toLowerCase().includes(searchTerm))
                     );
-                    renderUsers(filteredUsers);
+                }
+
+                // Apply sorting
+                const sortBy = filterSelect.value;
+                filteredAndSortedUsers.sort((a, b) => {
+                    switch (sortBy) {
+                        case 'registeredDateDesc':
+                            return new Date(b.registeredDate) - new Date(a.registeredDate);
+                        case 'registeredDateAsc':
+                            return new Date(a.registeredDate) - new Date(b.registeredDate);
+                        case 'appReferralsDesc':
+                            return b.totalAppReferrals - a.totalAppReferrals;
+                        case 'questReferralsDesc':
+                            return b.totalQuestReferrals - a.totalQuestReferrals;
+                        case 'balanceDesc':
+                            return parseFloat(b.balance) - parseFloat(a.balance);
+                        case 'totalEarningsDesc':
+                            return parseFloat(b.totalEarnings) - parseFloat(a.totalEarnings);
+                        case 'questsCompletedDesc':
+                            return b.questsJoined - a.questsJoined; // questsJoined is quests completed
+                        case 'jobsInProgressDesc':
+                            return b.jobsInProgress - a.jobsInProgress;
+                        case 'jobsDoneDesc':
+                            return b.jobsDone - a.jobsDone;
+                        default:
+                            return 0;
+                    }
                 });
+                displayedUsers = filteredAndSortedUsers;
+                renderUsers(displayedUsers);
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', applyFiltersAndSort);
+            }
+
+            if (filterSelect) {
+                filterSelect.addEventListener('change', applyFiltersAndSort);
             }
         });
     </script>
