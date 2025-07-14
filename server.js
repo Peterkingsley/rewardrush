@@ -1311,7 +1311,7 @@ app.get('/quests', requireLogin, async (req, res) => {
                 FROM 
                     referrals
                 WHERE 
-                    referrer_id = $1 AND type = 'quest'
+                    referrer_id = $1 AND type = 'quest' AND status = 'completed' -- ADDED status = 'completed'
                 GROUP BY 
                     quest_id
             ) qr ON q.id = qr.quest_id
@@ -1839,7 +1839,7 @@ app.post('/api/affiliate/conversion', async (req, res) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const programResult = await client.query('SELECT * FROM affiliate_programs WHERE id = $1', [programId]);
+        const programResult = await pool.query('SELECT * FROM affiliate_programs WHERE id = $1', [programId]);
         const program = programResult.rows[0];
         if (!program) {
              await client.query('ROLLBACK');
