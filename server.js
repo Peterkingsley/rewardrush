@@ -807,7 +807,7 @@ app.post('/api/jobs/:jobId/complete', requireLogin, async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        const jobResult = await client.query('SELECT * FROM affiliate_programs WHERE id = $1', [jobId]);
+        const jobResult = await pool.query('SELECT * FROM affiliate_programs WHERE id = $1', [jobId]);
         const job = jobResult.rows[0];
 
         if (!job) {
@@ -1215,7 +1215,8 @@ app.get('/quest-overview', requireLogin, async (req, res) => {
     try {
         const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [userId]);
         const user = userResult.rows[0];
-        const completedQuestsResult = await pool.query('SELECT * FROM user_quests WHERE user_id = $1', [user.id]);
+        // MODIFIED: Select referral_link from user_quests
+        const completedQuestsResult = await pool.query('SELECT uq.*, q.title, q.reward, uq.referral_link FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1', [user.id]);
         // Updated to query the new withdrawals table
         const pendingWithdrawalsResult = await pool.query("SELECT COUNT(*) FROM withdrawals WHERE user_id = $1 AND status = 'pending'", [user.id]);
 
@@ -1331,7 +1332,7 @@ app.put('/api/quests/:id', requireAdmin, upload.single('questBackground'), async
             const oldQuestResult = await pool.query('SELECT quiz_background_url FROM quests WHERE id = $1', [id]);
             const oldUrl = oldQuestResult.rows[0]?.quiz_background_url;
             if (oldUrl) {
-                await fs.unlink(path.join(__dirname, 'public', oldUrl)).catch(e => console.error("Failed to delete old background file:", e));
+                await fs.unlink(path.join(__dirname, 'public', oldUrl)).catch(e => console.error("Failed to cleanup file", e));
             }
         }
 
@@ -1469,7 +1470,7 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
         }
 
         // 2. Fetch quest and its questions
-        const questResult = await client.query('SELECT * FROM quests WHERE id = $1', [questId]);
+        const questResult = await pool.query('SELECT * FROM quests WHERE id = $1', [questId]);
         const quest = questResult.rows[0];
         if (!quest) {
             await client.query('ROLLBACK');
@@ -1489,9 +1490,14 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
             // 4. Award points and mark as complete (Success)
             const rewardValue = parsePayout(quest.reward);
             await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardValue, userDbId]);
+            
+            // Generate referral link for this specific quest completion
+            const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+            const referralLink = `${baseUrl}/referral?questId=${questId}&referrerId=${encodeURIComponent(req.user.username)}`;
+
             await client.query(
-                'INSERT INTO user_quests (user_id, quest_id, completed_at) VALUES ($1, $2, NOW())',
-                [userDbId, questId]
+                'INSERT INTO user_quests (user_id, quest_id, completed_at, referral_link) VALUES ($1, $2, NOW(), $3)',
+                [userDbId, questId, referralLink] // Save the generated referral link
             );
              // Handle quest referral
             const referralResult = await client.query(
@@ -1509,14 +1515,12 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
             }
 
             await client.query('COMMIT');
-
-            const referralLink = `${process.env.BASE_URL || `http://localhost:${PORT}`}/referral?questId=${questId}&referrerId=${encodeURIComponent(req.user.username)}`;
             
             res.json({
                 success: true,
                 message: "Quest completed successfully!",
                 reward: quest.reward,
-                referralLink
+                referralLink // Send the link back to the client
             });
 
         } else {

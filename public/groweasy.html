@@ -453,8 +453,12 @@
 
             <div id="referral-stats" class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <p class="text-sm text-gray-500">Total Referrals</p>
-                    <p id="total-referrals" class="text-2xl font-bold">0</p>
+                    <p class="text-sm text-gray-500">Total App Referrals</p>
+                    <p id="total-app-referrals" class="text-2xl font-bold">0</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Total Quest Referrals</p>
+                    <p id="total-quest-referrals" class="text-2xl font-bold">0</p>
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Total Earnings</p>
@@ -558,6 +562,8 @@
                     body: JSON.stringify({ amount, walletAddress, chain }),
                 }),
                 getReferrals: () => ApiService.fetch('/api/referrals'),
+                // MODIFIED: Added a new API call to get user's completed quests with referral links
+                getCompletedQuestsWithReferralLinks: (userId) => ApiService.fetch(`/quest-overview?userId=${userId}`),
                 generateReferralLink: (questId) => {
                     let url = '/generate-referral-link';
                     if (questId) {
@@ -582,6 +588,7 @@
                     historyItemsToShow: 4,
                 },
                 quests: [],
+                completedQuestsWithLinks: [], // NEW: To store completed quests with their referral links
                 
                 // --- PAGINATION & QUIZ STATE ---
                 currentPage: 1,
@@ -626,6 +633,10 @@
                     closeReferralModalBtn: document.getElementById('close-referral-modal-btn'),
                     platformReferralLinkInput: document.getElementById('platform-referral-link'),
                     copyPlatformLinkBtn: document.getElementById('copy-platform-link-btn'),
+                    // NEW: Elements for referral stats in referral modal
+                    totalAppReferrals: document.getElementById('total-app-referrals'),
+                    totalQuestReferrals: document.getElementById('total-quest-referrals'),
+                    totalEarnings: document.getElementById('total-earnings'),
                 },
                 
                 // --- METHODS ---
@@ -644,14 +655,16 @@
                         }
                         this.state.userId = sessionData.userId;
 
-                        const [profileData, questsData] = await Promise.all([
+                        const [profileData, questsData, completedQuestsData] = await Promise.all([ // MODIFIED: Fetch completed quests with links
                             ApiService.getProfile(this.state.userId),
                             ApiService.getQuests(),
+                            ApiService.getCompletedQuestsWithReferralLinks(this.state.userId), // NEW
                         ]);
                         
                         this.user.name = profileData.user.fullName;
                         this.user.balance = profileData.stats.totalEarnings;
                         this.user.transactions = profileData.transactions;
+                        this.completedQuestsWithLinks = completedQuestsData.questsCompleted; // Store the fetched data
 
                         const completedQuestTitles = new Set(
                             this.user.transactions
@@ -659,10 +672,14 @@
                                 .map(tx => tx.desc.replace('Completed: ', ''))
                         );
 
-                        this.quests = questsData.quests.map(quest => ({
-                            ...quest,
-                            status: completedQuestTitles.has(quest.title) ? 'completed' : 'not-started'
-                        }));
+                        this.quests = questsData.quests.map(quest => {
+                            const completedQuest = this.completedQuestsWithLinks.find(cq => cq.quest_id === quest.id); // Find the completed quest data
+                            return {
+                                ...quest,
+                                status: completedQuestTitles.has(quest.title) ? 'completed' : 'not-started',
+                                referral_link: completedQuest ? completedQuest.referral_link : null // Attach the referral link
+                            };
+                        });
 
                         this.displayGreeting();
                         this.updateHeader();
@@ -892,6 +909,24 @@
                          statusBadge = `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">Available</span>`;
                     }
 
+                    // NEW: Conditional rendering for referral link on completed quests
+                    let referralLinkHtml = '';
+                    if (isCompleted && quest.referral_link) {
+                        referralLinkHtml = `
+                            <div class="mt-3 pt-3 border-t border-gray-200">
+                                <p class="text-xs text-gray-500 mb-2">Share this quest:</p>
+                                <div class="flex items-center">
+                                    <input type="text" value="${quest.referral_link}" readonly 
+                                           class="quest-referral-link-input w-full p-2 border border-gray-300 rounded-l-lg bg-gray-100 text-sm truncate">
+                                    <button class="copy-quest-link-btn bg-purple-600 text-white p-2 rounded-r-lg hover:bg-purple-700" 
+                                            data-link="${quest.referral_link}">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+
                     const cardContent = `
                         <div class="flex-grow">
                             <div class="flex justify-between items-start mb-2">
@@ -909,6 +944,7 @@
                                 ${isCompleted ? 'Completed' : 'Start Quiz'}
                             </button>
                         </div>
+                        ${referralLinkHtml} <!-- NEW: Insert referral link HTML here -->
                     `;
                     card.innerHTML = cardContent;
                     return card;
@@ -1076,9 +1112,9 @@
 
                         if (result.success) {
                             const quest = this.quests.find(q => q.id === this.currentQuiz.id);
-                            const referralLinkData = await ApiService.generateReferralLink(quest.id);
-                            this.showQuestCompletion(quest, referralLinkData.referralLink);
-                            this.init(); 
+                            // The referralLink is now returned directly from the server
+                            this.showQuestCompletion(quest, result.referralLink); 
+                            this.init(); // Re-initialize to update quest statuses and links
                         } else {
                             this.showNotification(result.message || 'Quiz failed. Please try again later.', 'error');
                         }
@@ -1097,8 +1133,9 @@
                 async showReferralModal() {
                     try {
                         const referralData = await ApiService.getReferrals();
-                        document.getElementById('total-referrals').textContent = referralData.stats.total_referrals || 0;
-                        document.getElementById('total-earnings').textContent = `$${parseFloat(referralData.stats.total_earnings || 0).toFixed(2)}`;
+                        this.elements.totalAppReferrals.textContent = referralData.stats.total_app_referrals || 0; // NEW
+                        this.elements.totalQuestReferrals.textContent = referralData.stats.total_quest_referrals || 0; // NEW
+                        this.elements.totalEarnings.textContent = `$${parseFloat(referralData.stats.total_earnings || 0).toFixed(2)}`;
                         
                         const referralList = document.getElementById('referral-history-list');
                         referralList.innerHTML = '';
@@ -1244,6 +1281,24 @@
                         }
                         const detailsButton = e.target.closest('.details-btn');
                         if (detailsButton) this.showNotification('Quest details page is a work in progress!', 'info');
+
+                        // NEW: Event listener for copying quest-specific referral links
+                        const copyQuestLinkBtn = e.target.closest('.copy-quest-link-btn');
+                        if (copyQuestLinkBtn) {
+                            const linkToCopy = copyQuestLinkBtn.dataset.link;
+                            const textArea = document.createElement("textarea");
+                            textArea.value = linkToCopy;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            try {
+                                document.execCommand('copy');
+                                this.showNotification('Quest referral link copied!', 'success');
+                            } catch (err) {
+                                console.error('Failed to copy text: ', err);
+                                this.showNotification('Failed to copy link.', 'error');
+                            }
+                            document.body.removeChild(textArea);
+                        }
                     });
 
                     this.elements.transactionHistoryList.addEventListener('click', (e) => {
