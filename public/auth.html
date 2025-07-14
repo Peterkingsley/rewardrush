@@ -454,10 +454,13 @@
                 }
             }
             
-            // [FIXED] Function to get referral code from URL
-            function getReferralCodeFromURL() {
+            // [FIXED] Function to get referral code and questId from URL
+            function getUrlParams() {
                 const urlParams = new URLSearchParams(window.location.search);
-                return urlParams.get('referralCode');
+                return {
+                    referralCode: urlParams.get('referralCode'),
+                    questId: urlParams.get('questId')
+                };
             }
 
             formToggle.addEventListener('change', () => setFormState(formToggle.checked));
@@ -490,9 +493,10 @@
 
                 const endpoint = isSignUp ? '/signup' : '/login';
                 
-                // [FIXED] Include referralCode in the signup payload if it exists
+                const urlParams = getUrlParams(); // Get all params
+                // Include referralCode in the signup payload if it exists
                 const body = isSignUp 
-                    ? { fullName, username, email, password, referralCode } 
+                    ? { fullName, username, email, password, referralCode: urlParams.referralCode } 
                     : { username, password };
 
                 try {
@@ -505,8 +509,20 @@
                     const data = await response.json();
 
                     if (response.ok) {
-                        // On successful login/signup, redirect to the splash page
-                        window.location.href = './splash.html';
+                        // On successful login/signup, redirect to groweasy.html
+                        // and pass along any referralCode and questId
+                        let redirectUrl = './groweasy.html';
+                        const params = new URLSearchParams();
+                        if (urlParams.referralCode) {
+                            params.append('referralCode', urlParams.referralCode);
+                        }
+                        if (urlParams.questId) {
+                            params.append('questId', urlParams.questId);
+                        }
+                        if (params.toString()) {
+                            redirectUrl += `?${params.toString()}`;
+                        }
+                        window.location.href = redirectUrl;
                     } else {
                         // Display error message from the server
                         formError.textContent = data.error || 'An unexpected error occurred.';
@@ -528,8 +544,10 @@
             initTheme();
             setFormState(false); // Initial state is login
             
-            // [FIXED] Get the referral code on page load and switch to sign-up if present
-            referralCode = getReferralCodeFromURL();
+            // Get URL parameters on page load
+            const initialUrlParams = getUrlParams();
+            referralCode = initialUrlParams.referralCode; // Store referralCode if present
+
             if (referralCode) {
                 console.log('Referral code found:', referralCode);
                 // Automatically switch to the sign-up form
@@ -542,7 +560,7 @@
             styleSheet.innerText = `
                 @keyframes animate-fade-in {
                     from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
+                    to { opacity: 1; transform: translateY(0); }\
                 }
                 .animate-fade-in { animation: animate-fade-in 0.5s ease forwards; }
             `;
