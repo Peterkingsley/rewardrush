@@ -366,17 +366,8 @@
                             this.elements.greetingHeader.textContent = `Good morning, ${profileData.user.fullName.split(' ')[0]}`;
                         }
                         
-                        // Simulate new data from backend
-                        this.state.allJobs = (jobsData.jobs || []).map(job => ({
-                            ...job,
-                            brandWebsite: 'https://example-brand.com',
-                            socialLinks: {
-                                twitter: 'https://twitter.com/example',
-                                linkedin: 'https://linkedin.com/company/example',
-                                facebook: 'https://facebook.com/example'
-                            },
-                            brandDashboardUrl: ['sign-up', 'trading-volume'].includes(job.category) ? 'https://dashboard.example-brand.com/progress' : null
-                        }));
+                        // Use the dynamic data directly from the API
+                        this.state.allJobs = jobsData.jobs || [];
 
 
                         this.updateAll();

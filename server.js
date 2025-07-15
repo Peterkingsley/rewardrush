@@ -796,7 +796,10 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
                 description: program.details,
                 requirements: requirements,
                 target: target,
-                destinationUrl: program.destination_url
+                destinationUrl: program.destination_url,
+                brandWebsite: program.brand_website,
+                socialLinks: program.social_links,
+                brandDashboardUrl: program.brand_dashboard_url
             };
         });
         
