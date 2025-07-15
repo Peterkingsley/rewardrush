@@ -1151,7 +1151,8 @@
                 async showReferralModal() {
                     try {
                         const referralData = await ApiService.getReferrals();
-                        document.getElementById('total-referrals').textContent = referralData.stats.total_app_referrals || 0; // Updated to show platform referrals
+                        document.getElementById('total-referrals').textContent = referralData.stats.totalReferrals || 0;
+                         // Updated to show platform referrals
                         document.getElementById('total-earnings').textContent = `$${parseFloat(referralData.stats.total_earnings || 0).toFixed(2)}`;
                         
                         const referralList = document.getElementById('referral-history-list');
@@ -1483,3 +1484,4 @@
     </script>
 </body>
 </html>
+ 
