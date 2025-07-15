@@ -213,9 +213,22 @@
                 <button id="close-modal-btn" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times text-2xl"></i></button>
             </div>
             <div id="job-details-view">
-                <div class="border-t border-b border-gray-200 my-4 py-4"><h3 class="font-bold text-lg mb-2 text-gray-800">Job Requirements</h3><div id="modal-requirements" class="text-gray-700 space-y-2"></div></div>
+                <div class="border-t border-b border-gray-200 my-4 py-4">
+                    <h3 class="font-bold text-lg mb-2 text-gray-800">Job Requirements</h3>
+                    <div id="modal-requirements" class="text-gray-700 space-y-2"></div>
+                </div>
+                <div id="modal-brand-info" class="my-4 py-4 border-b border-gray-200">
+                    <h3 class="font-bold text-lg mb-2 text-gray-800">About the Brand</h3>
+                    <a id="modal-brand-website" href="#" target="_blank" class="text-purple-600 hover:underline inline-flex items-center mb-3">
+                        <i class="fas fa-globe mr-2"></i>Visit Website
+                    </a>
+                    <div id="modal-social-links" class="flex space-x-4"></div>
+                </div>
                 <div class="bg-gray-50 p-4 rounded-lg"><h3 class="font-bold text-lg mb-2 text-gray-800">Payment</h3><p id="modal-payment" class="text-2xl font-bold text-green-600"></p><p class="text-xs text-gray-500">Upon successful completion and verification.</p></div>
-                <div class="flex justify-end space-x-4 mt-6"><button id="cancel-btn" class="bg-gray-200 text-gray-800 font-bold py-3 px-8 rounded-lg hover:bg-gray-300">Cancel</button><button id="accept-btn" class="bg-purple-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-purple-700">Accept Job</button></div>
+                <div id="modal-actions" class="flex justify-end space-x-4 mt-6">
+                    <button id="cancel-btn" class="bg-gray-200 text-gray-800 font-bold py-3 px-8 rounded-lg hover:bg-gray-300">Cancel</button>
+                    <button id="accept-btn" class="bg-purple-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-purple-700">Accept Job</button>
+                </div>
             </div>
             <div id="job-progress-view" class="hidden"></div>
         </div>
@@ -352,7 +365,19 @@
                         if (this.elements.greetingHeader) {
                             this.elements.greetingHeader.textContent = `Good morning, ${profileData.user.fullName.split(' ')[0]}`;
                         }
-                        this.state.allJobs = jobsData.jobs || [];
+                        
+                        // Simulate new data from backend
+                        this.state.allJobs = (jobsData.jobs || []).map(job => ({
+                            ...job,
+                            brandWebsite: 'https://example-brand.com',
+                            socialLinks: {
+                                twitter: 'https://twitter.com/example',
+                                linkedin: 'https://linkedin.com/company/example',
+                                facebook: 'https://facebook.com/example'
+                            },
+                            brandDashboardUrl: ['sign-up', 'trading-volume'].includes(job.category) ? 'https://dashboard.example-brand.com/progress' : null
+                        }));
+
 
                         this.updateAll();
 
@@ -378,7 +403,7 @@
                     const sortOrder = sortFilter.value;
                     
                     let filteredJobs = allJobs
-                        .filter(job => !activeJobs.some(aj => aj.id === job.id) && !completedJobs.some(cj => cj.id === job.id))
+                        .filter(job => !completedJobs.some(cj => cj.id === job.id))
                         .filter(job => 
                             (job.title?.toLowerCase().includes(searchTerm) || job.description?.toLowerCase().includes(searchTerm)) && 
                             (categoryFilter === 'all' || job.category === categoryFilter)
@@ -395,9 +420,15 @@
                         jobListingsContainer.innerHTML = `<p class="text-gray-500 md:col-span-2 lg:col-span-3 text-center py-8">No available jobs match your criteria.</p>`;
                     } else {
                         paginatedJobs.forEach(job => {
+                            const isJobActive = this.state.activeJobs.some(aj => aj.id === job.id);
                             const jobCard = document.createElement('div');
-                            jobCard.className = 'job-card bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col justify-between transition-shadow hover:shadow-md';
+                            jobCard.className = 'job-card bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col justify-between transition-shadow hover:shadow-md cursor-pointer';
                             jobCard.dataset.jobId = job.id;
+                            
+                            const buttonHtml = isJobActive
+                                ? `<button class="bg-yellow-500 text-white font-semibold py-2 px-4 rounded-lg text-sm cursor-pointer" disabled>In Progress</button>`
+                                : `<button class="get-started-btn bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700 text-sm">Get Started</button>`;
+
                             jobCard.innerHTML = `
                                 <div class="flex-grow">
                                     <h4 class="font-bold text-gray-800">${job.title}</h4>
@@ -405,7 +436,7 @@
                                 </div>
                                 <div class="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
                                     <p class="font-bold text-green-600 text-base">$${job.payment}</p>
-                                    <button class="get-started-btn bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700 text-sm">Get Started</button>
+                                    ${buttonHtml}
                                 </div>`;
                             jobListingsContainer.appendChild(jobCard);
                         });
@@ -482,9 +513,13 @@
                     const referralCategories = ['sign-up', 'trading-volume', 'transacting-users', 'pay-for-a-product'];
                     const contentCategories = ['video-creation', 'post-on-socials'];
 
+                    if (job.brandDashboardUrl) {
+                        progressContent += `<a id="view-progress-dashboard-btn" href="${job.brandDashboardUrl}" target="_blank" class="w-full text-center bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition block mb-6">View Progress on Dashboard</a>`;
+                    }
+
                     if (referralCategories.includes(job.category)) {
                         const link = `/track?programId=${job.id}&affiliate_id=${this.state.username}`;
-                        progressContent = `
+                        progressContent += `
                             <h3 class="font-bold text-lg mb-2 text-gray-800">Your Tracking Link</h3>
                             <p class="text-sm text-gray-600 mb-4">Share this link to complete the job. Progress will be updated automatically.</p>
                             <div class="flex items-center mb-4">
@@ -498,7 +533,7 @@
                         jobProgressView.innerHTML = progressContent;
                         this.startProgressSimulation(job);
                     } else if (contentCategories.includes(job.category)) {
-                        progressContent = `
+                        progressContent += `
                              <h3 class="font-bold text-lg mb-2 text-gray-800">Submit Your Work</h3>
                              <p class="text-sm text-gray-600 mb-4">Paste the link to your content below to submit it for review.</p>
                              <input type="url" id="content-link-input" placeholder="https://your-content-link.com" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-purple-500">
@@ -517,6 +552,7 @@
                     const progressBar = document.getElementById('progress-bar');
                     const progressText = document.getElementById('progress-text');
                     const claimBtn = document.getElementById('claim-reward-btn');
+                    if(this.state.progressInterval) clearInterval(this.state.progressInterval);
                     this.state.progressInterval = setInterval(() => {
                         currentProgress++;
                         const percentage = (currentProgress / job.target) * 100;
@@ -547,15 +583,24 @@
 
                 openModal(job) {
                     this.state.currentJobInModal = job;
-                    const { jobDetailsView, jobProgressView, modal } = this.elements;
-                    jobDetailsView.classList.remove('hidden');
-                    jobProgressView.classList.add('hidden');
-                    jobProgressView.innerHTML = '';
-                    if(this.state.progressInterval) clearInterval(this.state.progressInterval);
+                    const { jobDetailsView, jobProgressView, modal, acceptBtn } = this.elements;
+                    const isJobActive = this.state.activeJobs.some(aj => aj.id === job.id);
+
+                    if (isJobActive) {
+                        jobDetailsView.classList.add('hidden');
+                        jobProgressView.classList.remove('hidden');
+                        this.renderJobProgress(job);
+                    } else {
+                        jobDetailsView.classList.remove('hidden');
+                        jobProgressView.classList.add('hidden');
+                        jobProgressView.innerHTML = '';
+                        if(this.state.progressInterval) clearInterval(this.state.progressInterval);
+                    }
                     
                     document.getElementById('modal-title').textContent = job.title;
                     document.getElementById('modal-category').textContent = job.category.replace(/-/g, ' ');
                     document.getElementById('modal-payment').textContent = `$${job.payment}`;
+                    
                     const requirementsList = document.getElementById('modal-requirements');
                     requirementsList.innerHTML = '';
                     job.requirements.forEach(req => {
@@ -564,6 +609,27 @@
                         li.innerHTML = `<i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i><span>${req}</span>`;
                         requirementsList.appendChild(li);
                     });
+
+                    // Populate Brand Info
+                    document.getElementById('modal-brand-website').href = job.brandWebsite || '#';
+                    const socialLinksContainer = document.getElementById('modal-social-links');
+                    socialLinksContainer.innerHTML = '';
+                    if (job.socialLinks) {
+                        const socialIconMap = { twitter: 'fa-twitter', linkedin: 'fa-linkedin', facebook: 'fa-facebook-f' };
+                        for (const [platform, url] of Object.entries(job.socialLinks)) {
+                            const iconClass = socialIconMap[platform];
+                            if (iconClass) {
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.target = '_blank';
+                                link.className = 'text-gray-500 hover:text-purple-600 text-xl';
+                                link.innerHTML = `<i class="fab ${iconClass}"></i>`;
+                                socialLinksContainer.appendChild(link);
+                            }
+                        }
+                    }
+
+                    acceptBtn.style.display = isJobActive ? 'none' : 'block';
                     
                     modal.classList.remove('hidden');
                     modal.classList.add('flex');
@@ -687,12 +753,11 @@
                     });
                     
                     jobListingsContainer.addEventListener('click', (e) => {
-                        const btn = e.target.closest('.get-started-btn');
-                        if (btn) {
-                            const card = btn.closest('.job-card');
-                            if (card) {
-                                const jobId = parseInt(card.dataset.jobId);
-                                const selectedJob = this.state.allJobs.find(j => j.id === jobId);
+                        const card = e.target.closest('.job-card');
+                        if (card) {
+                            const jobId = parseInt(card.dataset.jobId);
+                            const selectedJob = this.state.allJobs.find(j => j.id === jobId);
+                            if (selectedJob) {
                                 this.openModal(selectedJob);
                             }
                         }
@@ -706,6 +771,7 @@
                             this.renderJobProgress(this.state.currentJobInModal);
                             this.updateAll();
                             this.showNotification(`Job "${this.state.currentJobInModal.title}" has been accepted!`);
+                            this.elements.acceptBtn.style.display = 'none';
                         }
                     });
 
