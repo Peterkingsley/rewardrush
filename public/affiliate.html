@@ -153,16 +153,16 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-4">
-    <div class="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50">
-        <i class="fas fa-user-plus text-purple-500 text-xl mb-2"></i><p class="text-gray-600 text-xs font-medium">Invite</p>
-    </div>
-    <div id="history-action-btn" class="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50">
-        <i class="fas fa-history text-yellow-500 text-xl mb-2"></i><p class="text-gray-600 text-xs font-medium">History</p>
-    </div>
-    <a href="post-a-job.html" class="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50">
-        <i class="fas fa-plus-circle text-green-500 text-xl mb-2"></i><p class="text-gray-600 text-xs font-medium">Post a Job</p>
-    </a>
-</div>
+                        <div id="invite-btn" class="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50">
+                            <i class="fas fa-user-plus text-purple-500 text-xl mb-2"></i><p class="text-gray-600 text-xs font-medium">Invite</p>
+                        </div>
+                        <div id="history-action-btn" class="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50">
+                            <i class="fas fa-history text-yellow-500 text-xl mb-2"></i><p class="text-gray-600 text-xs font-medium">History</p>
+                        </div>
+                        <a href="post-a-job.html" class="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50">
+                            <i class="fas fa-plus-circle text-green-500 text-xl mb-2"></i><p class="text-gray-600 text-xs font-medium">Post a Job</p>
+                        </a>
+                    </div>
                 </section>
 
                 <section id="available-jobs-section" class="bg-white rounded-2xl shadow-md p-5 mb-6">
@@ -220,6 +220,28 @@
             <div id="job-progress-view" class="hidden"></div>
         </div>
     </div>
+
+    <!-- Invite Modal -->
+    <div id="invite-modal" class="modal fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white dark:bg-mid-bg rounded-2xl shadow-2xl w-full max-w-md p-8 transform scale-95">
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-2xl font-bold text-gray-900 font-montserrat">Share Your Referral Link</h2>
+                <button id="close-invite-modal-btn" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            <p class="text-gray-600 mb-4">Invite new users to RewardRush and earn rewards when they sign up and complete tasks!</p>
+            <div class="flex items-center mb-4">
+                <input type="text" id="referral-link-input" readonly class="w-full p-2 border border-gray-300 rounded-l-lg bg-gray-100 text-sm">
+                <button id="copy-referral-link-btn" class="bg-purple-600 text-white p-2.5 rounded-r-lg hover:bg-purple-700"><i class="fas fa-copy"></i></button>
+            </div>
+            <div class="text-center text-gray-500 my-4">OR</div>
+            <div class="flex justify-center space-x-4">
+                 <a href="#" target="_blank" id="share-twitter" class="text-white bg-[#1DA1F2] w-12 h-12 rounded-full inline-flex items-center justify-center text-xl hover:bg-[#1a91da] transition-colors"><i class="fab fa-twitter"></i></a>
+                 <a href="#" target="_blank" id="share-whatsapp" class="text-white bg-[#25D366] w-12 h-12 rounded-full inline-flex items-center justify-center text-xl hover:bg-[#20b859] transition-colors"><i class="fab fa-whatsapp"></i></a>
+                 <a href="#" target="_blank" id="share-telegram" class="text-white bg-[#0088cc] w-12 h-12 rounded-full inline-flex items-center justify-center text-xl hover:bg-[#007ab8] transition-colors"><i class="fab fa-telegram-plane"></i></a>
+            </div>
+        </div>
+    </div>
+
     <div id="notification-toast" class="fixed bottom-24 md:bottom-8 right-8 bg-gray-800 text-white py-3 px-6 rounded-lg shadow-xl z-50 hidden"><p id="notification-message"></p></div>
 
     <!-- Mobile Bottom Nav -->
@@ -265,6 +287,7 @@
                 },
                 getProfile: (userId) => ApiService.fetch(`/api/profile/${userId}`),
                 checkSession: () => ApiService.fetch('/check-session'),
+                generateReferralLink: () => ApiService.fetch('/generate-referral-link'),
             };
 
             const App = {
@@ -299,6 +322,11 @@
                     sidebarToggleBtn: document.getElementById('sidebar-toggle'),
                     themeToggleBtn: document.getElementById('theme-toggle'),
                     greetingHeader: document.getElementById('greeting-header'),
+                    inviteBtn: document.getElementById('invite-btn'),
+                    inviteModal: document.getElementById('invite-modal'),
+                    closeInviteModalBtn: document.getElementById('close-invite-modal-btn'),
+                    referralLinkInput: document.getElementById('referral-link-input'),
+                    copyReferralLinkBtn: document.getElementById('copy-referral-link-btn'),
                 },
 
                 async init() {
@@ -315,13 +343,11 @@
                         }
                         this.state.username = sessionData.userId;
 
-                        // **FIX**: Fetch profile data to get earnings and name
                         const [profileData, jobsData] = await Promise.all([
                             ApiService.getProfile(this.state.username),
                             ApiService.getJobs()
                         ]);
 
-                        // **FIX**: Correctly access nested profile data
                         this.state.totalEarnings = profileData.stats.totalEarnings || 0;
                         if (this.elements.greetingHeader) {
                             this.elements.greetingHeader.textContent = `Good morning, ${profileData.user.fullName.split(' ')[0]}`;
@@ -554,6 +580,42 @@
                     }, 300);
                 },
 
+                async handleInviteClick() {
+                    try {
+                        const data = await ApiService.generateReferralLink();
+                        if (data.referralLink) {
+                            this.openInviteModal(data.referralLink);
+                        } else {
+                            this.showNotification('Could not generate referral link.', 'error');
+                        }
+                    } catch (error) {
+                        this.showNotification('Error generating referral link.', 'error');
+                    }
+                },
+
+                openInviteModal(link) {
+                    this.elements.referralLinkInput.value = link;
+                    this.elements.inviteModal.classList.remove('hidden');
+                    this.elements.inviteModal.classList.add('flex');
+                    setTimeout(() => this.elements.inviteModal.querySelector('.modal-content').classList.remove('scale-95'), 10);
+
+                    // Update social share links
+                    const encodedLink = encodeURIComponent(link);
+                    const text = encodeURIComponent("Join me on RewardRush and earn rewards!");
+                    document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?text=${text}&url=${encodedLink}`;
+                    document.getElementById('share-whatsapp').href = `https://api.whatsapp.com/send?text=${text} ${encodedLink}`;
+                    document.getElementById('share-telegram').href = `https://t.me/share/url?url=${encodedLink}&text=${text}`;
+                },
+
+                closeInviteModal() {
+                    const modalContent = this.elements.inviteModal.querySelector('.modal-content');
+                    modalContent.classList.add('scale-95');
+                    setTimeout(() => {
+                        this.elements.inviteModal.classList.add('hidden');
+                        this.elements.inviteModal.classList.remove('flex');
+                    }, 300);
+                },
+
                 showNotification(message, type = 'success') {
                     const toast = document.getElementById('notification-toast');
                     document.getElementById('notification-message').textContent = message;
@@ -563,7 +625,6 @@
                 },
 
                 copyToClipboard(text) {
-                    // Use a temporary textarea to copy text to clipboard
                     const textArea = document.createElement("textarea");
                     textArea.value = text;
                     document.body.appendChild(textArea);
@@ -616,7 +677,7 @@
                 },
 
                 bindEvents() {
-                    const { searchInput, categoryFilterEl, sortFilter, jobListingsContainer, acceptBtn, activeTab, historyTab, historyActionBtn, closeModalBtn, sidebarToggleBtn } = this.elements;
+                    const { searchInput, categoryFilterEl, sortFilter, jobListingsContainer, acceptBtn, activeTab, historyTab, historyActionBtn, closeModalBtn, sidebarToggleBtn, inviteBtn, closeInviteModalBtn, copyReferralLinkBtn } = this.elements;
                     
                     [searchInput, categoryFilterEl, sortFilter].forEach(el => {
                         el.addEventListener('input', () => {
@@ -666,6 +727,12 @@
                     this.elements.modal.addEventListener('click', (e) => { if (e.target === this.elements.modal) this.closeModal(); });
 
                     sidebarToggleBtn.addEventListener('click', () => document.body.classList.toggle('sidebar-collapsed'));
+
+                    // Invite modal events
+                    inviteBtn.addEventListener('click', () => this.handleInviteClick());
+                    closeInviteModalBtn.addEventListener('click', () => this.closeInviteModal());
+                    copyReferralLinkBtn.addEventListener('click', () => this.copyToClipboard(this.elements.referralLinkInput.value));
+                    this.elements.inviteModal.addEventListener('click', (e) => { if (e.target === this.elements.inviteModal) this.closeInviteModal(); });
                 }
             };
             
