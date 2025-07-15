@@ -1023,7 +1023,7 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 
-// --- [UPDATED] PROFILE API ENDPOINT ---
+// --- [UPDATED & FIXED] PROFILE API ENDPOINT ---
 app.get('/api/profile/:userId', requireLogin, async (req, res) => {
     const { userId } = req.params;
 
@@ -1039,14 +1039,40 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // 2. Fetch aggregate stats
+        // 2. [FIX] Calculate balance from transactions for accuracy
+        const balanceQuery = `
+            SELECT
+                (COALESCE(SUM(credits), 0) - COALESCE(SUM(debits), 0)) AS current_balance
+            FROM (
+                -- ALL CREDITS
+                SELECT SUM(public.parse_payout(q.reward)) AS credits, 0 AS debits FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1
+                UNION ALL
+                SELECT SUM(c.payout_amount) AS credits, 0 AS debits FROM conversions c WHERE c.affiliate_username = $2
+                UNION ALL
+                SELECT SUM(re.amount) as credits, 0 as debits FROM referral_earnings re WHERE re.user_id = $1
+                UNION ALL
+                -- ALL DEBITS
+                SELECT 0 AS credits, SUM(w.amount) AS debits FROM withdrawals w WHERE w.user_id = $1 AND w.status = 'approved'
+            ) AS transactions;
+        `;
+        const balanceResult = await pool.query(balanceQuery, [user.id, user.username]);
+        const calculatedBalance = parseFloat(balanceResult.rows[0].current_balance) || 0;
+
+        // OPTIONALLY: If user.points is out of sync, update it.
+        // This helps maintain data integrity over time.
+        if (Math.abs(calculatedBalance - parseFloat(user.points)) > 0.01) {
+            console.warn(`User ${user.username} points out of sync. DB: ${user.points}, Calculated: ${calculatedBalance}. Updating.`);
+            await pool.query('UPDATE users SET points = $1 WHERE id = $2', [calculatedBalance, user.id]);
+        }
+
+
+        // 3. Fetch aggregate stats
         const completedQuestsResult = await pool.query('SELECT COUNT(*) FROM user_quests WHERE user_id = $1', [user.id]);
         const questsCompleted = parseInt(completedQuestsResult.rows[0].count, 10);
         
-        // NOTE: The database schema does not track completed jobs. Returning a static value to match profile.html mock data.
-        const jobsFinished = 8;
+        const jobsFinished = 8; // Placeholder
 
-        // 3. Fetch learning/skill progress
+        // 4. Fetch learning/skill progress
         const userSkillsResult = await pool.query(`
             SELECT DISTINCT em.skill_id, es.title AS skill_name
             FROM user_material_progress ump
@@ -1072,7 +1098,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             return { name: skill.skill_name, progress };
         }));
 
-        // 4. Fetch transaction history (UPDATED to include withdrawals)
+        // 5. Fetch transaction history
         const historyQuery = `
             (SELECT 'Completed: ' || q.title AS desc, parse_payout(q.reward) AS amount, uq.completed_at AS date, 'credit' as type, NULL as status, NULL as transaction_hash FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
             UNION ALL
@@ -1091,7 +1117,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             transaction_hash: t.transaction_hash
         }));
         
-        // 5. Fetch expert bookings
+        // 6. Fetch expert bookings
         const bookingsResult = await pool.query(`
             SELECT p.name, b.status, b.preferred_date AS date
             FROM bookings b
@@ -1099,7 +1125,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             WHERE b.user_id = $1 ORDER BY b.created_at DESC
         `, [user.id]);
 
-        // 6. Fetch earnings chart data for the last year
+        // 7. Fetch earnings chart data for the last year
         const earningsHistoryResult = await pool.query(`
             SELECT TO_CHAR(date_trunc('month', d), 'Mon') AS label, COALESCE(SUM(amount), 0) AS value
             FROM GENERATE_SERIES(date_trunc('year', CURRENT_DATE), date_trunc('year', CURRENT_DATE) + '1 year'::interval - '1 day'::interval, '1 month'::interval) d
@@ -1111,39 +1137,36 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             GROUP BY date_trunc('month', d) ORDER BY date_trunc('month', d);
         `, [user.id, user.username]);
         
-        // 7. Assemble the final JSON payload
-        // ...
-res.json({
-    // Wrap user-specific data in a 'user' object
-    user: {
-        fullName: user.full_name,
-        username: user.username,
-        email: user.email,
-        avatar: user.avatar || 'https://i.pravatar.cc/150?img=12',
-        joinDate: new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-        bio: "Lifelong learner and digital creator. Exploring the worlds of design, code, and marketing. Let's connect!",
-    },
-    // Keep other data outside the 'user' object
-    stats: {
-        totalEarnings: parseFloat(user.points) || 0,
-        questsCompleted: questsCompleted,
-        jobsFinished: jobsFinished,
-        skillsInProgress: skillsWithProgress.length
-    },
-    earningsChart: {
-        labels: earningsHistoryResult.rows.map(r => r.label),
-        data: earningsHistoryResult.rows.map(r => parseFloat(r.value))
-    },
-    recentActivity: transactions.slice(0, 5).map(item => ({
-        icon: item.type === 'credit' ? 'fa-check-circle' : 'fa-wallet',
-        color: item.type === 'credit' ? 'green' : 'red',
-        text: `${item.desc} ($${item.amount})`,
-        time: item.date
-    })),
-    mySkills: skillsWithProgress,
-    expertBookings: bookingsResult.rows,
-    transactions: transactions,
-});
+        // 8. Assemble the final JSON payload
+        res.json({
+            user: {
+                fullName: user.full_name,
+                username: user.username,
+                email: user.email,
+                avatar: user.avatar || 'https://i.pravatar.cc/150?img=12',
+                joinDate: new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+                bio: "Lifelong learner and digital creator. Exploring the worlds of design, code, and marketing. Let's connect!",
+            },
+            stats: {
+                totalEarnings: calculatedBalance, // Use the newly calculated balance
+                questsCompleted: questsCompleted,
+                jobsFinished: jobsFinished,
+                skillsInProgress: skillsWithProgress.length
+            },
+            earningsChart: {
+                labels: earningsHistoryResult.rows.map(r => r.label),
+                data: earningsHistoryResult.rows.map(r => parseFloat(r.value))
+            },
+            recentActivity: transactions.slice(0, 5).map(item => ({
+                icon: item.type === 'credit' ? 'fa-check-circle' : 'fa-wallet',
+                color: item.type === 'credit' ? 'green' : 'red',
+                text: `${item.desc} ($${item.amount})`,
+                time: item.date
+            })),
+            mySkills: skillsWithProgress,
+            expertBookings: bookingsResult.rows,
+            transactions: transactions,
+        });
 
     } catch (err) {
         console.error('Error fetching profile data:', err);
