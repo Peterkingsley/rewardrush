@@ -310,10 +310,10 @@ app.get('/api/dashboard-stats', requireAdmin, async (req, res) => {
     }
 });
 
-// --- USERS PAGE API ENDPOINT ---
+// --- [UPDATED & FIXED] USERS PAGE API ENDPOINT ---
 app.get('/api/users-data', requireAdmin, async (req, res) => {
     try {
-        // A more optimized query to get all data at once
+        // A more optimized query to get all data at once, including total withdrawn amount
         const query = `
             SELECT 
                 u.id,
@@ -324,15 +324,13 @@ app.get('/api/users-data', requireAdmin, async (req, res) => {
                 u.points,
                 u.blocked,
                 u.created_at,
-                -- Referred By: Find the username of the referrer
                 (SELECT r_by.username FROM users r_by JOIN referrals r ON r_by.id = r.referrer_id WHERE r.referred_id = u.id LIMIT 1) AS referred_by,
-                -- Total App Referrals: Count referrals of type 'platform' where this user is the referrer
                 COALESCE((SELECT COUNT(*) FROM referrals WHERE referrer_id = u.id AND type = 'platform'), 0) AS total_app_referrals,
-                -- Total Quest Referrals: Count referrals of type 'quest' where this user is the referrer
                 COALESCE((SELECT COUNT(*) FROM referrals WHERE referrer_id = u.id AND type = 'quest'), 0) AS total_quest_referrals,
                 COALESCE(uq.quest_count, 0) AS quests_joined,
                 COALESCE(ac.click_count, 0) AS jobs_in_progress,
-                COALESCE(c.conversion_count, 0) AS jobs_done
+                COALESCE(c.conversion_count, 0) AS jobs_done,
+                COALESCE(w.total_withdrawn, 0) AS total_withdrawn
             FROM users u
             LEFT JOIN (
                 SELECT user_id, COUNT(*) as quest_count 
@@ -349,29 +347,40 @@ app.get('/api/users-data', requireAdmin, async (req, res) => {
                 FROM conversions 
                 GROUP BY affiliate_username
             ) c ON u.username = c.affiliate_username
+            LEFT JOIN (
+                SELECT user_id, SUM(amount) as total_withdrawn
+                FROM withdrawals
+                WHERE status = 'approved'
+                GROUP BY user_id
+            ) w ON u.id = w.user_id
             ORDER BY u.created_at DESC;
         `;
 
         const usersResult = await pool.query(query);
         
-        const usersWithStats = usersResult.rows.map(user => ({
-            id: user.id,
-            name: user.full_name || user.username,
-            username: user.username,
-            avatar: user.avatar || `https://placehold.co/40x40/E2E8F0/4A5568?text=${(user.full_name || user.username).charAt(0).toUpperCase()}`,
-            email: user.email,
-            registeredDate: new Date(user.created_at).toLocaleDateString(),
-            status: user.blocked ? 'Banned' : 'Active',
-            referredBy: user.referred_by, // New field
-            totalAppReferrals: parseInt(user.total_app_referrals, 10), // New field
-            totalQuestReferrals: parseInt(user.total_quest_referrals, 10), // New field
-            questsJoined: parseInt(user.quests_joined, 10),
-            // Note: jobs_in_progress is simplified to total clicks for this view.
-            jobsInProgress: parseInt(user.jobs_in_progress, 10),
-            jobsDone: parseInt(user.jobs_done, 10),
-            totalEarnings: parseFloat(user.points).toFixed(2), // Renamed from allTimeEarning for consistency with filter
-            balance: parseFloat(user.points).toFixed(2)
-        }));
+        const usersWithStats = usersResult.rows.map(user => {
+            const balance = parseFloat(user.points) || 0;
+            const totalWithdrawn = parseFloat(user.total_withdrawn) || 0;
+            const totalEarnings = balance + totalWithdrawn;
+
+            return {
+                id: user.id,
+                name: user.full_name || user.username,
+                username: user.username,
+                avatar: user.avatar || `https://placehold.co/40x40/E2E8F0/4A5568?text=${(user.full_name || user.username).charAt(0).toUpperCase()}`,
+                email: user.email,
+                registeredDate: new Date(user.created_at).toLocaleDateString(),
+                status: user.blocked ? 'Banned' : 'Active',
+                referredBy: user.referred_by,
+                totalAppReferrals: parseInt(user.total_app_referrals, 10),
+                totalQuestReferrals: parseInt(user.total_quest_referrals, 10),
+                questsJoined: parseInt(user.quests_joined, 10),
+                jobsInProgress: parseInt(user.jobs_in_progress, 10),
+                jobsDone: parseInt(user.jobs_done, 10),
+                totalEarnings: totalEarnings.toFixed(2),
+                balance: balance.toFixed(2)
+            };
+        });
 
         res.json({ users: usersWithStats });
 
