@@ -1152,8 +1152,7 @@
                     try {
                         const referralData = await ApiService.getReferrals();
                         document.getElementById('total-referrals').textContent = referralData.stats.totalReferrals || 0;
-                         // Updated to show platform referrals
-                        document.getElementById('total-earnings').textContent = `$${parseFloat(referralData.stats.total_earnings || 0).toFixed(2)}`;
+document.getElementById('total-earnings').textContent = `$${parseFloat(referralData.stats.totalEarnings || 0).toFixed(2)}`;
                         
                         const referralList = document.getElementById('referral-history-list');
                         referralList.innerHTML = '';
@@ -1484,4 +1483,3 @@
     </script>
 </body>
 </html>
- 
