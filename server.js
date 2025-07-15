@@ -1596,13 +1596,14 @@ app.get('/quests/:questId/responses', requireAdmin, async (req, res) => {
     res.json({});
 });
 
+// --- [UPDATED & FIXED] /api/referrals ENDPOINT ---
 app.get('/api/referrals', requireLogin, async (req, res) => {
     const userId = req.user.id;
     try {
+        // [FIX] Simplified query to get total referrals and earnings
         const referralStatsQuery = `
             SELECT 
-                (SELECT COUNT(*) FROM referrals WHERE referrer_id = $1 AND type = 'platform') as total_app_referrals,
-                (SELECT COUNT(*) FROM referrals WHERE referrer_id = $1 AND type = 'quest') as total_quest_referrals,
+                (SELECT COUNT(*) FROM referrals WHERE referrer_id = $1) as total_referrals,
                 (SELECT SUM(amount) FROM referral_earnings WHERE user_id = $1) as total_earnings
         `;
         const referralStatsResult = await pool.query(referralStatsQuery, [userId]);
@@ -1616,11 +1617,11 @@ app.get('/api/referrals', requireLogin, async (req, res) => {
             ORDER BY r.created_at DESC
         `;
         const referralsResult = await pool.query(referralsQuery, [userId]);
-
+        
+        // [FIX] Use the new total_referrals field from the query
         res.json({
             stats: {
-                totalAppReferrals: parseInt(referralStatsResult.rows[0].total_app_referrals, 10) || 0,
-                totalQuestReferrals: parseInt(referralStatsResult.rows[0].total_quest_referrals, 10) || 0,
+                totalReferrals: parseInt(referralStatsResult.rows[0].total_referrals, 10) || 0,
                 totalEarnings: parseFloat(referralStatsResult.rows[0].total_earnings) || 0
             },
             referrals: referralsResult.rows
