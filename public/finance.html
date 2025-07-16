@@ -85,11 +85,34 @@
             </header>
             
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                 <!-- NEW: Stats Section -->
+                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-gray-600 text-sm font-semibold">Total Quest Earnings</h3>
+                        <p id="total-quest-earnings" class="text-2xl font-bold text-green-600">$0.00</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-gray-600 text-sm font-semibold">Total Job Earnings</h3>
+                        <p id="total-job-earnings" class="text-2xl font-bold text-blue-600">$0.00</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-gray-600 text-sm font-semibold">Total Withdrawn</h3>
+                        <p id="total-withdrawn" class="text-2xl font-bold text-red-600">$0.00</p>
+                    </div>
+                </div>
+
                  <div class="mb-6">
                     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Transaction History</h2>
                      <div class="bg-white p-6 rounded-lg shadow-md">
-                        <div class="mb-4">
-                            <input id="transaction-search-input" type="text" placeholder="Search by username or description..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <!-- UPDATED: Search and Filter controls -->
+                        <div class="flex flex-col md:flex-row gap-4 mb-4">
+                            <input id="transaction-search-input" type="text" placeholder="Search by username or description..." class="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <select id="transaction-filter" class="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                <option value="all">All Transactions</option>
+                                <option value="quest">Quest Rewards</option>
+                                <option value="job">Job Earnings</option>
+                                <option value="withdrawal">Withdrawals</option>
+                            </select>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full bg-white">
@@ -110,7 +133,7 @@
                      </div>
                  </div>
                  
-                 <!-- [UPDATED] Withdrawal Requests Section -->
+                 <!-- Withdrawal Requests Section -->
                  <div>
                     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Withdrawal Requests</h2>
                      <div class="bg-white p-6 rounded-lg shadow-md">
@@ -154,6 +177,7 @@
             const transactionTableBody = document.getElementById('transaction-table-body');
             const withdrawalTableBody = document.getElementById('withdrawal-table-body');
             const searchInput = document.getElementById('transaction-search-input');
+            const filterDropdown = document.getElementById('transaction-filter');
 
             // --- API Service ---
             const Api = {
@@ -187,7 +211,7 @@
             function renderTransactions(transactions) {
                 transactionTableBody.innerHTML = '';
                 if (!transactions || transactions.length === 0) {
-                    transactionTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4">No transactions found.</td></tr>`;
+                    transactionTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4">No transactions found for the current filter.</td></tr>`;
                     return;
                 }
                 transactions.forEach(tx => {
@@ -204,6 +228,35 @@
                     transactionTableBody.innerHTML += row;
                 });
             }
+            
+            function applyFiltersAndRender() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const filterValue = filterDropdown.value;
+
+                let filteredTransactions = allTransactions;
+
+                // Apply search filter first
+                if (searchTerm) {
+                    filteredTransactions = filteredTransactions.filter(tx =>
+                        tx.username.toLowerCase().includes(searchTerm) ||
+                        tx.description.toLowerCase().includes(searchTerm)
+                    );
+                }
+
+                // Then apply type filter
+                if (filterValue !== 'all') {
+                    filteredTransactions = filteredTransactions.filter(tx => {
+                        const description = tx.description.toLowerCase();
+                        if (filterValue === 'quest') return description.startsWith('quest reward');
+                        if (filterValue === 'job') return description.startsWith('job conversion');
+                        if (filterValue === 'withdrawal') return tx.type === 'debit';
+                        return false;
+                    });
+                }
+
+                renderTransactions(filteredTransactions);
+            }
+
 
             function renderWithdrawals(withdrawals) {
                 withdrawalTableBody.innerHTML = '';
@@ -259,22 +312,36 @@
                 }
             });
 
-            searchInput.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const filteredTransactions = allTransactions.filter(tx => 
-                    tx.username.toLowerCase().includes(searchTerm) ||
-                    tx.description.toLowerCase().includes(searchTerm)
-                );
-                renderTransactions(filteredTransactions);
-            });
+            searchInput.addEventListener('input', applyFiltersAndRender);
+            filterDropdown.addEventListener('change', applyFiltersAndRender);
 
             async function loadFinancialData() {
                 try {
                     const data = await Api.getFinancialData();
                     allTransactions = data.transactions;
                     allWithdrawals = data.payouts; // The backend sends withdrawal requests in the 'payouts' key
-                    renderTransactions(allTransactions);
+                    
+                    // Calculate and display totals
+                    const totalQuestEarnings = allTransactions
+                        .filter(tx => tx.description.toLowerCase().startsWith('quest reward'))
+                        .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+
+                    const totalJobEarnings = allTransactions
+                        .filter(tx => tx.description.toLowerCase().startsWith('job conversion'))
+                        .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+
+                    const totalWithdrawn = allTransactions
+                        .filter(tx => tx.type === 'debit')
+                        .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+
+                    document.getElementById('total-quest-earnings').textContent = `$${totalQuestEarnings.toFixed(2)}`;
+                    document.getElementById('total-job-earnings').textContent = `$${totalJobEarnings.toFixed(2)}`;
+                    document.getElementById('total-withdrawn').textContent = `$${Math.abs(totalWithdrawn).toFixed(2)}`;
+
+                    // Initial render
+                    applyFiltersAndRender();
                     renderWithdrawals(allWithdrawals);
+
                 } catch (error) {
                     transactionTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-red-500">Failed to load transaction data.</td></tr>`;
                     withdrawalTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Failed to load withdrawal data.</td></tr>`;
