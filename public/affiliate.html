@@ -295,12 +295,10 @@
                     }
                 },
                 getJobs: () => ApiService.fetch('/api/jobs'),
-                // NEW: Endpoint to request links from admin
                 requestJobLinks: (jobId) => ApiService.fetch(`/api/jobs/${jobId}/request-links`, { method: 'POST' }),
                 getProfile: (userId) => ApiService.fetch(`/api/profile/${userId}`),
                 checkSession: () => ApiService.fetch('/check-session'),
                 generateReferralLink: () => ApiService.fetch('/generate-referral-link'),
-                 // NEW: Endpoint to claim reward
                 claimJobReward: (jobId, submissionData) => ApiService.fetch(`/api/jobs/${jobId}/claim`, { 
                     method: 'POST',
                     body: JSON.stringify(submissionData)
@@ -310,14 +308,13 @@
             const App = {
                 state: {
                     allJobs: [],
-                    activeJobs: [], // This will now include jobs with different statuses
+                    activeJobs: [], 
                     completedJobs: [],
                     totalEarnings: 0,
                     currentPage: 1,
                     itemsPerPage: 6,
                     currentJobInModal: null,
                     username: 'guest',
-                    // NEW: Categories that require admin links
                     linkRequiredCategories: ['sign-up', 'trading-volume', 'transacting-users', 'pay-for-a-product'],
                 },
                 
@@ -363,7 +360,7 @@
 
                         const [profileData, jobsData] = await Promise.all([
                             ApiService.getProfile(this.state.username),
-                            ApiService.getJobs() // This endpoint now needs to return user-specific job statuses
+                            ApiService.getJobs()
                         ]);
 
                         this.state.totalEarnings = profileData.stats.totalEarnings || 0;
@@ -372,7 +369,6 @@
                         }
                         
                         this.state.allJobs = jobsData.jobs || [];
-                        // NEW: Populate active and completed jobs based on status from API
                         this.state.activeJobs = this.state.allJobs.filter(j => j.status && j.status !== 'completed');
                         this.state.completedJobs = this.state.allJobs.filter(j => j.status === 'completed');
 
@@ -392,18 +388,18 @@
 
                 renderJobs() {
                     const { jobListingsContainer, searchInput, categoryFilterEl, sortFilter } = this.elements;
-                    const { allJobs, activeJobs, completedJobs } = this.state;
+                    const { allJobs, completedJobs } = this.state;
                     
                     jobListingsContainer.innerHTML = '';
                     const searchTerm = searchInput.value.toLowerCase();
                     const categoryFilter = categoryFilterEl.value;
                     const sortOrder = sortFilter.value;
                     
-                    // Filter out jobs that are already active or completed for the user
-                    const activeAndCompletedIds = [...activeJobs.map(j => j.id), ...completedJobs.map(j => j.id)];
+                    // Only filter out jobs that are fully completed. Active jobs will remain.
+                    const completedJobIds = completedJobs.map(j => j.id);
                     
                     let filteredJobs = allJobs
-                        .filter(job => !activeAndCompletedIds.includes(job.id))
+                        .filter(job => !completedJobIds.includes(job.id)) // Keep active jobs in the list
                         .filter(job => 
                             (job.title?.toLowerCase().includes(searchTerm) || job.description?.toLowerCase().includes(searchTerm)) && 
                             (categoryFilter === 'all' || job.category === categoryFilter)
@@ -420,9 +416,14 @@
                         jobListingsContainer.innerHTML = `<p class="text-gray-500 md:col-span-2 lg:col-span-3 text-center py-8">No available jobs match your criteria.</p>`;
                     } else {
                         paginatedJobs.forEach(job => {
+                            const isJobActive = this.state.activeJobs.some(aj => aj.id === job.id);
                             const jobCard = document.createElement('div');
                             jobCard.className = 'job-card bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col justify-between transition-shadow hover:shadow-md cursor-pointer';
                             jobCard.dataset.jobId = job.id;
+
+                            const buttonHtml = isJobActive
+                                ? `<button class="bg-yellow-500 text-white font-semibold py-2 px-4 rounded-lg text-sm cursor-pointer" disabled>In Progress</button>`
+                                : `<button class="get-started-btn bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700 text-sm">Get Started</button>`;
                             
                             jobCard.innerHTML = `
                                 <div class="flex-grow">
@@ -431,7 +432,7 @@
                                 </div>
                                 <div class="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
                                     <p class="font-bold text-green-600 text-base">$${job.payment}</p>
-                                    <button class="get-started-btn bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700 text-sm">Get Started</button>
+                                    ${buttonHtml}
                                 </div>`;
                             jobListingsContainer.appendChild(jobCard);
                         });
@@ -489,7 +490,6 @@
                         item.className = 'p-4 border border-gray-200 rounded-lg flex justify-between items-center';
                         
                         let statusPill = '';
-                        // NEW: Determine status pill based on job.status
                         switch(job.status) {
                             case 'pending_links':
                                 statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-yellow-600 bg-yellow-100">Pending Links</span>`;
@@ -521,7 +521,6 @@
                     jobProgressView.innerHTML = '';
                     let progressContent = '';
                     
-                    // NEW: Check job status to determine what to render
                     switch(job.status) {
                         case 'pending_links':
                             progressContent = `
@@ -564,12 +563,11 @@
 
                 async claimReward(job) {
                     try {
-                        // This now sends a request for the admin to approve the reward
                         await ApiService.claimJobReward(job.id, {});
-                        job.status = 'reward_pending'; // Update local state
+                        job.status = 'reward_pending';
                         this.updateAll();
                         this.showNotification(`Reward claim for "${job.title}" sent to admin for approval.`);
-                        this.renderJobProgress(job); // Re-render the modal view
+                        this.renderJobProgress(job);
                     } catch (error) {
                         this.showNotification(`Failed to claim reward: ${error.message}`, 'error');
                     }
@@ -579,13 +577,12 @@
                     this.state.currentJobInModal = job;
                     const { jobDetailsView, jobProgressView, modal, acceptBtn } = this.elements;
                     
-                    // Check if the job is already in the active list
                     const activeJob = this.state.activeJobs.find(aj => aj.id === job.id);
 
                     if (activeJob) {
                         jobDetailsView.classList.add('hidden');
                         jobProgressView.classList.remove('hidden');
-                        this.renderJobProgress(activeJob); // Render progress for the active job
+                        this.renderJobProgress(activeJob);
                     } else {
                         jobDetailsView.classList.remove('hidden');
                         jobProgressView.classList.add('hidden');
@@ -759,22 +756,20 @@
                         const job = this.state.currentJobInModal;
                         if (!job) return;
 
-                        // NEW: Differentiate behavior based on category
                         if (this.state.linkRequiredCategories.includes(job.category)) {
                             try {
                                 await ApiService.requestJobLinks(job.id);
-                                job.status = 'pending_links'; // Update local state
+                                job.status = 'pending_links';
                                 this.state.activeJobs.push(job);
                                 this.updateAll();
                                 this.showNotification(`Request for "${job.title}" sent. Awaiting admin approval for links.`);
-                                this.renderJobProgress(job); // Re-render modal to show pending state
+                                this.renderJobProgress(job);
                                 acceptBtn.style.display = 'none';
                             } catch (error) {
                                 this.showNotification(`Failed to request job: ${error.message}`, 'error');
                             }
                         } else {
-                            // Handle other categories as before (e.g., content creation)
-                            job.status = 'active'; // Or whatever the default active status is
+                            job.status = 'active';
                             this.state.activeJobs.push(job);
                             this.updateAll();
                             this.showNotification(`Job "${job.title}" has been accepted!`);
