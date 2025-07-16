@@ -1110,23 +1110,25 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         }
 
         // 2. [UPDATED] Calculate balance from transactions for accuracy, now including completed jobs
+        // THIS IS THE CORRECTED QUERY
         const balanceQuery = `
-    SELECT
-        (COALESCE(SUM(credits), 0) - COALESCE(SUM(debits), 0)) AS current_balance
-    FROM (
-        -- ALL CREDITS
-        SELECT SUM(public.parse_payout(q.reward)) AS credits, 0 AS debits FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1
-        UNION ALL
-        SELECT SUM(uj.reward_amount) AS credits, 0 AS debits FROM user_jobs uj WHERE uj.user_id = $1 AND uj.status = 'completed' -- This line is corrected
-        UNION ALL
-        SELECT SUM(re.amount) as credits, 0 as debits FROM referral_earnings re WHERE re.user_id = $1
-        UNION ALL
-        -- ALL DEBITS
-        SELECT 0 AS credits, SUM(w.amount) AS debits FROM withdrawals w WHERE w.user_id = $1 AND w.status = 'approved'
-    ) AS transactions;
-`;
-        const balanceResult = await pool.query(balanceQuery, [user.id, user.username]);
+            SELECT
+                (COALESCE(SUM(credits), 0) - COALESCE(SUM(debits), 0)) AS current_balance
+            FROM (
+                -- ALL CREDITS
+                SELECT SUM(public.parse_payout(q.reward)) AS credits, 0 AS debits FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1
+                UNION ALL
+                SELECT SUM(uj.reward_amount) AS credits, 0 AS debits FROM user_jobs uj WHERE uj.user_id = $1 AND uj.status = 'completed'
+                UNION ALL
+                SELECT SUM(re.amount) as credits, 0 as debits FROM referral_earnings re WHERE re.user_id = $1
+                UNION ALL
+                -- ALL DEBITS
+                SELECT 0 AS credits, SUM(w.amount) AS debits FROM withdrawals w WHERE w.user_id = $1 AND w.status = 'approved'
+            ) AS transactions;
+        `;
+        const balanceResult = await pool.query(balanceQuery, [user.id]); // Note: query now only needs user.id
         const calculatedBalance = parseFloat(balanceResult.rows[0].current_balance) || 0;
+
 
         // OPTIONALLY: If user.points is out of sync, update it.
         if (Math.abs(calculatedBalance - parseFloat(user.points)) > 0.01) {
