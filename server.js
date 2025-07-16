@@ -47,8 +47,7 @@ const pool = new Pool({
 -- IMPORTANT: DATABASE SCHEMA CHANGE REQUIRED FOR NEW JOB FLOW
 -- =============================================================================
 -- To support the new job flow where users request links and claim rewards,
--- a new table named 'user_jobs' is required. Please add this table to your
--- database schema.
+-- a new table named 'user_jobs' is required with the following structure.
 --
 -- CREATE TABLE public.user_jobs (
 --     id SERIAL PRIMARY KEY,
@@ -57,7 +56,6 @@ const pool = new Pool({
 --     status character varying(50) NOT NULL,
 --     onboarding_link text,
 --     tracking_link text,
---     reward_amount numeric(10,2),
 --     submission_link text,
 --     rejection_reason text,
 --     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
@@ -805,16 +803,13 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
     try {
         const userId = req.user.id;
 
-        // Fetch all affiliate programs and join with user_jobs data
         const query = `
             SELECT 
                 ap.*,
                 uj.status,
                 uj.onboarding_link,
                 uj.tracking_link,
-                uj.rejection_reason,
-                -- Use the actual reward amount if completed, otherwise use the default payout
-                COALESCE(uj.reward_amount, public.parse_payout(ap.payout)) as final_payment
+                uj.rejection_reason
             FROM affiliate_programs ap
             LEFT JOIN user_jobs uj ON ap.id = uj.program_id AND uj.user_id = $1
             ORDER BY ap.id;
@@ -833,7 +828,7 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
                 id: program.id,
                 title: program.title,
                 category: categorySlug,
-                payment: parseFloat(program.final_payment),
+                payment: parsePayout(program.payout),
                 description: program.details,
                 requirements: requirements,
                 destinationUrl: program.destination_url,
@@ -1906,7 +1901,7 @@ app.post('/api/admin/job-requests/:requestId/send-links', requireAdmin, async (r
     }
 });
 
-// NEW: Endpoint for admin to approve a reward
+// UPDATED: Endpoint for admin to approve a reward for a standard job
 app.post('/api/admin/job-requests/:requestId/approve-reward', requireAdmin, async (req, res) => {
     const { requestId } = req.params;
     const { rewardAmount } = req.body;
@@ -1920,7 +1915,7 @@ app.post('/api/admin/job-requests/:requestId/approve-reward', requireAdmin, asyn
         await client.query('BEGIN');
 
         // Get the user job details
-        const jobRequestResult = await client.query("SELECT * FROM user_jobs WHERE id = $1 AND status = 'reward_pending' FOR UPDATE", [requestId]);
+        const jobRequestResult = await client.query("SELECT uj.*, u.username FROM user_jobs uj JOIN users u ON uj.user_id = u.id WHERE uj.id = $1 AND uj.status = 'reward_pending' FOR UPDATE", [requestId]);
         if (jobRequestResult.rows.length === 0) {
             throw new Error('Job request not found or not pending reward.');
         }
@@ -1929,8 +1924,14 @@ app.post('/api/admin/job-requests/:requestId/approve-reward', requireAdmin, asyn
         // Add points to the user's account
         await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardAmount, jobRequest.user_id]);
 
-        // Update the user_job status to 'completed'
-        await client.query("UPDATE user_jobs SET status = 'completed', reward_amount = $1, updated_at = NOW() WHERE id = $2", [rewardAmount, requestId]);
+        // Insert a permanent record into the conversions table
+        await client.query(
+            'INSERT INTO conversions (program_id, affiliate_username, conversion_value, payout_amount) VALUES ($1, $2, $3, $4)',
+            [jobRequest.program_id, jobRequest.username, 0, rewardAmount]
+        );
+
+        // Delete the temporary job from user_jobs to allow it to be repeated
+        await client.query("DELETE FROM user_jobs WHERE id = $1", [requestId]);
 
         await client.query('COMMIT');
         res.json({ success: true, message: 'Reward approved and points awarded.' });
@@ -1952,7 +1953,7 @@ app.post('/api/admin/job-requests/:requestId/review', requireAdmin, async (req, 
     try {
         await client.query('BEGIN');
 
-        const jobRequestResult = await client.query("SELECT * FROM user_jobs WHERE id = $1 AND status = 'pending_review' FOR UPDATE", [requestId]);
+        const jobRequestResult = await client.query("SELECT uj.*, u.username FROM user_jobs uj JOIN users u ON uj.user_id = u.id WHERE uj.id = $1 AND uj.status = 'pending_review' FOR UPDATE", [requestId]);
         if (jobRequestResult.rows.length === 0) {
             throw new Error('Job request not found or not pending review.');
         }
@@ -1964,13 +1965,21 @@ app.post('/api/admin/job-requests/:requestId/review', requireAdmin, async (req, 
             }
             // Add points to the user's account
             await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardAmount, jobRequest.user_id]);
-            // Mark as completed
-            await client.query("UPDATE user_jobs SET status = 'completed', reward_amount = $1, updated_at = NOW() WHERE id = $2", [rewardAmount, requestId]);
+            
+            // Insert a permanent record into the conversions table
+            await client.query(
+                'INSERT INTO conversions (program_id, affiliate_username, conversion_value, payout_amount) VALUES ($1, $2, $3, $4)',
+                [jobRequest.program_id, jobRequest.username, 0, rewardAmount]
+            );
+
+            // Delete the temporary job from user_jobs to allow it to be repeated
+            await client.query("DELETE FROM user_jobs WHERE id = $1", [requestId]);
+
         } else {
             if (!rejectionReason || rejectionReason.trim() === '') {
                  return res.status(400).json({ error: 'A rejection reason is required.' });
             }
-            // Mark as rejected and add reason
+            // Mark as rejected and add reason, allowing for resubmission
             await client.query("UPDATE user_jobs SET status = 'rejected', rejection_reason = $1, updated_at = NOW() WHERE id = $2", [rejectionReason, requestId]);
         }
 
