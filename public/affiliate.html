@@ -283,6 +283,10 @@
                             const errorData = await response.json();
                             throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
                         }
+                        // For DELETE requests, response might not have a body
+                        if (response.status === 204 || response.headers.get('content-length') === '0') {
+                            return { success: true };
+                        }
                         return response.json();
                     } catch (error) {
                         console.error(`API Error on ${endpoint}:`, error);
@@ -291,29 +295,30 @@
                     }
                 },
                 getJobs: () => ApiService.fetch('/api/jobs'),
-                completeJob: (jobId, submissionLink = null) => {
-                    const body = submissionLink ? { submissionLink } : {};
-                    return ApiService.fetch(`/api/jobs/${jobId}/complete`, {
-                        method: 'POST',
-                        body: JSON.stringify(body),
-                    });
-                },
+                // NEW: Endpoint to request links from admin
+                requestJobLinks: (jobId) => ApiService.fetch(`/api/jobs/${jobId}/request-links`, { method: 'POST' }),
                 getProfile: (userId) => ApiService.fetch(`/api/profile/${userId}`),
                 checkSession: () => ApiService.fetch('/check-session'),
                 generateReferralLink: () => ApiService.fetch('/generate-referral-link'),
+                 // NEW: Endpoint to claim reward
+                claimJobReward: (jobId, submissionData) => ApiService.fetch(`/api/jobs/${jobId}/claim`, { 
+                    method: 'POST',
+                    body: JSON.stringify(submissionData)
+                }),
             };
 
             const App = {
                 state: {
                     allJobs: [],
-                    activeJobs: [],
+                    activeJobs: [], // This will now include jobs with different statuses
                     completedJobs: [],
                     totalEarnings: 0,
                     currentPage: 1,
                     itemsPerPage: 6,
                     currentJobInModal: null,
-                    progressInterval: null,
                     username: 'guest',
+                    // NEW: Categories that require admin links
+                    linkRequiredCategories: ['sign-up', 'trading-volume', 'transacting-users', 'pay-for-a-product'],
                 },
                 
                 elements: {
@@ -358,7 +363,7 @@
 
                         const [profileData, jobsData] = await Promise.all([
                             ApiService.getProfile(this.state.username),
-                            ApiService.getJobs()
+                            ApiService.getJobs() // This endpoint now needs to return user-specific job statuses
                         ]);
 
                         this.state.totalEarnings = profileData.stats.totalEarnings || 0;
@@ -366,9 +371,10 @@
                             this.elements.greetingHeader.textContent = `Good morning, ${profileData.user.fullName.split(' ')[0]}`;
                         }
                         
-                        // Use the dynamic data directly from the API
                         this.state.allJobs = jobsData.jobs || [];
-
+                        // NEW: Populate active and completed jobs based on status from API
+                        this.state.activeJobs = this.state.allJobs.filter(j => j.status && j.status !== 'completed');
+                        this.state.completedJobs = this.state.allJobs.filter(j => j.status === 'completed');
 
                         this.updateAll();
 
@@ -393,8 +399,11 @@
                     const categoryFilter = categoryFilterEl.value;
                     const sortOrder = sortFilter.value;
                     
+                    // Filter out jobs that are already active or completed for the user
+                    const activeAndCompletedIds = [...activeJobs.map(j => j.id), ...completedJobs.map(j => j.id)];
+                    
                     let filteredJobs = allJobs
-                        .filter(job => !completedJobs.some(cj => cj.id === job.id))
+                        .filter(job => !activeAndCompletedIds.includes(job.id))
                         .filter(job => 
                             (job.title?.toLowerCase().includes(searchTerm) || job.description?.toLowerCase().includes(searchTerm)) && 
                             (categoryFilter === 'all' || job.category === categoryFilter)
@@ -411,15 +420,10 @@
                         jobListingsContainer.innerHTML = `<p class="text-gray-500 md:col-span-2 lg:col-span-3 text-center py-8">No available jobs match your criteria.</p>`;
                     } else {
                         paginatedJobs.forEach(job => {
-                            const isJobActive = this.state.activeJobs.some(aj => aj.id === job.id);
                             const jobCard = document.createElement('div');
                             jobCard.className = 'job-card bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col justify-between transition-shadow hover:shadow-md cursor-pointer';
                             jobCard.dataset.jobId = job.id;
                             
-                            const buttonHtml = isJobActive
-                                ? `<button class="bg-yellow-500 text-white font-semibold py-2 px-4 rounded-lg text-sm cursor-pointer" disabled>In Progress</button>`
-                                : `<button class="get-started-btn bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700 text-sm">Get Started</button>`;
-
                             jobCard.innerHTML = `
                                 <div class="flex-grow">
                                     <h4 class="font-bold text-gray-800">${job.title}</h4>
@@ -427,7 +431,7 @@
                                 </div>
                                 <div class="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
                                     <p class="font-bold text-green-600 text-base">$${job.payment}</p>
-                                    ${buttonHtml}
+                                    <button class="get-started-btn bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700 text-sm">Get Started</button>
                                 </div>`;
                             jobListingsContainer.appendChild(jobCard);
                         });
@@ -483,9 +487,24 @@
                     jobsToRender.forEach(job => {
                         const item = document.createElement('div');
                         item.className = 'p-4 border border-gray-200 rounded-lg flex justify-between items-center';
-                        const statusPill = tab === 'active' 
-                            ? `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-100">In Progress</span>`
-                            : `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-green-600 bg-green-100">Completed</span>`;
+                        
+                        let statusPill = '';
+                        // NEW: Determine status pill based on job.status
+                        switch(job.status) {
+                            case 'pending_links':
+                                statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-yellow-600 bg-yellow-100">Pending Links</span>`;
+                                break;
+                            case 'active':
+                                statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-100">In Progress</span>`;
+                                break;
+                            case 'completed':
+                                statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-green-600 bg-green-100">Completed</span>`;
+                                break;
+                            case 'reward_pending':
+                                statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-100">Reward Pending</span>`;
+                                break;
+                        }
+
                         item.innerHTML = `
                             <div>
                                 <p class="font-bold text-gray-800">${job.title}</p>
@@ -501,72 +520,56 @@
                     const { jobProgressView } = this.elements;
                     jobProgressView.innerHTML = '';
                     let progressContent = '';
-                    const referralCategories = ['sign-up', 'trading-volume', 'transacting-users', 'pay-for-a-product'];
-                    const contentCategories = ['video-creation', 'post-on-socials'];
+                    
+                    // NEW: Check job status to determine what to render
+                    switch(job.status) {
+                        case 'pending_links':
+                            progressContent = `
+                                <div class="text-center p-8 bg-gray-50 rounded-lg">
+                                    <i class="fas fa-hourglass-half text-4xl text-yellow-500 mb-4"></i>
+                                    <h3 class="font-bold text-lg text-gray-800">Awaiting Links</h3>
+                                    <p class="text-sm text-gray-600 mt-2">The onboarding and tracking links for this job will be provided by an administrator. Please check back later.</p>
+                                </div>`;
+                            break;
 
-                    if (job.brandDashboardUrl) {
-                        progressContent += `<a id="view-progress-dashboard-btn" href="${job.brandDashboardUrl}" target="_blank" class="w-full text-center bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition block mb-6">View Progress on Dashboard</a>`;
+                        case 'active':
+                            if (job.onboardingLink) {
+                                progressContent += `<a href="${job.onboardingLink}" target="_blank" class="w-full text-center bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition block mb-6">Start Onboarding</a>`;
+                            }
+                            if (job.trackingLink) {
+                                progressContent += `
+                                    <h3 class="font-bold text-lg mb-2 mt-4 text-gray-800">Your Tracking Link</h3>
+                                    <p class="text-sm text-gray-600 mb-4">Share this link to complete the job. Progress will be updated automatically.</p>
+                                    <div class="flex items-center mb-4">
+                                        <input type="text" value="${job.trackingLink}" readonly class="w-full p-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm">
+                                        <button onclick="App.copyToClipboard('${job.trackingLink}')" class="copy-link-btn bg-purple-600 text-white p-2.5 rounded-r-lg hover:bg-purple-700"><i class="fas fa-copy"></i></button>
+                                    </div>`;
+                            }
+                            progressContent += `<button id="claim-reward-btn" class="w-full mt-6 bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition">Claim Payment</button>`;
+                            break;
+                        
+                        case 'reward_pending':
+                             progressContent = `
+                                <div class="text-center p-8 bg-gray-50 rounded-lg">
+                                    <i class="fas fa-coins text-4xl text-indigo-500 mb-4"></i>
+                                    <h3 class="font-bold text-lg text-gray-800">Reward Processing</h3>
+                                    <p class="text-sm text-gray-600 mt-2">Your reward is being processed by the administrator. The amount will be added to your balance shortly.</p>
+                                </div>`;
+                            break;
                     }
-
-                    if (referralCategories.includes(job.category)) {
-                        const link = `/track?programId=${job.id}&affiliate_id=${this.state.username}`;
-                        progressContent += `
-                            <h3 class="font-bold text-lg mb-2 text-gray-800">Your Tracking Link</h3>
-                            <p class="text-sm text-gray-600 mb-4">Share this link to complete the job. Progress will be updated automatically.</p>
-                            <div class="flex items-center mb-4">
-                                <input type="text" value="${window.location.origin + link}" readonly class="w-full p-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm">
-                                <button onclick="App.copyToClipboard('${window.location.origin + link}')" class="copy-link-btn bg-purple-600 text-white p-2.5 rounded-r-lg hover:bg-purple-700"><i class="fas fa-copy"></i></button>
-                            </div>
-                            <h3 class="font-bold text-lg mb-2 mt-6 text-gray-800">Progress</h3>
-                            <div class="w-full bg-gray-200 rounded-full h-4 mb-2"><div id="progress-bar" class="progress-bar-fill bg-green-500 h-4 rounded-full" style="width: 0%"></div></div>
-                            <p id="progress-text" class="text-sm text-gray-600 text-center mb-6">0 of ${job.target} completed</p>
-                            <button id="claim-reward-btn" class="w-full bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Claim Reward</button>`;
-                        jobProgressView.innerHTML = progressContent;
-                        this.startProgressSimulation(job);
-                    } else if (contentCategories.includes(job.category)) {
-                        progressContent += `
-                             <h3 class="font-bold text-lg mb-2 text-gray-800">Submit Your Work</h3>
-                             <p class="text-sm text-gray-600 mb-4">Paste the link to your content below to submit it for review.</p>
-                             <input type="url" id="content-link-input" placeholder="https://your-content-link.com" class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-purple-500">
-                             <button id="claim-reward-btn" class="w-full bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>Claim Reward</button>`;
-                        jobProgressView.innerHTML = progressContent;
-                        document.getElementById('content-link-input').addEventListener('input', (e) => {
-                            const claimBtn = document.getElementById('claim-reward-btn');
-                            try { new URL(e.target.value); claimBtn.disabled = false; } catch (_) { claimBtn.disabled = true; }
-                        });
-                    }
+                    
+                    jobProgressView.innerHTML = progressContent;
                     jobProgressView.querySelector('#claim-reward-btn')?.addEventListener('click', () => this.claimReward(job));
                 },
 
-                startProgressSimulation(job) {
-                    let currentProgress = 0;
-                    const progressBar = document.getElementById('progress-bar');
-                    const progressText = document.getElementById('progress-text');
-                    const claimBtn = document.getElementById('claim-reward-btn');
-                    if(this.state.progressInterval) clearInterval(this.state.progressInterval);
-                    this.state.progressInterval = setInterval(() => {
-                        currentProgress++;
-                        const percentage = (currentProgress / job.target) * 100;
-                        if(progressBar) progressBar.style.width = `${percentage}%`;
-                        if(progressText) progressText.textContent = `${currentProgress} of ${job.target} completed`;
-                        if (currentProgress >= job.target) {
-                            clearInterval(this.state.progressInterval);
-                            if(progressText) progressText.textContent = `Task Complete! Ready to claim.`;
-                            if(claimBtn) claimBtn.disabled = false;
-                        }
-                    }, 1500);
-                },
-
                 async claimReward(job) {
-                    const submissionLink = document.getElementById('content-link-input')?.value;
                     try {
-                        await ApiService.completeJob(job.id, submissionLink);
-                        this.state.activeJobs = this.state.activeJobs.filter(j => j.id !== job.id);
-                        this.state.completedJobs.push(job);
-                        this.state.totalEarnings += job.payment;
+                        // This now sends a request for the admin to approve the reward
+                        await ApiService.claimJobReward(job.id, {});
+                        job.status = 'reward_pending'; // Update local state
                         this.updateAll();
-                        this.showNotification(`Job "${job.title}" completed! $${job.payment} added to balance.`);
-                        this.closeModal();
+                        this.showNotification(`Reward claim for "${job.title}" sent to admin for approval.`);
+                        this.renderJobProgress(job); // Re-render the modal view
                     } catch (error) {
                         this.showNotification(`Failed to claim reward: ${error.message}`, 'error');
                     }
@@ -575,17 +578,18 @@
                 openModal(job) {
                     this.state.currentJobInModal = job;
                     const { jobDetailsView, jobProgressView, modal, acceptBtn } = this.elements;
-                    const isJobActive = this.state.activeJobs.some(aj => aj.id === job.id);
+                    
+                    // Check if the job is already in the active list
+                    const activeJob = this.state.activeJobs.find(aj => aj.id === job.id);
 
-                    if (isJobActive) {
+                    if (activeJob) {
                         jobDetailsView.classList.add('hidden');
                         jobProgressView.classList.remove('hidden');
-                        this.renderJobProgress(job);
+                        this.renderJobProgress(activeJob); // Render progress for the active job
                     } else {
                         jobDetailsView.classList.remove('hidden');
                         jobProgressView.classList.add('hidden');
                         jobProgressView.innerHTML = '';
-                        if(this.state.progressInterval) clearInterval(this.state.progressInterval);
                     }
                     
                     document.getElementById('modal-title').textContent = job.title;
@@ -601,7 +605,6 @@
                         requirementsList.appendChild(li);
                     });
 
-                    // Populate Brand Info
                     document.getElementById('modal-brand-website').href = job.brandWebsite || '#';
                     const socialLinksContainer = document.getElementById('modal-social-links');
                     socialLinksContainer.innerHTML = '';
@@ -609,7 +612,7 @@
                         const socialIconMap = { twitter: 'fa-twitter', linkedin: 'fa-linkedin', facebook: 'fa-facebook-f' };
                         for (const [platform, url] of Object.entries(job.socialLinks)) {
                             const iconClass = socialIconMap[platform];
-                            if (iconClass) {
+                            if (iconClass && url) {
                                 const link = document.createElement('a');
                                 link.href = url;
                                 link.target = '_blank';
@@ -620,7 +623,7 @@
                         }
                     }
 
-                    acceptBtn.style.display = isJobActive ? 'none' : 'block';
+                    acceptBtn.style.display = activeJob ? 'none' : 'block';
                     
                     modal.classList.remove('hidden');
                     modal.classList.add('flex');
@@ -628,7 +631,6 @@
                 },
 
                 closeModal() {
-                    if(this.state.progressInterval) clearInterval(this.state.progressInterval);
                     const modalContent = this.elements.modal.querySelector('.modal-content');
                     modalContent.classList.add('scale-95');
                     setTimeout(() => {
@@ -656,7 +658,6 @@
                     this.elements.inviteModal.classList.add('flex');
                     setTimeout(() => this.elements.inviteModal.querySelector('.modal-content').classList.remove('scale-95'), 10);
 
-                    // Update social share links
                     const encodedLink = encodeURIComponent(link);
                     const text = encodeURIComponent("Join me on RewardRush and earn rewards!");
                     document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?text=${text}&url=${encodedLink}`;
@@ -754,15 +755,31 @@
                         }
                     });
 
-                    acceptBtn.addEventListener('click', () => {
-                        if (this.state.currentJobInModal) {
-                            this.state.activeJobs.push(this.state.currentJobInModal);
-                            this.elements.jobDetailsView.classList.add('hidden');
-                            this.elements.jobProgressView.classList.remove('hidden');
-                            this.renderJobProgress(this.state.currentJobInModal);
+                    acceptBtn.addEventListener('click', async () => {
+                        const job = this.state.currentJobInModal;
+                        if (!job) return;
+
+                        // NEW: Differentiate behavior based on category
+                        if (this.state.linkRequiredCategories.includes(job.category)) {
+                            try {
+                                await ApiService.requestJobLinks(job.id);
+                                job.status = 'pending_links'; // Update local state
+                                this.state.activeJobs.push(job);
+                                this.updateAll();
+                                this.showNotification(`Request for "${job.title}" sent. Awaiting admin approval for links.`);
+                                this.renderJobProgress(job); // Re-render modal to show pending state
+                                acceptBtn.style.display = 'none';
+                            } catch (error) {
+                                this.showNotification(`Failed to request job: ${error.message}`, 'error');
+                            }
+                        } else {
+                            // Handle other categories as before (e.g., content creation)
+                            job.status = 'active'; // Or whatever the default active status is
+                            this.state.activeJobs.push(job);
                             this.updateAll();
-                            this.showNotification(`Job "${this.state.currentJobInModal.title}" has been accepted!`);
-                            this.elements.acceptBtn.style.display = 'none';
+                            this.showNotification(`Job "${job.title}" has been accepted!`);
+                            this.renderJobProgress(job);
+                            acceptBtn.style.display = 'none';
                         }
                     });
 
@@ -785,7 +802,6 @@
 
                     sidebarToggleBtn.addEventListener('click', () => document.body.classList.toggle('sidebar-collapsed'));
 
-                    // Invite modal events
                     inviteBtn.addEventListener('click', () => this.handleInviteClick());
                     closeInviteModalBtn.addEventListener('click', () => this.closeInviteModal());
                     copyReferralLinkBtn.addEventListener('click', () => this.copyToClipboard(this.elements.referralLinkInput.value));

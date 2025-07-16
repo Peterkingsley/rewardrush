@@ -42,6 +42,32 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
+/*
+-- =============================================================================
+-- IMPORTANT: DATABASE SCHEMA CHANGE REQUIRED FOR NEW JOB FLOW
+-- =============================================================================
+-- To support the new job flow where users request links and claim rewards,
+-- a new table named 'user_jobs' is required. Please add this table to your
+-- database schema.
+--
+-- CREATE TABLE public.user_jobs (
+--     id SERIAL PRIMARY KEY,
+--     user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+--     program_id integer NOT NULL REFERENCES public.affiliate_programs(id) ON DELETE CASCADE,
+--     status character varying(50) NOT NULL DEFAULT 'pending_links'::character varying,
+--     onboarding_link text,
+--     tracking_link text,
+--     reward_amount numeric(10,2),
+--     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+--     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+--     CONSTRAINT user_jobs_user_id_program_id_key UNIQUE (user_id, program_id)
+-- );
+--
+-- This table will track the state of each job for each user.
+-- =============================================================================
+*/
+
+
 (async () => {
   try {
     await pool.query('SET search_path TO public');
@@ -772,19 +798,30 @@ app.post('/api/education/invitations/respond', requireLogin, async (req, res) =>
 // --- END EDUCATION PAGE API ENDPOINTS ---
 
 
-// --- JOBS API ENDPOINTS ---
+// --- [UPDATED] JOBS API ENDPOINTS ---
 app.get('/api/jobs', requireLogin, async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM affiliate_programs ORDER BY id');
+        const userId = req.user.id;
+
+        // Fetch all affiliate programs
+        const programsResult = await pool.query('SELECT * FROM affiliate_programs ORDER BY id');
         
-        const jobs = result.rows.map(program => {
+        // Fetch the current user's job statuses
+        const userJobsResult = await pool.query('SELECT * FROM user_jobs WHERE user_id = $1', [userId]);
+        const userJobsMap = userJobsResult.rows.reduce((map, job) => {
+            map[job.program_id] = job;
+            return map;
+        }, {});
+
+        // Combine program data with user-specific job data
+        const jobs = programsResult.rows.map(program => {
+            const userJob = userJobsMap[program.id];
             const requirements = [];
             if (program.guidelines) requirements.push(program.guidelines);
             if (program.pros && program.pros.length > 0) requirements.push(...program.pros.map(p => `Pro: ${p}`));
             if (program.cons && program.cons.length > 0) requirements.push(...program.cons.map(c => `Con: ${c}`));
 
             const categorySlug = program.category.toLowerCase().replace(/\s+/g, '-');
-            
             const titleMatch = program.title.match(/(\d+)/);
             const target = titleMatch ? parseInt(titleMatch[0], 10) : 1;
 
@@ -799,55 +836,66 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
                 destinationUrl: program.destination_url,
                 brandWebsite: program.brand_website,
                 socialLinks: program.social_links,
-                brandDashboardUrl: program.brand_dashboard_url
+                brandDashboardUrl: program.brand_dashboard_url,
+                // Add user-specific status and links if they exist
+                status: userJob ? userJob.status : null,
+                onboardingLink: userJob ? userJob.onboarding_link : null,
+                trackingLink: userJob ? userJob.tracking_link : null,
             };
         });
         
         res.json({ jobs });
     } catch (err) {
         console.error('Error fetching jobs:', err);
+        // Check for specific error related to the new table
+        if (err.message.includes('relation "user_jobs" does not exist')) {
+            return res.status(500).json({ error: 'Server error: The user_jobs table is missing from the database. Please run the required schema migration.' });
+        }
         res.status(500).json({ error: 'Failed to fetch jobs' });
     }
 });
 
-app.post('/api/jobs/:jobId/complete', requireLogin, async (req, res) => {
+// NEW: Endpoint for a user to request/accept a job that requires admin-provided links.
+app.post('/api/jobs/:jobId/request-links', requireLogin, async (req, res) => {
     const { jobId } = req.params;
-    const { submissionLink } = req.body;
-    const userDbId = req.user.id;
+    const userId = req.user.id;
 
-    const client = await pool.connect();
     try {
-        await client.query('BEGIN');
-
-        const jobResult = await pool.query('SELECT * FROM affiliate_programs WHERE id = $1', [jobId]);
-        const job = jobResult.rows[0];
-
-        if (!job) {
-            await client.query('ROLLBACK');
-            return res.status(404).json({ error: 'Job not found.' });
-        }
-        
-        // NOTE: The database does not have a table to track completed jobs per user.
-        // This action only awards points but does not create a permanent record of the completion.
-        // The "Jobs Finished" stat on the profile page is therefore a placeholder.
-
-        const payoutAmount = parsePayout(job.payout);
-        
-        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [payoutAmount, userDbId]);
-
-        if (job.category.toLowerCase().includes('video') || job.category.toLowerCase().includes('post')) {
-            console.log(`User ${req.user.username} submitted link for job ${jobId}: ${submissionLink}`);
-        }
-
-        await client.query('COMMIT');
-        res.json({ success: true, message: `Job completed! $${payoutAmount} awarded.` });
-
+        // Insert a new record into user_jobs, marking it as 'pending_links'.
+        // This acts as a request to the admin.
+        const query = `
+            INSERT INTO user_jobs (user_id, program_id, status) 
+            VALUES ($1, $2, 'pending_links') 
+            ON CONFLICT (user_id, program_id) DO NOTHING
+        `;
+        await pool.query(query, [userId, jobId]);
+        res.status(201).json({ success: true, message: 'Job request sent to admin.' });
     } catch (err) {
-        await client.query('ROLLBACK');
-        console.error('Error completing job:', err);
-        res.status(500).json({ error: 'Failed to complete job.' });
-    } finally {
-        client.release();
+        console.error('Error requesting job links:', err);
+        res.status(500).json({ error: 'Failed to request job.' });
+    }
+});
+
+// NEW: Endpoint for a user to claim their payment, which changes the status for admin review.
+app.post('/api/jobs/:jobId/claim', requireLogin, async (req, res) => {
+    const { jobId } = req.params;
+    const userId = req.user.id;
+
+    try {
+        // Update the job status to 'reward_pending' for the admin to review.
+        const result = await pool.query(
+            "UPDATE user_jobs SET status = 'reward_pending', updated_at = NOW() WHERE user_id = $1 AND program_id = $2 AND status = 'active' RETURNING *",
+            [userId, jobId]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Active job not found for this user or already claimed.' });
+        }
+
+        res.json({ success: true, message: 'Reward claim submitted for admin approval.' });
+    } catch (err) {
+        console.error('Error claiming job reward:', err);
+        res.status(500).json({ error: 'Failed to claim reward.' });
     }
 });
 // --- END JOBS API ENDPOINTS ---
@@ -1761,7 +1809,7 @@ app.get('/affiliate-programs', requireLogin, async (req, res) => {
     }
 });
 
-// --- [NEW] ADMIN JOBS (AFFILIATE PROGRAMS) API ENDPOINTS ---
+// --- [UPDATED] ADMIN JOBS (AFFILIATE PROGRAMS) API ENDPOINTS ---
 app.get('/api/admin/jobs', requireAdmin, async (req, res) => {
     try {
         const query = `
@@ -1789,6 +1837,96 @@ app.get('/api/admin/jobs', requireAdmin, async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch jobs data' });
     }
 });
+
+// NEW: Endpoint to get all user job requests for the admin panel
+app.get('/api/admin/job-requests', requireAdmin, async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                uj.id,
+                uj.status,
+                u.username,
+                ap.title as program_title,
+                ap.payout
+            FROM user_jobs uj
+            JOIN users u ON uj.user_id = u.id
+            JOIN affiliate_programs ap ON uj.program_id = ap.id
+            WHERE uj.status = 'pending_links' OR uj.status = 'reward_pending'
+            ORDER BY uj.updated_at ASC;
+        `;
+        const result = await pool.query(query);
+        res.json({ requests: result.rows });
+    } catch (err) {
+        console.error('Error fetching job requests:', err);
+        if (err.message.includes('relation "user_jobs" does not exist')) {
+            return res.status(500).json({ error: 'Server error: The user_jobs table is missing from the database. Please run the required schema migration.' });
+        }
+        res.status(500).json({ error: 'Failed to fetch job requests.' });
+    }
+});
+
+// NEW: Endpoint for admin to send links to a user
+app.post('/api/admin/job-requests/:requestId/send-links', requireAdmin, async (req, res) => {
+    const { requestId } = req.params;
+    const { onboardingLink, trackingLink } = req.body;
+
+    if (!onboardingLink) {
+        return res.status(400).json({ error: 'Onboarding link is required.' });
+    }
+
+    try {
+        const result = await pool.query(
+            "UPDATE user_jobs SET onboarding_link = $1, tracking_link = $2, status = 'active', updated_at = NOW() WHERE id = $3 AND status = 'pending_links' RETURNING *",
+            [onboardingLink, trackingLink, requestId]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Request not found or already processed.' });
+        }
+        res.json({ success: true, message: 'Links sent and job activated.' });
+    } catch (err) {
+        console.error('Error sending links:', err);
+        res.status(500).json({ error: 'Failed to send links.' });
+    }
+});
+
+// NEW: Endpoint for admin to approve a reward
+app.post('/api/admin/job-requests/:requestId/approve-reward', requireAdmin, async (req, res) => {
+    const { requestId } = req.params;
+    const { rewardAmount } = req.body;
+
+    if (!rewardAmount || isNaN(parseFloat(rewardAmount)) || parseFloat(rewardAmount) <= 0) {
+        return res.status(400).json({ error: 'A valid reward amount is required.' });
+    }
+    
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Get the user job details
+        const jobRequestResult = await client.query("SELECT * FROM user_jobs WHERE id = $1 AND status = 'reward_pending' FOR UPDATE", [requestId]);
+        if (jobRequestResult.rows.length === 0) {
+            throw new Error('Job request not found or not pending reward.');
+        }
+        const jobRequest = jobRequestResult.rows[0];
+
+        // Add points to the user's account
+        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardAmount, jobRequest.user_id]);
+
+        // Update the user_job status to 'completed'
+        await client.query("UPDATE user_jobs SET status = 'completed', reward_amount = $1, updated_at = NOW() WHERE id = $2", [rewardAmount, requestId]);
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Reward approved and points awarded.' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Error approving reward:', err);
+        res.status(500).json({ error: 'Failed to approve reward.' });
+    } finally {
+        client.release();
+    }
+});
+
 
 // --- CORRECTED: Create Job Endpoint ---
 app.post('/api/admin/jobs', requireAdmin, async (req, res) => {
@@ -1836,6 +1974,8 @@ app.delete('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
+        // NEW: Delete from user_jobs as well
+        await client.query('DELETE FROM user_jobs WHERE program_id = $1', [id]);
         await client.query('DELETE FROM affiliate_clicks WHERE program_id = $1', [id]);
         await client.query('DELETE FROM conversions WHERE program_id = $1', [id]);
         const deleteOp = await client.query('DELETE FROM affiliate_programs WHERE id = $1 RETURNING *', [id]);

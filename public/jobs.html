@@ -122,6 +122,14 @@
                         </table>
                     </div>
                  </div>
+
+                 <!-- NEW: User Job Requests Section -->
+                 <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">User Job Requests</h2>
+                    <div id="job-requests-list" class="space-y-4">
+                        <!-- Requests will be injected here -->
+                    </div>
+                 </div>
             </main>
         </div>
     </div>
@@ -171,7 +179,6 @@
                     </div>
                 </div>
                 
-                <!-- NEW: Social Links and Website -->
                 <div class="border-t border-gray-200 pt-4 mt-4">
                      <h3 class="text-lg font-semibold mb-4 text-gray-800">Brand & Social Links</h3>
                      <div class="mb-4">
@@ -193,7 +200,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- END NEW -->
 
                 <div class="mb-6 mt-4">
                     <label for="program-status" class="block text-gray-700 text-sm font-bold mb-2">Status</label>
@@ -221,11 +227,13 @@
 
             // --- State Management ---
             let allPrograms = [];
+            let allJobRequests = [];
 
             // --- DOM Elements ---
             const programTableBody = document.getElementById('program-table-body');
             const searchInput = document.getElementById('program-search-input');
             const addProgramBtn = document.getElementById('add-program-btn');
+            const jobRequestsList = document.getElementById('job-requests-list');
             
             // Program Modal Elements
             const programModal = document.getElementById('program-modal');
@@ -242,7 +250,6 @@
             const programProsInput = document.getElementById('program-pros');
             const programConsInput = document.getElementById('program-cons');
             const programStatusInput = document.getElementById('program-status');
-            // NEW: Social and Website Inputs
             const programBrandWebsiteInput = document.getElementById('program-brand-website');
             const programSocialTwitterInput = document.getElementById('program-social-twitter');
             const programSocialLinkedinInput = document.getElementById('program-social-linkedin');
@@ -257,6 +264,9 @@
                         if (!response.ok) {
                             const errorData = await response.json();
                             throw new Error(errorData.error || 'An unknown error occurred');
+                        }
+                         if (response.status === 204 || response.headers.get('content-length') === '0') {
+                            return { success: true };
                         }
                         return response.json();
                     } catch (error) {
@@ -276,6 +286,18 @@
                     });
                 },
                 deleteProgram: (id) => Api.fetch(`/api/admin/jobs/${id}`, { method: 'DELETE' }),
+                // NEW: API methods for job requests
+                getJobRequests: () => Api.fetch('/api/admin/job-requests'),
+                sendLinks: (requestId, links) => Api.fetch(`/api/admin/job-requests/${requestId}/send-links`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(links)
+                }),
+                approveReward: (requestId, reward) => Api.fetch(`/api/admin/job-requests/${requestId}/approve-reward`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(reward)
+                }),
             };
 
             // --- Rendering Functions ---
@@ -307,6 +329,53 @@
                 });
             }
 
+            // NEW: Render Job Requests
+            function renderJobRequests(requests) {
+                jobRequestsList.innerHTML = '';
+                if (!requests || requests.length === 0) {
+                    jobRequestsList.innerHTML = `<p class="text-center text-gray-500 py-4">No pending job requests.</p>`;
+                    return;
+                }
+
+                requests.forEach(req => {
+                    let actionForm = '';
+                    let statusPill = '';
+
+                    if (req.status === 'pending_links') {
+                        statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-yellow-600 bg-yellow-100">Pending Links</span>`;
+                        actionForm = `
+                            <form class="mt-4 space-y-3 send-links-form" data-request-id="${req.id}">
+                                <input type="url" name="onboardingLink" placeholder="Onboarding Link" class="w-full p-2 border rounded-lg" required>
+                                <input type="url" name="trackingLink" placeholder="Tracking Link" class="w-full p-2 border rounded-lg">
+                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Send Links</button>
+                            </form>
+                        `;
+                    } else if (req.status === 'reward_pending') {
+                        statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-100">Reward Pending</span>`;
+                        actionForm = `
+                             <form class="mt-4 flex items-center space-x-3 approve-reward-form" data-request-id="${req.id}">
+                                <input type="number" step="0.01" name="rewardAmount" placeholder="Reward Amount (e.g., ${req.payout})" class="w-full p-2 border rounded-lg" required>
+                                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve Reward</button>
+                            </form>
+                        `;
+                    }
+
+                    const requestCard = `
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex justify-between items-center flex-wrap gap-2">
+                                <div>
+                                    <p class="font-bold text-lg">${req.program_title}</p>
+                                    <p class="text-sm text-gray-600">User: <span class="font-medium">${req.username}</span></p>
+                                </div>
+                                ${statusPill}
+                            </div>
+                            ${actionForm}
+                        </div>
+                    `;
+                    jobRequestsList.innerHTML += requestCard;
+                });
+            }
+
             // --- Modal Logic ---
             function openProgramModal(program = null) {
                 programForm.reset();
@@ -322,7 +391,6 @@
                     programProsInput.value = Array.isArray(program.pros) ? program.pros.join('\n') : '';
                     programConsInput.value = Array.isArray(program.cons) ? program.cons.join('\n') : '';
                     programStatusInput.value = program.status || 'Active';
-                    // NEW: Populate social and website fields
                     programBrandWebsiteInput.value = program.brand_website || '';
                     if (program.social_links) {
                         programSocialTwitterInput.value = program.social_links.twitter || '';
@@ -348,7 +416,6 @@
                 e.preventDefault();
                 const id = programIdInput.value;
                 
-                // NEW: Construct social_links object
                 const socialLinks = {
                     twitter: programSocialTwitterInput.value || null,
                     linkedin: programSocialLinkedinInput.value || null,
@@ -365,7 +432,6 @@
                     pros: programProsInput.value.split('\n').filter(p => p.trim() !== ''),
                     cons: programConsInput.value.split('\n').filter(c => c.trim() !== ''),
                     status: programStatusInput.value,
-                    // NEW: Add website and social links to the data payload
                     brand_website: programBrandWebsiteInput.value || null,
                     social_links: socialLinks,
                 };
@@ -408,6 +474,29 @@
                 renderPrograms(filteredPrograms);
             });
 
+            // NEW: Event listener for job request forms
+            jobRequestsList.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const form = e.target;
+                const requestId = form.dataset.requestId;
+
+                if (form.classList.contains('send-links-form')) {
+                    const links = {
+                        onboardingLink: form.elements.onboardingLink.value,
+                        trackingLink: form.elements.trackingLink.value,
+                    };
+                    await Api.sendLinks(requestId, links);
+                    alert('Links sent successfully!');
+                } else if (form.classList.contains('approve-reward-form')) {
+                    const reward = {
+                        rewardAmount: parseFloat(form.elements.rewardAmount.value)
+                    };
+                    await Api.approveReward(requestId, reward);
+                    alert('Reward approved and sent!');
+                }
+                loadJobRequests(); // Refresh the list after action
+            });
+
             // --- Initial Load ---
             async function loadPrograms() {
                 try {
@@ -419,7 +508,19 @@
                 }
             }
 
+            // NEW: Load Job Requests
+            async function loadJobRequests() {
+                try {
+                    const data = await Api.getJobRequests();
+                    allJobRequests = data.requests;
+                    renderJobRequests(allJobRequests);
+                } catch (error) {
+                    jobRequestsList.innerHTML = `<p class="text-center text-red-500 py-4">Failed to load job requests.</p>`;
+                }
+            }
+
             loadPrograms();
+            loadJobRequests();
         });
     </script>
 </body>
