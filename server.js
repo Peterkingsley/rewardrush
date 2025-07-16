@@ -1790,12 +1790,16 @@ app.get('/api/admin/jobs', requireAdmin, async (req, res) => {
     }
 });
 
+// --- CORRECTED: Create Job Endpoint ---
 app.post('/api/admin/jobs', requireAdmin, async (req, res) => {
-    const { title, category, payout, destination_url, guidelines, details, pros, cons } = req.body;
+    // Destructure all fields from the request body, including the new ones
+    const { title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links } = req.body;
     try {
         const newProgram = await pool.query(
-            'INSERT INTO affiliate_programs (title, category, payout, destination_url, guidelines, details, pros, cons) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-            [title, category, payout, destination_url, guidelines, details, pros, cons]
+            // Add the new columns to the INSERT statement
+            'INSERT INTO affiliate_programs (title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
+            // Add the new variables to the parameters array
+            [title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links]
         );
         res.status(201).json(newProgram.rows[0]);
     } catch (err) {
@@ -1804,13 +1808,17 @@ app.post('/api/admin/jobs', requireAdmin, async (req, res) => {
     }
 });
 
+// --- CORRECTED: Update Job Endpoint ---
 app.put('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
-    const { title, category, payout, destination_url, guidelines, details, pros, cons } = req.body;
+    // Destructure all fields from the request body, including the new ones
+    const { title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links } = req.body;
     try {
         const updatedProgram = await pool.query(
-            'UPDATE affiliate_programs SET title = $1, category = $2, payout = $3, destination_url = $4, guidelines = $5, details = $6, pros = $7, cons = $8 WHERE id = $9 RETURNING *',
-            [title, category, payout, destination_url, guidelines, details, pros, cons, id]
+            // Add the new columns to the SET clause of the UPDATE statement
+            'UPDATE affiliate_programs SET title = $1, category = $2, payout = $3, destination_url = $4, guidelines = $5, details = $6, pros = $7, cons = $8, brand_website = $9, social_links = $10 WHERE id = $11 RETURNING *',
+            // Add the new variables to the parameters array, ensuring the ID is last
+            [title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links, id]
         );
         if (updatedProgram.rows.length === 0) {
             return res.status(404).json({ error: 'Affiliate program not found' });
@@ -1821,6 +1829,7 @@ app.put('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
         res.status(500).json({ error: 'Failed to update affiliate program' });
     }
 });
+
 
 app.delete('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;

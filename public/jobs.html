@@ -170,7 +170,32 @@
                         <textarea id="program-cons" rows="3" class="w-full p-3 border border-gray-300 rounded-lg"></textarea>
                     </div>
                 </div>
-                <div class="mb-6">
+                
+                <!-- NEW: Social Links and Website -->
+                <div class="border-t border-gray-200 pt-4 mt-4">
+                     <h3 class="text-lg font-semibold mb-4 text-gray-800">Brand & Social Links</h3>
+                     <div class="mb-4">
+                        <label for="program-brand-website" class="block text-gray-700 text-sm font-bold mb-2">Brand Website URL</label>
+                        <input type="url" id="program-brand-website" placeholder="https://brand.com" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="mb-4">
+                            <label for="program-social-twitter" class="block text-gray-700 text-sm font-bold mb-2">Twitter URL</label>
+                            <input type="url" id="program-social-twitter" placeholder="https://twitter.com/brand" class="w-full p-3 border border-gray-300 rounded-lg">
+                        </div>
+                        <div class="mb-4">
+                            <label for="program-social-linkedin" class="block text-gray-700 text-sm font-bold mb-2">LinkedIn URL</label>
+                            <input type="url" id="program-social-linkedin" placeholder="https://linkedin.com/in/brand" class="w-full p-3 border border-gray-300 rounded-lg">
+                        </div>
+                        <div class="mb-4">
+                            <label for="program-social-facebook" class="block text-gray-700 text-sm font-bold mb-2">Facebook URL</label>
+                            <input type="url" id="program-social-facebook" placeholder="https://facebook.com/brand" class="w-full p-3 border border-gray-300 rounded-lg">
+                        </div>
+                    </div>
+                </div>
+                <!-- END NEW -->
+
+                <div class="mb-6 mt-4">
                     <label for="program-status" class="block text-gray-700 text-sm font-bold mb-2">Status</label>
                     <select id="program-status" class="w-full p-3 border border-gray-300 rounded-lg">
                         <option value="Active">Active</option>
@@ -217,6 +242,12 @@
             const programProsInput = document.getElementById('program-pros');
             const programConsInput = document.getElementById('program-cons');
             const programStatusInput = document.getElementById('program-status');
+            // NEW: Social and Website Inputs
+            const programBrandWebsiteInput = document.getElementById('program-brand-website');
+            const programSocialTwitterInput = document.getElementById('program-social-twitter');
+            const programSocialLinkedinInput = document.getElementById('program-social-linkedin');
+            const programSocialFacebookInput = document.getElementById('program-social-facebook');
+
 
             // --- API Service ---
             const Api = {
@@ -291,6 +322,13 @@
                     programProsInput.value = Array.isArray(program.pros) ? program.pros.join('\n') : '';
                     programConsInput.value = Array.isArray(program.cons) ? program.cons.join('\n') : '';
                     programStatusInput.value = program.status || 'Active';
+                    // NEW: Populate social and website fields
+                    programBrandWebsiteInput.value = program.brand_website || '';
+                    if (program.social_links) {
+                        programSocialTwitterInput.value = program.social_links.twitter || '';
+                        programSocialLinkedinInput.value = program.social_links.linkedin || '';
+                        programSocialFacebookInput.value = program.social_links.facebook || '';
+                    }
                 } else {
                     programModalTitle.textContent = 'Add Program';
                     programIdInput.value = '';
@@ -309,6 +347,14 @@
             programForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const id = programIdInput.value;
+                
+                // NEW: Construct social_links object
+                const socialLinks = {
+                    twitter: programSocialTwitterInput.value || null,
+                    linkedin: programSocialLinkedinInput.value || null,
+                    facebook: programSocialFacebookInput.value || null,
+                };
+
                 const programData = {
                     title: programTitleInput.value,
                     category: programCategoryInput.value,
@@ -319,6 +365,9 @@
                     pros: programProsInput.value.split('\n').filter(p => p.trim() !== ''),
                     cons: programConsInput.value.split('\n').filter(c => c.trim() !== ''),
                     status: programStatusInput.value,
+                    // NEW: Add website and social links to the data payload
+                    brand_website: programBrandWebsiteInput.value || null,
+                    social_links: socialLinks,
                 };
 
                 try {
