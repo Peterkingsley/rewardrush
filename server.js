@@ -166,16 +166,21 @@ app.get('/', (req, res) => {
 // --- [NEW & UPDATED] FINANCIAL ADMIN API ENDPOINTS ---
 app.get('/api/admin/financial-summary', requireAdmin, async (req, res) => {
     try {
+        // --- UPDATED QUERY ---
+        // Now sources job history from the user_jobs table where status is 'completed'.
         const transactionsQuery = `
             (SELECT u.username, 'Quest Reward: ' || q.title AS description, public.parse_payout(q.reward) AS amount, 'credit' as type, uq.completed_at AS date FROM user_quests uq JOIN users u ON uq.user_id = u.id JOIN quests q ON uq.quest_id = q.id)
             UNION ALL
-            (SELECT c.affiliate_username AS username, 'Job Conversion: ' || ap.title AS description, c.payout_amount AS amount, 'credit' as type, c.timestamp AS date FROM conversions c JOIN affiliate_programs ap ON c.program_id = ap.id)
+            (SELECT u.username, 'Job Conversion: ' || ap.title AS description, uj.reward_amount AS amount, 'credit' AS type, uj.updated_at AS date 
+             FROM user_jobs uj 
+             JOIN users u ON uj.user_id = u.id 
+             JOIN affiliate_programs ap ON uj.program_id = ap.id 
+             WHERE uj.status = 'completed')
             UNION ALL
             (SELECT u.username, 'Withdrawal' AS description, w.amount, 'debit' as type, w.created_at AS date FROM withdrawals w JOIN users u ON w.user_id = u.id WHERE w.status = 'approved')
             ORDER BY date DESC;
         `;
         
-        // This now fetches from the 'withdrawals' table
         const payoutsQuery = `
             SELECT w.id, u.username, w.amount, w.wallet_address, w.chain, w.status, w.created_at
             FROM withdrawals w
@@ -191,7 +196,7 @@ app.get('/api/admin/financial-summary', requireAdmin, async (req, res) => {
 
         res.json({
             transactions: transactionsResult.rows,
-            payouts: payoutsResult.rows // Renamed to payouts for consistency, but this is withdrawals
+            payouts: payoutsResult.rows
         });
 
     } catch (err) {
@@ -259,10 +264,10 @@ app.get('/api/dashboard-stats', requireAdmin, async (req, res) => {
         const queries = {
             totalUsers: pool.query('SELECT COUNT(*) FROM users'),
             questParticipants: pool.query('SELECT COUNT(DISTINCT user_id) FROM user_quests'),
-            jobApplicants: pool.query('SELECT COUNT(*) FROM affiliate_clicks'),
+            jobApplicants: pool.query('SELECT COUNT(DISTINCT user_id) FROM user_jobs'),
             learnParticipants: pool.query('SELECT COUNT(DISTINCT user_id) FROM user_material_progress'),
             buildParticipants: pool.query('SELECT COUNT(DISTINCT user_id) FROM bookings'),
-            jobEarnings: pool.query(`SELECT SUM(payout_amount) as total FROM conversions`),
+            jobEarnings: pool.query(`SELECT SUM(reward_amount) as total FROM user_jobs WHERE status = 'completed'`),
             questEarnings: pool.query(`SELECT SUM(public.parse_payout(q.reward)) as total FROM user_quests uq JOIN quests q ON uq.quest_id = q.id`),
             totalWithdrawn: pool.query(`SELECT SUM(amount) as total FROM withdrawals WHERE status = 'approved'`),
             userRegistrationGrowth: pool.query(`SELECT date_trunc('month', created_at) as month, COUNT(*) as count FROM users WHERE created_at IS NOT NULL GROUP BY 1 ORDER BY 1`),
@@ -339,7 +344,6 @@ app.get('/api/dashboard-stats', requireAdmin, async (req, res) => {
 // --- [UPDATED & FIXED] USERS PAGE API ENDPOINT ---
 app.get('/api/users-data', requireAdmin, async (req, res) => {
     try {
-        // A more optimized query to get all data at once, including total withdrawn amount
         const query = `
             SELECT 
                 u.id,
@@ -354,31 +358,14 @@ app.get('/api/users-data', requireAdmin, async (req, res) => {
                 COALESCE((SELECT COUNT(*) FROM referrals WHERE referrer_id = u.id AND type = 'platform'), 0) AS total_app_referrals,
                 COALESCE((SELECT COUNT(*) FROM referrals WHERE referrer_id = u.id AND type = 'quest'), 0) AS total_quest_referrals,
                 COALESCE(uq.quest_count, 0) AS quests_joined,
-                COALESCE(ac.click_count, 0) AS jobs_in_progress,
-                COALESCE(c.conversion_count, 0) AS jobs_done,
+                COALESCE(uj_ip.in_progress_count, 0) AS jobs_in_progress,
+                COALESCE(uj_c.completed_count, 0) AS jobs_done,
                 COALESCE(w.total_withdrawn, 0) AS total_withdrawn
             FROM users u
-            LEFT JOIN (
-                SELECT user_id, COUNT(*) as quest_count 
-                FROM user_quests 
-                GROUP BY user_id
-            ) uq ON u.id = uq.user_id
-            LEFT JOIN (
-                SELECT affiliate_username, COUNT(*) as click_count 
-                FROM affiliate_clicks 
-                GROUP BY affiliate_username
-            ) ac ON u.username = ac.affiliate_username
-            LEFT JOIN (
-                SELECT affiliate_username, COUNT(*) as conversion_count 
-                FROM conversions 
-                GROUP BY affiliate_username
-            ) c ON u.username = c.affiliate_username
-            LEFT JOIN (
-                SELECT user_id, SUM(amount) as total_withdrawn
-                FROM withdrawals
-                WHERE status = 'approved'
-                GROUP BY user_id
-            ) w ON u.id = w.user_id
+            LEFT JOIN (SELECT user_id, COUNT(*) as quest_count FROM user_quests GROUP BY user_id) uq ON u.id = uq.user_id
+            LEFT JOIN (SELECT user_id, COUNT(*) as in_progress_count FROM user_jobs WHERE status NOT IN ('completed', 'rejected') GROUP BY user_id) uj_ip ON u.id = uj_ip.user_id
+            LEFT JOIN (SELECT user_id, COUNT(*) as completed_count FROM user_jobs WHERE status = 'completed' GROUP BY user_id) uj_c ON u.id = uj_c.user_id
+            LEFT JOIN (SELECT user_id, SUM(amount) as total_withdrawn FROM withdrawals WHERE status = 'approved' GROUP BY user_id) w ON u.id = w.user_id
             ORDER BY u.created_at DESC;
         `;
 
@@ -419,7 +406,6 @@ app.get('/api/users-data', requireAdmin, async (req, res) => {
 // --- QUESTS PAGE API ENDPOINT ---
 app.get('/api/quests-data', requireAdmin, async (req, res) => {
     try {
-        // [FIXED] Changed alias for participant count to avoid conflict
         const query = `
             SELECT 
                 q.*,
@@ -809,7 +795,7 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
                 uj.status,
                 uj.onboarding_link,
                 uj.tracking_link,
-                uj.rejection_reason
+                COALESCE(uj.rejection_reason, '') as rejection_reason
             FROM affiliate_programs ap
             LEFT JOIN user_jobs uj ON ap.id = uj.program_id AND uj.user_id = $1
             ORDER BY ap.id;
@@ -1109,28 +1095,23 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // 2. [UPDATED] Calculate balance from transactions for accuracy, now including completed jobs
-        // THIS IS THE CORRECTED QUERY
+        // 2. [UPDATED] Calculate balance from transactions for accuracy
         const balanceQuery = `
             SELECT
                 (COALESCE(SUM(credits), 0) - COALESCE(SUM(debits), 0)) AS current_balance
             FROM (
-                -- ALL CREDITS
                 SELECT SUM(public.parse_payout(q.reward)) AS credits, 0 AS debits FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1
                 UNION ALL
                 SELECT SUM(uj.reward_amount) AS credits, 0 AS debits FROM user_jobs uj WHERE uj.user_id = $1 AND uj.status = 'completed'
                 UNION ALL
                 SELECT SUM(re.amount) as credits, 0 as debits FROM referral_earnings re WHERE re.user_id = $1
                 UNION ALL
-                -- ALL DEBITS
                 SELECT 0 AS credits, SUM(w.amount) AS debits FROM withdrawals w WHERE w.user_id = $1 AND w.status = 'approved'
             ) AS transactions;
         `;
-        const balanceResult = await pool.query(balanceQuery, [user.id]); // Note: query now only needs user.id
+        const balanceResult = await pool.query(balanceQuery, [user.id]);
         const calculatedBalance = parseFloat(balanceResult.rows[0].current_balance) || 0;
 
-
-        // OPTIONALLY: If user.points is out of sync, update it.
         if (Math.abs(calculatedBalance - parseFloat(user.points)) > 0.01) {
             console.warn(`User ${user.username} points out of sync. DB: ${user.points}, Calculated: ${calculatedBalance}. Updating.`);
             await pool.query('UPDATE users SET points = $1 WHERE id = $2', [calculatedBalance, user.id]);
@@ -1141,7 +1122,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         const completedQuestsResult = await pool.query('SELECT COUNT(*) FROM user_quests WHERE user_id = $1', [user.id]);
         const questsCompleted = parseInt(completedQuestsResult.rows[0].count, 10);
         
-        const jobsFinishedResult = await pool.query("SELECT COUNT(*) FROM conversions WHERE affiliate_username = $1", [user.username]);
+        const jobsFinishedResult = await pool.query("SELECT COUNT(*) FROM user_jobs WHERE user_id = $1 AND status = 'completed'", [user.id]);
         const jobsFinished = parseInt(jobsFinishedResult.rows[0].count, 10);
 
         // 4. Fetch learning/skill progress
@@ -1174,12 +1155,12 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         const historyQuery = `
             (SELECT 'Quest: ' || q.title AS desc, parse_payout(q.reward) AS amount, uq.completed_at AS date, 'credit' as type, 'completed' as status, NULL as transaction_hash FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
             UNION ALL
-            (SELECT 'Job: ' || ap.title AS desc, c.payout_amount AS amount, c.timestamp AS date, 'credit' as type, 'completed' as status, NULL as transaction_hash FROM conversions c JOIN affiliate_programs ap ON c.program_id = ap.id WHERE c.affiliate_username = $2)
+            (SELECT 'Job: ' || ap.title AS desc, uj.reward_amount AS amount, uj.updated_at AS date, 'credit' as type, uj.status, NULL as transaction_hash FROM user_jobs uj JOIN affiliate_programs ap ON uj.program_id = ap.id WHERE uj.user_id = $1 AND uj.status = 'completed')
             UNION ALL
             (SELECT 'Withdrawal' AS desc, w.amount, w.created_at AS date, 'debit' as type, w.status, w.transaction_hash FROM withdrawals w WHERE w.user_id = $1)
             ORDER BY date DESC LIMIT 20;
         `;
-        const transactionHistoryResult = await pool.query(historyQuery, [user.id, user.username]);
+        const transactionHistoryResult = await pool.query(historyQuery, [user.id]);
         const transactions = transactionHistoryResult.rows.map(t => ({
             type: t.type,
             amount: parseFloat(t.amount).toFixed(2),
@@ -1204,10 +1185,10 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             LEFT JOIN (
                 SELECT completed_at AS earned_at, (SELECT parse_payout(reward) FROM quests q WHERE q.id = uq.quest_id) AS amount FROM user_quests uq WHERE uq.user_id = $1
                 UNION ALL
-                SELECT timestamp AS earned_at, payout_amount AS amount FROM conversions WHERE affiliate_username = $2
+                SELECT updated_at AS earned_at, reward_amount AS amount FROM user_jobs WHERE user_id = $1 AND status = 'completed'
             ) earnings ON date_trunc('month', d) = date_trunc('month', earnings.earned_at)
             GROUP BY date_trunc('month', d) ORDER BY date_trunc('month', d);
-        `, [user.id, user.username]);
+        `, [user.id]);
         
         // 8. Assemble the final JSON payload
         res.json({
@@ -1220,7 +1201,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
                 bio: "Lifelong learner and digital creator. Exploring the worlds of design, code, and marketing. Let's connect!",
             },
             stats: {
-                totalEarnings: calculatedBalance, // Use the newly calculated balance
+                totalEarnings: calculatedBalance,
                 questsCompleted: questsCompleted,
                 jobsFinished: jobsFinished,
                 skillsInProgress: skillsWithProgress.length
@@ -1256,7 +1237,7 @@ app.get('/api/profile/:userId/earnings-history', requireLogin, async (req, res) 
         case '1m': interval = '30 days'; seriesStart = `CURRENT_DATE - INTERVAL '${interval}'`; break;
         case '6m': interval = '6 months'; seriesStart = `CURRENT_DATE - INTERVAL '${interval}'`; break;
         case '1y': interval = '1 year'; seriesStart = `CURRENT_DATE - INTERVAL '${interval}'`; break;
-        case 'all': interval = null; seriesStart = `(SELECT MIN(created_at) FROM users WHERE username = $2)`; break;
+        case 'all': interval = null; seriesStart = `(SELECT MIN(created_at) FROM users WHERE username = $1)`; break;
         default: interval = '6 days'; seriesStart = `CURRENT_DATE - INTERVAL '${interval}'`; break;
     }
 
@@ -1271,11 +1252,11 @@ app.get('/api/profile/:userId/earnings-history', requireLogin, async (req, res) 
             LEFT JOIN (
                 SELECT completed_at AS earned_at, (SELECT parse_payout(reward) FROM quests q WHERE q.id = uq.quest_id) AS amount FROM user_quests uq WHERE uq.user_id = $1
                 UNION ALL
-                SELECT timestamp AS earned_at, payout_amount AS amount FROM conversions WHERE affiliate_username = $2
+                SELECT updated_at AS earned_at, reward_amount AS amount FROM user_jobs WHERE user_id = $1 AND status = 'completed'
             ) earnings ON date_trunc('day', d) = date_trunc('day', earnings.earned_at)
             GROUP BY 1 ORDER BY 1;
         `;
-        const earningsResult = await pool.query(query, [userDbId, userId]);
+        const earningsResult = await pool.query(query, [userDbId]);
         res.json({
             labels: earningsResult.rows.map(r => r.label),
             data: earningsResult.rows.map(r => parseFloat(r.value))
@@ -1663,7 +1644,6 @@ app.get('/quests/:questId/responses', requireAdmin, async (req, res) => {
 app.get('/api/referrals', requireLogin, async (req, res) => {
     const userId = req.user.id;
     try {
-        // [FIX] Simplified query to get total referrals and earnings
         const referralStatsQuery = `
             SELECT 
                 (SELECT COUNT(*) FROM referrals WHERE referrer_id = $1) as total_referrals,
@@ -1681,7 +1661,6 @@ app.get('/api/referrals', requireLogin, async (req, res) => {
         `;
         const referralsResult = await pool.query(referralsQuery, [userId]);
         
-        // [FIX] Use the new total_referrals field from the query
         res.json({
             stats: {
                 totalReferrals: parseInt(referralStatsResult.rows[0].total_referrals, 10) || 0,
@@ -1833,9 +1812,9 @@ app.get('/api/admin/jobs', requireAdmin, async (req, res) => {
             LEFT JOIN (
                 SELECT 
                     program_id, 
-                    COUNT(*) as click_count 
+                    COUNT(DISTINCT user_id) as click_count 
                 FROM 
-                    affiliate_clicks 
+                    user_jobs 
                 GROUP BY 
                     program_id
             ) ac ON ap.id = ac.program_id
@@ -1903,7 +1882,8 @@ app.post('/api/admin/job-requests/:requestId/send-links', requireAdmin, async (r
     }
 });
 
-// UPDATED: Endpoint for admin to approve a reward for a standard job
+// --- UPDATED: Standard Job Reward Approval ---
+// Now updates the user_jobs record to 'completed' instead of deleting it.
 app.post('/api/admin/job-requests/:requestId/approve-reward', requireAdmin, async (req, res) => {
     const { requestId } = req.params;
     const { rewardAmount } = req.body;
@@ -1916,24 +1896,15 @@ app.post('/api/admin/job-requests/:requestId/approve-reward', requireAdmin, asyn
     try {
         await client.query('BEGIN');
 
-        // Get the user job details
-        const jobRequestResult = await client.query("SELECT uj.*, u.username FROM user_jobs uj JOIN users u ON uj.user_id = u.id WHERE uj.id = $1 AND uj.status = 'reward_pending' FOR UPDATE", [requestId]);
+        const jobRequestResult = await client.query("SELECT user_id FROM user_jobs WHERE id = $1 AND status = 'reward_pending' FOR UPDATE", [requestId]);
         if (jobRequestResult.rows.length === 0) {
             throw new Error('Job request not found or not pending reward.');
         }
-        const jobRequest = jobRequestResult.rows[0];
+        const { user_id } = jobRequestResult.rows[0];
 
-        // Add points to the user's account
-        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardAmount, jobRequest.user_id]);
+        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardAmount, user_id]);
 
-        // Insert a permanent record into the conversions table
-        await client.query(
-            'INSERT INTO conversions (program_id, affiliate_username, conversion_value, payout_amount) VALUES ($1, $2, $3, $4)',
-            [jobRequest.program_id, jobRequest.username, 0, rewardAmount]
-        );
-
-        // Delete the temporary job from user_jobs to allow it to be repeated
-        await client.query("DELETE FROM user_jobs WHERE id = $1", [requestId]);
+        await client.query("UPDATE user_jobs SET status = 'completed', reward_amount = $1, updated_at = NOW() WHERE id = $2", [rewardAmount, requestId]);
 
         await client.query('COMMIT');
         res.json({ success: true, message: 'Reward approved and points awarded.' });
@@ -1946,7 +1917,8 @@ app.post('/api/admin/job-requests/:requestId/approve-reward', requireAdmin, asyn
     }
 });
 
-// NEW: Endpoint for admin to review a content submission
+// --- UPDATED: Content Submission Review ---
+// Now updates the user_jobs record to 'completed' or 'rejected' instead of deleting.
 app.post('/api/admin/job-requests/:requestId/review', requireAdmin, async (req, res) => {
     const { requestId } = req.params;
     const { approved, rewardAmount, rejectionReason } = req.body;
@@ -1955,33 +1927,25 @@ app.post('/api/admin/job-requests/:requestId/review', requireAdmin, async (req, 
     try {
         await client.query('BEGIN');
 
-        const jobRequestResult = await client.query("SELECT uj.*, u.username FROM user_jobs uj JOIN users u ON uj.user_id = u.id WHERE uj.id = $1 AND uj.status = 'pending_review' FOR UPDATE", [requestId]);
+        const jobRequestResult = await client.query("SELECT user_id, submission_link FROM user_jobs WHERE id = $1 AND status = 'pending_review' FOR UPDATE", [requestId]);
         if (jobRequestResult.rows.length === 0) {
             throw new Error('Job request not found or not pending review.');
         }
-        const jobRequest = jobRequestResult.rows[0];
+        const { user_id } = jobRequestResult.rows[0];
 
         if (approved) {
             if (!rewardAmount || isNaN(parseFloat(rewardAmount)) || parseFloat(rewardAmount) <= 0) {
                 return res.status(400).json({ error: 'A valid reward amount is required for approval.' });
             }
-            // Add points to the user's account
-            await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardAmount, jobRequest.user_id]);
-            
-            // Insert a permanent record into the conversions table
-            await client.query(
-                'INSERT INTO conversions (program_id, affiliate_username, conversion_value, payout_amount) VALUES ($1, $2, $3, $4)',
-                [jobRequest.program_id, jobRequest.username, 0, rewardAmount]
-            );
-
-            // Delete the temporary job from user_jobs to allow it to be repeated
-            await client.query("DELETE FROM user_jobs WHERE id = $1", [requestId]);
+            await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardAmount, user_id]);
+            await client.query("UPDATE user_jobs SET status = 'completed', reward_amount = $1, updated_at = NOW() WHERE id = $2", [rewardAmount, requestId]);
 
         } else {
             if (!rejectionReason || rejectionReason.trim() === '') {
                  return res.status(400).json({ error: 'A rejection reason is required.' });
             }
-            // Mark as rejected and add reason, allowing for resubmission
+            // Add rejection_reason to user_jobs schema if it doesn't exist
+            // For now, assuming it exists based on updated schema needs
             await client.query("UPDATE user_jobs SET status = 'rejected', rejection_reason = $1, updated_at = NOW() WHERE id = $2", [rejectionReason, requestId]);
         }
 
@@ -2043,7 +2007,6 @@ app.delete('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        // NEW: Delete from user_jobs as well
         await client.query('DELETE FROM user_jobs WHERE program_id = $1', [id]);
         await client.query('DELETE FROM affiliate_clicks WHERE program_id = $1', [id]);
         await client.query('DELETE FROM conversions WHERE program_id = $1', [id]);
@@ -2084,6 +2047,8 @@ app.get('/track', async (req, res) => {
     }
 });
 
+// This endpoint is now largely legacy, as job rewards are handled via the admin panel.
+// It could be kept for external automated conversion tracking if needed.
 app.post('/api/affiliate/conversion', async (req, res) => {
     const { programId, affiliateId, conversionValue } = req.body;
     if (!programId || !affiliateId) {
@@ -2106,13 +2071,16 @@ app.post('/api/affiliate/conversion', async (req, res) => {
         }
         const affiliateDbId = userResult.rows[0].id;
         const payoutAmount = parsePayout(program.payout); 
-        await client.query(
-            'INSERT INTO conversions (program_id, affiliate_username, conversion_value, payout_amount) VALUES ($1, $2, $3, $4)',
-            [programId, affiliateId, conversionValue || 0, payoutAmount]
+        
+        // This flow is now manual. Instead of creating a conversion, we create a 'reward_pending' user_job.
+        await pool.query(
+            `INSERT INTO user_jobs (user_id, program_id, status) VALUES ($1, $2, 'reward_pending')
+             ON CONFLICT (user_id, program_id) DO UPDATE SET status = 'reward_pending'`,
+            [affiliateDbId, programId]
         );
-        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [payoutAmount, affiliateDbId]);
+
         await client.query('COMMIT');
-        res.status(201).json({ message: 'Conversion recorded successfully.' });
+        res.status(201).json({ message: 'Conversion submitted for admin approval.' });
     } catch(err) {
         await client.query('ROLLBACK');
         console.error('Conversion recording error:', err);
@@ -2126,7 +2094,13 @@ app.get('/api/affiliate/stats', requireLogin, async (req, res) => {
     const affiliateId = req.user.username;
     try {
         const clicksResult = await pool.query('SELECT COUNT(*) FROM affiliate_clicks WHERE affiliate_username = $1', [affiliateId]);
-        const conversionsResult = await pool.query('SELECT COUNT(*), SUM(payout_amount) as earnings FROM conversions WHERE affiliate_username = $1', [affiliateId]);
+        const conversionsResult = await pool.query(`
+            SELECT COUNT(*) as count, SUM(reward_amount) as earnings 
+            FROM user_jobs uj
+            JOIN users u ON uj.user_id = u.id
+            WHERE u.username = $1 AND uj.status = 'completed'
+        `, [affiliateId]);
+
         res.json({
             totalClicks: parseInt(clicksResult.rows[0].count, 10),
             totalConversions: parseInt(conversionsResult.rows[0].count, 10),

@@ -28,7 +28,6 @@
 </head>
 <body class="bg-gray-100">
     <div class="flex h-screen">
-        <!-- Sidebar -->
         <div id="sidebar" class="sidebar fixed z-30 inset-y-0 left-0 w-64 bg-gray-900 text-white p-6 space-y-6 md:relative md:translate-x-0">
             <a href="dashboard.html" class="text-white text-2xl font-bold flex items-center space-x-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -69,7 +68,6 @@
             </nav>
         </div>
 
-        <!-- Main content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <header class="bg-white shadow-md p-4 flex justify-between items-center">
                 <button id="menu-button" class="md:hidden text-gray-500">
@@ -85,7 +83,6 @@
             </header>
             
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-                 <!-- NEW: Stats Section -->
                  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div class="bg-white p-6 rounded-lg shadow-md">
                         <h3 class="text-gray-600 text-sm font-semibold">Total Quest Earnings</h3>
@@ -104,7 +101,6 @@
                  <div class="mb-6">
                     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Transaction History</h2>
                      <div class="bg-white p-6 rounded-lg shadow-md">
-                        <!-- UPDATED: Search and Filter controls -->
                         <div class="flex flex-col md:flex-row gap-4 mb-4">
                             <input id="transaction-search-input" type="text" placeholder="Search by username or description..." class="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <select id="transaction-filter" class="w-full md:w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
@@ -126,14 +122,12 @@
                                     </tr>
                                 </thead>
                                 <tbody id="transaction-table-body" class="text-gray-700">
-                                    <!-- Dynamic content here -->
-                                </tbody>
+                                    </tbody>
                             </table>
                         </div>
                      </div>
                  </div>
                  
-                 <!-- Withdrawal Requests Section -->
                  <div>
                     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Withdrawal Requests</h2>
                      <div class="bg-white p-6 rounded-lg shadow-md">
@@ -150,8 +144,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="withdrawal-table-body" class="text-gray-700">
-                                    <!-- Dynamic content here -->
-                                </tbody>
+                                    </tbody>
                             </table>
                         </div>
                      </div>
