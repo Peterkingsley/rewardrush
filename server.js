@@ -803,57 +803,56 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
     try {
         const userId = req.user.id;
 
-        // Fetch all affiliate programs
-        const programsResult = await pool.query('SELECT * FROM affiliate_programs ORDER BY id');
-        
-        // Fetch the current user's job statuses
-        const userJobsResult = await pool.query('SELECT * FROM user_jobs WHERE user_id = $1', [userId]);
-        const userJobsMap = userJobsResult.rows.reduce((map, job) => {
-            map[job.program_id] = job;
-            return map;
-        }, {});
+        // Fetch all affiliate programs and join with user_jobs data
+        const query = `
+            SELECT 
+                ap.*,
+                uj.status,
+                uj.onboarding_link,
+                uj.tracking_link,
+                -- Use the actual reward amount if completed, otherwise use the default payout
+                COALESCE(uj.reward_amount, public.parse_payout(ap.payout)) as final_payment
+            FROM affiliate_programs ap
+            LEFT JOIN user_jobs uj ON ap.id = uj.program_id AND uj.user_id = $1
+            ORDER BY ap.id;
+        `;
+        const programsResult = await pool.query(query, [userId]);
 
-        // Combine program data with user-specific job data
         const jobs = programsResult.rows.map(program => {
-            const userJob = userJobsMap[program.id];
             const requirements = [];
             if (program.guidelines) requirements.push(program.guidelines);
             if (program.pros && program.pros.length > 0) requirements.push(...program.pros.map(p => `Pro: ${p}`));
             if (program.cons && program.cons.length > 0) requirements.push(...program.cons.map(c => `Con: ${c}`));
 
             const categorySlug = program.category.toLowerCase().replace(/\s+/g, '-');
-            const titleMatch = program.title.match(/(\d+)/);
-            const target = titleMatch ? parseInt(titleMatch[0], 10) : 1;
 
             return {
                 id: program.id,
                 title: program.title,
                 category: categorySlug,
-                payment: parsePayout(program.payout),
+                payment: parseFloat(program.final_payment),
                 description: program.details,
                 requirements: requirements,
-                target: target,
                 destinationUrl: program.destination_url,
                 brandWebsite: program.brand_website,
                 socialLinks: program.social_links,
                 brandDashboardUrl: program.brand_dashboard_url,
-                // Add user-specific status and links if they exist
-                status: userJob ? userJob.status : null,
-                onboardingLink: userJob ? userJob.onboarding_link : null,
-                trackingLink: userJob ? userJob.tracking_link : null,
+                status: program.status, // This is the user-specific status from the JOIN
+                onboardingLink: program.onboarding_link,
+                trackingLink: program.tracking_link,
             };
         });
         
         res.json({ jobs });
     } catch (err) {
         console.error('Error fetching jobs:', err);
-        // Check for specific error related to the new table
         if (err.message.includes('relation "user_jobs" does not exist')) {
             return res.status(500).json({ error: 'Server error: The user_jobs table is missing from the database. Please run the required schema migration.' });
         }
         res.status(500).json({ error: 'Failed to fetch jobs' });
     }
 });
+
 
 // NEW: Endpoint for a user to request/accept a job that requires admin-provided links.
 app.post('/api/jobs/:jobId/request-links', requireLogin, async (req, res) => {
@@ -1099,7 +1098,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // 2. [FIX] Calculate balance from transactions for accuracy
+        // 2. [UPDATED] Calculate balance from transactions for accuracy, now including completed jobs
         const balanceQuery = `
             SELECT
                 (COALESCE(SUM(credits), 0) - COALESCE(SUM(debits), 0)) AS current_balance
@@ -1111,6 +1110,8 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
                 UNION ALL
                 SELECT SUM(re.amount) as credits, 0 as debits FROM referral_earnings re WHERE re.user_id = $1
                 UNION ALL
+                SELECT SUM(uj.reward_amount) as credits, 0 as debits FROM user_jobs uj WHERE uj.user_id = $1 AND uj.status = 'completed'
+                UNION ALL
                 -- ALL DEBITS
                 SELECT 0 AS credits, SUM(w.amount) AS debits FROM withdrawals w WHERE w.user_id = $1 AND w.status = 'approved'
             ) AS transactions;
@@ -1119,7 +1120,6 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         const calculatedBalance = parseFloat(balanceResult.rows[0].current_balance) || 0;
 
         // OPTIONALLY: If user.points is out of sync, update it.
-        // This helps maintain data integrity over time.
         if (Math.abs(calculatedBalance - parseFloat(user.points)) > 0.01) {
             console.warn(`User ${user.username} points out of sync. DB: ${user.points}, Calculated: ${calculatedBalance}. Updating.`);
             await pool.query('UPDATE users SET points = $1 WHERE id = $2', [calculatedBalance, user.id]);
@@ -1130,7 +1130,8 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         const completedQuestsResult = await pool.query('SELECT COUNT(*) FROM user_quests WHERE user_id = $1', [user.id]);
         const questsCompleted = parseInt(completedQuestsResult.rows[0].count, 10);
         
-        const jobsFinished = 8; // Placeholder
+        const jobsFinishedResult = await pool.query("SELECT COUNT(*) FROM user_jobs WHERE user_id = $1 AND status = 'completed'", [user.id]);
+        const jobsFinished = parseInt(jobsFinishedResult.rows[0].count, 10);
 
         // 4. Fetch learning/skill progress
         const userSkillsResult = await pool.query(`
@@ -1158,16 +1159,16 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             return { name: skill.skill_name, progress };
         }));
 
-        // 5. Fetch transaction history
+        // 5. [UPDATED] Fetch transaction history, now including completed jobs
         const historyQuery = `
-            (SELECT 'Completed: ' || q.title AS desc, parse_payout(q.reward) AS amount, uq.completed_at AS date, 'credit' as type, NULL as status, NULL as transaction_hash FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
+            (SELECT 'Quest: ' || q.title AS desc, parse_payout(q.reward) AS amount, uq.completed_at AS date, 'credit' as type, 'completed' as status, NULL as transaction_hash FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
             UNION ALL
-            (SELECT 'Conversion: ' || ap.title AS desc, c.payout_amount AS amount, c.timestamp AS date, 'credit' as type, NULL as status, NULL as transaction_hash FROM conversions c JOIN affiliate_programs ap ON c.program_id = ap.id WHERE c.affiliate_username = $2)
+            (SELECT 'Job: ' || ap.title AS desc, uj.reward_amount AS amount, uj.updated_at AS date, 'credit' as type, 'completed' as status, NULL as transaction_hash FROM user_jobs uj JOIN affiliate_programs ap ON uj.program_id = ap.id WHERE uj.user_id = $1 AND uj.status = 'completed' AND uj.reward_amount IS NOT NULL)
             UNION ALL
             (SELECT 'Withdrawal' AS desc, w.amount, w.created_at AS date, 'debit' as type, w.status, w.transaction_hash FROM withdrawals w WHERE w.user_id = $1)
             ORDER BY date DESC LIMIT 20;
         `;
-        const transactionHistoryResult = await pool.query(historyQuery, [user.id, user.username]);
+        const transactionHistoryResult = await pool.query(historyQuery, [user.id]);
         const transactions = transactionHistoryResult.rows.map(t => ({
             type: t.type,
             amount: parseFloat(t.amount).toFixed(2),
