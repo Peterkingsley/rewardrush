@@ -54,10 +54,12 @@ const pool = new Pool({
 --     id SERIAL PRIMARY KEY,
 --     user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
 --     program_id integer NOT NULL REFERENCES public.affiliate_programs(id) ON DELETE CASCADE,
---     status character varying(50) NOT NULL DEFAULT 'pending_links'::character varying,
+--     status character varying(50) NOT NULL,
 --     onboarding_link text,
 --     tracking_link text,
 --     reward_amount numeric(10,2),
+--     submission_link text,
+--     rejection_reason text,
 --     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
 --     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
 --     CONSTRAINT user_jobs_user_id_program_id_key UNIQUE (user_id, program_id)
@@ -810,6 +812,7 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
                 uj.status,
                 uj.onboarding_link,
                 uj.tracking_link,
+                uj.rejection_reason,
                 -- Use the actual reward amount if completed, otherwise use the default payout
                 COALESCE(uj.reward_amount, public.parse_payout(ap.payout)) as final_payment
             FROM affiliate_programs ap
@@ -840,6 +843,7 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
                 status: program.status, // This is the user-specific status from the JOIN
                 onboardingLink: program.onboarding_link,
                 trackingLink: program.tracking_link,
+                rejectionReason: program.rejection_reason,
             };
         });
         
@@ -854,14 +858,12 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
 });
 
 
-// NEW: Endpoint for a user to request/accept a job that requires admin-provided links.
+// Endpoint for a user to request/accept a job that requires admin-provided links.
 app.post('/api/jobs/:jobId/request-links', requireLogin, async (req, res) => {
     const { jobId } = req.params;
     const userId = req.user.id;
 
     try {
-        // Insert a new record into user_jobs, marking it as 'pending_links'.
-        // This acts as a request to the admin.
         const query = `
             INSERT INTO user_jobs (user_id, program_id, status) 
             VALUES ($1, $2, 'pending_links') 
@@ -875,17 +877,31 @@ app.post('/api/jobs/:jobId/request-links', requireLogin, async (req, res) => {
     }
 });
 
-// NEW: Endpoint for a user to claim their payment, which changes the status for admin review.
+// UPDATED: Endpoint for a user to claim their payment. Now handles content submissions.
 app.post('/api/jobs/:jobId/claim', requireLogin, async (req, res) => {
     const { jobId } = req.params;
+    const { submissionLink } = req.body;
     const userId = req.user.id;
 
     try {
-        // Update the job status to 'reward_pending' for the admin to review.
-        const result = await pool.query(
-            "UPDATE user_jobs SET status = 'reward_pending', updated_at = NOW() WHERE user_id = $1 AND program_id = $2 AND status = 'active' RETURNING *",
-            [userId, jobId]
-        );
+        let result;
+        if (submissionLink) {
+            // This is a content submission job
+            result = await pool.query(
+                `INSERT INTO user_jobs (user_id, program_id, status, submission_link, updated_at) 
+                 VALUES ($1, $2, 'pending_review', $3, NOW())
+                 ON CONFLICT (user_id, program_id) 
+                 DO UPDATE SET status = 'pending_review', submission_link = $3, rejection_reason = NULL, updated_at = NOW()
+                 RETURNING *`,
+                [userId, jobId, submissionLink]
+            );
+        } else {
+            // This is a standard job claim
+            result = await pool.query(
+                "UPDATE user_jobs SET status = 'reward_pending', updated_at = NOW() WHERE user_id = $1 AND program_id = $2 AND status = 'active' RETURNING *",
+                [userId, jobId]
+            );
+        }
 
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'Active job not found for this user or already claimed.' });
@@ -1110,8 +1126,6 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
                 UNION ALL
                 SELECT SUM(re.amount) as credits, 0 as debits FROM referral_earnings re WHERE re.user_id = $1
                 UNION ALL
-                SELECT SUM(uj.reward_amount) as credits, 0 as debits FROM user_jobs uj WHERE uj.user_id = $1 AND uj.status = 'completed'
-                UNION ALL
                 -- ALL DEBITS
                 SELECT 0 AS credits, SUM(w.amount) AS debits FROM withdrawals w WHERE w.user_id = $1 AND w.status = 'approved'
             ) AS transactions;
@@ -1130,7 +1144,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         const completedQuestsResult = await pool.query('SELECT COUNT(*) FROM user_quests WHERE user_id = $1', [user.id]);
         const questsCompleted = parseInt(completedQuestsResult.rows[0].count, 10);
         
-        const jobsFinishedResult = await pool.query("SELECT COUNT(*) FROM user_jobs WHERE user_id = $1 AND status = 'completed'", [user.id]);
+        const jobsFinishedResult = await pool.query("SELECT COUNT(*) FROM conversions WHERE affiliate_username = $1", [user.username]);
         const jobsFinished = parseInt(jobsFinishedResult.rows[0].count, 10);
 
         // 4. Fetch learning/skill progress
@@ -1163,12 +1177,12 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         const historyQuery = `
             (SELECT 'Quest: ' || q.title AS desc, parse_payout(q.reward) AS amount, uq.completed_at AS date, 'credit' as type, 'completed' as status, NULL as transaction_hash FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
             UNION ALL
-            (SELECT 'Job: ' || ap.title AS desc, uj.reward_amount AS amount, uj.updated_at AS date, 'credit' as type, 'completed' as status, NULL as transaction_hash FROM user_jobs uj JOIN affiliate_programs ap ON uj.program_id = ap.id WHERE uj.user_id = $1 AND uj.status = 'completed' AND uj.reward_amount IS NOT NULL)
+            (SELECT 'Job: ' || ap.title AS desc, c.payout_amount AS amount, c.timestamp AS date, 'credit' as type, 'completed' as status, NULL as transaction_hash FROM conversions c JOIN affiliate_programs ap ON c.program_id = ap.id WHERE c.affiliate_username = $2)
             UNION ALL
             (SELECT 'Withdrawal' AS desc, w.amount, w.created_at AS date, 'debit' as type, w.status, w.transaction_hash FROM withdrawals w WHERE w.user_id = $1)
             ORDER BY date DESC LIMIT 20;
         `;
-        const transactionHistoryResult = await pool.query(historyQuery, [user.id]);
+        const transactionHistoryResult = await pool.query(historyQuery, [user.id, user.username]);
         const transactions = transactionHistoryResult.rows.map(t => ({
             type: t.type,
             amount: parseFloat(t.amount).toFixed(2),
@@ -1848,11 +1862,12 @@ app.get('/api/admin/job-requests', requireAdmin, async (req, res) => {
                 uj.status,
                 u.username,
                 ap.title as program_title,
-                ap.payout
+                ap.payout,
+                uj.submission_link
             FROM user_jobs uj
             JOIN users u ON uj.user_id = u.id
             JOIN affiliate_programs ap ON uj.program_id = ap.id
-            WHERE uj.status = 'pending_links' OR uj.status = 'reward_pending'
+            WHERE uj.status IN ('pending_links', 'reward_pending', 'pending_review')
             ORDER BY uj.updated_at ASC;
         `;
         const result = await pool.query(query);
@@ -1923,6 +1938,48 @@ app.post('/api/admin/job-requests/:requestId/approve-reward', requireAdmin, asyn
         await client.query('ROLLBACK');
         console.error('Error approving reward:', err);
         res.status(500).json({ error: 'Failed to approve reward.' });
+    } finally {
+        client.release();
+    }
+});
+
+// NEW: Endpoint for admin to review a content submission
+app.post('/api/admin/job-requests/:requestId/review', requireAdmin, async (req, res) => {
+    const { requestId } = req.params;
+    const { approved, rewardAmount, rejectionReason } = req.body;
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const jobRequestResult = await client.query("SELECT * FROM user_jobs WHERE id = $1 AND status = 'pending_review' FOR UPDATE", [requestId]);
+        if (jobRequestResult.rows.length === 0) {
+            throw new Error('Job request not found or not pending review.');
+        }
+        const jobRequest = jobRequestResult.rows[0];
+
+        if (approved) {
+            if (!rewardAmount || isNaN(parseFloat(rewardAmount)) || parseFloat(rewardAmount) <= 0) {
+                return res.status(400).json({ error: 'A valid reward amount is required for approval.' });
+            }
+            // Add points to the user's account
+            await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardAmount, jobRequest.user_id]);
+            // Mark as completed
+            await client.query("UPDATE user_jobs SET status = 'completed', reward_amount = $1, updated_at = NOW() WHERE id = $2", [rewardAmount, requestId]);
+        } else {
+            if (!rejectionReason || rejectionReason.trim() === '') {
+                 return res.status(400).json({ error: 'A rejection reason is required.' });
+            }
+            // Mark as rejected and add reason
+            await client.query("UPDATE user_jobs SET status = 'rejected', rejection_reason = $1, updated_at = NOW() WHERE id = $2", [rejectionReason, requestId]);
+        }
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: `Submission has been ${approved ? 'approved' : 'rejected'}.` });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Error reviewing submission:', err);
+        res.status(500).json({ error: 'Failed to review submission.' });
     } finally {
         client.release();
     }
@@ -2230,7 +2287,6 @@ app.use((req, res, next) => {
     }
     next();
 });
-
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}. Connected to database.`);

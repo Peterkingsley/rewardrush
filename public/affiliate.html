@@ -316,6 +316,8 @@
                     currentJobInModal: null,
                     username: 'guest',
                     linkRequiredCategories: ['sign-up', 'trading-volume', 'transacting-users', 'pay-for-a-product'],
+                    // NEW: Categories for content submission
+                    contentSubmissionCategories: ['video-creation', 'post-on-socials'],
                 },
                 
                 elements: {
@@ -395,11 +397,10 @@
                     const categoryFilter = categoryFilterEl.value;
                     const sortOrder = sortFilter.value;
                     
-                    // Only filter out jobs that are fully completed. Active jobs will remain.
                     const completedJobIds = completedJobs.map(j => j.id);
                     
                     let filteredJobs = allJobs
-                        .filter(job => !completedJobIds.includes(job.id)) // Keep active jobs in the list
+                        .filter(job => !completedJobIds.includes(job.id))
                         .filter(job => 
                             (job.title?.toLowerCase().includes(searchTerm) || job.description?.toLowerCase().includes(searchTerm)) && 
                             (categoryFilter === 'all' || job.category === categoryFilter)
@@ -495,13 +496,20 @@
                                 statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-yellow-600 bg-yellow-100">Pending Links</span>`;
                                 break;
                             case 'active':
+                            case 'pending_submission': // NEW
                                 statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-100">In Progress</span>`;
+                                break;
+                             case 'pending_review': // NEW
+                                statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-600 bg-purple-100">Pending Review</span>`;
                                 break;
                             case 'completed':
                                 statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-green-600 bg-green-100">Completed</span>`;
                                 break;
                             case 'reward_pending':
                                 statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-100">Reward Pending</span>`;
+                                break;
+                            case 'rejected': // NEW
+                                statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-red-600 bg-red-100">Rejected</span>`;
                                 break;
                         }
 
@@ -522,6 +530,37 @@
                     let progressContent = '';
                     
                     switch(job.status) {
+                        case 'pending_submission': // NEW
+                            progressContent = `
+                                <h3 class="font-bold text-lg mb-2 text-gray-800">Submit Your Work</h3>
+                                <p class="text-sm text-gray-600 mb-4">Please paste the link to your content below to claim your payment.</p>
+                                <form id="content-submission-form">
+                                    <input type="url" id="submission-link-input" placeholder="https://..." class="w-full p-2 border border-gray-300 rounded-lg mb-4" required>
+                                    <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition">Claim Payment</button>
+                                </form>
+                            `;
+                            break;
+                        case 'pending_review': // NEW
+                             progressContent = `
+                                <div class="text-center p-8 bg-gray-50 rounded-lg">
+                                    <i class="fas fa-search text-4xl text-purple-500 mb-4"></i>
+                                    <h3 class="font-bold text-lg text-gray-800">Submission Under Review</h3>
+                                    <p class="text-sm text-gray-600 mt-2">Your submission is currently being reviewed by an administrator. Please check back later for updates.</p>
+                                </div>`;
+                            break;
+                        case 'rejected': // NEW
+                            progressContent = `
+                                <h3 class="font-bold text-lg mb-2 text-red-700">Submission Rejected</h3>
+                                <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+                                    <p class="text-sm text-red-800"><span class="font-bold">Admin Feedback:</span> ${job.rejectionReason || 'No reason provided.'}</p>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-4">Please review the feedback, correct your work, and submit the new link below.</p>
+                                <form id="content-submission-form">
+                                    <input type="url" id="submission-link-input" placeholder="https://..." class="w-full p-2 border border-gray-300 rounded-lg mb-4" required>
+                                    <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-green-700 transition">Resubmit & Claim Payment</button>
+                                </form>
+                            `;
+                            break;
                         case 'pending_links':
                             progressContent = `
                                 <div class="text-center p-8 bg-gray-50 rounded-lg">
@@ -558,13 +597,21 @@
                     }
                     
                     jobProgressView.innerHTML = progressContent;
-                    jobProgressView.querySelector('#claim-reward-btn')?.addEventListener('click', () => this.claimReward(job));
+                    jobProgressView.querySelector('#claim-reward-btn')?.addEventListener('click', () => this.claimReward(job, {}));
+                    jobProgressView.querySelector('#content-submission-form')?.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        const link = e.target.querySelector('#submission-link-input').value;
+                        this.claimReward(job, { submissionLink: link });
+                    });
                 },
 
-                async claimReward(job) {
+                async claimReward(job, submissionData) {
                     try {
-                        await ApiService.claimJobReward(job.id, {});
-                        job.status = 'reward_pending';
+                        await ApiService.claimJobReward(job.id, submissionData);
+                        
+                        // NEW: Update status based on submission type
+                        job.status = submissionData.submissionLink ? 'pending_review' : 'reward_pending';
+                        
                         this.updateAll();
                         this.showNotification(`Reward claim for "${job.title}" sent to admin for approval.`);
                         this.renderJobProgress(job);
@@ -756,7 +803,15 @@
                         const job = this.state.currentJobInModal;
                         if (!job) return;
 
-                        if (this.state.linkRequiredCategories.includes(job.category)) {
+                        // NEW: Differentiate behavior based on category
+                        if (this.state.contentSubmissionCategories.includes(job.category)) {
+                            job.status = 'pending_submission';
+                            this.state.activeJobs.push(job);
+                            this.updateAll();
+                            this.showNotification(`Job "${job.title}" accepted. Please submit your work.`);
+                            this.renderJobProgress(job);
+                            acceptBtn.style.display = 'none';
+                        } else if (this.state.linkRequiredCategories.includes(job.category)) {
                             try {
                                 await ApiService.requestJobLinks(job.id);
                                 job.status = 'pending_links';
@@ -769,7 +824,8 @@
                                 this.showNotification(`Failed to request job: ${error.message}`, 'error');
                             }
                         } else {
-                            job.status = 'active';
+                            // Default behavior for other jobs if any
+                            job.status = 'active'; 
                             this.state.activeJobs.push(job);
                             this.updateAll();
                             this.showNotification(`Job "${job.title}" has been accepted!`);

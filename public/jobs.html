@@ -123,7 +123,7 @@
                     </div>
                  </div>
 
-                 <!-- NEW: User Job Requests Section -->
+                 <!-- User Job Requests Section -->
                  <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
                     <h2 class="text-2xl font-semibold text-gray-800 mb-6">User Job Requests</h2>
                     <div id="job-requests-list" class="space-y-4">
@@ -286,7 +286,6 @@
                     });
                 },
                 deleteProgram: (id) => Api.fetch(`/api/admin/jobs/${id}`, { method: 'DELETE' }),
-                // NEW: API methods for job requests
                 getJobRequests: () => Api.fetch('/api/admin/job-requests'),
                 sendLinks: (requestId, links) => Api.fetch(`/api/admin/job-requests/${requestId}/send-links`, {
                     method: 'POST',
@@ -297,6 +296,12 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(reward)
+                }),
+                 // NEW API methods for content review
+                reviewSubmission: (requestId, reviewData) => Api.fetch(`/api/admin/job-requests/${requestId}/review`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(reviewData)
                 }),
             };
 
@@ -329,7 +334,6 @@
                 });
             }
 
-            // NEW: Render Job Requests
             function renderJobRequests(requests) {
                 jobRequestsList.innerHTML = '';
                 if (!requests || requests.length === 0) {
@@ -340,24 +344,53 @@
                 requests.forEach(req => {
                     let actionForm = '';
                     let statusPill = '';
+                    let submissionInfo = '';
 
-                    if (req.status === 'pending_links') {
-                        statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-yellow-600 bg-yellow-100">Pending Links</span>`;
-                        actionForm = `
-                            <form class="mt-4 space-y-3 send-links-form" data-request-id="${req.id}">
-                                <input type="url" name="onboardingLink" placeholder="Onboarding Link" class="w-full p-2 border rounded-lg" required>
-                                <input type="url" name="trackingLink" placeholder="Tracking Link" class="w-full p-2 border rounded-lg">
-                                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Send Links</button>
-                            </form>
+                    // NEW: Display submission link if available
+                    if (req.submission_link) {
+                        submissionInfo = `
+                            <div class="mt-2">
+                                <p class="text-sm font-medium text-gray-700">Submitted Link:</p>
+                                <a href="${req.submission_link}" target="_blank" class="text-blue-500 hover:underline break-all">${req.submission_link}</a>
+                            </div>
                         `;
-                    } else if (req.status === 'reward_pending') {
-                        statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-100">Reward Pending</span>`;
-                        actionForm = `
-                             <form class="mt-4 flex items-center space-x-3 approve-reward-form" data-request-id="${req.id}">
-                                <input type="number" step="0.01" name="rewardAmount" placeholder="Reward Amount (e.g., ${req.payout})" class="w-full p-2 border rounded-lg" required>
-                                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve Reward</button>
-                            </form>
-                        `;
+                    }
+
+                    switch(req.status) {
+                        case 'pending_links':
+                            statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-yellow-600 bg-yellow-100">Pending Links</span>`;
+                            actionForm = `
+                                <form class="mt-4 space-y-3 send-links-form" data-request-id="${req.id}">
+                                    <input type="url" name="onboardingLink" placeholder="Onboarding Link" class="w-full p-2 border rounded-lg" required>
+                                    <input type="url" name="trackingLink" placeholder="Tracking Link" class="w-full p-2 border rounded-lg">
+                                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Send Links</button>
+                                </form>
+                            `;
+                            break;
+                        case 'reward_pending':
+                            statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-100">Reward Pending</span>`;
+                            actionForm = `
+                                 <form class="mt-4 flex items-center space-x-3 approve-reward-form" data-request-id="${req.id}">
+                                    <input type="number" step="0.01" name="rewardAmount" placeholder="Reward Amount (e.g., ${req.payout})" class="w-full p-2 border rounded-lg" required>
+                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve Reward</button>
+                                </form>
+                            `;
+                            break;
+                        case 'pending_review': // NEW
+                            statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-600 bg-purple-100">Pending Review</span>`;
+                            actionForm = `
+                                <form class="mt-4 space-y-3 review-submission-form" data-request-id="${req.id}">
+                                    <div class="flex items-center space-x-3">
+                                        <input type="number" step="0.01" name="rewardAmount" placeholder="Reward Amount" class="w-full p-2 border rounded-lg" required>
+                                        <button type="button" class="approve-submission-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve</button>
+                                    </div>
+                                    <div class="decline-section hidden">
+                                        <textarea name="rejectionReason" placeholder="Reason for declining..." class="w-full p-2 border rounded-lg" required></textarea>
+                                    </div>
+                                    <button type="button" class="decline-submission-btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Decline</button>
+                                </form>
+                            `;
+                            break;
                     }
 
                     const requestCard = `
@@ -369,6 +402,7 @@
                                 </div>
                                 ${statusPill}
                             </div>
+                            ${submissionInfo}
                             ${actionForm}
                         </div>
                     `;
@@ -474,7 +508,6 @@
                 renderPrograms(filteredPrograms);
             });
 
-            // NEW: Event listener for job request forms
             jobRequestsList.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const form = e.target;
@@ -486,16 +519,54 @@
                         trackingLink: form.elements.trackingLink.value,
                     };
                     await Api.sendLinks(requestId, links);
-                    alert('Links sent successfully!');
                 } else if (form.classList.contains('approve-reward-form')) {
                     const reward = {
                         rewardAmount: parseFloat(form.elements.rewardAmount.value)
                     };
                     await Api.approveReward(requestId, reward);
-                    alert('Reward approved and sent!');
                 }
-                loadJobRequests(); // Refresh the list after action
+                alert('Action completed successfully!');
+                loadJobRequests();
             });
+            
+            // NEW: Event delegation for review buttons
+            jobRequestsList.addEventListener('click', async (e) => {
+                const form = e.target.closest('.review-submission-form');
+                if (!form) return;
+                
+                const requestId = form.dataset.requestId;
+
+                if (e.target.classList.contains('approve-submission-btn')) {
+                    const rewardAmount = parseFloat(form.elements.rewardAmount.value);
+                    if (!rewardAmount || rewardAmount <= 0) {
+                        alert('Please enter a valid reward amount.');
+                        return;
+                    }
+                    await Api.reviewSubmission(requestId, { approved: true, rewardAmount });
+                    alert('Submission approved and payment sent!');
+                    loadJobRequests();
+                } else if (e.target.classList.contains('decline-submission-btn')) {
+                    const declineSection = form.querySelector('.decline-section');
+                    const isVisible = !declineSection.classList.contains('hidden');
+                    
+                    if (isVisible) {
+                        // If section is visible, we are now submitting the decline reason
+                        const rejectionReason = form.elements.rejectionReason.value;
+                        if (!rejectionReason.trim()) {
+                            alert('Please provide a reason for declining.');
+                            return;
+                        }
+                        await Api.reviewSubmission(requestId, { approved: false, rejectionReason });
+                        alert('Submission declined.');
+                        loadJobRequests();
+                    } else {
+                        // If section is hidden, show it
+                        declineSection.classList.remove('hidden');
+                        e.target.textContent = 'Submit Decline';
+                    }
+                }
+            });
+
 
             // --- Initial Load ---
             async function loadPrograms() {
@@ -508,7 +579,6 @@
                 }
             }
 
-            // NEW: Load Job Requests
             async function loadJobRequests() {
                 try {
                     const data = await Api.getJobRequests();
