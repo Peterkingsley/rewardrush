@@ -34,7 +34,6 @@
 </head>
 <body class="bg-gray-100">
     <div class="flex h-screen">
-        <!-- Sidebar -->
         <div id="sidebar" class="sidebar fixed z-30 inset-y-0 left-0 w-64 bg-gray-900 text-white p-6 space-y-6 md:relative md:translate-x-0">
             <a href="dashboard.html" class="text-white text-2xl font-bold flex items-center space-x-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -75,7 +74,6 @@
             </nav>
         </div>
 
-        <!-- Main content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <header class="bg-white shadow-md p-4 flex justify-between items-center">
                 <button id="menu-button" class="md:hidden text-gray-500">
@@ -117,24 +115,20 @@
                                 </tr>
                             </thead>
                             <tbody id="program-table-body" class="text-gray-700">
-                                <!-- Program rows will be injected here by JavaScript -->
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                  </div>
 
-                 <!-- User Job Requests Section -->
                  <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
                     <h2 class="text-2xl font-semibold text-gray-800 mb-6">User Job Requests</h2>
                     <div id="job-requests-list" class="space-y-4">
-                        <!-- Requests will be injected here -->
-                    </div>
+                        </div>
                  </div>
             </main>
         </div>
     </div>
 
-    <!-- Add/Edit Program Modal -->
     <div id="program-modal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center p-4 z-50">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-3xl p-8 max-h-[90vh] overflow-y-auto">
             <h2 id="program-modal-title" class="text-2xl font-bold mb-6">Add Program</h2>
@@ -292,12 +286,12 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(links)
                 }),
-                approveReward: (requestId, reward) => Api.fetch(`/api/admin/job-requests/${requestId}/approve-reward`, {
+                // REWRITTEN: Now a simple approval trigger
+                approveReward: (requestId) => Api.fetch(`/api/admin/job-requests/${requestId}/approve-reward`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(reward)
+                    body: JSON.stringify({}) // Body is now empty
                 }),
-                 // NEW API methods for content review
                 reviewSubmission: (requestId, reviewData) => Api.fetch(`/api/admin/job-requests/${requestId}/review`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -345,14 +339,26 @@
                     let actionForm = '';
                     let statusPill = '';
                     let submissionInfo = '';
+                    let claimInfo = '';
 
-                    // NEW: Display submission link if available
                     if (req.submission_link) {
                         submissionInfo = `
                             <div class="mt-2">
                                 <p class="text-sm font-medium text-gray-700">Submitted Link:</p>
                                 <a href="${req.submission_link}" target="_blank" class="text-blue-500 hover:underline break-all">${req.submission_link}</a>
                             </div>
+                        `;
+                    }
+                    
+                    // NEW: Display claim details
+                    if (req.current_claim_amount) {
+                        const cumulativePaid = parseFloat(req.cumulative_reward_paid || 0).toFixed(2);
+                        const currentClaim = parseFloat(req.current_claim_amount).toFixed(2);
+                        claimInfo = `
+                           <div class="mt-2 text-sm text-gray-600">
+                               <p>Amount Claimed: <span class="font-semibold text-green-700">$${currentClaim}</span></p>
+                               <p>Previously Paid: <span class="font-semibold text-gray-800">$${cumulativePaid}</span></p>
+                           </div>
                         `;
                     }
 
@@ -370,24 +376,23 @@
                         case 'reward_pending':
                             statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-100">Reward Pending</span>`;
                             actionForm = `
-                                 <form class="mt-4 flex items-center space-x-3 approve-reward-form" data-request-id="${req.id}">
-                                    <input type="number" step="0.01" name="rewardAmount" placeholder="Reward Amount (e.g., ${req.payout})" class="w-full p-2 border rounded-lg" required>
+                                 <form class="mt-4 approve-reward-form" data-request-id="${req.id}">
                                     <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve Reward</button>
                                 </form>
                             `;
                             break;
-                        case 'pending_review': // NEW
+                        case 'pending_review':
                             statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-600 bg-purple-100">Pending Review</span>`;
                             actionForm = `
                                 <form class="mt-4 space-y-3 review-submission-form" data-request-id="${req.id}">
                                     <div class="flex items-center space-x-3">
-                                        <input type="number" step="0.01" name="rewardAmount" placeholder="Reward Amount" class="w-full p-2 border rounded-lg" required>
                                         <button type="button" class="approve-submission-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve</button>
+                                        <button type="button" class="decline-submission-btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Decline</button>
                                     </div>
-                                    <div class="decline-section hidden">
+                                    <div class="decline-section hidden mt-2">
                                         <textarea name="rejectionReason" placeholder="Reason for declining..." class="w-full p-2 border rounded-lg" required></textarea>
+                                        <button type="submit" class="mt-2 bg-red-600 text-white font-bold py-2 px-4 rounded-lg">Submit Decline</button>
                                     </div>
-                                    <button type="button" class="decline-submission-btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Decline</button>
                                 </form>
                             `;
                             break;
@@ -403,6 +408,7 @@
                                 ${statusPill}
                             </div>
                             ${submissionInfo}
+                            ${claimInfo}
                             ${actionForm}
                         </div>
                     `;
@@ -474,9 +480,7 @@
                     await Api.saveProgram(id, programData);
                     await loadPrograms();
                     closeProgramModal();
-                } catch (error) {
-                    // Error is already logged by Api.fetch
-                }
+                } catch (error) {}
             });
 
             programTableBody.addEventListener('click', async function(e) {
@@ -488,13 +492,11 @@
                     const programToEdit = allPrograms.find(j => j.id === programId);
                     openProgramModal(programToEdit);
                 } else if (e.target.closest('.delete-btn')) {
-                    if (confirm('Are you sure you want to delete this program? This will also delete all associated clicks and conversions.')) {
+                    if (confirm('Are you sure you want to delete this program? This will also delete all associated jobs and history.')) {
                         try {
                             await Api.deleteProgram(programId);
                             await loadPrograms();
-                        } catch (error) {
-                           // Error is already logged by Api.fetch
-                        }
+                        } catch (error) {}
                     }
                 }
             });
@@ -520,53 +522,38 @@
                     };
                     await Api.sendLinks(requestId, links);
                 } else if (form.classList.contains('approve-reward-form')) {
-                    const reward = {
-                        rewardAmount: parseFloat(form.elements.rewardAmount.value)
-                    };
-                    await Api.approveReward(requestId, reward);
+                    await Api.approveReward(requestId);
+                } else if (e.target.closest('.review-submission-form')) {
+                     // This part is now handled by the 'click' event listener below
+                    const reason = form.elements.rejectionReason.value;
+                    if (!reason.trim()) {
+                        alert('Please provide a reason for declining.');
+                        return;
+                    }
+                    await Api.reviewSubmission(requestId, { approved: false, rejectionReason: reason });
                 }
                 alert('Action completed successfully!');
                 loadJobRequests();
             });
             
-            // NEW: Event delegation for review buttons
             jobRequestsList.addEventListener('click', async (e) => {
-                const form = e.target.closest('.review-submission-form');
+                const form = e.target.closest('form');
                 if (!form) return;
                 
                 const requestId = form.dataset.requestId;
 
                 if (e.target.classList.contains('approve-submission-btn')) {
-                    const rewardAmount = parseFloat(form.elements.rewardAmount.value);
-                    if (!rewardAmount || rewardAmount <= 0) {
-                        alert('Please enter a valid reward amount.');
-                        return;
-                    }
-                    await Api.reviewSubmission(requestId, { approved: true, rewardAmount });
-                    alert('Submission approved and payment sent!');
+                    e.preventDefault();
+                    await Api.reviewSubmission(requestId, { approved: true });
+                    alert('Submission approved and payment processed!');
                     loadJobRequests();
+
                 } else if (e.target.classList.contains('decline-submission-btn')) {
+                    e.preventDefault();
                     const declineSection = form.querySelector('.decline-section');
-                    const isVisible = !declineSection.classList.contains('hidden');
-                    
-                    if (isVisible) {
-                        // If section is visible, we are now submitting the decline reason
-                        const rejectionReason = form.elements.rejectionReason.value;
-                        if (!rejectionReason.trim()) {
-                            alert('Please provide a reason for declining.');
-                            return;
-                        }
-                        await Api.reviewSubmission(requestId, { approved: false, rejectionReason });
-                        alert('Submission declined.');
-                        loadJobRequests();
-                    } else {
-                        // If section is hidden, show it
-                        declineSection.classList.remove('hidden');
-                        e.target.textContent = 'Submit Decline';
-                    }
+                    declineSection.classList.toggle('hidden');
                 }
             });
-
 
             // --- Initial Load ---
             async function loadPrograms() {

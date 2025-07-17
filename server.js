@@ -44,11 +44,10 @@ const pool = new Pool({
 
 /*
 -- =============================================================================
--- IMPORTANT: DATABASE SCHEMA CHANGE REQUIRED FOR NEW JOB FLOW
+-- IMPORTANT: DATABASE SCHEMA CHANGES REQUIRED FOR NEW JOB FLOW
 -- =============================================================================
--- To support the new job flow where users request links and claim rewards,
--- a new table named 'user_jobs' is required with the following structure.
 --
+-- 1. Create the user_jobs table if it doesn't exist:
 -- CREATE TABLE public.user_jobs (
 --     id SERIAL PRIMARY KEY,
 --     user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
@@ -63,7 +62,22 @@ const pool = new Pool({
 --     CONSTRAINT user_jobs_user_id_program_id_key UNIQUE (user_id, program_id)
 -- );
 --
--- This table will track the state of each job for each user.
+-- 2. Add new columns to user_jobs for the "Claim and Continue" feature:
+-- ALTER TABLE public.user_jobs
+-- ADD COLUMN cumulative_reward_paid numeric(10, 2) DEFAULT 0.00 NOT NULL,
+-- ADD COLUMN current_claim_amount numeric(10, 2),
+-- ADD COLUMN is_final_claim boolean DEFAULT false NOT NULL;
+--
+-- 3. Create a table to store permanent completion history:
+-- CREATE TABLE public.job_completions (
+--     id SERIAL PRIMARY KEY,
+--     user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+--     program_id integer NOT NULL REFERENCES public.affiliate_programs(id) ON DELETE CASCADE,
+--     reward_amount numeric(10,2) NOT NULL,
+--     completed_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+-- );
+-- CREATE INDEX idx_job_completions_user_id ON public.job_completions(user_id);
+--
 -- =============================================================================
 */
 
@@ -167,15 +181,14 @@ app.get('/', (req, res) => {
 app.get('/api/admin/financial-summary', requireAdmin, async (req, res) => {
     try {
         // --- UPDATED QUERY ---
-        // Now sources job history from the user_jobs table where status is 'completed'.
+        // Now sources job history from the job_completions table.
         const transactionsQuery = `
             (SELECT u.username, 'Quest Reward: ' || q.title AS description, public.parse_payout(q.reward) AS amount, 'credit' as type, uq.completed_at AS date FROM user_quests uq JOIN users u ON uq.user_id = u.id JOIN quests q ON uq.quest_id = q.id)
             UNION ALL
-            (SELECT u.username, 'Job Conversion: ' || ap.title AS description, uj.reward_amount AS amount, 'credit' AS type, uj.updated_at AS date 
-             FROM user_jobs uj 
-             JOIN users u ON uj.user_id = u.id 
-             JOIN affiliate_programs ap ON uj.program_id = ap.id 
-             WHERE uj.status = 'completed')
+            (SELECT u.username, 'Job Completion: ' || ap.title AS description, jc.reward_amount AS amount, 'credit' AS type, jc.completed_at AS date 
+             FROM job_completions jc
+             JOIN users u ON jc.user_id = u.id 
+             JOIN affiliate_programs ap ON jc.program_id = ap.id)
             UNION ALL
             (SELECT u.username, 'Withdrawal' AS description, w.amount, 'debit' as type, w.created_at AS date FROM withdrawals w JOIN users u ON w.user_id = u.id WHERE w.status = 'approved')
             ORDER BY date DESC;
@@ -267,7 +280,7 @@ app.get('/api/dashboard-stats', requireAdmin, async (req, res) => {
             jobApplicants: pool.query('SELECT COUNT(DISTINCT user_id) FROM user_jobs'),
             learnParticipants: pool.query('SELECT COUNT(DISTINCT user_id) FROM user_material_progress'),
             buildParticipants: pool.query('SELECT COUNT(DISTINCT user_id) FROM bookings'),
-            jobEarnings: pool.query(`SELECT SUM(reward_amount) as total FROM user_jobs WHERE status = 'completed'`),
+            jobEarnings: pool.query(`SELECT SUM(reward_amount) as total FROM job_completions`),
             questEarnings: pool.query(`SELECT SUM(public.parse_payout(q.reward)) as total FROM user_quests uq JOIN quests q ON uq.quest_id = q.id`),
             totalWithdrawn: pool.query(`SELECT SUM(amount) as total FROM withdrawals WHERE status = 'approved'`),
             userRegistrationGrowth: pool.query(`SELECT date_trunc('month', created_at) as month, COUNT(*) as count FROM users WHERE created_at IS NOT NULL GROUP BY 1 ORDER BY 1`),
@@ -359,12 +372,12 @@ app.get('/api/users-data', requireAdmin, async (req, res) => {
                 COALESCE((SELECT COUNT(*) FROM referrals WHERE referrer_id = u.id AND type = 'quest'), 0) AS total_quest_referrals,
                 COALESCE(uq.quest_count, 0) AS quests_joined,
                 COALESCE(uj_ip.in_progress_count, 0) AS jobs_in_progress,
-                COALESCE(uj_c.completed_count, 0) AS jobs_done,
+                COALESCE(jc.completed_count, 0) AS jobs_done,
                 COALESCE(w.total_withdrawn, 0) AS total_withdrawn
             FROM users u
             LEFT JOIN (SELECT user_id, COUNT(*) as quest_count FROM user_quests GROUP BY user_id) uq ON u.id = uq.user_id
-            LEFT JOIN (SELECT user_id, COUNT(*) as in_progress_count FROM user_jobs WHERE status NOT IN ('completed', 'rejected') GROUP BY user_id) uj_ip ON u.id = uj_ip.user_id
-            LEFT JOIN (SELECT user_id, COUNT(*) as completed_count FROM user_jobs WHERE status = 'completed' GROUP BY user_id) uj_c ON u.id = uj_c.user_id
+            LEFT JOIN (SELECT user_id, COUNT(*) as in_progress_count FROM user_jobs GROUP BY user_id) uj_ip ON u.id = uj_ip.user_id
+            LEFT JOIN (SELECT user_id, COUNT(*) as completed_count FROM job_completions GROUP BY user_id) jc ON u.id = jc.user_id
             LEFT JOIN (SELECT user_id, SUM(amount) as total_withdrawn FROM withdrawals WHERE status = 'approved' GROUP BY user_id) w ON u.id = w.user_id
             ORDER BY u.created_at DESC;
         `;
@@ -838,6 +851,39 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
     }
 });
 
+// NEW: Endpoint for a user to fetch their job completion history
+app.get('/api/jobs/history', requireLogin, async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const query = `
+            SELECT 
+                jc.id,
+                ap.title,
+                ap.payout,
+                jc.reward_amount,
+                jc.completed_at
+            FROM job_completions jc
+            JOIN affiliate_programs ap ON jc.program_id = ap.id
+            WHERE jc.user_id = $1
+            ORDER BY jc.completed_at DESC;
+        `;
+        const historyResult = await pool.query(query, [userId]);
+
+        const completedJobs = historyResult.rows.map(item => ({
+            id: item.id,
+            title: item.title,
+            // Use the actual paid amount, fallback to original payout string
+            payment: item.reward_amount || parsePayout(item.payout), 
+            status: 'completed',
+        }));
+        
+        res.json({ completedJobs });
+    } catch (err) {
+        console.error('Error fetching job history:', err);
+        res.status(500).json({ error: 'Failed to fetch job history' });
+    }
+});
+
 
 // Endpoint for a user to request/accept a job that requires admin-provided links.
 app.post('/api/jobs/:jobId/request-links', requireLogin, async (req, res) => {
@@ -858,34 +904,48 @@ app.post('/api/jobs/:jobId/request-links', requireLogin, async (req, res) => {
     }
 });
 
-// UPDATED: Endpoint for a user to claim their payment. Now handles content submissions.
+// REWRITTEN: Endpoint for a user to claim their payment.
 app.post('/api/jobs/:jobId/claim', requireLogin, async (req, res) => {
     const { jobId } = req.params;
-    const { submissionLink } = req.body;
+    const { claimAmount, is_final_claim, submissionLink } = req.body;
     const userId = req.user.id;
+
+    const parsedAmount = parseFloat(claimAmount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+        return res.status(400).json({ error: 'A valid claim amount is required.' });
+    }
 
     try {
         let result;
         if (submissionLink) {
-            // This is a content submission job
+            // For content submission, the claim and submission are one action.
             result = await pool.query(
-                `INSERT INTO user_jobs (user_id, program_id, status, submission_link, updated_at) 
-                 VALUES ($1, $2, 'pending_review', $3, NOW())
+                `INSERT INTO user_jobs (user_id, program_id, status, submission_link, current_claim_amount, is_final_claim, updated_at) 
+                 VALUES ($1, $2, 'pending_review', $3, $4, $5, NOW())
                  ON CONFLICT (user_id, program_id) 
-                 DO UPDATE SET status = 'pending_review', submission_link = $3, rejection_reason = NULL, updated_at = NOW()
+                 DO UPDATE SET 
+                     status = 'pending_review', 
+                     submission_link = $3, 
+                     rejection_reason = NULL, 
+                     current_claim_amount = $4,
+                     is_final_claim = $5,
+                     updated_at = NOW()
                  RETURNING *`,
-                [userId, jobId, submissionLink]
+                [userId, jobId, submissionLink, parsedAmount, is_final_claim]
             );
         } else {
-            // This is a standard job claim
+            // For other job types, this is a standard reward claim.
             result = await pool.query(
-                "UPDATE user_jobs SET status = 'reward_pending', updated_at = NOW() WHERE user_id = $1 AND program_id = $2 AND status = 'active' RETURNING *",
-                [userId, jobId]
+                `UPDATE user_jobs 
+                 SET status = 'reward_pending', current_claim_amount = $1, is_final_claim = $2, updated_at = NOW() 
+                 WHERE user_id = $3 AND program_id = $4 AND status = 'active' 
+                 RETURNING *`,
+                [parsedAmount, is_final_claim, userId, jobId]
             );
         }
 
         if (result.rowCount === 0) {
-            return res.status(404).json({ error: 'Active job not found for this user or already claimed.' });
+            return res.status(404).json({ error: 'Active job not found for this user or already has a pending claim.' });
         }
 
         res.json({ success: true, message: 'Reward claim submitted for admin approval.' });
@@ -1102,7 +1162,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             FROM (
                 SELECT SUM(public.parse_payout(q.reward)) AS credits, 0 AS debits FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1
                 UNION ALL
-                SELECT SUM(uj.reward_amount) AS credits, 0 AS debits FROM user_jobs uj WHERE uj.user_id = $1 AND uj.status = 'completed'
+                SELECT SUM(jc.reward_amount) AS credits, 0 AS debits FROM job_completions jc WHERE jc.user_id = $1
                 UNION ALL
                 SELECT SUM(re.amount) as credits, 0 as debits FROM referral_earnings re WHERE re.user_id = $1
                 UNION ALL
@@ -1122,7 +1182,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         const completedQuestsResult = await pool.query('SELECT COUNT(*) FROM user_quests WHERE user_id = $1', [user.id]);
         const questsCompleted = parseInt(completedQuestsResult.rows[0].count, 10);
         
-        const jobsFinishedResult = await pool.query("SELECT COUNT(*) FROM user_jobs WHERE user_id = $1 AND status = 'completed'", [user.id]);
+        const jobsFinishedResult = await pool.query("SELECT COUNT(*) FROM job_completions WHERE user_id = $1", [user.id]);
         const jobsFinished = parseInt(jobsFinishedResult.rows[0].count, 10);
 
         // 4. Fetch learning/skill progress
@@ -1151,11 +1211,11 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             return { name: skill.skill_name, progress };
         }));
 
-        // 5. [UPDATED] Fetch transaction history, now including completed jobs
+        // 5. [UPDATED] Fetch transaction history, now including job completions
         const historyQuery = `
             (SELECT 'Quest: ' || q.title AS desc, parse_payout(q.reward) AS amount, uq.completed_at AS date, 'credit' as type, 'completed' as status, NULL as transaction_hash FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
             UNION ALL
-            (SELECT 'Job: ' || ap.title AS desc, uj.reward_amount AS amount, uj.updated_at AS date, 'credit' as type, uj.status, NULL as transaction_hash FROM user_jobs uj JOIN affiliate_programs ap ON uj.program_id = ap.id WHERE uj.user_id = $1 AND uj.status = 'completed')
+            (SELECT 'Job: ' || ap.title AS desc, jc.reward_amount AS amount, jc.completed_at AS date, 'credit' as type, 'completed' as status, NULL as transaction_hash FROM job_completions jc JOIN affiliate_programs ap ON jc.program_id = ap.id WHERE jc.user_id = $1)
             UNION ALL
             (SELECT 'Withdrawal' AS desc, w.amount, w.created_at AS date, 'debit' as type, w.status, w.transaction_hash FROM withdrawals w WHERE w.user_id = $1)
             ORDER BY date DESC LIMIT 20;
@@ -1185,7 +1245,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             LEFT JOIN (
                 SELECT completed_at AS earned_at, (SELECT parse_payout(reward) FROM quests q WHERE q.id = uq.quest_id) AS amount FROM user_quests uq WHERE uq.user_id = $1
                 UNION ALL
-                SELECT updated_at AS earned_at, reward_amount AS amount FROM user_jobs WHERE user_id = $1 AND status = 'completed'
+                SELECT completed_at AS earned_at, reward_amount AS amount FROM job_completions WHERE user_id = $1
             ) earnings ON date_trunc('month', d) = date_trunc('month', earnings.earned_at)
             GROUP BY date_trunc('month', d) ORDER BY date_trunc('month', d);
         `, [user.id]);
@@ -1252,7 +1312,7 @@ app.get('/api/profile/:userId/earnings-history', requireLogin, async (req, res) 
             LEFT JOIN (
                 SELECT completed_at AS earned_at, (SELECT parse_payout(reward) FROM quests q WHERE q.id = uq.quest_id) AS amount FROM user_quests uq WHERE uq.user_id = $1
                 UNION ALL
-                SELECT updated_at AS earned_at, reward_amount AS amount FROM user_jobs WHERE user_id = $1 AND status = 'completed'
+                SELECT completed_at AS earned_at, reward_amount AS amount FROM job_completions WHERE user_id = $1
             ) earnings ON date_trunc('day', d) = date_trunc('day', earnings.earned_at)
             GROUP BY 1 ORDER BY 1;
         `;
@@ -1829,7 +1889,7 @@ app.get('/api/admin/jobs', requireAdmin, async (req, res) => {
     }
 });
 
-// NEW: Endpoint to get all user job requests for the admin panel
+// REWRITTEN: Endpoint to get all user job requests for the admin panel.
 app.get('/api/admin/job-requests', requireAdmin, async (req, res) => {
     try {
         const query = `
@@ -1839,7 +1899,9 @@ app.get('/api/admin/job-requests', requireAdmin, async (req, res) => {
                 u.username,
                 ap.title as program_title,
                 ap.payout,
-                uj.submission_link
+                uj.submission_link,
+                uj.current_claim_amount,
+                uj.cumulative_reward_paid
             FROM user_jobs uj
             JOIN users u ON uj.user_id = u.id
             JOIN affiliate_programs ap ON uj.program_id = ap.id
@@ -1850,12 +1912,10 @@ app.get('/api/admin/job-requests', requireAdmin, async (req, res) => {
         res.json({ requests: result.rows });
     } catch (err) {
         console.error('Error fetching job requests:', err);
-        if (err.message.includes('relation "user_jobs" does not exist')) {
-            return res.status(500).json({ error: 'Server error: The user_jobs table is missing from the database. Please run the required schema migration.' });
-        }
         res.status(500).json({ error: 'Failed to fetch job requests.' });
     }
 });
+
 
 // NEW: Endpoint for admin to send links to a user
 app.post('/api/admin/job-requests/:requestId/send-links', requireAdmin, async (req, res) => {
@@ -1882,29 +1942,53 @@ app.post('/api/admin/job-requests/:requestId/send-links', requireAdmin, async (r
     }
 });
 
-// --- UPDATED: Standard Job Reward Approval ---
-// Now updates the user_jobs record to 'completed' instead of deleting it.
+// REWRITTEN: Admin approval for job rewards. Handles both interim and final claims.
 app.post('/api/admin/job-requests/:requestId/approve-reward', requireAdmin, async (req, res) => {
     const { requestId } = req.params;
-    const { rewardAmount } = req.body;
-
-    if (!rewardAmount || isNaN(parseFloat(rewardAmount)) || parseFloat(rewardAmount) <= 0) {
-        return res.status(400).json({ error: 'A valid reward amount is required.' });
-    }
     
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
-        const jobRequestResult = await client.query("SELECT user_id FROM user_jobs WHERE id = $1 AND status = 'reward_pending' FOR UPDATE", [requestId]);
+        const jobRequestResult = await client.query(
+            "SELECT * FROM user_jobs WHERE id = $1 AND status = 'reward_pending' FOR UPDATE", 
+            [requestId]
+        );
+
         if (jobRequestResult.rows.length === 0) {
             throw new Error('Job request not found or not pending reward.');
         }
-        const { user_id } = jobRequestResult.rows[0];
+        
+        const job = jobRequestResult.rows[0];
+        const { user_id, program_id, current_claim_amount, cumulative_reward_paid, is_final_claim } = job;
+        
+        // 1. Pay the user for the current claim
+        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [current_claim_amount, user_id]);
 
-        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardAmount, user_id]);
+        if (is_final_claim) {
+            // This is the final claim for this job attempt
+            const totalRewardForAttempt = parseFloat(cumulative_reward_paid) + parseFloat(current_claim_amount);
+            
+            // 2a. Archive the completion in the history table
+            await client.query(
+                'INSERT INTO job_completions (user_id, program_id, reward_amount) VALUES ($1, $2, $3)',
+                [user_id, program_id, totalRewardForAttempt]
+            );
 
-        await client.query("UPDATE user_jobs SET status = 'completed', reward_amount = $1, updated_at = NOW() WHERE id = $2", [rewardAmount, requestId]);
+            // 3a. Delete the record from user_jobs to allow the user to take it again
+            await client.query('DELETE FROM user_jobs WHERE id = $1', [requestId]);
+
+        } else {
+            // This is an interim claim, keep the job active
+            // 2b. Update the cumulative paid amount
+            const newCumulative = parseFloat(cumulative_reward_paid) + parseFloat(current_claim_amount);
+
+            // 3b. Reset the status to 'active' so the user can continue
+            await client.query(
+                "UPDATE user_jobs SET status = 'active', cumulative_reward_paid = $1, current_claim_amount = NULL, is_final_claim = false, updated_at = NOW() WHERE id = $2", 
+                [newCumulative, requestId]
+            );
+        }
 
         await client.query('COMMIT');
         res.json({ success: true, message: 'Reward approved and points awarded.' });
@@ -1917,40 +2001,62 @@ app.post('/api/admin/job-requests/:requestId/approve-reward', requireAdmin, asyn
     }
 });
 
-// --- UPDATED: Content Submission Review ---
-// Now updates the user_jobs record to 'completed' or 'rejected' instead of deleting.
+
+// REWRITTEN: Admin approval for content submissions. Also handles interim/final logic.
 app.post('/api/admin/job-requests/:requestId/review', requireAdmin, async (req, res) => {
     const { requestId } = req.params;
-    const { approved, rewardAmount, rejectionReason } = req.body;
+    const { approved, rejectionReason } = req.body;
 
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
-        const jobRequestResult = await client.query("SELECT user_id, submission_link FROM user_jobs WHERE id = $1 AND status = 'pending_review' FOR UPDATE", [requestId]);
+        const jobRequestResult = await client.query(
+            "SELECT * FROM user_jobs WHERE id = $1 AND status = 'pending_review' FOR UPDATE", 
+            [requestId]
+        );
         if (jobRequestResult.rows.length === 0) {
             throw new Error('Job request not found or not pending review.');
         }
-        const { user_id } = jobRequestResult.rows[0];
+
+        const job = jobRequestResult.rows[0];
+        const { user_id, program_id, current_claim_amount, cumulative_reward_paid, is_final_claim } = job;
 
         if (approved) {
-            if (!rewardAmount || isNaN(parseFloat(rewardAmount)) || parseFloat(rewardAmount) <= 0) {
-                return res.status(400).json({ error: 'A valid reward amount is required for approval.' });
-            }
-            await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardAmount, user_id]);
-            await client.query("UPDATE user_jobs SET status = 'completed', reward_amount = $1, updated_at = NOW() WHERE id = $2", [rewardAmount, requestId]);
+            // Pay the user
+            await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [current_claim_amount, user_id]);
 
+            if (is_final_claim) {
+                // Final claim: archive and delete
+                const totalRewardForAttempt = parseFloat(cumulative_reward_paid) + parseFloat(current_claim_amount);
+                await client.query(
+                    'INSERT INTO job_completions (user_id, program_id, reward_amount) VALUES ($1, $2, $3)',
+                    [user_id, program_id, totalRewardForAttempt]
+                );
+                await client.query('DELETE FROM user_jobs WHERE id = $1', [requestId]);
+            } else {
+                // Interim claim: update cumulative and reset to active
+                const newCumulative = parseFloat(cumulative_reward_paid) + parseFloat(current_claim_amount);
+                await client.query(
+                    "UPDATE user_jobs SET status = 'active', cumulative_reward_paid = $1, current_claim_amount = NULL, is_final_claim = false, updated_at = NOW() WHERE id = $2",
+                    [newCumulative, requestId]
+                );
+            }
+             res.json({ success: true, message: 'Submission has been approved.' });
         } else {
+            // Submission was rejected
             if (!rejectionReason || rejectionReason.trim() === '') {
                  return res.status(400).json({ error: 'A rejection reason is required.' });
             }
-            // Add rejection_reason to user_jobs schema if it doesn't exist
-            // For now, assuming it exists based on updated schema needs
-            await client.query("UPDATE user_jobs SET status = 'rejected', rejection_reason = $1, updated_at = NOW() WHERE id = $2", [rejectionReason, requestId]);
+            // Reset the status to 'rejected' and add the reason. The user can then resubmit from the frontend.
+            await client.query(
+                "UPDATE user_jobs SET status = 'rejected', rejection_reason = $1, current_claim_amount = NULL, is_final_claim = false, updated_at = NOW() WHERE id = $2", 
+                [rejectionReason, requestId]
+            );
+             res.json({ success: true, message: 'Submission has been rejected.' });
         }
 
         await client.query('COMMIT');
-        res.json({ success: true, message: `Submission has been ${approved ? 'approved' : 'rejected'}.` });
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Error reviewing submission:', err);
@@ -2007,6 +2113,7 @@ app.delete('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
+        await client.query('DELETE FROM job_completions WHERE program_id = $1', [id]);
         await client.query('DELETE FROM user_jobs WHERE program_id = $1', [id]);
         await client.query('DELETE FROM affiliate_clicks WHERE program_id = $1', [id]);
         await client.query('DELETE FROM conversions WHERE program_id = $1', [id]);
@@ -2074,9 +2181,10 @@ app.post('/api/affiliate/conversion', async (req, res) => {
         
         // This flow is now manual. Instead of creating a conversion, we create a 'reward_pending' user_job.
         await pool.query(
-            `INSERT INTO user_jobs (user_id, program_id, status) VALUES ($1, $2, 'reward_pending')
-             ON CONFLICT (user_id, program_id) DO UPDATE SET status = 'reward_pending'`,
-            [affiliateDbId, programId]
+            `INSERT INTO user_jobs (user_id, program_id, status, current_claim_amount, is_final_claim) 
+             VALUES ($1, $2, 'reward_pending', $3, true)
+             ON CONFLICT (user_id, program_id) DO UPDATE SET status = 'reward_pending', current_claim_amount = $3, is_final_claim = true`,
+            [affiliateDbId, programId, payoutAmount]
         );
 
         await client.query('COMMIT');
@@ -2093,13 +2201,15 @@ app.post('/api/affiliate/conversion', async (req, res) => {
 app.get('/api/affiliate/stats', requireLogin, async (req, res) => {
     const affiliateId = req.user.username;
     try {
+        const userResult = await pool.query('SELECT id FROM users WHERE username = $1', [affiliateId]);
+        const userId = userResult.rows[0].id;
+
         const clicksResult = await pool.query('SELECT COUNT(*) FROM affiliate_clicks WHERE affiliate_username = $1', [affiliateId]);
         const conversionsResult = await pool.query(`
             SELECT COUNT(*) as count, SUM(reward_amount) as earnings 
-            FROM user_jobs uj
-            JOIN users u ON uj.user_id = u.id
-            WHERE u.username = $1 AND uj.status = 'completed'
-        `, [affiliateId]);
+            FROM job_completions
+            WHERE user_id = $1
+        `, [userId]);
 
         res.json({
             totalClicks: parseInt(clicksResult.rows[0].count, 10),
