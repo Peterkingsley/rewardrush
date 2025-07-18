@@ -172,7 +172,6 @@
             const searchInput = document.getElementById('transaction-search-input');
             const filterDropdown = document.getElementById('transaction-filter');
 
-            // --- API Service ---
             const Api = {
                 async fetch(endpoint, options = {}) {
                     try {
@@ -228,7 +227,6 @@
 
                 let filteredTransactions = allTransactions;
 
-                // Apply search filter first
                 if (searchTerm) {
                     filteredTransactions = filteredTransactions.filter(tx =>
                         tx.username.toLowerCase().includes(searchTerm) ||
@@ -236,12 +234,11 @@
                     );
                 }
 
-                // Then apply type filter
                 if (filterValue !== 'all') {
                     filteredTransactions = filteredTransactions.filter(tx => {
                         const description = tx.description.toLowerCase();
                         if (filterValue === 'quest') return description.startsWith('quest reward');
-                        if (filterValue === 'job') return description.startsWith('job conversion');
+                        if (filterValue === 'job') return description.startsWith('job'); // Catches "Job Payment" and legacy "Job Conversion"
                         if (filterValue === 'withdrawal') return tx.type === 'debit';
                         return false;
                     });
@@ -289,9 +286,9 @@
                         try {
                             await Api.approveWithdrawal(withdrawalId, transactionHash);
                             alert('Withdrawal approved.');
-                            loadFinancialData(); // Refresh data
+                            loadFinancialData();
                         } catch(err) { /* handled in Api.fetch */ }
-                    } else if (transactionHash !== null) { // User didn't click cancel
+                    } else if (transactionHash !== null) {
                         alert('Transaction hash is required to approve.');
                     }
                 } else if (e.target.matches('.reject-btn')) {
@@ -299,7 +296,7 @@
                         try {
                             await Api.rejectWithdrawal(withdrawalId);
                             alert('Withdrawal rejected and funds returned to user.');
-                            loadFinancialData(); // Refresh data
+                            loadFinancialData();
                         } catch(err) { /* handled in Api.fetch */ }
                     }
                 }
@@ -312,15 +309,14 @@
                 try {
                     const data = await Api.getFinancialData();
                     allTransactions = data.transactions;
-                    allWithdrawals = data.payouts; // The backend sends withdrawal requests in the 'payouts' key
+                    allWithdrawals = data.payouts;
                     
-                    // Calculate and display totals
                     const totalQuestEarnings = allTransactions
-                        .filter(tx => tx.description.toLowerCase().startsWith('quest reward'))
+                        .filter(tx => tx.description.toLowerCase().startsWith('quest'))
                         .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
 
                     const totalJobEarnings = allTransactions
-                        .filter(tx => tx.description.toLowerCase().startsWith('job conversion'))
+                        .filter(tx => tx.description.toLowerCase().startsWith('job'))
                         .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
 
                     const totalWithdrawn = allTransactions
@@ -331,7 +327,6 @@
                     document.getElementById('total-job-earnings').textContent = `$${totalJobEarnings.toFixed(2)}`;
                     document.getElementById('total-withdrawn').textContent = `$${Math.abs(totalWithdrawn).toFixed(2)}`;
 
-                    // Initial render
                     applyFiltersAndRender();
                     renderWithdrawals(allWithdrawals);
 

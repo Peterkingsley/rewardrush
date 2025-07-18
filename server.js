@@ -44,40 +44,48 @@ const pool = new Pool({
 
 /*
 -- =============================================================================
--- IMPORTANT: DATABASE SCHEMA CHANGES REQUIRED FOR NEW JOB FLOW
+-- DATABASE SCHEMA
 -- =============================================================================
---
--- 1. Create the user_jobs table if it doesn't exist:
--- CREATE TABLE public.user_jobs (
---     id SERIAL PRIMARY KEY,
---     user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
---     program_id integer NOT NULL REFERENCES public.affiliate_programs(id) ON DELETE CASCADE,
---     status character varying(50) NOT NULL,
---     onboarding_link text,
---     tracking_link text,
---     submission_link text,
---     rejection_reason text,
---     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
---     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
---     CONSTRAINT user_jobs_user_id_program_id_key UNIQUE (user_id, program_id)
--- );
---
--- 2. Add new columns to user_jobs for the "Claim and Continue" feature:
--- ALTER TABLE public.user_jobs
--- ADD COLUMN cumulative_reward_paid numeric(10, 2) DEFAULT 0.00 NOT NULL,
--- ADD COLUMN current_claim_amount numeric(10, 2),
--- ADD COLUMN is_final_claim boolean DEFAULT false NOT NULL;
---
--- 3. Create a table to store permanent completion history:
--- CREATE TABLE public.job_completions (
---     id SERIAL PRIMARY KEY,
---     user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
---     program_id integer NOT NULL REFERENCES public.affiliate_programs(id) ON DELETE CASCADE,
---     reward_amount numeric(10,2) NOT NULL,
---     completed_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
--- );
--- CREATE INDEX idx_job_completions_user_id ON public.job_completions(user_id);
---
+
+-- Main table for user job progress
+CREATE TABLE public.user_jobs (
+    id SERIAL PRIMARY KEY,
+    user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    program_id integer NOT NULL REFERENCES public.affiliate_programs(id) ON DELETE CASCADE,
+    status character varying(50) NOT NULL,
+    onboarding_link text,
+    tracking_link text,
+    submission_link text,
+    rejection_reason text,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    cumulative_reward_paid numeric(10, 2) DEFAULT 0.00 NOT NULL,
+    current_claim_amount numeric(10, 2),
+    is_final_claim boolean DEFAULT false NOT NULL,
+    CONSTRAINT user_jobs_user_id_program_id_key UNIQUE (user_id, program_id)
+);
+
+-- Table for permanent history of completed job attempts
+CREATE TABLE public.job_completions (
+    id SERIAL PRIMARY KEY,
+    user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    program_id integer NOT NULL REFERENCES public.affiliate_programs(id) ON DELETE CASCADE,
+    reward_amount numeric(10,2) NOT NULL,
+    completed_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_job_completions_user_id ON public.job_completions(user_id);
+
+-- NEW TABLE: Ledger for all individual job payments (interim and final)
+CREATE TABLE public.job_earnings (
+    id SERIAL PRIMARY KEY,
+    user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    program_id integer NOT NULL REFERENCES public.affiliate_programs(id) ON DELETE CASCADE,
+    user_job_id integer REFERENCES public.user_jobs(id) ON DELETE SET NULL,
+    amount numeric(10,2) NOT NULL,
+    is_final_payment boolean DEFAULT false NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
 -- =============================================================================
 */
 
@@ -177,18 +185,16 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// --- [NEW & UPDATED] FINANCIAL ADMIN API ENDPOINTS ---
+// --- UPDATED FINANCIAL ADMIN API ENDPOINTS ---
 app.get('/api/admin/financial-summary', requireAdmin, async (req, res) => {
     try {
-        // --- UPDATED QUERY ---
-        // Now sources job history from the job_completions table.
         const transactionsQuery = `
             (SELECT u.username, 'Quest Reward: ' || q.title AS description, public.parse_payout(q.reward) AS amount, 'credit' as type, uq.completed_at AS date FROM user_quests uq JOIN users u ON uq.user_id = u.id JOIN quests q ON uq.quest_id = q.id)
             UNION ALL
-            (SELECT u.username, 'Job Completion: ' || ap.title AS description, jc.reward_amount AS amount, 'credit' AS type, jc.completed_at AS date 
-             FROM job_completions jc
-             JOIN users u ON jc.user_id = u.id 
-             JOIN affiliate_programs ap ON jc.program_id = ap.id)
+            (SELECT u.username, 'Job Payment: ' || ap.title AS description, je.amount, 'credit' AS type, je.created_at AS date
+             FROM job_earnings je
+             JOIN users u ON je.user_id = u.id
+             JOIN affiliate_programs ap ON je.program_id = ap.id)
             UNION ALL
             (SELECT u.username, 'Withdrawal' AS description, w.amount, 'debit' as type, w.created_at AS date FROM withdrawals w JOIN users u ON w.user_id = u.id WHERE w.status = 'approved')
             ORDER BY date DESC;
@@ -218,7 +224,6 @@ app.get('/api/admin/financial-summary', requireAdmin, async (req, res) => {
     }
 });
 
-// UPDATED: Approve withdrawal endpoint
 app.post('/api/admin/withdrawals/approve', requireAdmin, async (req, res) => {
     const { withdrawalId, transactionHash } = req.body;
     if (!withdrawalId || !transactionHash) {
@@ -239,24 +244,19 @@ app.post('/api/admin/withdrawals/approve', requireAdmin, async (req, res) => {
     }
 });
 
-// UPDATED: Reject withdrawal endpoint
 app.post('/api/admin/withdrawals/reject', requireAdmin, async (req, res) => {
     const { withdrawalId } = req.body;
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
-        // Get the withdrawal details before updating
         const withdrawalResult = await client.query("SELECT user_id, amount FROM withdrawals WHERE id = $1 AND status = 'pending' FOR UPDATE", [withdrawalId]);
         if (withdrawalResult.rows.length === 0) {
             throw new Error('Withdrawal not found or already processed.');
         }
         const withdrawal = withdrawalResult.rows[0];
 
-        // Refund the user's points
         await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [withdrawal.amount, withdrawal.user_id]);
-
-        // Mark the withdrawal as rejected
         await client.query("UPDATE withdrawals SET status = 'rejected' WHERE id = $1", [withdrawalId]);
 
         await client.query('COMMIT');
@@ -271,7 +271,7 @@ app.post('/api/admin/withdrawals/reject', requireAdmin, async (req, res) => {
 });
 
 
-// --- DASHBOARD API ENDPOINT ---
+// --- UPDATED DASHBOARD API ENDPOINT ---
 app.get('/api/dashboard-stats', requireAdmin, async (req, res) => {
     try {
         const queries = {
@@ -280,7 +280,7 @@ app.get('/api/dashboard-stats', requireAdmin, async (req, res) => {
             jobApplicants: pool.query('SELECT COUNT(DISTINCT user_id) FROM user_jobs'),
             learnParticipants: pool.query('SELECT COUNT(DISTINCT user_id) FROM user_material_progress'),
             buildParticipants: pool.query('SELECT COUNT(DISTINCT user_id) FROM bookings'),
-            jobEarnings: pool.query(`SELECT SUM(reward_amount) as total FROM job_completions`),
+            jobEarnings: pool.query(`SELECT SUM(amount) as total FROM job_earnings`),
             questEarnings: pool.query(`SELECT SUM(public.parse_payout(q.reward)) as total FROM user_quests uq JOIN quests q ON uq.quest_id = q.id`),
             totalWithdrawn: pool.query(`SELECT SUM(amount) as total FROM withdrawals WHERE status = 'approved'`),
             userRegistrationGrowth: pool.query(`SELECT date_trunc('month', created_at) as month, COUNT(*) as count FROM users WHERE created_at IS NOT NULL GROUP BY 1 ORDER BY 1`),
@@ -354,7 +354,7 @@ app.get('/api/dashboard-stats', requireAdmin, async (req, res) => {
     }
 });
 
-// --- [UPDATED & FIXED] USERS PAGE API ENDPOINT ---
+// --- UPDATED USERS PAGE API ENDPOINT ---
 app.get('/api/users-data', requireAdmin, async (req, res) => {
     try {
         const query = `
@@ -797,7 +797,7 @@ app.post('/api/education/invitations/respond', requireLogin, async (req, res) =>
 // --- END EDUCATION PAGE API ENDPOINTS ---
 
 
-// --- [UPDATED] JOBS API ENDPOINTS ---
+// --- JOBS API ENDPOINTS ---
 app.get('/api/jobs', requireLogin, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -851,41 +851,6 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
     }
 });
 
-// NEW: Endpoint for a user to fetch their job completion history
-app.get('/api/jobs/history', requireLogin, async (req, res) => {
-    const userId = req.user.id;
-    try {
-        const query = `
-            SELECT 
-                jc.id,
-                ap.title,
-                ap.payout,
-                jc.reward_amount,
-                jc.completed_at
-            FROM job_completions jc
-            JOIN affiliate_programs ap ON jc.program_id = ap.id
-            WHERE jc.user_id = $1
-            ORDER BY jc.completed_at DESC;
-        `;
-        const historyResult = await pool.query(query, [userId]);
-
-        const completedJobs = historyResult.rows.map(item => ({
-            id: item.id,
-            title: item.title,
-            // Use the actual paid amount, fallback to original payout string
-            payment: item.reward_amount || parsePayout(item.payout), 
-            status: 'completed',
-        }));
-        
-        res.json({ completedJobs });
-    } catch (err) {
-        console.error('Error fetching job history:', err);
-        res.status(500).json({ error: 'Failed to fetch job history' });
-    }
-});
-
-
-// Endpoint for a user to request/accept a job that requires admin-provided links.
 app.post('/api/jobs/:jobId/request-links', requireLogin, async (req, res) => {
     const { jobId } = req.params;
     const userId = req.user.id;
@@ -904,7 +869,6 @@ app.post('/api/jobs/:jobId/request-links', requireLogin, async (req, res) => {
     }
 });
 
-// REWRITTEN: Endpoint for a user to claim their payment.
 app.post('/api/jobs/:jobId/claim', requireLogin, async (req, res) => {
     const { jobId } = req.params;
     const { claimAmount, is_final_claim, submissionLink } = req.body;
@@ -918,7 +882,6 @@ app.post('/api/jobs/:jobId/claim', requireLogin, async (req, res) => {
     try {
         let result;
         if (submissionLink) {
-            // For content submission, the claim and submission are one action.
             result = await pool.query(
                 `INSERT INTO user_jobs (user_id, program_id, status, submission_link, current_claim_amount, is_final_claim, updated_at) 
                  VALUES ($1, $2, 'pending_review', $3, $4, $5, NOW())
@@ -934,7 +897,6 @@ app.post('/api/jobs/:jobId/claim', requireLogin, async (req, res) => {
                 [userId, jobId, submissionLink, parsedAmount, is_final_claim]
             );
         } else {
-            // For other job types, this is a standard reward claim.
             result = await pool.query(
                 `UPDATE user_jobs 
                  SET status = 'reward_pending', current_claim_amount = $1, is_final_claim = $2, updated_at = NOW() 
@@ -997,7 +959,6 @@ app.post('/signup', async (req, res) => {
         const passwordHash = await bcrypt.hash(password, saltRounds);
         const ownReferralCode = crypto.randomBytes(8).toString('hex');
 
-        // [FIXED] Removed referrer_id from the INSERT statement to match the user's schema
         const newUserQuery = `INSERT INTO users (username, email, password_hash, full_name, referral_code) VALUES ($1, $2, $3, $4, $5) RETURNING id, username;`;
         const newUserResult = await client.query(newUserQuery, [username, email, passwordHash, fullName, ownReferralCode]);
         const { id: newUserId, username: newUsername } = newUserResult.rows[0];
@@ -1007,7 +968,6 @@ app.post('/signup', async (req, res) => {
             const referralResult = await client.query(referralInsertQuery, [referrerId, newUserId]);
             const newReferralId = referralResult.rows[0].id;
 
-            // Award bonus to referrer
             const referralBonus = 5.00; // Example bonus
             await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [referralBonus, referrerId]);
             await client.query('INSERT INTO referral_earnings (user_id, referral_id, amount) VALUES ($1, $2, $3)', [referrerId, newReferralId, referralBonus]);
@@ -1029,7 +989,6 @@ app.post('/signup', async (req, res) => {
     }
 });
 
-// --- UPDATED: /login endpoint ---
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     
@@ -1037,7 +996,6 @@ app.post('/login', async (req, res) => {
         return res.status(400).json({ error: 'Credentials required' });
     }
 
-    // --- Admin Login Logic ---
     if (username === ADMIN_USERNAME) {
         if (!ADMIN_PASSWORD_HASH) {
             return res.status(500).json({ error: 'Admin password not configured on server.' });
@@ -1053,7 +1011,6 @@ app.post('/login', async (req, res) => {
         }
     }
 
-    // --- Regular User Login Logic ---
     try {
         const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
         const user = result.rows[0];
@@ -1139,7 +1096,7 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 
-// --- [UPDATED & FIXED] PROFILE API ENDPOINT ---
+// --- UPDATED PROFILE API ENDPOINT ---
 app.get('/api/profile/:userId', requireLogin, async (req, res) => {
     const { userId } = req.params;
 
@@ -1148,25 +1105,23 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
     }
 
     try {
-        // 1. Fetch primary user data
         const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [userId]);
         const user = userResult.rows[0];
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // 2. [UPDATED] Calculate balance from transactions for accuracy
         const balanceQuery = `
             SELECT
                 (COALESCE(SUM(credits), 0) - COALESCE(SUM(debits), 0)) AS current_balance
             FROM (
                 SELECT SUM(public.parse_payout(q.reward)) AS credits, 0 AS debits FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1
                 UNION ALL
-                SELECT SUM(jc.reward_amount) AS credits, 0 AS debits FROM job_completions jc WHERE jc.user_id = $1
+                SELECT SUM(je.amount) AS credits, 0 AS debits FROM job_earnings je WHERE je.user_id = $1
                 UNION ALL
                 SELECT SUM(re.amount) as credits, 0 as debits FROM referral_earnings re WHERE re.user_id = $1
                 UNION ALL
-                SELECT 0 AS credits, SUM(w.amount) AS debits FROM withdrawals w WHERE w.user_id = $1 AND w.status = 'approved'
+                SELECT 0 AS credits, SUM(w.amount) AS debits FROM withdrawals w WHERE w.user_id = $1 AND (w.status = 'approved' OR w.status = 'pending')
             ) AS transactions;
         `;
         const balanceResult = await pool.query(balanceQuery, [user.id]);
@@ -1178,14 +1133,12 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         }
 
 
-        // 3. Fetch aggregate stats
         const completedQuestsResult = await pool.query('SELECT COUNT(*) FROM user_quests WHERE user_id = $1', [user.id]);
         const questsCompleted = parseInt(completedQuestsResult.rows[0].count, 10);
         
         const jobsFinishedResult = await pool.query("SELECT COUNT(*) FROM job_completions WHERE user_id = $1", [user.id]);
         const jobsFinished = parseInt(jobsFinishedResult.rows[0].count, 10);
 
-        // 4. Fetch learning/skill progress
         const userSkillsResult = await pool.query(`
             SELECT DISTINCT em.skill_id, es.title AS skill_name
             FROM user_material_progress ump
@@ -1211,11 +1164,10 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             return { name: skill.skill_name, progress };
         }));
 
-        // 5. [UPDATED] Fetch transaction history, now including job completions
         const historyQuery = `
             (SELECT 'Quest: ' || q.title AS desc, parse_payout(q.reward) AS amount, uq.completed_at AS date, 'credit' as type, 'completed' as status, NULL as transaction_hash FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
             UNION ALL
-            (SELECT 'Job: ' || ap.title AS desc, jc.reward_amount AS amount, jc.completed_at AS date, 'credit' as type, 'completed' as status, NULL as transaction_hash FROM job_completions jc JOIN affiliate_programs ap ON jc.program_id = ap.id WHERE jc.user_id = $1)
+            (SELECT 'Job Payment: ' || ap.title AS desc, je.amount, je.created_at AS date, 'credit' as type, 'completed' as status, NULL as transaction_hash FROM job_earnings je JOIN affiliate_programs ap ON je.program_id = ap.id WHERE je.user_id = $1)
             UNION ALL
             (SELECT 'Withdrawal' AS desc, w.amount, w.created_at AS date, 'debit' as type, w.status, w.transaction_hash FROM withdrawals w WHERE w.user_id = $1)
             ORDER BY date DESC LIMIT 20;
@@ -1230,7 +1182,6 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             transaction_hash: t.transaction_hash
         }));
         
-        // 6. Fetch expert bookings
         const bookingsResult = await pool.query(`
             SELECT p.name, b.status, b.preferred_date AS date
             FROM bookings b
@@ -1238,19 +1189,17 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             WHERE b.user_id = $1 ORDER BY b.created_at DESC
         `, [user.id]);
 
-        // 7. Fetch earnings chart data for the last year
         const earningsHistoryResult = await pool.query(`
             SELECT TO_CHAR(date_trunc('month', d), 'Mon') AS label, COALESCE(SUM(amount), 0) AS value
             FROM GENERATE_SERIES(date_trunc('year', CURRENT_DATE), date_trunc('year', CURRENT_DATE) + '1 year'::interval - '1 day'::interval, '1 month'::interval) d
             LEFT JOIN (
                 SELECT completed_at AS earned_at, (SELECT parse_payout(reward) FROM quests q WHERE q.id = uq.quest_id) AS amount FROM user_quests uq WHERE uq.user_id = $1
                 UNION ALL
-                SELECT completed_at AS earned_at, reward_amount AS amount FROM job_completions WHERE user_id = $1
+                SELECT created_at AS earned_at, amount FROM job_earnings WHERE user_id = $1
             ) earnings ON date_trunc('month', d) = date_trunc('month', earnings.earned_at)
             GROUP BY date_trunc('month', d) ORDER BY date_trunc('month', d);
         `, [user.id]);
         
-        // 8. Assemble the final JSON payload
         res.json({
             user: {
                 fullName: user.full_name,
@@ -1312,7 +1261,7 @@ app.get('/api/profile/:userId/earnings-history', requireLogin, async (req, res) 
             LEFT JOIN (
                 SELECT completed_at AS earned_at, (SELECT parse_payout(reward) FROM quests q WHERE q.id = uq.quest_id) AS amount FROM user_quests uq WHERE uq.user_id = $1
                 UNION ALL
-                SELECT completed_at AS earned_at, reward_amount AS amount FROM job_completions WHERE user_id = $1
+                SELECT created_at AS earned_at, amount FROM job_earnings WHERE user_id = $1
             ) earnings ON date_trunc('day', d) = date_trunc('day', earnings.earned_at)
             GROUP BY 1 ORDER BY 1;
         `;
@@ -1327,7 +1276,6 @@ app.get('/api/profile/:userId/earnings-history', requireLogin, async (req, res) 
     }
 });
 
-// [FIXED] Removed duplicate upload constant declaration
 app.post('/api/user/upload-picture', requireLogin, upload.single('profilePicture'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded.' });
@@ -1352,13 +1300,11 @@ app.get('/quest-overview', requireLogin, async (req, res) => {
         const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [userId]);
         const user = userResult.rows[0];
         const completedQuestsResult = await pool.query('SELECT * FROM user_quests WHERE user_id = $1', [user.id]);
-        // Updated to query the new withdrawals table
         const pendingWithdrawalsResult = await pool.query("SELECT COUNT(*) FROM withdrawals WHERE user_id = $1 AND status = 'pending'", [user.id]);
 
         res.json({
             totalEarnings: user.points || 0,
             questsCompleted: completedQuestsResult.rows,
-            // This now represents pending withdrawals, not redeemable codes
             pendingWithdrawals: parseInt(pendingWithdrawalsResult.rows[0].count, 10)
         });
     } catch (err) {
@@ -1367,7 +1313,6 @@ app.get('/quest-overview', requireLogin, async (req, res) => {
     }
 });
 
-// --- [REWRITTEN] /withdraw ENDPOINT ---
 app.post('/withdraw', requireLogin, async (req, res) => {
     const { amount, walletAddress, chain } = req.body;
     const userDbId = req.user.id;
@@ -1392,10 +1337,8 @@ app.post('/withdraw', requireLogin, async (req, res) => {
             return res.status(400).json({ error: 'Insufficient balance.' });
         }
 
-        // Deduct points from user
         await client.query('UPDATE users SET points = points - $1 WHERE id = $2', [withdrawalAmount, userDbId]);
 
-        // Insert into the new withdrawals table
         await client.query(
             'INSERT INTO withdrawals (user_id, amount, wallet_address, chain, status) VALUES ($1, $2, $3, $4, $5)',
             [userDbId, withdrawalAmount, walletAddress, chain, 'pending']
@@ -1413,7 +1356,6 @@ app.post('/withdraw', requireLogin, async (req, res) => {
     }
 });
 
-// --- [NEW] /withdrawal-history ENDPOINT ---
 app.get('/withdrawal-history', requireLogin, async (req, res) => {
     const userId = req.user.id;
     try {
@@ -1429,10 +1371,9 @@ app.get('/withdrawal-history', requireLogin, async (req, res) => {
 });
 
 
-// --- [UPDATED] /quests ENDPOINT to include user referral count ---
 app.get('/quests', requireLogin, async (req, res) => {
     try {
-        const userId = req.user.id; // Get the logged-in user's database ID
+        const userId = req.user.id;
 
         const questsResult = await pool.query(`
             SELECT 
@@ -1447,13 +1388,13 @@ app.get('/quests', requireLogin, async (req, res) => {
                 FROM 
                     referrals
                 WHERE 
-                    referrer_id = $1 AND type = 'quest' AND status = 'completed' -- ADDED status = 'completed'
+                    referrer_id = $1 AND type = 'quest' AND status = 'completed'
                 GROUP BY 
                     quest_id
             ) qr ON q.id = qr.quest_id
             ORDER BY 
                 q.id ASC;
-        `, [userId]); // Pass userId as a parameter
+        `, [userId]);
 
         res.json({ quests: questsResult.rows });
     } catch (err) {
@@ -1462,7 +1403,6 @@ app.get('/quests', requireLogin, async (req, res) => {
     }
 });
 
-// --- [UPDATED] FULL CRUD FOR QUESTS WITH FILE UPLOAD ---
 app.post('/api/quests', requireAdmin, upload.single('questBackground'), async (req, res) => {
     const { title, description, reward, status, start_time, end_time } = req.body;
     const backgroundUrl = req.file ? `/uploads/${req.file.filename}` : null;
@@ -1484,7 +1424,6 @@ app.put('/api/quests/:id', requireAdmin, upload.single('questBackground'), async
     const { title, description, reward, status, start_time, end_time } = req.body;
 
     try {
-        // If a new file is uploaded, we need to delete the old one.
         if (req.file) {
             const oldQuestResult = await pool.query('SELECT quiz_background_url FROM quests WHERE id = $1', [id]);
             const oldUrl = oldQuestResult.rows[0]?.quiz_background_url;
@@ -1495,7 +1434,6 @@ app.put('/api/quests/:id', requireAdmin, upload.single('questBackground'), async
 
         const backgroundUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
 
-        // Dynamically build the query to only update the background if a new one was provided
         let queryText = 'UPDATE quests SET title = $1, description = $2, reward = $3, status = $4, start_time = $5, end_time = $6';
         const queryParams = [title, description, reward, status, start_time || null, end_time || null];
         
@@ -1523,7 +1461,6 @@ app.put('/api/quests/:id', requireAdmin, upload.single('questBackground'), async
 app.delete('/api/quests/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
     try {
-        // [NEW] Also delete the background file associated with the quest
         const oldQuestResult = await pool.query('SELECT quiz_background_url FROM quests WHERE id = $1', [id]);
         const oldUrl = oldQuestResult.rows[0]?.quiz_background_url;
         if (oldUrl) {
@@ -1542,7 +1479,6 @@ app.delete('/api/quests/:id', requireAdmin, async (req, res) => {
 });
 
 
-// --- [NEW] FULL CRUD FOR QUEST QUESTIONS ---
 app.get('/api/quests/:questId/questions', requireLogin, async (req, res) => {
     const { questId } = req.params;
     try {
@@ -1602,7 +1538,6 @@ app.delete('/api/quests/:questId/questions/:questionId', requireAdmin, async (re
 });
 
 
-// === UPDATED /submit-quiz ENDPOINT (SURVEY LOGIC) ===
 app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
     const questId = parseInt(req.params.questId, 10);
     const userDbId = req.user.id;
@@ -1616,7 +1551,6 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 1. Check if quest is already completed
         const existingCompletion = await pool.query(
             'SELECT 1 FROM user_quests WHERE user_id = $1 AND quest_id = $2',
             [userDbId, questId]
@@ -1626,7 +1560,6 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
             return res.status(400).json({ error: 'You have already completed this quest.' });
         }
 
-        // 2. Fetch quest and its questions
         const questResult = await pool.query('SELECT * FROM quests WHERE id = $1', [questId]);
         const quest = questResult.rows[0];
         if (!quest) {
@@ -1640,19 +1573,16 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
         );
         const questions = questionsResult.rows;
 
-        // 3. Check for completion (survey-style) - ensure every question has a non-empty answer
         const allAnswered = answers.length === questions.length && answers.every(ans => ans !== undefined && ans !== null && ans !== '');
         
         if (allAnswered) {
-            // 4. Award points and mark as complete (Success)
             const rewardValue = parsePayout(quest.reward);
             await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [rewardValue, userDbId]);
             await client.query(
                 'INSERT INTO user_quests (user_id, quest_id, completed_at) VALUES ($1, $2, NOW())',
                 [userDbId, questId]
             );
-             // Handle quest referral
-            const referralResult = await client.query(
+             const referralResult = await client.query(
                 `UPDATE referrals SET status = 'completed' 
                  WHERE referred_id = $1 AND quest_id = $2 AND type = 'quest' AND status = 'pending' 
                  RETURNING id, referrer_id`,
@@ -1661,7 +1591,7 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
 
             if (referralResult.rows.length > 0) {
                 const { id: referralId, referrer_id: referrerId } = referralResult.rows[0];
-                const referralBonus = 2.00; // Example quest referral bonus
+                const referralBonus = 2.00;
                 await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [referralBonus, referrerId]);
                 await client.query('INSERT INTO referral_earnings (user_id, referral_id, amount) VALUES ($1, $2, $3)', [referrerId, referralId, referralBonus]);
             }
@@ -1678,7 +1608,6 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
             });
 
         } else {
-            // User did not answer all questions
             await client.query('ROLLBACK');
             res.json({
                 success: false,
@@ -1700,7 +1629,6 @@ app.get('/quests/:questId/responses', requireAdmin, async (req, res) => {
     res.json({});
 });
 
-// --- [UPDATED & FIXED] /api/referrals ENDPOINT ---
 app.get('/api/referrals', requireLogin, async (req, res) => {
     const userId = req.user.id;
     try {
@@ -1743,7 +1671,7 @@ app.get('/generate-referral-link', requireLogin, async (req, res) => {
         if (!user.referral_code) {
             const newReferralCode = crypto.randomBytes(8).toString('hex');
             await pool.query('UPDATE users SET referral_code = $1 WHERE id = $2', [newReferralCode, user.id]);
-            user.referral_code = newReferralCode; // Update the user object in the request
+            user.referral_code = newReferralCode;
         }
 
         const baseUrl = process.env.BASE_URL || `https://rewardrushapp.onrender.com`;
@@ -1766,11 +1694,9 @@ app.get('/referral', async (req, res) => {
             const referrerResult = await pool.query('SELECT id FROM users WHERE referral_code = $1', [referralCode]);
             if (referrerResult.rows.length > 0) {
                 const referrerId = referrerResult.rows[0].id;
-                // If a user is logged in, create a pending quest referral
                 if (req.session.userId) {
                     const loggedInUserResult = await pool.query('SELECT id FROM users WHERE username = $1', [req.session.userId]);
                     const loggedInUserId = loggedInUserResult.rows[0].id;
-                    // Only insert if the referred user is not the referrer
                     if (loggedInUserId !== referrerId) {
                         await pool.query(
                             `INSERT INTO referrals (referrer_id, referred_id, quest_id, type) 
@@ -1792,7 +1718,7 @@ app.get('/referral', async (req, res) => {
         if (referralCode) {
             params.append('referralCode', referralCode);
         }
-        if (questId) { // Add this condition to include questId
+        if (questId) {
             params.append('questId', questId);
         }
         if (params.toString()) {
@@ -1860,7 +1786,7 @@ app.get('/affiliate-programs', requireLogin, async (req, res) => {
     }
 });
 
-// --- [UPDATED] ADMIN JOBS (AFFILIATE PROGRAMS) API ENDPOINTS ---
+// --- ADMIN JOBS (AFFILIATE PROGRAMS) API ENDPOINTS ---
 app.get('/api/admin/jobs', requireAdmin, async (req, res) => {
     try {
         const query = `
@@ -1889,7 +1815,6 @@ app.get('/api/admin/jobs', requireAdmin, async (req, res) => {
     }
 });
 
-// REWRITTEN: Endpoint to get all user job requests for the admin panel.
 app.get('/api/admin/job-requests', requireAdmin, async (req, res) => {
     try {
         const query = `
@@ -1900,6 +1825,8 @@ app.get('/api/admin/job-requests', requireAdmin, async (req, res) => {
                 ap.title as program_title,
                 ap.payout,
                 uj.submission_link,
+                uj.onboarding_link,
+                uj.tracking_link,
                 uj.current_claim_amount,
                 uj.cumulative_reward_paid
             FROM user_jobs uj
@@ -1917,7 +1844,6 @@ app.get('/api/admin/job-requests', requireAdmin, async (req, res) => {
 });
 
 
-// NEW: Endpoint for admin to send links to a user
 app.post('/api/admin/job-requests/:requestId/send-links', requireAdmin, async (req, res) => {
     const { requestId } = req.params;
     const { onboardingLink, trackingLink } = req.body;
@@ -1942,9 +1868,9 @@ app.post('/api/admin/job-requests/:requestId/send-links', requireAdmin, async (r
     }
 });
 
-// REWRITTEN: Admin approval for job rewards. Handles both interim and final claims.
 app.post('/api/admin/job-requests/:requestId/approve-reward', requireAdmin, async (req, res) => {
     const { requestId } = req.params;
+    const { editedAmount } = req.body;
     
     const client = await pool.connect();
     try {
@@ -1961,29 +1887,28 @@ app.post('/api/admin/job-requests/:requestId/approve-reward', requireAdmin, asyn
         
         const job = jobRequestResult.rows[0];
         const { user_id, program_id, current_claim_amount, cumulative_reward_paid, is_final_claim } = job;
+
+        const amountToPay = editedAmount ? parseFloat(editedAmount) : parseFloat(current_claim_amount);
+        if (isNaN(amountToPay) || amountToPay <= 0) {
+            throw new Error('Invalid payment amount provided.');
+        }
         
-        // 1. Pay the user for the current claim
-        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [current_claim_amount, user_id]);
+        await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [amountToPay, user_id]);
+
+        await client.query(
+            'INSERT INTO job_earnings (user_id, program_id, user_job_id, amount, is_final_payment) VALUES ($1, $2, $3, $4, $5)',
+            [user_id, program_id, requestId, amountToPay, is_final_claim]
+        );
 
         if (is_final_claim) {
-            // This is the final claim for this job attempt
-            const totalRewardForAttempt = parseFloat(cumulative_reward_paid) + parseFloat(current_claim_amount);
-            
-            // 2a. Archive the completion in the history table
+            const totalRewardForAttempt = parseFloat(cumulative_reward_paid) + amountToPay;
             await client.query(
                 'INSERT INTO job_completions (user_id, program_id, reward_amount) VALUES ($1, $2, $3)',
                 [user_id, program_id, totalRewardForAttempt]
             );
-
-            // 3a. Delete the record from user_jobs to allow the user to take it again
             await client.query('DELETE FROM user_jobs WHERE id = $1', [requestId]);
-
         } else {
-            // This is an interim claim, keep the job active
-            // 2b. Update the cumulative paid amount
-            const newCumulative = parseFloat(cumulative_reward_paid) + parseFloat(current_claim_amount);
-
-            // 3b. Reset the status to 'active' so the user can continue
+            const newCumulative = parseFloat(cumulative_reward_paid) + amountToPay;
             await client.query(
                 "UPDATE user_jobs SET status = 'active', cumulative_reward_paid = $1, current_claim_amount = NULL, is_final_claim = false, updated_at = NOW() WHERE id = $2", 
                 [newCumulative, requestId]
@@ -1995,17 +1920,15 @@ app.post('/api/admin/job-requests/:requestId/approve-reward', requireAdmin, asyn
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Error approving reward:', err);
-        res.status(500).json({ error: 'Failed to approve reward.' });
+        res.status(500).json({ error: err.message || 'Failed to approve reward.' });
     } finally {
         client.release();
     }
 });
 
-
-// REWRITTEN: Admin approval for content submissions. Also handles interim/final logic.
 app.post('/api/admin/job-requests/:requestId/review', requireAdmin, async (req, res) => {
     const { requestId } = req.params;
-    const { approved, rejectionReason } = req.body;
+    const { approved, rejectionReason, editedAmount } = req.body;
 
     const client = await pool.connect();
     try {
@@ -2023,32 +1946,37 @@ app.post('/api/admin/job-requests/:requestId/review', requireAdmin, async (req, 
         const { user_id, program_id, current_claim_amount, cumulative_reward_paid, is_final_claim } = job;
 
         if (approved) {
-            // Pay the user
-            await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [current_claim_amount, user_id]);
+            const amountToPay = editedAmount ? parseFloat(editedAmount) : parseFloat(current_claim_amount);
+            if (isNaN(amountToPay) || amountToPay <= 0) {
+                throw new Error('A valid payment amount is required for approval.');
+            }
+
+            await client.query('UPDATE users SET points = points + $1 WHERE id = $2', [amountToPay, user_id]);
+            
+            await client.query(
+                'INSERT INTO job_earnings (user_id, program_id, user_job_id, amount, is_final_payment) VALUES ($1, $2, $3, $4, $5)',
+                [user_id, program_id, requestId, amountToPay, is_final_claim]
+            );
 
             if (is_final_claim) {
-                // Final claim: archive and delete
-                const totalRewardForAttempt = parseFloat(cumulative_reward_paid) + parseFloat(current_claim_amount);
+                const totalRewardForAttempt = parseFloat(cumulative_reward_paid) + amountToPay;
                 await client.query(
                     'INSERT INTO job_completions (user_id, program_id, reward_amount) VALUES ($1, $2, $3)',
                     [user_id, program_id, totalRewardForAttempt]
                 );
                 await client.query('DELETE FROM user_jobs WHERE id = $1', [requestId]);
             } else {
-                // Interim claim: update cumulative and reset to active
-                const newCumulative = parseFloat(cumulative_reward_paid) + parseFloat(current_claim_amount);
+                const newCumulative = parseFloat(cumulative_reward_paid) + amountToPay;
                 await client.query(
-                    "UPDATE user_jobs SET status = 'active', cumulative_reward_paid = $1, current_claim_amount = NULL, is_final_claim = false, updated_at = NOW() WHERE id = $2",
+                    "UPDATE user_jobs SET status = 'active', cumulative_reward_paid = $1, current_claim_amount = NULL, is_final_claim = false, submission_link = NULL, updated_at = NOW() WHERE id = $2",
                     [newCumulative, requestId]
                 );
             }
              res.json({ success: true, message: 'Submission has been approved.' });
         } else {
-            // Submission was rejected
             if (!rejectionReason || rejectionReason.trim() === '') {
                  return res.status(400).json({ error: 'A rejection reason is required.' });
             }
-            // Reset the status to 'rejected' and add the reason. The user can then resubmit from the frontend.
             await client.query(
                 "UPDATE user_jobs SET status = 'rejected', rejection_reason = $1, current_claim_amount = NULL, is_final_claim = false, updated_at = NOW() WHERE id = $2", 
                 [rejectionReason, requestId]
@@ -2060,22 +1988,18 @@ app.post('/api/admin/job-requests/:requestId/review', requireAdmin, async (req, 
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Error reviewing submission:', err);
-        res.status(500).json({ error: 'Failed to review submission.' });
+        res.status(500).json({ error: err.message || 'Failed to review submission.' });
     } finally {
         client.release();
     }
 });
 
 
-// --- CORRECTED: Create Job Endpoint ---
 app.post('/api/admin/jobs', requireAdmin, async (req, res) => {
-    // Destructure all fields from the request body, including the new ones
     const { title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links } = req.body;
     try {
         const newProgram = await pool.query(
-            // Add the new columns to the INSERT statement
             'INSERT INTO affiliate_programs (title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
-            // Add the new variables to the parameters array
             [title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links]
         );
         res.status(201).json(newProgram.rows[0]);
@@ -2085,16 +2009,12 @@ app.post('/api/admin/jobs', requireAdmin, async (req, res) => {
     }
 });
 
-// --- CORRECTED: Update Job Endpoint ---
 app.put('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
-    // Destructure all fields from the request body, including the new ones
     const { title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links } = req.body;
     try {
         const updatedProgram = await pool.query(
-            // Add the new columns to the SET clause of the UPDATE statement
             'UPDATE affiliate_programs SET title = $1, category = $2, payout = $3, destination_url = $4, guidelines = $5, details = $6, pros = $7, cons = $8, brand_website = $9, social_links = $10 WHERE id = $11 RETURNING *',
-            // Add the new variables to the parameters array, ensuring the ID is last
             [title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links, id]
         );
         if (updatedProgram.rows.length === 0) {
@@ -2113,6 +2033,7 @@ app.delete('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
+        await client.query('DELETE FROM job_earnings WHERE program_id = $1', [id]);
         await client.query('DELETE FROM job_completions WHERE program_id = $1', [id]);
         await client.query('DELETE FROM user_jobs WHERE program_id = $1', [id]);
         await client.query('DELETE FROM affiliate_clicks WHERE program_id = $1', [id]);
@@ -2154,8 +2075,6 @@ app.get('/track', async (req, res) => {
     }
 });
 
-// This endpoint is now largely legacy, as job rewards are handled via the admin panel.
-// It could be kept for external automated conversion tracking if needed.
 app.post('/api/affiliate/conversion', async (req, res) => {
     const { programId, affiliateId, conversionValue } = req.body;
     if (!programId || !affiliateId) {
@@ -2179,7 +2098,6 @@ app.post('/api/affiliate/conversion', async (req, res) => {
         const affiliateDbId = userResult.rows[0].id;
         const payoutAmount = parsePayout(program.payout); 
         
-        // This flow is now manual. Instead of creating a conversion, we create a 'reward_pending' user_job.
         await pool.query(
             `INSERT INTO user_jobs (user_id, program_id, status, current_claim_amount, is_final_claim) 
              VALUES ($1, $2, 'reward_pending', $3, true)
@@ -2205,25 +2123,21 @@ app.get('/api/affiliate/stats', requireLogin, async (req, res) => {
         const userId = userResult.rows[0].id;
 
         const clicksResult = await pool.query('SELECT COUNT(*) FROM affiliate_clicks WHERE affiliate_username = $1', [affiliateId]);
-        const conversionsResult = await pool.query(`
-            SELECT COUNT(*) as count, SUM(reward_amount) as earnings 
-            FROM job_completions
+        const earningsResult = await pool.query(`
+            SELECT COUNT(*) as count, SUM(amount) as earnings 
+            FROM job_earnings
             WHERE user_id = $1
         `, [userId]);
 
         res.json({
             totalClicks: parseInt(clicksResult.rows[0].count, 10),
-            totalConversions: parseInt(conversionsResult.rows[0].count, 10),
-            totalEarnings: parseFloat(conversionsResult.rows[0].earnings) || 0,
+            totalConversions: parseInt(earningsResult.rows[0].count, 10),
+            totalEarnings: parseFloat(earningsResult.rows[0].earnings) || 0,
         });
     } catch(err) {
         console.error("Error fetching affiliate stats:", err);
         res.status(500).json({error: 'Could not fetch stats.'});
     }
-});
-
-app.get('/api/affiliate/history', requireLogin, async (req, res) => {
-    res.json([]);
 });
 
 app.get('/education-content', async (req, res) => {
@@ -2272,7 +2186,6 @@ app.post('/block-user', requireAdmin, async (req, res) => {
     }
 });
 
-// --- NEW: UNBLOCK USER ENDPOINT ---
 app.post('/unblock-user', requireAdmin, async (req, res) => {
     const { username } = req.body;
     if (!username) return res.status(400).json({ error: 'Username required' });
@@ -2358,18 +2271,14 @@ app.post('/founders', requireAdmin, async (req, res) => {
     res.status(501).json({ message: "Admin founder management not yet implemented with database." });
 });
 
-// NEW: Endpoint for Growth Settings
 app.post('/api/users/:userId/settings', requireLogin, async (req, res) => {
     const { userId } = req.params;
     const { settings } = req.body;
 
-    if (req.params.userId !== req.session.userId.toString()) { // Ensure correct user
+    if (req.params.userId !== req.session.userId.toString()) {
         return res.status(403).json({ error: 'Forbidden' });
     }
     
-    // Note: The database schema provided has no table for user settings.
-    // This endpoint simulates a successful save. For a real application,
-    // you would update the user's settings in the database here.
     console.log(`Received settings for user ${userId}:`, settings);
     
     res.json({ success: true, message: 'Settings saved successfully (simulated)!' });
