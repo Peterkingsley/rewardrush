@@ -369,19 +369,19 @@
                         case 'reward_pending':
                             statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-100">Reward Pending</span>`;
                             actionForm = `
-                                 <form class="mt-4 space-y-3 approve-reward-form" data-request-id="${req.id}">
+                                 <form class="mt-4 space-y-3" data-request-id="${req.id}">
                                      <div>
                                         <label class="block text-sm font-medium text-gray-700">Approve Amount ($)</label>
                                         <input type="number" name="editedAmount" value="${parseFloat(req.current_claim_amount || 0).toFixed(2)}" step="0.01" class="w-full p-2 border rounded-lg mt-1" required>
                                      </div>
-                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve & Pay</button>
+                                    <button type="button" class="approve-reward-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve & Pay</button>
                                 </form>
                             `;
                             break;
                         case 'pending_review':
                             statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-600 bg-purple-100">Pending Review</span>`;
                             actionForm = `
-                                <form class="mt-4 space-y-3 review-submission-form" data-request-id="${req.id}">
+                                <form class="mt-4 space-y-3" data-request-id="${req.id}">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Approve Amount ($)</label>
                                         <input type="number" name="editedAmount" value="${parseFloat(req.current_claim_amount || 0).toFixed(2)}" step="0.01" class="w-full p-2 border rounded-lg mt-1" required>
@@ -508,46 +508,53 @@
                 renderPrograms(filteredPrograms);
             });
             
+            jobRequestsList.addEventListener('submit', async (e) => {
+                 e.preventDefault();
+                 const form = e.target;
+                 const requestId = form.dataset.requestId;
+                 if (form.classList.contains('send-links-form')) {
+                     const links = {
+                         onboardingLink: form.elements.onboardingLink.value,
+                         trackingLink: form.elements.trackingLink.value,
+                     };
+                     await Api.sendLinks(requestId, links);
+                     alert('Action completed successfully!');
+                     loadJobRequests();
+                 }
+            });
+
             jobRequestsList.addEventListener('click', async (e) => {
                 const button = e.target;
                 const form = button.closest('form');
                 if (!form) return;
                 
+                e.preventDefault();
                 const requestId = form.dataset.requestId;
                 
-                if (button.closest('.send-links-form')) {
-                    e.preventDefault();
-                    const links = {
-                        onboardingLink: form.elements.onboardingLink.value,
-                        trackingLink: form.elements.trackingLink.value,
-                    };
-                    await Api.sendLinks(requestId, links);
-                    alert('Action completed!');
-                } else if (button.closest('.approve-reward-form')) {
-                    e.preventDefault();
-                    const data = { editedAmount: form.elements.editedAmount.value };
-                    await Api.approveReward(requestId, data);
-                    alert('Action completed!');
-                } else if (button.classList.contains('approve-submission-btn')) {
-                    e.preventDefault();
-                    const data = { approved: true, editedAmount: form.elements.editedAmount.value };
-                    await Api.reviewSubmission(requestId, data);
-                    alert('Submission approved!');
-                } else if (button.classList.contains('decline-submission-btn')) {
-                    e.preventDefault();
-                    form.querySelector('.decline-section').classList.toggle('hidden');
-                    return; // Don't reload yet
-                } else if (button.classList.contains('submit-decline-btn')) {
-                    e.preventDefault();
-                    const reason = form.elements.rejectionReason.value;
-                    if (!reason.trim()) { alert('A reason is required to decline.'); return; }
-                    await Api.reviewSubmission(requestId, { approved: false, rejectionReason: reason });
-                    alert('Submission rejected.');
-                }
-                
-                loadJobRequests();
+                try {
+                    if (button.classList.contains('approve-reward-btn')) {
+                        const data = { editedAmount: form.elements.editedAmount.value };
+                        await Api.approveReward(requestId, data);
+                        alert('Reward approved!');
+                    } else if (button.classList.contains('approve-submission-btn')) {
+                        const data = { approved: true, editedAmount: form.elements.editedAmount.value };
+                        await Api.reviewSubmission(requestId, data);
+                        alert('Submission approved!');
+                    } else if (button.classList.contains('decline-submission-btn')) {
+                        form.querySelector('.decline-section').classList.toggle('hidden');
+                        return; // Don't reload yet
+                    } else if (button.classList.contains('submit-decline-btn')) {
+                        const reason = form.elements.rejectionReason.value;
+                        if (!reason.trim()) { alert('A reason is required to decline.'); return; }
+                        await Api.reviewSubmission(requestId, { approved: false, rejectionReason: reason });
+                        alert('Submission rejected.');
+                    }
+                     // Only reload if a final action was taken
+                    if (!button.classList.contains('decline-submission-btn')) {
+                        loadJobRequests();
+                    }
+                } catch(error) { /* Already handled by Api.fetch */ }
             });
-
 
             async function loadPrograms() {
                 try {
