@@ -481,9 +481,10 @@
                         myJobsContent.appendChild(list);
 
                     } else if (tab === 'history') {
-                        const transactionsToRender = this.state.transactions;
+                        // UPDATED: Filter for job-related transactions only
+                        const transactionsToRender = this.state.transactions.filter(tx => tx.desc.startsWith('Job Payment:'));
                          if (transactionsToRender.length === 0) {
-                            myJobsContent.innerHTML = `<div class="text-center py-12"><div class="inline-block bg-gray-100 rounded-full p-5"><i class="fas fa-history text-4xl text-gray-400"></i></div><p class="text-gray-600 font-semibold mt-4">No Transaction History</p><p class="text-sm text-gray-400 mt-2">Completed jobs and payments will appear here.</p></div>`;
+                            myJobsContent.innerHTML = `<div class="text-center py-12"><div class="inline-block bg-gray-100 rounded-full p-5"><i class="fas fa-history text-4xl text-gray-400"></i></div><p class="text-gray-600 font-semibold mt-4">No Job History</p><p class="text-sm text-gray-400 mt-2">Completed jobs and payments will appear here.</p></div>`;
                             return;
                         }
                         const list = document.createElement('div');

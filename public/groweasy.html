@@ -652,7 +652,8 @@
                         
                         this.user.name = profileData.user.fullName;
                         this.user.balance = profileData.stats.totalEarnings;
-                        this.user.transactions = profileData.transactions;
+                        // UPDATED: Filter out job-related transactions
+                        this.user.transactions = profileData.transactions.filter(tx => !tx.desc.startsWith('Job Payment:'));
 
                         const completedQuestTitles = new Set(
                             this.user.transactions
