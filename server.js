@@ -47,6 +47,12 @@ const pool = new Pool({
 -- DATABASE SCHEMA
 -- =============================================================================
 
+-- Add max_participants and status to affiliate_programs table
+ALTER TABLE public.affiliate_programs
+ADD COLUMN max_participants INTEGER,
+ADD COLUMN status VARCHAR(50) DEFAULT 'Active';
+
+
 -- Main table for user job progress
 CREATE TABLE public.user_jobs (
     id SERIAL PRIMARY KEY,
@@ -85,6 +91,16 @@ CREATE TABLE public.job_earnings (
     is_final_payment boolean DEFAULT false NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
+
+-- NEW TABLE: Notifications for users
+CREATE TABLE public.notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_notifications_user_id ON public.notifications(user_id);
 
 -- =============================================================================
 */
@@ -805,12 +821,14 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
         const query = `
             SELECT 
                 ap.*,
-                uj.status,
+                uj.status AS user_job_status,
                 uj.onboarding_link,
                 uj.tracking_link,
-                COALESCE(uj.rejection_reason, '') as rejection_reason
+                COALESCE(uj.rejection_reason, '') as rejection_reason,
+                (SELECT COUNT(*) FROM user_jobs WHERE program_id = ap.id) AS participants_count
             FROM affiliate_programs ap
             LEFT JOIN user_jobs uj ON ap.id = uj.program_id AND uj.user_id = $1
+            WHERE ap.status = 'Active'
             ORDER BY ap.id;
         `;
         const programsResult = await pool.query(query, [userId]);
@@ -834,19 +852,18 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
                 brandWebsite: program.brand_website,
                 socialLinks: program.social_links,
                 brandDashboardUrl: program.brand_dashboard_url,
-                status: program.status, // This is the user-specific status from the JOIN
+                status: program.user_job_status, // This is the user-specific status from the JOIN
                 onboardingLink: program.onboarding_link,
                 trackingLink: program.tracking_link,
                 rejectionReason: program.rejection_reason,
+                max_participants: program.max_participants,
+                participants_count: parseInt(program.participants_count, 10)
             };
         });
         
         res.json({ jobs });
     } catch (err) {
         console.error('Error fetching jobs:', err);
-        if (err.message.includes('relation "user_jobs" does not exist')) {
-            return res.status(500).json({ error: 'Server error: The user_jobs table is missing from the database. Please run the required schema migration.' });
-        }
         res.status(500).json({ error: 'Failed to fetch jobs' });
     }
 });
@@ -854,20 +871,48 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
 app.post('/api/jobs/:jobId/request-links', requireLogin, async (req, res) => {
     const { jobId } = req.params;
     const userId = req.user.id;
+    const client = await pool.connect();
 
     try {
+        await client.query('BEGIN');
+
+        // Lock the program row to prevent race conditions
+        const programResult = await client.query('SELECT max_participants, status FROM affiliate_programs WHERE id = $1 FOR UPDATE', [jobId]);
+        if (programResult.rows.length === 0) {
+            throw new Error('Job not found.');
+        }
+        const program = programResult.rows[0];
+
+        if (program.status !== 'Active') {
+            throw new Error('This job is currently not active.');
+        }
+
+        const participantsResult = await client.query('SELECT COUNT(*) as current_participants FROM user_jobs WHERE program_id = $1', [jobId]);
+        const currentParticipants = parseInt(participantsResult.rows[0].current_participants, 10);
+
+        if (program.max_participants !== null && currentParticipants >= program.max_participants) {
+            throw new Error('This job is full and no longer accepting new applicants.');
+        }
+
         const query = `
             INSERT INTO user_jobs (user_id, program_id, status) 
             VALUES ($1, $2, 'pending_links') 
             ON CONFLICT (user_id, program_id) DO NOTHING
         `;
-        await pool.query(query, [userId, jobId]);
+        await client.query(query, [userId, jobId]);
+        
+        await client.query('COMMIT');
         res.status(201).json({ success: true, message: 'Job request sent to admin.' });
+
     } catch (err) {
+        await client.query('ROLLBACK');
         console.error('Error requesting job links:', err);
-        res.status(500).json({ error: 'Failed to request job.' });
+        res.status(500).json({ error: err.message || 'Failed to request job.' });
+    } finally {
+        client.release();
     }
 });
+
 
 app.post('/api/jobs/:jobId/claim', requireLogin, async (req, res) => {
     const { jobId } = req.params;
@@ -917,6 +962,36 @@ app.post('/api/jobs/:jobId/claim', requireLogin, async (req, res) => {
     }
 });
 // --- END JOBS API ENDPOINTS ---
+
+
+// --- NEW NOTIFICATION API ENDPOINTS ---
+app.get('/api/notifications', requireLogin, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC',
+            [req.user.id]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching notifications:', err);
+        res.status(500).json({ error: 'Failed to fetch notifications.' });
+    }
+});
+
+app.post('/api/notifications/:notificationId/read', requireLogin, async (req, res) => {
+    try {
+        const { notificationId } = req.params;
+        await pool.query(
+            'UPDATE notifications SET is_read = TRUE WHERE id = $1 AND user_id = $2',
+            [notificationId, req.user.id]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error marking notification as read:', err);
+        res.status(500).json({ error: 'Failed to update notification.' });
+    }
+});
+// --- END NOTIFICATION API ENDPOINTS ---
 
 
 app.get('/check-session', (req, res) => {
@@ -1792,13 +1867,13 @@ app.get('/api/admin/jobs', requireAdmin, async (req, res) => {
         const query = `
             SELECT 
                 ap.*,
-                COALESCE(ac.click_count, 0) AS participants
+                COALESCE(ac.participants_count, 0) AS participants
             FROM 
                 affiliate_programs ap
             LEFT JOIN (
                 SELECT 
                     program_id, 
-                    COUNT(DISTINCT user_id) as click_count 
+                    COUNT(DISTINCT user_id) as participants_count 
                 FROM 
                     user_jobs 
                 GROUP BY 
@@ -1996,11 +2071,11 @@ app.post('/api/admin/job-requests/:requestId/review', requireAdmin, async (req, 
 
 
 app.post('/api/admin/jobs', requireAdmin, async (req, res) => {
-    const { title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links } = req.body;
+    const { title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links, max_participants, status } = req.body;
     try {
         const newProgram = await pool.query(
-            'INSERT INTO affiliate_programs (title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *',
-            [title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links]
+            'INSERT INTO affiliate_programs (title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links, max_participants, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *',
+            [title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links, max_participants || null, status]
         );
         res.status(201).json(newProgram.rows[0]);
     } catch (err) {
@@ -2011,11 +2086,11 @@ app.post('/api/admin/jobs', requireAdmin, async (req, res) => {
 
 app.put('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
-    const { title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links } = req.body;
+    const { title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links, max_participants, status } = req.body;
     try {
         const updatedProgram = await pool.query(
-            'UPDATE affiliate_programs SET title = $1, category = $2, payout = $3, destination_url = $4, guidelines = $5, details = $6, pros = $7, cons = $8, brand_website = $9, social_links = $10 WHERE id = $11 RETURNING *',
-            [title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links, id]
+            'UPDATE affiliate_programs SET title = $1, category = $2, payout = $3, destination_url = $4, guidelines = $5, details = $6, pros = $7, cons = $8, brand_website = $9, social_links = $10, max_participants = $11, status = $12 WHERE id = $13 RETURNING *',
+            [title, category, payout, destination_url, guidelines, details, pros, cons, brand_website, social_links, max_participants || null, status, id]
         );
         if (updatedProgram.rows.length === 0) {
             return res.status(404).json({ error: 'Affiliate program not found' });
@@ -2049,6 +2124,54 @@ app.delete('/api/admin/jobs/:id', requireAdmin, async (req, res) => {
         await client.query('ROLLBACK');
         console.error('Error deleting affiliate program:', err);
         res.status(500).json({ error: 'Failed to delete affiliate program' });
+    } finally {
+        client.release();
+    }
+});
+
+// NEW: Endpoint for removing a participant and sending a notification
+app.post('/api/admin/jobs/participants/remove', requireAdmin, async (req, res) => {
+    const { userJobId, reason } = req.body;
+    if (!userJobId || !reason) {
+        return res.status(400).json({ error: 'User Job ID and reason are required.' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // Get details for the notification before deleting
+        const jobDetailsResult = await client.query(`
+            SELECT uj.user_id, ap.title AS program_title
+            FROM user_jobs uj
+            JOIN affiliate_programs ap ON uj.program_id = ap.id
+            WHERE uj.id = $1
+        `, [userJobId]);
+
+        if (jobDetailsResult.rows.length === 0) {
+            throw new Error('Participant record not found.');
+        }
+        const { user_id, program_title } = jobDetailsResult.rows[0];
+
+        // Delete the participant's job record
+        const deleteResult = await client.query('DELETE FROM user_jobs WHERE id = $1', [userJobId]);
+        if (deleteResult.rowCount === 0) {
+            throw new Error('Could not remove participant.');
+        }
+
+        // Create a notification for the user
+        const message = `You have been removed from the job "${program_title}" by an administrator. Reason: ${reason}`;
+        await client.query(
+            'INSERT INTO notifications (user_id, message) VALUES ($1, $2)',
+            [user_id, message]
+        );
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Participant removed and notified.' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Error removing participant:', err);
+        res.status(500).json({ error: err.message || 'Failed to remove participant.' });
     } finally {
         client.release();
     }

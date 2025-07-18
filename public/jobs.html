@@ -121,7 +121,7 @@
                  </div>
 
                  <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">User Job Requests</h2>
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">User Job Requests & Participants</h2>
                     <div id="job-requests-list" class="space-y-4">
                         </div>
                  </div>
@@ -194,15 +194,27 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="mb-6 mt-4">
-                    <label for="program-status" class="block text-gray-700 text-sm font-bold mb-2">Status</label>
-                    <select id="program-status" class="w-full p-3 border border-gray-300 rounded-lg">
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
+                
+                <!-- NEW FIELDS FOR PARTICIPANT LIMIT AND STATUS -->
+                <div class="border-t border-gray-200 pt-4 mt-4">
+                     <h3 class="text-lg font-semibold mb-4 text-gray-800">Job Settings</h3>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="mb-4">
+                            <label for="program-max-participants" class="block text-gray-700 text-sm font-bold mb-2">Max Participants</label>
+                            <input type="number" id="program-max-participants" placeholder="Leave blank for no limit" class="w-full p-3 border border-gray-300 rounded-lg">
+                        </div>
+                        <div class="mb-4">
+                            <label for="program-status" class="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                            <select id="program-status" class="w-full p-3 border border-gray-300 rounded-lg bg-white">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                            </select>
+                        </div>
+                     </div>
                 </div>
-                <div class="flex justify-end space-x-4">
+
+
+                <div class="flex justify-end space-x-4 mt-6">
                     <button type="button" id="cancel-program-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Cancel</button>
                     <button type="submit" id="save-program-btn" class="bg-indigo-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-indigo-700">Save</button>
                 </div>
@@ -212,24 +224,21 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // --- DOM Element Variables ---
             const menuButton = document.getElementById('menu-button');
             const sidebar = document.getElementById('sidebar');
-            if (menuButton) {
-                menuButton.addEventListener('click', () => sidebar.classList.toggle('open'));
-            }
-
-            let allPrograms = [];
-            let allJobRequests = [];
-
             const programTableBody = document.getElementById('program-table-body');
             const searchInput = document.getElementById('program-search-input');
             const addProgramBtn = document.getElementById('add-program-btn');
             const jobRequestsList = document.getElementById('job-requests-list');
             
+            // --- Modal Elements ---
             const programModal = document.getElementById('program-modal');
             const programModalTitle = document.getElementById('program-modal-title');
             const programForm = document.getElementById('program-form');
             const cancelProgramBtn = document.getElementById('cancel-program-btn');
+
+            // --- Form Input Elements ---
             const programIdInput = document.getElementById('program-id');
             const programTitleInput = document.getElementById('program-title');
             const programCategoryInput = document.getElementById('program-category');
@@ -239,12 +248,19 @@
             const programDetailsInput = document.getElementById('program-details');
             const programProsInput = document.getElementById('program-pros');
             const programConsInput = document.getElementById('program-cons');
-            const programStatusInput = document.getElementById('program-status');
             const programBrandWebsiteInput = document.getElementById('program-brand-website');
             const programSocialTwitterInput = document.getElementById('program-social-twitter');
             const programSocialLinkedinInput = document.getElementById('program-social-linkedin');
             const programSocialFacebookInput = document.getElementById('program-social-facebook');
+            // --- NEW FORM INPUTS ---
+            const programMaxParticipantsInput = document.getElementById('program-max-participants');
+            const programStatusInput = document.getElementById('program-status');
 
+            // --- State ---
+            let allPrograms = [];
+            let allJobRequests = [];
+
+            // --- API Service ---
             const Api = {
                 async fetch(endpoint, options = {}) {
                     try {
@@ -292,6 +308,7 @@
                 }),
             };
 
+            // --- Render Functions ---
             function renderPrograms(programs) {
                 programTableBody.innerHTML = '';
                 if (!programs || programs.length === 0) {
@@ -300,13 +317,14 @@
                 }
                 programs.forEach(program => {
                     const statusColor = program.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
-                    
+                    const participantsText = `${program.participants || 0} / ${program.max_participants || '∞'}`;
+
                     const row = `
                         <tr data-id="${program.id}">
                             <td class="py-3 px-4 border-b border-gray-200"><span class="font-medium">${program.title}</span></td>
                             <td class="py-3 px-4 border-b border-gray-200">${program.category}</td>
                             <td class="py-3 px-4 border-b border-gray-200">${program.payout}</td>
-                            <td class="py-3 px-4 border-b border-gray-200 text-center">${program.participants || 0}</td>
+                            <td class="py-3 px-4 border-b border-gray-200 font-medium">${participantsText}</td>
                             <td class="py-3 px-4 border-b border-gray-200"><span class="px-2 py-1 font-semibold leading-tight text-sm rounded-full ${statusColor}">${program.status}</span></td>
                             <td class="py-3 px-4 border-b border-gray-200">
                                 <div class="flex items-center space-x-2">
@@ -416,6 +434,7 @@
                 });
             }
 
+            // --- Modal Logic ---
             function openProgramModal(program = null) {
                 programForm.reset();
                 if (program) {
@@ -429,13 +448,16 @@
                     programDetailsInput.value = program.details;
                     programProsInput.value = Array.isArray(program.pros) ? program.pros.join('\n') : '';
                     programConsInput.value = Array.isArray(program.cons) ? program.cons.join('\n') : '';
-                    programStatusInput.value = program.status || 'Active';
                     programBrandWebsiteInput.value = program.brand_website || '';
                     if (program.social_links) {
                         programSocialTwitterInput.value = program.social_links.twitter || '';
                         programSocialLinkedinInput.value = program.social_links.linkedin || '';
                         programSocialFacebookInput.value = program.social_links.facebook || '';
                     }
+                    // --- NEW ---
+                    programMaxParticipantsInput.value = program.max_participants || '';
+                    programStatusInput.value = program.status || 'Active';
+
                 } else {
                     programModalTitle.textContent = 'Add Program';
                     programIdInput.value = '';
@@ -445,6 +467,11 @@
 
             function closeProgramModal() {
                 programModal.classList.remove('flex');
+            }
+
+            // --- Event Listeners ---
+            if (menuButton) {
+                menuButton.addEventListener('click', () => sidebar.classList.toggle('open'));
             }
 
             addProgramBtn.addEventListener('click', () => openProgramModal());
@@ -460,6 +487,8 @@
                     facebook: programSocialFacebookInput.value || null,
                 };
 
+                const maxParticipants = programMaxParticipantsInput.value;
+
                 const programData = {
                     title: programTitleInput.value,
                     category: programCategoryInput.value,
@@ -469,16 +498,18 @@
                     details: programDetailsInput.value,
                     pros: programProsInput.value.split('\n').filter(p => p.trim() !== ''),
                     cons: programConsInput.value.split('\n').filter(c => c.trim() !== ''),
-                    status: programStatusInput.value,
                     brand_website: programBrandWebsiteInput.value || null,
                     social_links: socialLinks,
+                    // --- NEW ---
+                    max_participants: maxParticipants ? parseInt(maxParticipants, 10) : null,
+                    status: programStatusInput.value,
                 };
 
                 try {
                     await Api.saveProgram(id, programData);
                     await loadPrograms();
                     closeProgramModal();
-                } catch (error) {}
+                } catch (error) { /* Already handled by Api.fetch */ }
             });
 
             programTableBody.addEventListener('click', async function(e) {
@@ -494,7 +525,7 @@
                         try {
                             await Api.deleteProgram(programId);
                             await loadPrograms();
-                        } catch (error) {}
+                        } catch (error) { /* Already handled by Api.fetch */ }
                     }
                 }
             });
@@ -556,6 +587,7 @@
                 } catch(error) { /* Already handled by Api.fetch */ }
             });
 
+            // --- Initial Load ---
             async function loadPrograms() {
                 try {
                     const data = await Api.getPrograms();
