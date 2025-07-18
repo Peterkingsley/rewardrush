@@ -190,6 +190,7 @@
                         </nav>
                     </div>
                     <div id="my-jobs-content" class="mt-6"></div>
+                    <div id="history-footer" class="text-center mt-4"></div>
                 </section>
                 <div class="h-20 md:hidden"></div>
             </main>
@@ -299,12 +300,13 @@
                 state: {
                     allJobs: [],
                     activeJobs: [], 
-                    transactions: [], // REPLACED completedJobs with transactions
+                    transactions: [],
                     totalEarnings: 0,
                     currentPage: 1,
                     itemsPerPage: 6,
                     currentJobInModal: null,
                     username: 'guest',
+                    historyItemsToShow: 4,
                     linkRequiredCategories: ['sign-up', 'trading-volume', 'transacting-users', 'pay-for-a-product'],
                     contentSubmissionCategories: ['video-creation', 'post-on-socials'],
                 },
@@ -324,6 +326,7 @@
                     activeTab: document.getElementById('active-tab'),
                     historyTab: document.getElementById('history-tab'),
                     myJobsContent: document.getElementById('my-jobs-content'),
+                    historyFooter: document.getElementById('history-footer'),
                     historyActionBtn: document.getElementById('history-action-btn'),
                     sidebarToggleBtn: document.getElementById('sidebar-toggle'),
                     themeToggleBtn: document.getElementById('theme-toggle'),
@@ -361,7 +364,7 @@
                         
                         this.state.allJobs = jobsData.jobs || [];
                         this.state.activeJobs = this.state.allJobs.filter(j => j.status);
-                        this.state.transactions = profileData.transactions || []; // Populate transactions from profile
+                        this.state.transactions = profileData.transactions || [];
 
                         this.updateAll();
 
@@ -452,8 +455,9 @@
                 },
 
                 renderMyJobs(tab = 'active') {
-                    const { myJobsContent } = this.elements;
+                    const { myJobsContent, historyFooter } = this.elements;
                     myJobsContent.innerHTML = '';
+                    historyFooter.innerHTML = '';
                     
                     if (tab === 'active') {
                         const jobsToRender = this.state.activeJobs;
@@ -481,15 +485,17 @@
                         myJobsContent.appendChild(list);
 
                     } else if (tab === 'history') {
-                        // UPDATED: Filter for job-related transactions only
                         const transactionsToRender = this.state.transactions.filter(tx => tx.desc.startsWith('Job Payment:'));
                          if (transactionsToRender.length === 0) {
                             myJobsContent.innerHTML = `<div class="text-center py-12"><div class="inline-block bg-gray-100 rounded-full p-5"><i class="fas fa-history text-4xl text-gray-400"></i></div><p class="text-gray-600 font-semibold mt-4">No Job History</p><p class="text-sm text-gray-400 mt-2">Completed jobs and payments will appear here.</p></div>`;
                             return;
                         }
+
+                        const itemsToShow = transactionsToRender.slice(0, this.state.historyItemsToShow);
+                        
                         const list = document.createElement('div');
                         list.className = 'space-y-3';
-                        transactionsToRender.forEach(tx => {
+                        itemsToShow.forEach(tx => {
                             const item = document.createElement('div');
                             item.className = 'p-3 border border-gray-200 rounded-lg flex justify-between items-center text-sm';
                             const isCredit = tx.type === 'credit';
@@ -509,6 +515,14 @@
                             list.appendChild(item);
                         });
                         myJobsContent.appendChild(list);
+
+                        if (transactionsToRender.length > this.state.historyItemsToShow) {
+                            const seeMoreBtn = document.createElement('button');
+                            seeMoreBtn.id = 'see-more-history-btn';
+                            seeMoreBtn.textContent = 'See More';
+                            seeMoreBtn.className = 'bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition';
+                            historyFooter.appendChild(seeMoreBtn);
+                        }
                     }
                 },
 
@@ -742,7 +756,7 @@
                 },
 
                 bindEvents() {
-                    const { searchInput, categoryFilterEl, sortFilter, jobListingsContainer, acceptBtn, activeTab, historyTab, historyActionBtn, closeModalBtn, sidebarToggleBtn, inviteBtn, closeInviteModalBtn, copyReferralLinkBtn } = this.elements;
+                    const { searchInput, categoryFilterEl, sortFilter, jobListingsContainer, acceptBtn, activeTab, historyTab, historyActionBtn, closeModalBtn, sidebarToggleBtn, inviteBtn, closeInviteModalBtn, copyReferralLinkBtn, historyFooter } = this.elements;
                     
                     [searchInput, categoryFilterEl, sortFilter].forEach(el => {
                         el.addEventListener('input', () => {
@@ -780,6 +794,7 @@
                     });
 
                     const switchTab = (tab) => {
+                        this.state.historyItemsToShow = 4; // Reset on tab switch
                         activeTab.classList.toggle('active', tab === 'active');
                         historyTab.classList.toggle('active', tab === 'history');
                         this.renderMyJobs(tab);
@@ -802,6 +817,13 @@
                     closeInviteModalBtn.addEventListener('click', () => this.closeInviteModal());
                     copyReferralLinkBtn.addEventListener('click', () => this.copyToClipboard(this.elements.referralLinkInput.value));
                     this.elements.inviteModal.addEventListener('click', (e) => { if (e.target === this.elements.inviteModal) this.closeInviteModal(); });
+                
+                    historyFooter.addEventListener('click', (e) => {
+                        if (e.target.id === 'see-more-history-btn') {
+                            this.state.historyItemsToShow += 4;
+                            this.renderMyJobs('history');
+                        }
+                    });
                 }
             };
             
