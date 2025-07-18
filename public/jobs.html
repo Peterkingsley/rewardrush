@@ -212,24 +212,20 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // --- Basic UI Setup ---
             const menuButton = document.getElementById('menu-button');
             const sidebar = document.getElementById('sidebar');
             if (menuButton) {
                 menuButton.addEventListener('click', () => sidebar.classList.toggle('open'));
             }
 
-            // --- State Management ---
             let allPrograms = [];
             let allJobRequests = [];
 
-            // --- DOM Elements ---
             const programTableBody = document.getElementById('program-table-body');
             const searchInput = document.getElementById('program-search-input');
             const addProgramBtn = document.getElementById('add-program-btn');
             const jobRequestsList = document.getElementById('job-requests-list');
             
-            // Program Modal Elements
             const programModal = document.getElementById('program-modal');
             const programModalTitle = document.getElementById('program-modal-title');
             const programForm = document.getElementById('program-form');
@@ -249,8 +245,6 @@
             const programSocialLinkedinInput = document.getElementById('program-social-linkedin');
             const programSocialFacebookInput = document.getElementById('program-social-facebook');
 
-
-            // --- API Service ---
             const Api = {
                 async fetch(endpoint, options = {}) {
                     try {
@@ -286,11 +280,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(links)
                 }),
-                // REWRITTEN: Now a simple approval trigger
-                approveReward: (requestId) => Api.fetch(`/api/admin/job-requests/${requestId}/approve-reward`, {
+                approveReward: (requestId, data) => Api.fetch(`/api/admin/job-requests/${requestId}/approve-reward`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({}) // Body is now empty
+                    body: JSON.stringify(data)
                 }),
                 reviewSubmission: (requestId, reviewData) => Api.fetch(`/api/admin/job-requests/${requestId}/review`, {
                     method: 'POST',
@@ -299,7 +292,6 @@
                 }),
             };
 
-            // --- Rendering Functions ---
             function renderPrograms(programs) {
                 programTableBody.innerHTML = '';
                 if (!programs || programs.length === 0) {
@@ -338,29 +330,31 @@
                 requests.forEach(req => {
                     let actionForm = '';
                     let statusPill = '';
-                    let submissionInfo = '';
-                    let claimInfo = '';
+                    let detailsInfo = '';
 
-                    if (req.submission_link) {
-                        submissionInfo = `
-                            <div class="mt-2">
-                                <p class="text-sm font-medium text-gray-700">Submitted Link:</p>
-                                <a href="${req.submission_link}" target="_blank" class="text-blue-500 hover:underline break-all">${req.submission_link}</a>
-                            </div>
-                        `;
-                    }
+                    // Build the details section with links and claims
+                    const linksHtml = (req.onboarding_link || req.tracking_link) 
+                        ? `<div class="mt-2 text-sm">
+                                ${req.onboarding_link ? `<p><strong>Onboarding:</strong> <a href="${req.onboarding_link}" target="_blank" class="text-blue-500 hover:underline">View Link</a></p>` : ''}
+                                ${req.tracking_link ? `<p><strong>Tracking:</strong> <a href="${req.tracking_link}" target="_blank" class="text-blue-500 hover:underline">View Link</a></p>` : ''}
+                           </div>`
+                        : '';
                     
-                    // NEW: Display claim details
-                    if (req.current_claim_amount) {
-                        const cumulativePaid = parseFloat(req.cumulative_reward_paid || 0).toFixed(2);
-                        const currentClaim = parseFloat(req.current_claim_amount).toFixed(2);
-                        claimInfo = `
-                           <div class="mt-2 text-sm text-gray-600">
-                               <p>Amount Claimed: <span class="font-semibold text-green-700">$${currentClaim}</span></p>
-                               <p>Previously Paid: <span class="font-semibold text-gray-800">$${cumulativePaid}</span></p>
-                           </div>
-                        `;
-                    }
+                    const submissionHtml = req.submission_link
+                        ? `<div class="mt-2 text-sm">
+                                <p><strong>Submitted Link:</strong> <a href="${req.submission_link}" target="_blank" class="text-blue-500 hover:underline break-all">${req.submission_link}</a></p>
+                           </div>`
+                        : '';
+
+                    const claimHtml = req.current_claim_amount
+                        ? `<div class="mt-2 text-sm text-gray-600">
+                               <p>Amount Claimed: <span class="font-semibold text-green-700">$${parseFloat(req.current_claim_amount).toFixed(2)}</span></p>
+                               <p>Previously Paid: <span class="font-semibold text-gray-800">$${parseFloat(req.cumulative_reward_paid || 0).toFixed(2)}</span></p>
+                           </div>`
+                        : '';
+
+                    detailsInfo = linksHtml + submissionHtml + claimHtml;
+
 
                     switch(req.status) {
                         case 'pending_links':
@@ -368,7 +362,7 @@
                             actionForm = `
                                 <form class="mt-4 space-y-3 send-links-form" data-request-id="${req.id}">
                                     <input type="url" name="onboardingLink" placeholder="Onboarding Link" class="w-full p-2 border rounded-lg" required>
-                                    <input type="url" name="trackingLink" placeholder="Tracking Link" class="w-full p-2 border rounded-lg">
+                                    <input type="url" name="trackingLink" placeholder="Tracking Link (Optional)" class="w-full p-2 border rounded-lg">
                                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Send Links</button>
                                 </form>
                             `;
@@ -376,8 +370,12 @@
                         case 'reward_pending':
                             statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-100">Reward Pending</span>`;
                             actionForm = `
-                                 <form class="mt-4 approve-reward-form" data-request-id="${req.id}">
-                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve Reward</button>
+                                 <form class="mt-4 space-y-3 approve-reward-form" data-request-id="${req.id}">
+                                     <div>
+                                        <label class="block text-sm font-medium text-gray-700">Approve Amount ($)</label>
+                                        <input type="number" name="editedAmount" value="${parseFloat(req.current_claim_amount || 0).toFixed(2)}" step="0.01" class="w-full p-2 border rounded-lg mt-1" required>
+                                     </div>
+                                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve & Pay</button>
                                 </form>
                             `;
                             break;
@@ -385,13 +383,17 @@
                             statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-600 bg-purple-100">Pending Review</span>`;
                             actionForm = `
                                 <form class="mt-4 space-y-3 review-submission-form" data-request-id="${req.id}">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">Approve Amount ($)</label>
+                                        <input type="number" name="editedAmount" value="${parseFloat(req.current_claim_amount || 0).toFixed(2)}" step="0.01" class="w-full p-2 border rounded-lg mt-1" required>
+                                    </div>
                                     <div class="flex items-center space-x-3">
-                                        <button type="button" class="approve-submission-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve</button>
+                                        <button type="submit" class="approve-submission-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve & Pay</button>
                                         <button type="button" class="decline-submission-btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Decline</button>
                                     </div>
                                     <div class="decline-section hidden mt-2">
                                         <textarea name="rejectionReason" placeholder="Reason for declining..." class="w-full p-2 border rounded-lg" required></textarea>
-                                        <button type="submit" class="mt-2 bg-red-600 text-white font-bold py-2 px-4 rounded-lg">Submit Decline</button>
+                                        <button type="submit" class="submit-decline-btn mt-2 bg-red-600 text-white font-bold py-2 px-4 rounded-lg">Submit Decline</button>
                                     </div>
                                 </form>
                             `;
@@ -407,8 +409,7 @@
                                 </div>
                                 ${statusPill}
                             </div>
-                            ${submissionInfo}
-                            ${claimInfo}
+                            ${detailsInfo}
                             ${actionForm}
                         </div>
                     `;
@@ -416,7 +417,6 @@
                 });
             }
 
-            // --- Modal Logic ---
             function openProgramModal(program = null) {
                 programForm.reset();
                 if (program) {
@@ -448,7 +448,6 @@
                 programModal.classList.remove('flex');
             }
 
-            // --- Event Listeners ---
             addProgramBtn.addEventListener('click', () => openProgramModal());
             cancelProgramBtn.addEventListener('click', closeProgramModal);
 
@@ -515,47 +514,52 @@
                 const form = e.target;
                 const requestId = form.dataset.requestId;
 
-                if (form.classList.contains('send-links-form')) {
-                    const links = {
-                        onboardingLink: form.elements.onboardingLink.value,
-                        trackingLink: form.elements.trackingLink.value,
-                    };
-                    await Api.sendLinks(requestId, links);
-                } else if (form.classList.contains('approve-reward-form')) {
-                    await Api.approveReward(requestId);
-                } else if (e.target.closest('.review-submission-form')) {
-                     // This part is now handled by the 'click' event listener below
-                    const reason = form.elements.rejectionReason.value;
-                    if (!reason.trim()) {
-                        alert('Please provide a reason for declining.');
-                        return;
+                try {
+                    if (form.classList.contains('send-links-form')) {
+                        const links = {
+                            onboardingLink: form.elements.onboardingLink.value,
+                            trackingLink: form.elements.trackingLink.value,
+                        };
+                        await Api.sendLinks(requestId, links);
+                        alert('Action completed successfully!');
+                    } else if (form.classList.contains('approve-reward-form')) {
+                        const data = { editedAmount: form.elements.editedAmount.value };
+                        await Api.approveReward(requestId, data);
+                        alert('Action completed successfully!');
                     }
-                    await Api.reviewSubmission(requestId, { approved: false, rejectionReason: reason });
-                }
-                alert('Action completed successfully!');
-                loadJobRequests();
+                    loadJobRequests();
+                } catch(error) { /* Already handled by Api.fetch */ }
             });
             
             jobRequestsList.addEventListener('click', async (e) => {
+                e.preventDefault();
                 const form = e.target.closest('form');
                 if (!form) return;
                 
                 const requestId = form.dataset.requestId;
 
-                if (e.target.classList.contains('approve-submission-btn')) {
-                    e.preventDefault();
-                    await Api.reviewSubmission(requestId, { approved: true });
-                    alert('Submission approved and payment processed!');
+                try {
+                     if (e.target.classList.contains('approve-submission-btn')) {
+                        const data = { approved: true, editedAmount: form.elements.editedAmount.value };
+                        await Api.reviewSubmission(requestId, data);
+                        alert('Submission approved and payment processed!');
+                    } else if (e.target.classList.contains('decline-submission-btn')) {
+                        const declineSection = form.querySelector('.decline-section');
+                        declineSection.classList.toggle('hidden');
+                        return; // Don't reload yet, just show the textarea
+                    } else if (e.target.classList.contains('submit-decline-btn')) {
+                        const reason = form.elements.rejectionReason.value;
+                        if (!reason.trim()) {
+                            alert('Please provide a reason for declining.');
+                            return;
+                        }
+                        await Api.reviewSubmission(requestId, { approved: false, rejectionReason: reason });
+                        alert('Submission has been rejected.');
+                    }
                     loadJobRequests();
-
-                } else if (e.target.classList.contains('decline-submission-btn')) {
-                    e.preventDefault();
-                    const declineSection = form.querySelector('.decline-section');
-                    declineSection.classList.toggle('hidden');
-                }
+                } catch(error) { /* Already handled */ }
             });
 
-            // --- Initial Load ---
             async function loadPrograms() {
                 try {
                     const data = await Api.getPrograms();
