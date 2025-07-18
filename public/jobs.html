@@ -332,7 +332,6 @@
                     let statusPill = '';
                     let detailsInfo = '';
 
-                    // Build the details section with links and claims
                     const linksHtml = (req.onboarding_link || req.tracking_link) 
                         ? `<div class="mt-2 text-sm">
                                 ${req.onboarding_link ? `<p><strong>Onboarding:</strong> <a href="${req.onboarding_link}" target="_blank" class="text-blue-500 hover:underline">View Link</a></p>` : ''}
@@ -388,12 +387,12 @@
                                         <input type="number" name="editedAmount" value="${parseFloat(req.current_claim_amount || 0).toFixed(2)}" step="0.01" class="w-full p-2 border rounded-lg mt-1" required>
                                     </div>
                                     <div class="flex items-center space-x-3">
-                                        <button type="submit" class="approve-submission-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve & Pay</button>
+                                        <button type="button" class="approve-submission-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve & Pay</button>
                                         <button type="button" class="decline-submission-btn bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Decline</button>
                                     </div>
                                     <div class="decline-section hidden mt-2">
                                         <textarea name="rejectionReason" placeholder="Reason for declining..." class="w-full p-2 border rounded-lg" required></textarea>
-                                        <button type="submit" class="submit-decline-btn mt-2 bg-red-600 text-white font-bold py-2 px-4 rounded-lg">Submit Decline</button>
+                                        <button type="button" class="submit-decline-btn mt-2 bg-red-600 text-white font-bold py-2 px-4 rounded-lg">Submit Decline</button>
                                     </div>
                                 </form>
                             `;
@@ -508,57 +507,47 @@
                 );
                 renderPrograms(filteredPrograms);
             });
-
-            jobRequestsList.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const form = e.target;
-                const requestId = form.dataset.requestId;
-
-                try {
-                    if (form.classList.contains('send-links-form')) {
-                        const links = {
-                            onboardingLink: form.elements.onboardingLink.value,
-                            trackingLink: form.elements.trackingLink.value,
-                        };
-                        await Api.sendLinks(requestId, links);
-                        alert('Action completed successfully!');
-                    } else if (form.classList.contains('approve-reward-form')) {
-                        const data = { editedAmount: form.elements.editedAmount.value };
-                        await Api.approveReward(requestId, data);
-                        alert('Action completed successfully!');
-                    }
-                    loadJobRequests();
-                } catch(error) { /* Already handled by Api.fetch */ }
-            });
             
             jobRequestsList.addEventListener('click', async (e) => {
-                e.preventDefault();
-                const form = e.target.closest('form');
+                const button = e.target;
+                const form = button.closest('form');
                 if (!form) return;
                 
                 const requestId = form.dataset.requestId;
-
-                try {
-                     if (e.target.classList.contains('approve-submission-btn')) {
-                        const data = { approved: true, editedAmount: form.elements.editedAmount.value };
-                        await Api.reviewSubmission(requestId, data);
-                        alert('Submission approved and payment processed!');
-                    } else if (e.target.classList.contains('decline-submission-btn')) {
-                        const declineSection = form.querySelector('.decline-section');
-                        declineSection.classList.toggle('hidden');
-                        return; // Don't reload yet, just show the textarea
-                    } else if (e.target.classList.contains('submit-decline-btn')) {
-                        const reason = form.elements.rejectionReason.value;
-                        if (!reason.trim()) {
-                            alert('Please provide a reason for declining.');
-                            return;
-                        }
-                        await Api.reviewSubmission(requestId, { approved: false, rejectionReason: reason });
-                        alert('Submission has been rejected.');
-                    }
-                    loadJobRequests();
-                } catch(error) { /* Already handled */ }
+                
+                if (button.closest('.send-links-form')) {
+                    e.preventDefault();
+                    const links = {
+                        onboardingLink: form.elements.onboardingLink.value,
+                        trackingLink: form.elements.trackingLink.value,
+                    };
+                    await Api.sendLinks(requestId, links);
+                    alert('Action completed!');
+                } else if (button.closest('.approve-reward-form')) {
+                    e.preventDefault();
+                    const data = { editedAmount: form.elements.editedAmount.value };
+                    await Api.approveReward(requestId, data);
+                    alert('Action completed!');
+                } else if (button.classList.contains('approve-submission-btn')) {
+                    e.preventDefault();
+                    const data = { approved: true, editedAmount: form.elements.editedAmount.value };
+                    await Api.reviewSubmission(requestId, data);
+                    alert('Submission approved!');
+                } else if (button.classList.contains('decline-submission-btn')) {
+                    e.preventDefault();
+                    form.querySelector('.decline-section').classList.toggle('hidden');
+                    return; // Don't reload yet
+                } else if (button.classList.contains('submit-decline-btn')) {
+                    e.preventDefault();
+                    const reason = form.elements.rejectionReason.value;
+                    if (!reason.trim()) { alert('A reason is required to decline.'); return; }
+                    await Api.reviewSubmission(requestId, { approved: false, rejectionReason: reason });
+                    alert('Submission rejected.');
+                }
+                
+                loadJobRequests();
             });
+
 
             async function loadPrograms() {
                 try {
