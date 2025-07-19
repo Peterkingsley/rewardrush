@@ -167,7 +167,7 @@
                     </div>
                 </div>
                 <div class="mb-6">
-                    <label for="quest-background" class="block text-gray-700 text-sm font-bold mb-2">Quiz Background (Image/Video)</label>
+                    <label for="quest-background" class="block text-gray-700 text-sm font-bold mb-2">Quest Background (Image/Video)</label>
                     <input type="file" id="quest-background" name="questBackground" class="w-full p-2 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" accept="image/*,video/*">
                     <span id="current-background" class="text-xs text-gray-500 mt-1 block"></span>
                 </div>
@@ -179,39 +179,36 @@
         </div>
     </div>
     
+    <!-- [UPDATED] Modal for Quest Stages -->
     <div id="questions-modal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center p-4 z-50">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl p-8 max-h-[90vh] flex flex-col">
-            <h2 id="questions-modal-title" class="text-2xl font-bold mb-6 flex-shrink-0">Manage Questions for "Quest Title"</h2>
+            <h2 id="questions-modal-title" class="text-2xl font-bold mb-6 flex-shrink-0">Manage Quest Stages</h2>
             <div class="flex-grow overflow-y-auto pr-4 -mr-4">
                 <div id="questions-list" class="space-y-4 mb-6">
-                    </div>
+                    <!-- Stages will be rendered here -->
+                </div>
                 <div class="bg-gray-50 p-4 rounded-lg">
-                    <h3 class="font-bold mb-3" id="add-edit-question-title">Add New Question</h3>
+                    <h3 class="font-bold mb-3" id="add-edit-question-title">Add New Stage</h3>
                     <form id="question-form">
-                        <input type="hidden" id="question-id-input">
-                        <div class="mb-3">
-                            <label for="question-text" class="block text-sm font-medium text-gray-700">Question Text</label>
-                            <textarea id="question-text" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required></textarea>
-                        </div>
+                        <input type="hidden" id="challenge-id-input">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                             <div>
-                                <label for="question-type" class="block text-sm font-medium text-gray-700">Question Type</label>
-                                <select id="question-type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                <label for="challenge-order" class="block text-sm font-medium text-gray-700">Stage Order</label>
+                                <input type="number" id="challenge-order" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+                            </div>
+                            <div>
+                                <label for="challenge-type" class="block text-sm font-medium text-gray-700">Stage Type</label>
+                                <select id="challenge-type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                                     <option value="multiple-choice">Multiple Choice</option>
                                     <option value="open-ended">Open-ended</option>
+                                    <!-- Add other challenge types here in the future -->
                                 </select>
                             </div>
-                             <div>
-                                <label for="question-correct-answer" class="block text-sm font-medium text-gray-700">Correct Answer</label>
-                                <input type="text" id="question-correct-answer" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                            </div>
                         </div>
-                        <div class="mb-3" id="options-container">
-                            <label for="question-options" class="block text-sm font-medium text-gray-700">Options (comma-separated)</label>
-                            <input type="text" id="question-options" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                        </div>
+                        <!-- Dynamic form fields will be injected here -->
+                        <div id="challenge-data-fields" class="space-y-3 mb-3"></div>
                         <div class="text-right">
-                             <button type="submit" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Save Question</button>
+                             <button type="submit" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Save Stage</button>
                         </div>
                     </form>
                 </div>
@@ -279,29 +276,27 @@
             const questEndTimeInput = document.getElementById('quest-end-time');
             const questBackgroundInput = document.getElementById('quest-background');
             const currentBackgroundSpan = document.getElementById('current-background');
-            const questMaxParticipantsInput = document.getElementById('quest-max-participants'); // [NEW]
+            const questMaxParticipantsInput = document.getElementById('quest-max-participants');
             
-            // Questions Modal Elements
+            // [UPDATED] Questions/Stages Modal Elements
             const questionsModal = document.getElementById('questions-modal');
             const questionsModalTitle = document.getElementById('questions-modal-title');
             const questionsList = document.getElementById('questions-list');
             const questionForm = document.getElementById('question-form');
             const closeQuestionsModalBtn = document.getElementById('close-questions-modal-btn');
-            const questionIdInput = document.getElementById('question-id-input');
-            const questionTextInput = document.getElementById('question-text');
-            const questionTypeInput = document.getElementById('question-type');
-            const questionOptionsInput = document.getElementById('question-options');
-            const questionCorrectAnswerInput = document.getElementById('question-correct-answer');
-            const optionsContainer = document.getElementById('options-container');
+            const challengeIdInput = document.getElementById('challenge-id-input');
+            const challengeOrderInput = document.getElementById('challenge-order');
+            const challengeTypeInput = document.getElementById('challenge-type');
+            const challengeDataFieldsContainer = document.getElementById('challenge-data-fields');
 
-            // [NEW] Participants Modal Elements
+            // Participants Modal Elements
             const participantsModal = document.getElementById('participants-modal');
             const participantsModalTitle = document.getElementById('participants-modal-title');
             const participantsList = document.getElementById('participants-list');
             const closeParticipantsModalBtn = document.getElementById('close-participants-modal-btn');
 
             let currentEditingQuestId = null;
-            let currentManagingQuestId = null; // [NEW]
+            let currentManagingQuestId = null;
             let allQuests = [];
 
             async function fetchQuests() {
@@ -333,7 +328,6 @@
                         default: statusColor = 'bg-gray-100 text-gray-800';
                     }
                     
-                    // [UPDATED] Participant count display
                     const participantsText = quest.max_participants 
                         ? `${quest.participants_count} / ${quest.max_participants}` 
                         : `${quest.participants_count} / ∞`;
@@ -347,7 +341,7 @@
                             <td class="py-3 px-4 border-b border-gray-200">
                                 <div class="flex items-center justify-center space-x-2">
                                     <button class="edit-btn text-gray-500 hover:text-blue-600 p-1 rounded-full focus:outline-none" title="Edit Quest"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg></button>
-                                    <button class="questions-btn text-gray-500 hover:text-indigo-600 p-1 rounded-full focus:outline-none" title="Manage Questions"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.546-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /> </svg></button>
+                                    <button class="questions-btn text-gray-500 hover:text-indigo-600 p-1 rounded-full focus:outline-none" title="Manage Stages"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.546-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /> </svg></button>
                                     <button class="participants-btn text-gray-500 hover:text-green-600 p-1 rounded-full focus:outline-none" title="Manage Participants"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg></button>
                                     <button class="delete-btn text-gray-500 hover:text-red-600 p-1 rounded-full focus:outline-none" title="Delete Quest"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg></button>
                                 </div>
@@ -370,7 +364,7 @@
                     questStatusInput.value = quest.status || 'Available';
                     questStartTimeInput.value = quest.start_time ? new Date(quest.start_time).toISOString().slice(0, 16) : '';
                     questEndTimeInput.value = quest.end_time ? new Date(quest.end_time).toISOString().slice(0, 16) : '';
-                    questMaxParticipantsInput.value = quest.max_participants || ''; // [NEW]
+                    questMaxParticipantsInput.value = quest.max_participants || '';
                     if (quest.quiz_background_url) {
                         currentBackgroundSpan.textContent = `Current: ${quest.quiz_background_url.split('/').pop()}`;
                     }
@@ -399,7 +393,7 @@
                 formData.append('status', questStatusInput.value);
                 formData.append('start_time', questStartTimeInput.value || null);
                 formData.append('end_time', questEndTimeInput.value || null);
-                formData.append('max_participants', questMaxParticipantsInput.value); // [NEW]
+                formData.append('max_participants', questMaxParticipantsInput.value);
 
                 if (questBackgroundInput.files.length > 0) {
                     formData.append('questBackground', questBackgroundInput.files[0]);
@@ -445,20 +439,77 @@
                     }
                 } else if (e.target.closest('.questions-btn')) {
                     openQuestionsModal(questId);
-                } else if (e.target.closest('.participants-btn')) { // [NEW]
+                } else if (e.target.closest('.participants-btn')) {
                     openParticipantsModal(questId);
                 }
             });
 
-            // --- Questions Modal Logic ---
+            // --- [UPDATED] Quest Stages Modal Logic ---
+            
+            // Renders the dynamic form fields based on selected challenge type
+            function renderChallengeDataFields(type, data = {}) {
+                challengeDataFieldsContainer.innerHTML = ''; // Clear previous fields
+                let fieldsHtml = '';
+
+                switch (type) {
+                    case 'multiple-choice':
+                        fieldsHtml = `
+                            <div>
+                                <label for="c-question-text" class="block text-sm font-medium text-gray-700">Question Text</label>
+                                <textarea id="c-question-text" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>${data.question_text || ''}</textarea>
+                            </div>
+                            <div>
+                                <label for="c-options" class="block text-sm font-medium text-gray-700">Options (comma-separated)</label>
+                                <input type="text" id="c-options" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="${(data.options || []).join(', ')}">
+                            </div>
+                            <div>
+                                <label for="c-correct-answer" class="block text-sm font-medium text-gray-700">Correct Answer</label>
+                                <input type="text" id="c-correct-answer" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" value="${data.correct_answer || ''}">
+                            </div>
+                        `;
+                        break;
+                    case 'open-ended':
+                        fieldsHtml = `
+                            <div>
+                                <label for="c-question-text" class="block text-sm font-medium text-gray-700">Question Text</label>
+                                <textarea id="c-question-text" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>${data.question_text || ''}</textarea>
+                            </div>
+                        `;
+                        break;
+                    // Add more cases here for future challenge types
+                }
+                challengeDataFieldsContainer.innerHTML = fieldsHtml;
+            }
+            
+            // Collects data from the dynamic form fields into a JSON object
+            function getChallengeDataFromForm(type) {
+                const data = {};
+                switch (type) {
+                    case 'multiple-choice':
+                        data.question_text = document.getElementById('c-question-text').value;
+                        data.options = document.getElementById('c-options').value.split(',').map(s => s.trim());
+                        data.correct_answer = document.getElementById('c-correct-answer').value;
+                        break;
+                    case 'open-ended':
+                        data.question_text = document.getElementById('c-question-text').value;
+                        break;
+                }
+                return data;
+            }
+
+            challengeTypeInput.addEventListener('change', (e) => {
+                renderChallengeDataFields(e.target.value);
+            });
+
             async function openQuestionsModal(questId) {
                 currentEditingQuestId = questId;
                 const quest = allQuests.find(q => q.id === questId);
-                questionsModalTitle.textContent = `Manage Questions for "${quest.title}"`;
+                questionsModalTitle.textContent = `Manage Stages for "${quest.title}"`;
                 await renderQuestionsForModal(questId);
                 questionForm.reset();
-                questionIdInput.value = '';
-                document.getElementById('add-edit-question-title').textContent = 'Add New Question';
+                challengeIdInput.value = '';
+                document.getElementById('add-edit-question-title').textContent = 'Add New Stage';
+                renderChallengeDataFields(challengeTypeInput.value); // Render initial form
                 questionsModal.classList.add('flex');
             }
             
@@ -466,10 +517,115 @@
                 questionsModal.classList.remove('flex');
                 currentEditingQuestId = null;
             }
+
+            async function renderQuestionsForModal(questId) {
+                questionsList.innerHTML = '<p>Loading stages...</p>';
+                try {
+                    const response = await fetch(`/api/quests/${questId}/questions`);
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Failed to fetch stages');
+                    
+                    const stages = data.questions; // API response key is still 'questions'
+                    questionsList.innerHTML = '';
+                    if (stages.length === 0) {
+                        questionsList.innerHTML = '<p class="text-center text-gray-500">No stages yet for this quest.</p>';
+                    } else {
+                        stages.forEach(stage => {
+                            const stageEl = document.createElement('div');
+                            stageEl.className = 'bg-gray-100 p-3 rounded-lg flex justify-between items-start';
+                            stageEl.dataset.id = stage.id;
+                            stageEl.innerHTML = `
+                                <div>
+                                    <p class="font-semibold">Stage ${stage.challenge_order}: ${stage.challenge_data.question_text || 'Info Card'}</p>
+                                    <p class="text-sm text-gray-600">Type: ${stage.challenge_type}</p>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button class="edit-question-btn text-blue-500 hover:text-blue-700">Edit</button>
+                                    <button class="delete-question-btn text-red-500 hover:text-red-700">Delete</button>
+                                </div>
+                            `;
+                            questionsList.appendChild(stageEl);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error rendering stages:', error);
+                    questionsList.innerHTML = `<p class="text-center text-red-500">${error.message}</p>`;
+                }
+            }
+
+            questionForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                if (!currentEditingQuestId) return;
+
+                const challengeId = challengeIdInput.value;
+                const type = challengeTypeInput.value;
+                
+                const questStageData = {
+                    challenge_order: challengeOrderInput.value,
+                    challenge_type: type,
+                    challenge_data: getChallengeDataFromForm(type)
+                };
+
+                const url = challengeId 
+                    ? `/api/quests/${currentEditingQuestId}/questions/${challengeId}` 
+                    : `/api/quests/${currentEditingQuestId}/questions`;
+                const method = challengeId ? 'PUT' : 'POST';
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(questStageData)
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error || 'Failed to save stage');
+                    
+                    renderQuestionsForModal(currentEditingQuestId);
+                    questionForm.reset();
+                    challengeIdInput.value = '';
+                    document.getElementById('add-edit-question-title').textContent = 'Add New Stage';
+                    renderChallengeDataFields(challengeTypeInput.value);
+                } catch (error) {
+                    console.error('Error saving stage:', error);
+                    alert(error.message);
+                }
+            });
+
+            questionsList.addEventListener('click', async function(e) {
+                const row = e.target.closest('.bg-gray-100');
+                if (!row) return;
+                const stageId = row.dataset.id;
+
+                if (e.target.matches('.edit-question-btn')) {
+                    const response = await fetch(`/api/quests/${currentEditingQuestId}/questions`);
+                    const data = await response.json();
+                    const stage = data.questions.find(q => q.id == stageId);
+
+                    document.getElementById('add-edit-question-title').textContent = 'Edit Stage';
+                    challengeIdInput.value = stage.id;
+                    challengeOrderInput.value = stage.challenge_order;
+                    challengeTypeInput.value = stage.challenge_type;
+                    renderChallengeDataFields(stage.challenge_type, stage.challenge_data);
+                }
+
+                if (e.target.matches('.delete-question-btn')) {
+                    if (confirm('Delete this stage?')) {
+                        try {
+                            const response = await fetch(`/api/quests/${currentEditingQuestId}/questions/${stageId}`, { method: 'DELETE' });
+                            const result = await response.json();
+                            if (!response.ok) throw new Error(result.error || 'Failed to delete stage');
+                            renderQuestionsForModal(currentEditingQuestId);
+                        } catch (error) {
+                            console.error('Error deleting stage:', error);
+                            alert(error.message);
+                        }
+                    }
+                }
+            });
+
+            closeQuestionsModalBtn.addEventListener('click', closeQuestionsModal);
             
-            // ... (rest of questions modal logic remains the same) ...
-            
-            // --- [NEW] Participants Modal Logic ---
+            // --- Participants Modal Logic ---
             async function openParticipantsModal(questId) {
                 currentManagingQuestId = questId;
                 const quest = allQuests.find(q => q.id === questId);
@@ -549,120 +705,6 @@
             }
 
             closeParticipantsModalBtn.addEventListener('click', closeParticipantsModal);
-
-
-            // --- (Existing Questions Modal Logic - Unchanged) ---
-            async function renderQuestionsForModal(questId) {
-                questionsList.innerHTML = '<p>Loading questions...</p>';
-                try {
-                    const response = await fetch(`/api/quests/${questId}/questions`);
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.error || 'Failed to fetch questions');
-                    
-                    questionsList.innerHTML = '';
-                    if (data.questions.length === 0) {
-                        questionsList.innerHTML = '<p class="text-center text-gray-500">No questions yet for this quest.</p>';
-                    } else {
-                        data.questions.forEach(q => {
-                            const questionEl = document.createElement('div');
-                            questionEl.className = 'bg-gray-100 p-3 rounded-lg flex justify-between items-start';
-                            questionEl.dataset.id = q.id;
-                            questionEl.innerHTML = `
-                                <div>
-                                    <p class="font-semibold">${q.question_text}</p>
-                                    <p class="text-sm text-gray-600">Type: ${q.question_type} | Correct: ${q.correct_answer || 'N/A'}</p>
-                                </div>
-                                <div class="flex space-x-2">
-                                    <button class="edit-question-btn text-blue-500 hover:text-blue-700">Edit</button>
-                                    <button class="delete-question-btn text-red-500 hover:text-red-700">Delete</button>
-                                </div>
-                            `;
-                            questionsList.appendChild(questionEl);
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error rendering questions:', error);
-                    questionsList.innerHTML = `<p class="text-center text-red-500">${error.message}</p>`;
-                }
-            }
-            
-            questionTypeInput.addEventListener('change', (e) => {
-                optionsContainer.style.display = e.target.value === 'multiple-choice' ? 'block' : 'none';
-            });
-
-            questionForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                if (!currentEditingQuestId) return;
-
-                const questionId = questionIdInput.value;
-                const questionData = {
-                    question_text: questionTextInput.value,
-                    question_type: questionTypeInput.value,
-                    options: questionTypeInput.value === 'multiple-choice' ? JSON.stringify(questionOptionsInput.value.split(',').map(s => s.trim())) : null,
-                    correct_answer: questionTypeInput.value === 'multiple-choice' ? questionCorrectAnswerInput.value : null
-                };
-
-                const url = questionId 
-                    ? `/api/quests/${currentEditingQuestId}/questions/${questionId}` 
-                    : `/api/quests/${currentEditingQuestId}/questions`;
-                const method = questionId ? 'PUT' : 'POST';
-
-                try {
-                    const response = await fetch(url, {
-                        method: method,
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(questionData)
-                    });
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.error || 'Failed to save question');
-                    
-                    renderQuestionsForModal(currentEditingQuestId);
-                    questionForm.reset();
-                    questionIdInput.value = '';
-                    document.getElementById('add-edit-question-title').textContent = 'Add New Question';
-                } catch (error) {
-                    console.error('Error saving question:', error);
-                    alert(error.message);
-                }
-            });
-
-            questionsList.addEventListener('click', async function(e) {
-                const row = e.target.closest('.bg-gray-100');
-                if (!row) return;
-                const questionId = row.dataset.id;
-
-                if (e.target.matches('.edit-question-btn')) {
-                    const response = await fetch(`/api/quests/${currentEditingQuestId}/questions`);
-                    const data = await response.json();
-                    const question = data.questions.find(q => q.id == questionId);
-
-                    document.getElementById('add-edit-question-title').textContent = 'Edit Question';
-                    questionIdInput.value = question.id;
-                    questionTextInput.value = question.question_text;
-                    questionTypeInput.value = question.question_type;
-                    optionsContainer.style.display = question.question_type === 'multiple-choice' ? 'block' : 'none';
-                    questionOptionsInput.value = question.options ? JSON.parse(question.options).join(', ') : '';
-                    questionCorrectAnswerInput.value = question.correct_answer || '';
-                }
-
-                if (e.target.matches('.delete-question-btn')) {
-                    if (confirm('Delete this question?')) {
-                        try {
-                            const response = await fetch(`/api/quests/${currentEditingQuestId}/questions/${questionId}`, { method: 'DELETE' });
-                            const result = await response.json();
-                            if (!response.ok) throw new Error(result.error || 'Failed to delete question');
-                            renderQuestionsForModal(currentEditingQuestId);
-                        } catch (error) {
-                            console.error('Error deleting question:', error);
-                            alert(error.message);
-                        }
-                    }
-                }
-            });
-
-            closeQuestionsModalBtn.addEventListener('click', closeQuestionsModal);
-            // --- (End of Unchanged Questions Logic) ---
-
 
             if (searchInput) {
                 searchInput.addEventListener('input', (e) => {

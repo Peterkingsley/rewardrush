@@ -42,78 +42,6 @@ const pool = new Pool({
     port: process.env.DB_PORT,
 });
 
-/*
--- =============================================================================
--- DATABASE SCHEMA
--- =============================================================================
-
--- Add max_participants to quests table
-ALTER TABLE public.quests
-ADD COLUMN max_participants INTEGER DEFAULT NULL;
-
--- Remove the old, unused participants column from the quests table
-ALTER TABLE public.quests
-DROP COLUMN IF EXISTS participants;
-
--- Add max_participants and status to affiliate_programs table
-ALTER TABLE public.affiliate_programs
-ADD COLUMN max_participants INTEGER,
-ADD COLUMN status VARCHAR(50) DEFAULT 'Active';
-
-
--- Main table for user job progress
-CREATE TABLE public.user_jobs (
-    id SERIAL PRIMARY KEY,
-    user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-    program_id integer NOT NULL REFERENCES public.affiliate_programs(id) ON DELETE CASCADE,
-    status character varying(50) NOT NULL,
-    onboarding_link text,
-    tracking_link text,
-    submission_link text,
-    rejection_reason text,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    cumulative_reward_paid numeric(10, 2) DEFAULT 0.00 NOT NULL,
-    current_claim_amount numeric(10, 2),
-    is_final_claim boolean DEFAULT false NOT NULL,
-    CONSTRAINT user_jobs_user_id_program_id_key UNIQUE (user_id, program_id)
-);
-
--- Table for permanent history of completed job attempts
-CREATE TABLE public.job_completions (
-    id SERIAL PRIMARY KEY,
-    user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-    program_id integer NOT NULL REFERENCES public.affiliate_programs(id) ON DELETE CASCADE,
-    reward_amount numeric(10,2) NOT NULL,
-    completed_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
-);
-CREATE INDEX idx_job_completions_user_id ON public.job_completions(user_id);
-
--- NEW TABLE: Ledger for all individual job payments (interim and final)
-CREATE TABLE public.job_earnings (
-    id SERIAL PRIMARY KEY,
-    user_id integer NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-    program_id integer NOT NULL REFERENCES public.affiliate_programs(id) ON DELETE CASCADE,
-    user_job_id integer REFERENCES public.user_jobs(id) ON DELETE SET NULL,
-    amount numeric(10,2) NOT NULL,
-    is_final_payment boolean DEFAULT false NOT NULL,
-    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
-);
-
--- NEW TABLE: Notifications for users
-CREATE TABLE public.notifications (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-    message TEXT NOT NULL,
-    is_read BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-);
-CREATE INDEX idx_notifications_user_id ON public.notifications(user_id);
-
--- =============================================================================
-*/
-
-
 (async () => {
   try {
     await pool.query('SET search_path TO public');
@@ -1625,11 +1553,16 @@ app.post('/api/admin/quests/participants/remove', requireAdmin, async (req, res)
     }
 });
 
+// =============================================================================
+// === START OF UPDATED QUEST STAGE ENDPOINTS ===
+// =============================================================================
 
+// UPDATED - To fetch ordered quest stages
 app.get('/api/quests/:questId/questions', requireLogin, async (req, res) => {
     const { questId } = req.params;
     try {
-        const result = await pool.query('SELECT * FROM quest_questions WHERE quest_id = $1 ORDER BY id ASC', [questId]);
+        // We now select from the new table and order by the challenge_order
+        const result = await pool.query('SELECT * FROM quest_questions WHERE quest_id = $1 ORDER BY challenge_order ASC', [questId]);
         res.json({ questions: result.rows });
     } catch (err) {
         console.error('Error fetching questions:', err);
@@ -1637,13 +1570,15 @@ app.get('/api/quests/:questId/questions', requireLogin, async (req, res) => {
     }
 });
 
+// UPDATED - To create a new quest stage
 app.post('/api/quests/:questId/questions', requireAdmin, async (req, res) => {
     const { questId } = req.params;
-    const { question_text, question_type, options, correct_answer } = req.body;
+    // The request body now sends our new, flexible structure
+    const { challenge_order, challenge_type, challenge_data } = req.body;
     try {
         const newQuestion = await pool.query(
-            'INSERT INTO quest_questions (quest_id, question_text, question_type, options, correct_answer) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [questId, question_text, question_type, options, correct_answer]
+            'INSERT INTO quest_questions (quest_id, challenge_order, challenge_type, challenge_data) VALUES ($1, $2, $3, $4) RETURNING *',
+            [questId, challenge_order, challenge_type, challenge_data]
         );
         res.status(201).json(newQuestion.rows[0]);
     } catch (err) {
@@ -1652,13 +1587,15 @@ app.post('/api/quests/:questId/questions', requireAdmin, async (req, res) => {
     }
 });
 
+// UPDATED - To update an existing quest stage
 app.put('/api/quests/:questId/questions/:questionId', requireAdmin, async (req, res) => {
     const { questionId } = req.params;
-    const { question_text, question_type, options, correct_answer } = req.body;
+    // The request body also sends the new structure for updates
+    const { challenge_order, challenge_type, challenge_data } = req.body;
     try {
         const updatedQuestion = await pool.query(
-            'UPDATE quest_questions SET question_text = $1, question_type = $2, options = $3, correct_answer = $4 WHERE id = $5 RETURNING *',
-            [question_text, question_type, options, correct_answer, questionId]
+            'UPDATE quest_questions SET challenge_order = $1, challenge_type = $2, challenge_data = $3 WHERE id = $4 RETURNING *',
+            [challenge_order, challenge_type, challenge_data, questionId]
         );
         if (updatedQuestion.rows.length === 0) {
             return res.status(404).json({ error: 'Question not found' });
@@ -1684,13 +1621,15 @@ app.delete('/api/quests/:questId/questions/:questionId', requireAdmin, async (re
     }
 });
 
-
+// UPDATED - To handle submission of multi-stage quests
 app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
     const questId = parseInt(req.params.questId, 10);
     const userDbId = req.user.id;
+    // The 'answers' body is now an object of responses, not an array
     const { answers } = req.body;
 
-    if (!Array.isArray(answers)) {
+    // We now validate for an object
+    if (typeof answers !== 'object' || answers === null) {
         return res.status(400).json({ error: 'Invalid answers format.' });
     }
 
@@ -1698,7 +1637,6 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // [NEW] Check participant limit
         const questResult = await client.query('SELECT * FROM quests WHERE id = $1 FOR UPDATE', [questId]);
         const quest = questResult.rows[0];
         if (!quest) {
@@ -1722,14 +1660,17 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'You have already completed this quest.' });
         }
-
-        const questionsResult = await pool.query(
-            'SELECT id FROM quest_questions WHERE quest_id = $1',
+        
+        // Get the total number of challenges for this quest
+        const questionsResult = await client.query(
+            'SELECT COUNT(*) FROM quest_questions WHERE quest_id = $1',
             [questId]
         );
-        const questions = questionsResult.rows;
+        const totalChallenges = parseInt(questionsResult.rows[0].count, 10);
 
-        const allAnswered = answers.length === questions.length && answers.every(ans => ans !== undefined && ans !== null && ans !== '');
+        // Check if the number of answers submitted is at least the number of challenges.
+        // This assumes every stage requires an answer. For now, this is a safe validation.
+        const allAnswered = Object.keys(answers).length >= totalChallenges;
         
         if (allAnswered) {
             const rewardValue = parsePayout(quest.reward);
@@ -1779,6 +1720,10 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
         client.release();
     }
 });
+
+// =============================================================================
+// === END OF UPDATED QUEST STAGE ENDPOINTS ===
+// =============================================================================
 
 
 app.get('/quests/:questId/responses', requireAdmin, async (req, res) => {

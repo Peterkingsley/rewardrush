@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GrowEasy - Gamified Learning & Rewards</title>
+    <title>RewardRush - Gamified Learning & Rewards</title>
     
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -317,7 +317,7 @@
                     </nav>
                 </div>
 
-                <!-- [UPDATED] Transaction History Section -->
+                <!-- Transaction History Section -->
                 <div id="history-section" class="bg-white rounded-2xl shadow-md p-5 mt-6 reveal">
                     <h2 class="text-lg font-bold mb-4">Transaction History</h2>
                     <!-- History Tabs -->
@@ -341,7 +341,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- [NEW] Container for the "See More" button -->
+                    <!-- Container for the "See More" button -->
                     <div id="history-footer" class="text-center mt-4"></div>
                 </div>
 
@@ -378,7 +378,7 @@
         </div>
     </div>
     
-    <!-- [UPDATED] Modal for Withdrawal -->
+    <!-- Modal for Withdrawal -->
     <div id="withdraw-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="modal-content-wrapper bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 transform transition-transform scale-95">
              <h2 class="text-xl font-bold mb-4">Request Withdrawal</h2>
@@ -521,7 +521,6 @@
             // --- API Service Layer ---
             const ApiService = {
                 async fetch(endpoint, options = {}) {
-                    // Use relative paths for API calls. This works for both local dev and deployment.
                     try {
                         const response = await fetch(endpoint, {
                             ...options,
@@ -588,8 +587,8 @@
                 currentPage: 1,
                 itemsPerPage: 6,
                 currentQuiz: null,
-                currentQuestionIndex: 0,
-                userAnswers: [],
+                currentChallengeIndex: 0, // UPDATED: from currentQuestionIndex
+                userAnswers: {}, // UPDATED: from array to object
 
                 // --- UI ELEMENTS ---
                 elements: {
@@ -951,7 +950,7 @@
                     }
 
                     const buttonDisabled = isCompleted || isFull;
-                    let buttonText = 'Start Quiz';
+                    let buttonText = 'Start Quest';
                     if (isCompleted) buttonText = 'Completed';
                     if (isFull) buttonText = 'Quest Full';
 
@@ -1019,75 +1018,76 @@
                             backgroundUrl: questData.quiz_background_url
                         };
 
-                        this.currentQuestionIndex = 0;
-                        this.userAnswers = [];
+                        this.currentChallengeIndex = 0;
+                        this.userAnswers = {};
                         document.getElementById('quiz-title').textContent = this.currentQuiz.title;
                         document.getElementById('quiz-description').textContent = this.currentQuiz.description;
-                        this.showQuestion();
+                        this.renderChallenge();
                         this.openModal(this.elements.quizModal);
                     } catch (error) {
                         console.error("Failed to start quiz:", error);
                     }
                 },
 
-                showQuestion() {
-                    const question = this.currentQuiz.questions[this.currentQuestionIndex];
+                // =============================================================================
+                // === START OF UPDATED QUEST LOGIC ===
+                // =============================================================================
+
+                renderChallenge() {
+                    const challenge = this.currentQuiz.questions[this.currentChallengeIndex];
                     const quizContent = document.getElementById('quiz-content');
                     const quizOptions = document.getElementById('quiz-options');
                     const quizBackground = document.getElementById('quiz-background');
 
+                    quizContent.innerHTML = '';
+                    quizOptions.innerHTML = '';
                     quizBackground.innerHTML = '';
+
+                    // Set background media if available
                     const backgroundUrl = this.currentQuiz.backgroundUrl;
-                    
                     if (backgroundUrl) {
-                        if (backgroundUrl.match(/\.(jpeg|jpg|gif|png)$/) != null) {
-                            const img = document.createElement('img');
-                            img.src = backgroundUrl;
-                            img.className = 'absolute inset-0 w-full h-full object-cover';
-                            quizBackground.appendChild(img);
-                        } else if (backgroundUrl.match(/\.(mp4|webm|ogg)$/) != null) {
-                            const video = document.createElement('video');
-                            video.src = backgroundUrl;
-                            video.className = 'absolute inset-0 w-full h-full object-cover';
-                            video.autoplay = true; video.loop = true; video.muted = true; video.playsInline = true;
-                            quizBackground.appendChild(video);
-                            video.play().catch(error => console.error("Video autoplay prevented:", error));
+                        if (backgroundUrl.match(/\.(jpeg|jpg|gif|png)$/)) {
+                            quizBackground.innerHTML = `<img src="${backgroundUrl}" class="absolute inset-0 w-full h-full object-cover">`;
+                        } else if (backgroundUrl.match(/\.(mp4|webm|ogg)$/)) {
+                            quizBackground.innerHTML = `<video src="${backgroundUrl}" class="absolute inset-0 w-full h-full object-cover" autoplay loop muted playsinline></video>`;
                         }
                     }
-
-
-                    quizContent.innerHTML = `<p class="text-lg font-semibold text-white">${question.question_text}</p>`;
-                    quizOptions.innerHTML = '';
-
-                    const is_open_ended = question.question_type === 'open-ended';
-
-                    if (is_open_ended) {
-                        const textArea = document.createElement('textarea');
-                        textArea.id = 'open-ended-answer';
-                        textArea.className = 'w-full p-4 border border-white/30 rounded-lg bg-white/10 text-white backdrop-blur-sm transition focus:ring-2 focus:ring-purple-500 focus:border-transparent';
-                        textArea.placeholder = 'Type your answer here...';
-                        textArea.rows = 4;
-                        quizOptions.appendChild(textArea);
-                        quizOptions.className = 'grid grid-cols-1 gap-4 my-6';
-                    } else {
-                        quizOptions.className = 'grid grid-cols-1 sm:grid-cols-2 gap-4 my-6';
-                        const optionsArray = Array.isArray(question.options) ? question.options : [];
-                        optionsArray.forEach(optionText => {
-                            const optionButton = document.createElement('button');
-                            optionButton.textContent = optionText.trim();
-                            optionButton.className = 'w-full text-left p-4 border border-white/30 rounded-lg bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm transition';
-                            optionButton.addEventListener('click', () => {
-                                this.userAnswers[this.currentQuestionIndex] = optionText.trim();
-                                Array.from(quizOptions.children).forEach(btn => btn.classList.remove('bg-white/30', 'border-purple-400'));
-                                optionButton.classList.add('bg-white/30', 'border-purple-400');
+                    
+                    // Render UI based on the challenge type
+                    switch (challenge.challenge_type) {
+                        case 'multiple-choice':
+                            quizContent.innerHTML = `<p class="text-lg font-semibold text-white">${challenge.challenge_data.question_text}</p>`;
+                            quizOptions.className = 'grid grid-cols-1 sm:grid-cols-2 gap-4 my-6';
+                            challenge.challenge_data.options.forEach(optionText => {
+                                const optionButton = document.createElement('button');
+                                optionButton.textContent = optionText.trim();
+                                optionButton.className = 'w-full text-left p-4 border border-white/30 rounded-lg bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm transition';
+                                optionButton.addEventListener('click', () => {
+                                    this.userAnswers[challenge.challenge_order] = optionText.trim();
+                                    Array.from(quizOptions.children).forEach(btn => btn.classList.remove('bg-white/30', 'border-purple-400'));
+                                    optionButton.classList.add('bg-white/30', 'border-purple-400');
+                                });
+                                quizOptions.appendChild(optionButton);
                             });
-                            quizOptions.appendChild(optionButton);
-                        });
+                            break;
+
+                        case 'open-ended':
+                            quizContent.innerHTML = `<p class="text-lg font-semibold text-white">${challenge.challenge_data.question_text}</p>`;
+                            quizOptions.className = 'grid grid-cols-1 gap-4 my-6';
+                            quizOptions.innerHTML = `<textarea id="challenge-response-${challenge.challenge_order}" class="w-full p-4 border border-white/30 rounded-lg bg-white/10 text-white backdrop-blur-sm transition focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Type your answer here..." rows="4"></textarea>`;
+                            break;
+                        
+                        // Add more cases here for new challenge types like 'info_card', 'video_review', etc.
+                        
+                        default:
+                            quizContent.innerHTML = `<p class="text-lg font-semibold text-white">Unsupported challenge type.</p>`;
+                            break;
                     }
+
+                    // Update progress and button visibility
+                    document.getElementById('quiz-progress').textContent = `Step ${this.currentChallengeIndex + 1} of ${this.currentQuiz.questions.length}`;
                     
-                    document.getElementById('quiz-progress').textContent = `Question ${this.currentQuestionIndex + 1} of ${this.currentQuiz.questions.length}`;
-                    
-                    if (this.currentQuestionIndex === this.currentQuiz.questions.length - 1) {
+                    if (this.currentChallengeIndex === this.currentQuiz.questions.length - 1) {
                         document.getElementById('next-btn').classList.add('hidden');
                         document.getElementById('submit-btn').classList.remove('hidden');
                     } else {
@@ -1096,46 +1096,43 @@
                     }
                 },
 
-                nextQuestion() {
-                    const question = this.currentQuiz.questions[this.currentQuestionIndex];
-                    const is_open_ended = question.question_type === 'open-ended';
+                nextChallenge() {
+                    const challenge = this.currentQuiz.questions[this.currentChallengeIndex];
+                    let response;
 
-                    if (is_open_ended) {
-                        const textArea = document.getElementById('open-ended-answer');
-                        this.userAnswers[this.currentQuestionIndex] = textArea.value.trim();
-                        if (!this.userAnswers[this.currentQuestionIndex]) {
-                            this.showNotification('Please enter an answer.', 'error');
-                            return;
-                        }
-                    } else {
-                        if (this.userAnswers[this.currentQuestionIndex] === undefined) {
-                            this.showNotification('Please select an answer.', 'error');
-                            return;
-                        }
+                    switch (challenge.challenge_type) {
+                        case 'multiple-choice':
+                            response = this.userAnswers[challenge.challenge_order];
+                            if (response === undefined) {
+                                this.showNotification('Please select an answer.', 'error');
+                                return;
+                            }
+                            break;
+                        case 'open-ended':
+                            const textArea = document.getElementById(`challenge-response-${challenge.challenge_order}`);
+                            response = textArea.value.trim();
+                            if (!response) {
+                                this.showNotification('Please enter an answer.', 'error');
+                                return;
+                            }
+                            this.userAnswers[challenge.challenge_order] = response;
+                            break;
                     }
-                    this.currentQuestionIndex++;
-                    this.showQuestion();
+                    
+                    this.currentChallengeIndex++;
+                    this.renderChallenge();
                 },
 
                 async submitQuiz() {
-                    const question = this.currentQuiz.questions[this.currentQuestionIndex];
-                    const is_open_ended = question.question_type === 'open-ended';
-
-                    if (is_open_ended) {
-                        const textArea = document.getElementById('open-ended-answer');
-                        this.userAnswers[this.currentQuestionIndex] = textArea.value.trim();
-                        if (!this.userAnswers[this.currentQuestionIndex]) {
-                            this.showNotification('Please enter an answer.', 'error');
-                            return;
-                        }
-                    } else {
-                        if (this.userAnswers[this.currentQuestionIndex] === undefined) {
-                            this.showNotification('Please select an answer.', 'error');
-                            return;
-                        }
+                    // First, capture the answer for the final question
+                    this.nextChallenge();
+                    // Since nextChallenge increments the index, we check if we are now past the end
+                    if (this.currentChallengeIndex < this.currentQuiz.questions.length) {
+                        return; // Don't submit if validation in nextChallenge failed
                     }
                     
                     try {
+                        // The answers are already stored in this.userAnswers object
                         const result = await ApiService.submitQuiz(this.currentQuiz.id, this.userAnswers);
                         this.closeModal(this.elements.quizModal);
 
@@ -1143,14 +1140,18 @@
                             const quest = this.quests.find(q => q.id === this.currentQuiz.id);
                             this.user.completedQuestsWithReferral[quest.id] = result.referralLink;
                             this.showQuestCompletion(quest, result.referralLink);
-                            this.init();
+                            this.init(); // Re-initialize to refresh all data
                         } else {
-                            this.showNotification(result.message || 'Quiz failed. Please try again later.', 'error');
+                            this.showNotification(result.message || 'Quest failed. Please try again later.', 'error');
                         }
                     } catch (error) {
                         console.error("Error submitting quiz:", error);
                     }
                 },
+
+                // =============================================================================
+                // === END OF UPDATED QUEST LOGIC ===
+                // =============================================================================
 
                 showQuestCompletion(quest, referralLink) {
                     this.elements.completionTitle.textContent = `Quest Complete: ${quest.title}`;
@@ -1163,7 +1164,7 @@
                     try {
                         const referralData = await ApiService.getReferrals();
                         document.getElementById('total-referrals').textContent = referralData.stats.totalReferrals || 0;
-document.getElementById('total-earnings').textContent = `$${parseFloat(referralData.stats.totalEarnings || 0).toFixed(2)}`;
+                        document.getElementById('total-earnings').textContent = `$${parseFloat(referralData.stats.totalEarnings || 0).toFixed(2)}`;
                         
                         const referralList = document.getElementById('referral-history-list');
                         referralList.innerHTML = '';
@@ -1342,7 +1343,7 @@ document.getElementById('total-earnings').textContent = `$${parseFloat(referralD
                         }
                     });
 
-                    document.getElementById('next-btn').addEventListener('click', () => this.nextQuestion());
+                    document.getElementById('next-btn').addEventListener('click', () => this.nextChallenge());
                     document.getElementById('submit-btn').addEventListener('click', () => this.submitQuiz());
                     this.elements.quizModal.addEventListener('click', (e) => {
                        if (e.target === this.elements.quizModal) this.closeModal(this.elements.quizModal);
