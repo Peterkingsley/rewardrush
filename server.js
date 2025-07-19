@@ -69,23 +69,30 @@ app.use(session({
 }));
 
 // --- Multer setup for file uploads ---
+// Use multer.diskStorage to define where and how files are saved.
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = path.join(__dirname, 'public/uploads');
-    // Create the directory if it doesn't exist synchronously to ensure it's there before saving
+    // Synchronously create the directory if it doesn't exist to prevent race conditions.
     if (!fsSync.existsSync(uploadPath)) {
         fsSync.mkdirSync(uploadPath, { recursive: true });
     }
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
-    // Create a unique filename to avoid overwrites
+    // Generate a unique filename to prevent overwrites.
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
-const upload = multer({ storage: storage });
+// UPDATED: Use upload.fields to handle multiple, different file uploads in one request.
+const upload = multer({ 
+    storage: storage 
+}).fields([
+    { name: 'questBackground', maxCount: 1 },
+    { name: 'questBanner', maxCount: 1 }
+]);
 
 
 // Middleware functions (requireLogin, requireAdmin, etc.)
@@ -1414,14 +1421,17 @@ app.get('/quests', requireLogin, async (req, res) => {
     }
 });
 
-app.post('/api/quests', requireAdmin, upload.single('questBackground'), async (req, res) => {
+// UPDATED: Use the new 'upload' middleware which handles multiple fields.
+app.post('/api/quests', requireAdmin, upload, async (req, res) => {
     const { title, description, reward, status, start_time, end_time, max_participants } = req.body;
-    const backgroundUrl = req.file ? `/uploads/${req.file.filename}` : null;
+    // Access uploaded files from req.files object.
+    const backgroundUrl = req.files.questBackground ? `/uploads/${req.files.questBackground[0].filename}` : null;
+    const bannerUrl = req.files.questBanner ? `/uploads/${req.files.questBanner[0].filename}` : null;
 
     try {
         const newQuest = await pool.query(
-            'INSERT INTO quests (title, description, reward, status, start_time, end_time, quiz_background_url, max_participants) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-            [title, description, reward, status, start_time || null, end_time || null, backgroundUrl, max_participants || null]
+            'INSERT INTO quests (title, description, reward, status, start_time, end_time, quiz_background_url, card_banner_url, max_participants) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+            [title, description, reward, status, start_time || null, end_time || null, backgroundUrl, bannerUrl, max_participants || null]
         );
         res.status(201).json(newQuest.rows[0]);
     } catch (err) {
@@ -1430,20 +1440,27 @@ app.post('/api/quests', requireAdmin, upload.single('questBackground'), async (r
     }
 });
 
-app.put('/api/quests/:id', requireAdmin, upload.single('questBackground'), async (req, res) => {
+// UPDATED: Use the new 'upload' middleware for updates as well.
+app.put('/api/quests/:id', requireAdmin, upload, async (req, res) => {
     const { id } = req.params;
     const { title, description, reward, status, start_time, end_time, max_participants } = req.body;
 
     try {
-        if (req.file) {
-            const oldQuestResult = await pool.query('SELECT quiz_background_url FROM quests WHERE id = $1', [id]);
-            const oldUrl = oldQuestResult.rows[0]?.quiz_background_url;
-            if (oldUrl) {
-                await fs.unlink(path.join(__dirname, 'public', oldUrl)).catch(e => console.error("Failed to delete old background file:", e));
-            }
+        const oldQuestResult = await pool.query('SELECT quiz_background_url, card_banner_url FROM quests WHERE id = $1', [id]);
+        const oldUrls = oldQuestResult.rows[0];
+
+        // Handle new background upload
+        if (req.files.questBackground && oldUrls?.quiz_background_url) {
+            await fs.unlink(path.join(__dirname, 'public', oldUrls.quiz_background_url)).catch(e => console.error("Failed to delete old background file:", e));
+        }
+        
+        // Handle new banner upload
+        if (req.files.questBanner && oldUrls?.card_banner_url) {
+            await fs.unlink(path.join(__dirname, 'public', oldUrls.card_banner_url)).catch(e => console.error("Failed to delete old banner file:", e));
         }
 
-        const backgroundUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
+        const backgroundUrl = req.files.questBackground ? `/uploads/${req.files.questBackground[0].filename}` : undefined;
+        const bannerUrl = req.files.questBanner ? `/uploads/${req.files.questBanner[0].filename}` : undefined;
 
         let queryText = 'UPDATE quests SET title = $1, description = $2, reward = $3, status = $4, start_time = $5, end_time = $6, max_participants = $7';
         const queryParams = [title, description, reward, status, start_time || null, end_time || null, max_participants || null];
@@ -1451,6 +1468,10 @@ app.put('/api/quests/:id', requireAdmin, upload.single('questBackground'), async
         if (backgroundUrl !== undefined) {
             queryText += `, quiz_background_url = $${queryParams.length + 1}`;
             queryParams.push(backgroundUrl);
+        }
+        if (bannerUrl !== undefined) {
+            queryText += `, card_banner_url = $${queryParams.length + 1}`;
+            queryParams.push(bannerUrl);
         }
         
         queryText += ` WHERE id = $${queryParams.length + 1} RETURNING *`;
@@ -1472,10 +1493,13 @@ app.put('/api/quests/:id', requireAdmin, upload.single('questBackground'), async
 app.delete('/api/quests/:id', requireAdmin, async (req, res) => {
     const { id } = req.params;
     try {
-        const oldQuestResult = await pool.query('SELECT quiz_background_url FROM quests WHERE id = $1', [id]);
-        const oldUrl = oldQuestResult.rows[0]?.quiz_background_url;
-        if (oldUrl) {
-            await fs.unlink(path.join(__dirname, 'public', oldUrl)).catch(e => console.error("Failed to delete background file on quest deletion:", e));
+        const oldQuestResult = await pool.query('SELECT quiz_background_url, card_banner_url FROM quests WHERE id = $1', [id]);
+        const oldUrls = oldQuestResult.rows[0];
+        if (oldUrls?.quiz_background_url) {
+            await fs.unlink(path.join(__dirname, 'public', oldUrls.quiz_background_url)).catch(e => console.error("Failed to delete background file on quest deletion:", e));
+        }
+        if (oldUrls?.card_banner_url) {
+            await fs.unlink(path.join(__dirname, 'public', oldUrls.card_banner_url)).catch(e => console.error("Failed to delete banner file on quest deletion:", e));
         }
 
         const deleteOp = await pool.query('DELETE FROM quests WHERE id = $1 RETURNING *', [id]);

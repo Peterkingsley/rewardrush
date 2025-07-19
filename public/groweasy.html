@@ -171,6 +171,31 @@
         .dark .nav-link.text-gray-600:hover { background-color: var(--light-bg) !important; }
         .dark .active-nav { background-color: var(--primary-glow) !important; color: white !important; }
         .dark input, .dark select, .dark textarea { background-color: var(--light-bg); border-color: #4a5568; color: white; }
+        
+        /* [NEW] Quest Card Banner Styles */
+        .quest-card {
+            aspect-ratio: 3 / 2; /* Maintain a consistent shape */
+        }
+        .quest-card-background {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.4s ease-out;
+        }
+        .quest-card:hover .quest-card-background {
+            transform: scale(1.05);
+        }
+        .quest-card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.1) 100%);
+            z-index: 5;
+        }
+        .quest-card-content {
+            position: relative;
+            z-index: 10;
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -587,8 +612,8 @@
                 currentPage: 1,
                 itemsPerPage: 6,
                 currentQuiz: null,
-                currentChallengeIndex: 0, // UPDATED: from currentQuestionIndex
-                userAnswers: {}, // UPDATED: from array to object
+                currentChallengeIndex: 0, 
+                userAnswers: {}, 
 
                 // --- UI ELEMENTS ---
                 elements: {
@@ -898,11 +923,33 @@
                     }
                 },
 
+                // [UPDATED] createQuestCard function
                 createQuestCard(quest) {
                     const card = document.createElement('div');
-                    card.className = 'quest-card bg-gray-50 border border-gray-200 rounded-xl p-4 flex flex-col justify-between transition-shadow hover:shadow-md';
+                    card.className = 'quest-card relative border border-gray-200 rounded-xl flex flex-col justify-between transition-shadow hover:shadow-lg overflow-hidden';
                     card.dataset.questId = quest.id;
+
+                    const hasBanner = quest.card_banner_url;
+
+                    if (hasBanner) {
+                        card.classList.add('text-white');
+                        const backgroundEl = document.createElement('div');
+                        backgroundEl.className = 'quest-card-background';
+                        backgroundEl.style.backgroundImage = `url('${quest.card_banner_url}')`;
+                        card.appendChild(backgroundEl);
+
+                        const overlayEl = document.createElement('div');
+                        overlayEl.className = 'quest-card-overlay';
+                        card.appendChild(overlayEl);
+                    } else {
+                        card.classList.add('bg-gray-50', 'p-4');
+                    }
                     
+                    const contentWrapper = document.createElement('div');
+                    contentWrapper.className = 'quest-card-content flex flex-col justify-between h-full';
+                    if(hasBanner) contentWrapper.classList.add('p-4');
+
+
                     const isCompleted = quest.status === 'completed';
                     const isFull = quest.max_participants !== null && quest.participants_count >= quest.max_participants;
                     
@@ -919,19 +966,20 @@
                     }
 
                     let participantsInfo = '';
+                    const participantsTextColor = hasBanner ? 'text-gray-300' : 'text-gray-500';
                     if (quest.max_participants) {
-                        participantsInfo = `<p class="text-xs text-gray-500 mt-1">${quest.participants_count} / ${quest.max_participants} Filled</p>`;
+                        participantsInfo = `<p class="text-xs ${participantsTextColor} mt-1">${quest.participants_count} / ${quest.max_participants} Filled</p>`;
                     } else {
-                        participantsInfo = `<p class="text-xs text-gray-500 mt-1">${quest.participants_count} Participants</p>`;
+                        participantsInfo = `<p class="text-xs ${participantsTextColor} mt-1">${quest.participants_count} Participants</p>`;
                     }
 
                     let referralLinkHtml = '';
                     if (isCompleted && referralLink) {
                         referralLinkHtml = `
-                            <div class="mt-3 pt-3 border-t border-gray-200">
-                                <p class="text-xs font-medium text-gray-600 mb-1">Your Referral Link:</p>
+                            <div class="mt-3 pt-3 border-t ${hasBanner ? 'border-white/20' : 'border-gray-200'}">
+                                <p class="text-xs font-medium ${hasBanner ? 'text-gray-200' : 'text-gray-600'} mb-1">Your Referral Link:</p>
                                 <div class="flex items-center">
-                                    <input type="text" value="${referralLink}" readonly class="w-full p-2 border border-gray-300 rounded-l-lg bg-gray-100 text-xs truncate">
+                                    <input type="text" value="${referralLink}" readonly class="w-full p-2 border ${hasBanner ? 'border-white/30 bg-black/20 text-white' : 'border-gray-300 bg-gray-100'} rounded-l-lg text-xs truncate">
                                     <button class="copy-quest-referral-link-btn bg-purple-600 text-white p-2 rounded-r-lg hover:bg-purple-700" data-link="${referralLink}">
                                         <i class="fas fa-copy"></i>
                                     </button>
@@ -943,8 +991,8 @@
                     let referralCountHtml = '';
                     if (isCompleted && userReferralCount > 0) {
                         referralCountHtml = `
-                            <p class="text-xs text-gray-500 mt-2">
-                                <i class="fas fa-users mr-1 text-purple-500"></i>Referred: ${userReferralCount} user(s)
+                            <p class="text-xs ${participantsTextColor} mt-2">
+                                <i class="fas fa-users mr-1 text-purple-400"></i>Referred: ${userReferralCount} user(s)
                             </p>
                         `;
                     }
@@ -954,17 +1002,21 @@
                     if (isCompleted) buttonText = 'Completed';
                     if (isFull) buttonText = 'Quest Full';
 
+                    const descriptionColor = hasBanner ? 'text-gray-200' : 'text-gray-600';
+                    const titleColor = hasBanner ? 'text-white' : 'text-gray-800';
+                    const borderColor = hasBanner ? 'border-white/20' : 'border-gray-200';
+
                     const cardContent = `
                         <div class="flex-grow">
                             <div class="flex justify-between items-start mb-2">
-                                <h3 class="text-base font-bold text-gray-800">${quest.title || 'Untitled Quest'}</h3>
+                                <h3 class="text-base font-bold ${titleColor}">${quest.title || 'Untitled Quest'}</h3>
                                 ${statusBadge}
                             </div>
-                            <p class="text-gray-600 mb-3 text-xs">${quest.description || 'No description available.'}</p>
+                            <p class="${descriptionColor} mb-3 text-xs">${quest.description || 'No description available.'}</p>
                         </div>
-                        <div class="mt-3 pt-3 border-t border-gray-200">
+                        <div class="mt-auto pt-3 border-t ${borderColor}">
                              <div class="flex justify-between items-center mb-3">
-                                <p class="font-bold text-green-600 text-base">${quest.reward || '$0.00'}</p>
+                                <p class="font-bold text-green-400 text-base">${quest.reward || '$0.00'}</p>
                                 ${participantsInfo}
                             </div>
                             <button class="start-quiz-btn w-full py-2 px-4 rounded-lg text-sm font-semibold transition ${buttonDisabled ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}" ${buttonDisabled ? 'disabled' : ''}>
@@ -974,7 +1026,8 @@
                         ${referralLinkHtml}
                         ${referralCountHtml}
                     `;
-                    card.innerHTML = cardContent;
+                    contentWrapper.innerHTML = cardContent;
+                    card.appendChild(contentWrapper);
                     return card;
                 },
 
@@ -1029,10 +1082,6 @@
                     }
                 },
 
-                // =============================================================================
-                // === START OF UPDATED QUEST LOGIC ===
-                // =============================================================================
-
                 renderChallenge() {
                     const challenge = this.currentQuiz.questions[this.currentChallengeIndex];
                     const quizContent = document.getElementById('quiz-content');
@@ -1043,7 +1092,6 @@
                     quizOptions.innerHTML = '';
                     quizBackground.innerHTML = '';
 
-                    // Set background media if available
                     const backgroundUrl = this.currentQuiz.backgroundUrl;
                     if (backgroundUrl) {
                         if (backgroundUrl.match(/\.(jpeg|jpg|gif|png)$/)) {
@@ -1053,7 +1101,6 @@
                         }
                     }
                     
-                    // Render UI based on the challenge type
                     switch (challenge.challenge_type) {
                         case 'multiple-choice':
                             quizContent.innerHTML = `<p class="text-lg font-semibold text-white">${challenge.challenge_data.question_text}</p>`;
@@ -1077,14 +1124,11 @@
                             quizOptions.innerHTML = `<textarea id="challenge-response-${challenge.challenge_order}" class="w-full p-4 border border-white/30 rounded-lg bg-white/10 text-white backdrop-blur-sm transition focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Type your answer here..." rows="4"></textarea>`;
                             break;
                         
-                        // Add more cases here for new challenge types like 'info_card', 'video_review', etc.
-                        
                         default:
                             quizContent.innerHTML = `<p class="text-lg font-semibold text-white">Unsupported challenge type.</p>`;
                             break;
                     }
 
-                    // Update progress and button visibility
                     document.getElementById('quiz-progress').textContent = `Step ${this.currentChallengeIndex + 1} of ${this.currentQuiz.questions.length}`;
                     
                     if (this.currentChallengeIndex === this.currentQuiz.questions.length - 1) {
@@ -1124,15 +1168,12 @@
                 },
 
                 async submitQuiz() {
-                    // First, capture the answer for the final question
                     this.nextChallenge();
-                    // Since nextChallenge increments the index, we check if we are now past the end
                     if (this.currentChallengeIndex < this.currentQuiz.questions.length) {
-                        return; // Don't submit if validation in nextChallenge failed
+                        return; 
                     }
                     
                     try {
-                        // The answers are already stored in this.userAnswers object
                         const result = await ApiService.submitQuiz(this.currentQuiz.id, this.userAnswers);
                         this.closeModal(this.elements.quizModal);
 
@@ -1140,7 +1181,7 @@
                             const quest = this.quests.find(q => q.id === this.currentQuiz.id);
                             this.user.completedQuestsWithReferral[quest.id] = result.referralLink;
                             this.showQuestCompletion(quest, result.referralLink);
-                            this.init(); // Re-initialize to refresh all data
+                            this.init(); 
                         } else {
                             this.showNotification(result.message || 'Quest failed. Please try again later.', 'error');
                         }
@@ -1148,10 +1189,6 @@
                         console.error("Error submitting quiz:", error);
                     }
                 },
-
-                // =============================================================================
-                // === END OF UPDATED QUEST LOGIC ===
-                // =============================================================================
 
                 showQuestCompletion(quest, referralLink) {
                     this.elements.completionTitle.textContent = `Quest Complete: ${quest.title}`;
