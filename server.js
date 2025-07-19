@@ -1179,11 +1179,12 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 
-// --- UPDATED PROFILE API ENDPOINT ---
+// --- PROFILE API ENDPOINTS ---
 app.get('/api/profile/:userId', requireLogin, async (req, res) => {
     const { userId } = req.params;
 
-    if (userId !== req.session.userId && !req.session.isAdmin) {
+    // Authorization check
+    if (userId !== req.user.username && !req.session.isAdmin) {
         return res.status(403).json({ error: 'Forbidden' });
     }
 
@@ -1194,6 +1195,7 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
+        // Balance recalculation and synchronization logic...
         const balanceQuery = `
             SELECT
                 (COALESCE(SUM(credits), 0) - COALESCE(SUM(debits), 0)) AS current_balance
@@ -1213,15 +1215,12 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
         if (Math.abs(calculatedBalance - parseFloat(user.points)) > 0.01) {
             console.warn(`User ${user.username} points out of sync. DB: ${user.points}, Calculated: ${calculatedBalance}. Updating.`);
             await pool.query('UPDATE users SET points = $1 WHERE id = $2', [calculatedBalance, user.id]);
+            user.points = calculatedBalance;
         }
 
-
+        // Fetching other profile data...
         const completedQuestsResult = await pool.query('SELECT COUNT(*) FROM user_quests WHERE user_id = $1', [user.id]);
-        const questsCompleted = parseInt(completedQuestsResult.rows[0].count, 10);
-        
         const jobsFinishedResult = await pool.query("SELECT COUNT(*) FROM job_completions WHERE user_id = $1", [user.id]);
-        const jobsFinished = parseInt(jobsFinishedResult.rows[0].count, 10);
-
         const userSkillsResult = await pool.query(`
             SELECT DISTINCT em.skill_id, es.title AS skill_name
             FROM user_material_progress ump
@@ -1229,46 +1228,31 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
             JOIN education_skills es ON em.skill_id = es.id
             WHERE ump.user_id = $1
         `, [user.id]);
-
-        const skillsInProgress = userSkillsResult.rows;
-
-        const skillsWithProgress = await Promise.all(skillsInProgress.map(async (skill) => {
+        
+        const skillsWithProgress = await Promise.all(userSkillsResult.rows.map(async (skill) => {
             const totalMaterialsResult = await pool.query('SELECT COUNT(*) FROM education_materials WHERE skill_id = $1', [skill.skill_id]);
-            const totalMaterials = parseInt(totalMaterialsResult.rows[0].count, 10);
-            
             const completedMaterialsResult = await pool.query(`
                 SELECT COUNT(*) FROM user_material_progress ump
                 JOIN education_materials em ON ump.material_id = em.id
                 WHERE ump.user_id = $1 AND em.skill_id = $2
             `, [user.id, skill.skill_id]);
-            const completedMaterials = parseInt(completedMaterialsResult.rows[0].count, 10);
-
-            const progress = totalMaterials > 0 ? Math.round((completedMaterials / totalMaterials) * 100) : 0;
-            return { name: skill.skill_name, progress };
+            const total = parseInt(totalMaterialsResult.rows[0].count, 10);
+            const completed = parseInt(completedMaterialsResult.rows[0].count, 10);
+            return { name: skill.skill_name, progress: total > 0 ? Math.round((completed / total) * 100) : 0 };
         }));
 
-        const historyQuery = `
-            (SELECT 'Quest: ' || q.title AS desc, parse_payout(q.reward) AS amount, uq.completed_at AS date, 'credit' as type, 'completed' as status, NULL as transaction_hash FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
+        const transactionHistoryResult = await pool.query(`
+            (SELECT 'Quest: ' || q.title AS desc, parse_payout(q.reward) AS amount, uq.completed_at AS date, 'credit' as type FROM user_quests uq JOIN quests q ON uq.quest_id = q.id WHERE uq.user_id = $1)
             UNION ALL
-            (SELECT 'Job Payment: ' || ap.title AS desc, je.amount, je.created_at AS date, 'credit' as type, 'completed' as status, NULL as transaction_hash FROM job_earnings je JOIN affiliate_programs ap ON je.program_id = ap.id WHERE je.user_id = $1)
+            (SELECT 'Job Payment: ' || ap.title AS desc, je.amount, je.created_at AS date, 'credit' as type FROM job_earnings je JOIN affiliate_programs ap ON je.program_id = ap.id WHERE je.user_id = $1)
             UNION ALL
-            (SELECT 'Withdrawal' AS desc, w.amount, w.created_at AS date, 'debit' as type, w.status, w.transaction_hash FROM withdrawals w WHERE w.user_id = $1)
+            (SELECT 'Withdrawal' AS desc, w.amount, w.created_at AS date, 'debit' as type FROM withdrawals w WHERE w.user_id = $1)
             ORDER BY date DESC LIMIT 20;
-        `;
-        const transactionHistoryResult = await pool.query(historyQuery, [user.id]);
-        const transactions = transactionHistoryResult.rows.map(t => ({
-            type: t.type,
-            amount: parseFloat(t.amount).toFixed(2),
-            desc: t.desc,
-            date: new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-            status: t.status,
-            transaction_hash: t.transaction_hash
-        }));
+        `, [user.id]);
         
         const bookingsResult = await pool.query(`
             SELECT p.name, b.status, b.preferred_date AS date
-            FROM bookings b
-            JOIN professionals p ON b.professional_id = p.id
+            FROM bookings b JOIN professionals p ON b.professional_id = p.id
             WHERE b.user_id = $1 ORDER BY b.created_at DESC
         `, [user.id]);
 
@@ -1288,34 +1272,56 @@ app.get('/api/profile/:userId', requireLogin, async (req, res) => {
                 fullName: user.full_name,
                 username: user.username,
                 email: user.email,
-                avatar: user.avatar || 'https://i.pravatar.cc/150?img=12',
+                avatar: user.avatar || 'https://placehold.co/150x150/e2e8f0/e2e8f0',
                 joinDate: new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-                bio: "Lifelong learner and digital creator. Exploring the worlds of design, code, and marketing. Let's connect!",
+                bio: user.bio, // Use actual bio from database
             },
             stats: {
-                totalEarnings: calculatedBalance,
-                questsCompleted: questsCompleted,
-                jobsFinished: jobsFinished,
+                totalEarnings: user.points,
+                questsCompleted: parseInt(completedQuestsResult.rows[0].count, 10),
+                jobsFinished: parseInt(jobsFinishedResult.rows[0].count, 10),
                 skillsInProgress: skillsWithProgress.length
             },
             earningsChart: {
                 labels: earningsHistoryResult.rows.map(r => r.label),
                 data: earningsHistoryResult.rows.map(r => parseFloat(r.value))
             },
-            recentActivity: transactions.slice(0, 5).map(item => ({
+            recentActivity: transactionHistoryResult.rows.slice(0, 5).map(item => ({
                 icon: item.type === 'credit' ? 'fa-check-circle' : 'fa-wallet',
-                color: item.type === 'credit' ? 'green' : 'red',
-                text: `${item.desc} ($${item.amount})`,
-                time: item.date
+                color: item.type === 'credit' ? 'text-green-500' : 'text-red-500',
+                text: `${item.desc} ($${parseFloat(item.amount).toFixed(2)})`,
+                time: new Date(item.date).toLocaleDateString()
             })),
             mySkills: skillsWithProgress,
             expertBookings: bookingsResult.rows,
-            transactions: transactions,
+            transactions: transactionHistoryResult.rows.map(t => ({...t, date: new Date(t.date).toLocaleDateString() })),
         });
 
     } catch (err) {
         console.error('Error fetching profile data:', err);
         res.status(500).json({ error: 'Failed to fetch profile data.' });
+    }
+});
+
+// NEW ENDPOINT TO UPDATE USER BIO
+app.post('/api/profile/:userId/bio', requireLogin, async (req, res) => {
+    const { userId } = req.params;
+    const { bio } = req.body;
+
+    // Authorization: Ensure the logged-in user is the one being updated
+    if (req.user.username !== userId) {
+        return res.status(403).json({ error: 'Forbidden: You can only update your own profile.' });
+    }
+
+    try {
+        await pool.query(
+            'UPDATE users SET bio = $1 WHERE username = $2',
+            [bio, userId]
+        );
+        res.json({ success: true, message: 'Bio updated successfully.' });
+    } catch (err) {
+        console.error('Error updating bio:', err);
+        res.status(500).json({ error: 'Failed to update bio.' });
     }
 });
 
