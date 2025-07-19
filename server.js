@@ -69,7 +69,6 @@ app.use(session({
 }));
 
 // --- Multer setup for file uploads ---
-// Use multer.diskStorage to define where and how files are saved.
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = path.join(__dirname, 'public/uploads');
@@ -86,10 +85,11 @@ const storage = multer.diskStorage({
   }
 });
 
-// UPDATED: Use upload.fields to handle multiple, different file uploads in one request.
-const upload = multer({ 
-    storage: storage 
-}).fields([
+// Create a base multer instance
+const upload = multer({ storage: storage });
+
+// Middleware for handling quest-related uploads (multiple fields)
+const questUpload = upload.fields([
     { name: 'questBackground', maxCount: 1 },
     { name: 'questBanner', maxCount: 1 }
 ]);
@@ -1421,8 +1421,8 @@ app.get('/quests', requireLogin, async (req, res) => {
     }
 });
 
-// UPDATED: Use the new 'upload' middleware which handles multiple fields.
-app.post('/api/quests', requireAdmin, upload, async (req, res) => {
+// Use the questUpload middleware for this route
+app.post('/api/quests', requireAdmin, questUpload, async (req, res) => {
     const { title, description, reward, status, start_time, end_time, max_participants } = req.body;
     // Access uploaded files from req.files object.
     const backgroundUrl = req.files.questBackground ? `/uploads/${req.files.questBackground[0].filename}` : null;
@@ -1440,8 +1440,8 @@ app.post('/api/quests', requireAdmin, upload, async (req, res) => {
     }
 });
 
-// UPDATED: Use the new 'upload' middleware for updates as well.
-app.put('/api/quests/:id', requireAdmin, upload, async (req, res) => {
+// Use the questUpload middleware for this route as well
+app.put('/api/quests/:id', requireAdmin, questUpload, async (req, res) => {
     const { id } = req.params;
     const { title, description, reward, status, start_time, end_time, max_participants } = req.body;
 
