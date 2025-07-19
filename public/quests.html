@@ -166,14 +166,15 @@
                         <input type="number" id="quest-max-participants" placeholder="Leave blank for unlimited" class="w-full p-3 border border-gray-300 rounded-lg">
                     </div>
                 </div>
-                <!-- [NEW] Quest Card Banner Input -->
-                <div class="mb-6">
+                {/* <!-- [NEW] Quest Card Banner Input --> */}
+                <div class="mb-4">
                     <label for="quest-banner" class="block text-gray-700 text-sm font-bold mb-2">Quest Card Banner (Recommended: 600x400)</label>
                     <input type="file" id="quest-banner" name="questBanner" class="w-full p-2 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" accept="image/*">
                     <span id="current-quest-banner" class="text-xs text-gray-500 mt-1 block"></span>
                 </div>
+                {/* <!-- [NEW] Quest Background Input --> */}
                 <div class="mb-6">
-                    <label for="quest-background" class="block text-gray-700 text-sm font-bold mb-2">Quest Background (Image/Video)</label>
+                    <label for="quest-background" class="block text-gray-700 text-sm font-bold mb-2">Quest Background (Image/Video for inside the quest)</label>
                     <input type="file" id="quest-background" name="questBackground" class="w-full p-2 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" accept="image/*,video/*">
                     <span id="current-background" class="text-xs text-gray-500 mt-1 block"></span>
                 </div>
@@ -736,4 +737,4 @@
         });
     </script>
 </body>
-</ht
+</html>
