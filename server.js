@@ -1392,7 +1392,7 @@ app.get('/quest-overview', requireLogin, async (req, res) => {
         const pendingWithdrawalsResult = await pool.query("SELECT COUNT(*) FROM withdrawals WHERE user_id = $1 AND status = 'pending'", [user.id]);
 
         res.json({
-            totalEarnings: user.points || 0,
+            totalEarnings: parseFloat(user.points) || 0.00,
             questsCompleted: completedQuestsResult.rows,
             pendingWithdrawals: parseInt(pendingWithdrawalsResult.rows[0].count, 10)
         });
@@ -2342,7 +2342,7 @@ app.get('/api/affiliate/stats', requireLogin, async (req, res) => {
         res.json({
             totalClicks: parseInt(clicksResult.rows[0].count, 10),
             totalConversions: parseInt(earningsResult.rows[0].count, 10),
-            totalEarnings: parseFloat(earningsResult.rows[0].earnings) || 0,
+            totalEarnings: parseFloat(earningsResult.rows[0].earnings) || 0.00,
         });
     } catch(err) {
         console.error("Error fetching affiliate stats:", err);
