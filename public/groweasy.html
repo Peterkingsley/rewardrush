@@ -547,7 +547,7 @@
 
                 checkSession: () => ApiService.fetch('/check-session'),
                 getProfile: (userId) => ApiService.fetch(`/api/profile/${userId}`),
-                getQuests: () => ApiService.fetch('/quests'), // This will now include referral counts
+                getQuests: () => ApiService.fetch('/quests'),
                 getQuestQuestions: (questId) => ApiService.fetch(`/api/quests/${questId}/questions`),
                 submitQuiz: (questId, answers) => ApiService.fetch(`/submit-quiz/${questId}`, {
                     method: 'POST',
@@ -574,7 +574,7 @@
                     name: '',
                     balance: 0.00,
                     transactions: [],
-                    completedQuestsWithReferral: {} // New state to store referral links for completed quests
+                    completedQuestsWithReferral: {}
                 },
                 state: {
                     userId: null,
@@ -647,12 +647,11 @@
 
                         const [profileData, questsData] = await Promise.all([
                             ApiService.getProfile(this.state.userId),
-                            ApiService.getQuests(), // This now returns user_referral_count
+                            ApiService.getQuests(),
                         ]);
                         
                         this.user.name = profileData.user.fullName;
                         this.user.balance = profileData.stats.totalEarnings;
-                        // UPDATED: Filter out job-related transactions
                         this.user.transactions = profileData.transactions.filter(tx => !tx.desc.startsWith('Job Payment:'));
 
                         const completedQuestTitles = new Set(
@@ -661,7 +660,6 @@
                                 .map(tx => tx.desc.replace('Completed: ', ''))
                         );
 
-                        // Fetch referral links for all completed quests
                         for (const quest of questsData.quests) {
                             if (completedQuestTitles.has(quest.title)) {
                                 const referralLinkData = await ApiService.generateReferralLink(quest.id);
@@ -672,7 +670,7 @@
                         this.quests = questsData.quests.map(quest => ({
                             ...quest,
                             status: completedQuestTitles.has(quest.title) ? 'completed' : 'not-started',
-                            userReferralCount: quest.user_referral_count || 0 // Assign the new referral count
+                            userReferralCount: quest.user_referral_count || 0
                         }));
 
                         this.displayGreeting();
@@ -680,14 +678,12 @@
                         this.displayQuests();
                         this.displayTransactionHistory();
 
-                        // Check for questId in URL and open quiz if present
                         const urlParams = new URLSearchParams(window.location.search);
                         const questIdFromUrl = urlParams.get('questId');
                         if (questIdFromUrl) {
                             const questToOpen = this.quests.find(q => q.id === parseInt(questIdFromUrl, 10));
-                            if (questToOpen && questToOpen.status !== 'completed') { // Only open if not already completed
+                            if (questToOpen && questToOpen.status !== 'completed') {
                                 this.startQuiz(parseInt(questIdFromUrl, 10));
-                                // Remove questId from URL to prevent reopening on refresh
                                 urlParams.delete('questId');
                                 const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
                                 window.history.replaceState({}, document.title, newUrl);
@@ -909,14 +905,25 @@
                     card.dataset.questId = quest.id;
                     
                     const isCompleted = quest.status === 'completed';
+                    const isFull = quest.max_participants !== null && quest.participants_count >= quest.max_participants;
+                    
                     const referralLink = this.user.completedQuestsWithReferral[quest.id];
-                    const userReferralCount = quest.userReferralCount; // Get the new referral count
+                    const userReferralCount = quest.userReferralCount;
 
                     let statusBadge;
                     if (isCompleted) {
                         statusBadge = `<span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full">Completed</span>`;
+                    } else if (isFull) {
+                        statusBadge = `<span class="bg-red-100 text-red-800 text-xs font-medium px-2 py-0.5 rounded-full">Full</span>`;
                     } else {
                          statusBadge = `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">Available</span>`;
+                    }
+
+                    let participantsInfo = '';
+                    if (quest.max_participants) {
+                        participantsInfo = `<p class="text-xs text-gray-500 mt-1">${quest.participants_count} / ${quest.max_participants} Filled</p>`;
+                    } else {
+                        participantsInfo = `<p class="text-xs text-gray-500 mt-1">${quest.participants_count} Participants</p>`;
                     }
 
                     let referralLinkHtml = '';
@@ -943,6 +950,10 @@
                         `;
                     }
 
+                    const buttonDisabled = isCompleted || isFull;
+                    let buttonText = 'Start Quiz';
+                    if (isCompleted) buttonText = 'Completed';
+                    if (isFull) buttonText = 'Quest Full';
 
                     const cardContent = `
                         <div class="flex-grow">
@@ -955,14 +966,14 @@
                         <div class="mt-3 pt-3 border-t border-gray-200">
                              <div class="flex justify-between items-center mb-3">
                                 <p class="font-bold text-green-600 text-base">${quest.reward || '$0.00'}</p>
-                                <button class="details-btn text-purple-600 hover:underline text-xs font-semibold">View Details</button>
+                                ${participantsInfo}
                             </div>
-                            <button class="start-quiz-btn w-full py-2 px-4 rounded-lg text-sm font-semibold transition ${isCompleted ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}" ${isCompleted ? 'disabled' : ''}>
-                                ${isCompleted ? 'Completed' : 'Start Quiz'}
+                            <button class="start-quiz-btn w-full py-2 px-4 rounded-lg text-sm font-semibold transition ${buttonDisabled ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}" ${buttonDisabled ? 'disabled' : ''}>
+                                ${buttonText}
                             </button>
                         </div>
-                        ${referralLinkHtml} <!-- Inject referral link HTML here -->
-                        ${referralCountHtml} <!-- Inject referral count HTML here -->
+                        ${referralLinkHtml}
+                        ${referralCountHtml}
                     `;
                     card.innerHTML = cardContent;
                     return card;
@@ -1130,10 +1141,9 @@
 
                         if (result.success) {
                             const quest = this.quests.find(q => q.id === this.currentQuiz.id);
-                            // Store the referral link directly for this quest
                             this.user.completedQuestsWithReferral[quest.id] = result.referralLink;
                             this.showQuestCompletion(quest, result.referralLink);
-                            this.init(); // Re-initialize to update quest statuses and display
+                            this.init();
                         } else {
                             this.showNotification(result.message || 'Quiz failed. Please try again later.', 'error');
                         }

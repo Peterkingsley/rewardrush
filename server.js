@@ -47,6 +47,14 @@ const pool = new Pool({
 -- DATABASE SCHEMA
 -- =============================================================================
 
+-- Add max_participants to quests table
+ALTER TABLE public.quests
+ADD COLUMN max_participants INTEGER DEFAULT NULL;
+
+-- Remove the old, unused participants column from the quests table
+ALTER TABLE public.quests
+DROP COLUMN IF EXISTS participants;
+
 -- Add max_participants and status to affiliate_programs table
 ALTER TABLE public.affiliate_programs
 ADD COLUMN max_participants INTEGER,
@@ -1479,13 +1487,13 @@ app.get('/quests', requireLogin, async (req, res) => {
 });
 
 app.post('/api/quests', requireAdmin, upload.single('questBackground'), async (req, res) => {
-    const { title, description, reward, status, start_time, end_time } = req.body;
+    const { title, description, reward, status, start_time, end_time, max_participants } = req.body;
     const backgroundUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
     try {
         const newQuest = await pool.query(
-            'INSERT INTO quests (title, description, reward, status, start_time, end_time, quiz_background_url) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [title, description, reward, status, start_time || null, end_time || null, backgroundUrl]
+            'INSERT INTO quests (title, description, reward, status, start_time, end_time, quiz_background_url, max_participants) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+            [title, description, reward, status, start_time || null, end_time || null, backgroundUrl, max_participants || null]
         );
         res.status(201).json(newQuest.rows[0]);
     } catch (err) {
@@ -1496,7 +1504,7 @@ app.post('/api/quests', requireAdmin, upload.single('questBackground'), async (r
 
 app.put('/api/quests/:id', requireAdmin, upload.single('questBackground'), async (req, res) => {
     const { id } = req.params;
-    const { title, description, reward, status, start_time, end_time } = req.body;
+    const { title, description, reward, status, start_time, end_time, max_participants } = req.body;
 
     try {
         if (req.file) {
@@ -1509,8 +1517,8 @@ app.put('/api/quests/:id', requireAdmin, upload.single('questBackground'), async
 
         const backgroundUrl = req.file ? `/uploads/${req.file.filename}` : undefined;
 
-        let queryText = 'UPDATE quests SET title = $1, description = $2, reward = $3, status = $4, start_time = $5, end_time = $6';
-        const queryParams = [title, description, reward, status, start_time || null, end_time || null];
+        let queryText = 'UPDATE quests SET title = $1, description = $2, reward = $3, status = $4, start_time = $5, end_time = $6, max_participants = $7';
+        const queryParams = [title, description, reward, status, start_time || null, end_time || null, max_participants || null];
         
         if (backgroundUrl !== undefined) {
             queryText += `, quiz_background_url = $${queryParams.length + 1}`;
@@ -1550,6 +1558,70 @@ app.delete('/api/quests/:id', requireAdmin, async (req, res) => {
     } catch (err) {
         console.error('Error deleting quest:', err);
         res.status(500).json({ error: 'Failed to delete quest' });
+    }
+});
+
+// [NEW] Endpoint to get participants for a quest
+app.get('/api/admin/quests/:questId/participants', requireAdmin, async (req, res) => {
+    const { questId } = req.params;
+    try {
+        const query = `
+            SELECT u.id, u.username, u.full_name, u.email, uq.completed_at
+            FROM user_quests uq
+            JOIN users u ON uq.user_id = u.id
+            WHERE uq.quest_id = $1
+            ORDER BY uq.completed_at DESC;
+        `;
+        const result = await pool.query(query, [questId]);
+        res.json({ participants: result.rows });
+    } catch (err) {
+        console.error('Error fetching quest participants:', err);
+        res.status(500).json({ error: 'Failed to fetch quest participants.' });
+    }
+});
+
+// [NEW] Endpoint to remove a participant from a quest
+app.post('/api/admin/quests/participants/remove', requireAdmin, async (req, res) => {
+    const { userId, questId, reason } = req.body;
+    if (!userId || !questId || !reason) {
+        return res.status(400).json({ error: 'User ID, Quest ID, and reason are required.' });
+    }
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const userQuestResult = await client.query('SELECT * FROM user_quests WHERE user_id = $1 AND quest_id = $2', [userId, questId]);
+        if (userQuestResult.rowCount === 0) {
+            throw new Error('User has not completed this quest.');
+        }
+
+        const questResult = await client.query('SELECT title, reward FROM quests WHERE id = $1', [questId]);
+        if (questResult.rowCount === 0) {
+            throw new Error('Quest not found.');
+        }
+        const quest = questResult.rows[0];
+        
+        const rewardAmount = parsePayout(quest.reward);
+
+        // Deduct points
+        await client.query('UPDATE users SET points = points - $1 WHERE id = $2', [rewardAmount, userId]);
+
+        // Remove completion record
+        await client.query('DELETE FROM user_quests WHERE user_id = $1 AND quest_id = $2', [userId, questId]);
+
+        // Notify user
+        const message = `Your completion of the quest "${quest.title}" has been revoked by an administrator. Reason: ${reason}. The reward of ${rewardAmount.toFixed(2)} has been deducted from your account.`;
+        await client.query('INSERT INTO notifications (user_id, message) VALUES ($1, $2)', [userId, message]);
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Participant removed and notified successfully.' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Error removing quest participant:', err);
+        res.status(500).json({ error: err.message || 'Failed to remove participant.' });
+    } finally {
+        client.release();
     }
 });
 
@@ -1626,6 +1698,22 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
     try {
         await client.query('BEGIN');
 
+        // [NEW] Check participant limit
+        const questResult = await client.query('SELECT * FROM quests WHERE id = $1 FOR UPDATE', [questId]);
+        const quest = questResult.rows[0];
+        if (!quest) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Quest not found.' });
+        }
+        if (quest.max_participants !== null) {
+            const participantCountResult = await client.query('SELECT COUNT(*) FROM user_quests WHERE quest_id = $1', [questId]);
+            const participantCount = parseInt(participantCountResult.rows[0].count, 10);
+            if (participantCount >= quest.max_participants) {
+                await client.query('ROLLBACK');
+                return res.status(403).json({ error: 'This quest has reached its maximum number of participants.' });
+            }
+        }
+
         const existingCompletion = await pool.query(
             'SELECT 1 FROM user_quests WHERE user_id = $1 AND quest_id = $2',
             [userDbId, questId]
@@ -1633,13 +1721,6 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
         if (existingCompletion.rows.length > 0) {
             await client.query('ROLLBACK');
             return res.status(400).json({ error: 'You have already completed this quest.' });
-        }
-
-        const questResult = await pool.query('SELECT * FROM quests WHERE id = $1', [questId]);
-        const quest = questResult.rows[0];
-        if (!quest) {
-            await client.query('ROLLBACK');
-            return res.status(404).json({ error: 'Quest not found.' });
         }
 
         const questionsResult = await pool.query(
@@ -1693,7 +1774,7 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Error submitting quiz:', err);
-        res.status(500).json({ error: 'An error occurred while submitting the quest.' });
+        res.status(500).json({ error: err.message || 'An error occurred while submitting the quest.' });
     } finally {
         client.release();
     }

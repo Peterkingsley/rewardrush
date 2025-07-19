@@ -34,7 +34,6 @@
 </head>
 <body class="bg-gray-100">
     <div class="flex h-screen">
-        <!-- Sidebar -->
         <div id="sidebar" class="sidebar fixed z-30 inset-y-0 left-0 w-64 bg-gray-900 text-white p-6 space-y-6 md:relative md:translate-x-0">
             <a href="dashboard.html" class="text-white text-2xl font-bold flex items-center space-x-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -75,7 +74,6 @@
             </nav>
         </div>
 
-        <!-- Main content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <header class="bg-white shadow-md p-4 flex justify-between items-center">
                 <button id="menu-button" class="md:hidden text-gray-500">
@@ -112,12 +110,11 @@
                                     <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Reward</th>
                                     <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Participants</th>
                                     <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Status</th>
-                                    <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Actions</th>
+                                    <th class="text-center py-3 px-4 uppercase font-semibold text-sm text-gray-600">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="quest-table-body" class="text-gray-700">
-                                <!-- Quest rows will be injected here by JavaScript -->
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                  </div>
@@ -125,7 +122,6 @@
         </div>
     </div>
 
-    <!-- [UPDATED] Add/Edit Quest Modal -->
     <div id="quest-modal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center p-4 z-50">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl p-8 max-h-[90vh] overflow-y-auto">
             <h2 id="modal-title" class="text-2xl font-bold mb-6">Add Quest</h2>
@@ -155,16 +151,21 @@
                         <input type="datetime-local" id="quest-end-time" class="w-full p-3 border border-gray-300 rounded-lg">
                     </div>
                 </div>
-                <div class="mb-4">
-                    <label for="quest-status" class="block text-gray-700 text-sm font-bold mb-2">Status</label>
-                    <select id="quest-status" class="w-full p-3 border border-gray-300 rounded-lg">
-                        <option value="Available">Available</option>
-                        <option value="Coming Soon">Coming Soon</option>
-                        <option value="Inactive">Inactive</option>
-                        <option value="Expired">Expired</option>
-                    </select>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="mb-4">
+                        <label for="quest-status" class="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                        <select id="quest-status" class="w-full p-3 border border-gray-300 rounded-lg">
+                            <option value="Available">Available</option>
+                            <option value="Coming Soon">Coming Soon</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Expired">Expired</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="quest-max-participants" class="block text-gray-700 text-sm font-bold mb-2">Max Participants</label>
+                        <input type="number" id="quest-max-participants" placeholder="Leave blank for unlimited" class="w-full p-3 border border-gray-300 rounded-lg">
+                    </div>
                 </div>
-                <!-- [NEW] File upload for quiz background -->
                 <div class="mb-6">
                     <label for="quest-background" class="block text-gray-700 text-sm font-bold mb-2">Quiz Background (Image/Video)</label>
                     <input type="file" id="quest-background" name="questBackground" class="w-full p-2 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" accept="image/*,video/*">
@@ -178,14 +179,12 @@
         </div>
     </div>
     
-    <!-- Manage Questions Modal -->
     <div id="questions-modal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center p-4 z-50">
         <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl p-8 max-h-[90vh] flex flex-col">
             <h2 id="questions-modal-title" class="text-2xl font-bold mb-6 flex-shrink-0">Manage Questions for "Quest Title"</h2>
             <div class="flex-grow overflow-y-auto pr-4 -mr-4">
                 <div id="questions-list" class="space-y-4 mb-6">
-                    <!-- Questions will be dynamically inserted here -->
-                </div>
+                    </div>
                 <div class="bg-gray-50 p-4 rounded-lg">
                     <h3 class="font-bold mb-3" id="add-edit-question-title">Add New Question</h3>
                     <form id="question-form">
@@ -219,6 +218,19 @@
             </div>
             <div class="flex-shrink-0 text-right mt-6">
                  <button type="button" id="close-questions-modal-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="participants-modal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-3xl p-8 max-h-[90vh] flex flex-col">
+            <h2 id="participants-modal-title" class="text-2xl font-bold mb-6 flex-shrink-0">Manage Participants</h2>
+            <div class="flex-grow overflow-y-auto pr-4 -mr-4">
+                <div id="participants-list" class="space-y-3">
+                    </div>
+            </div>
+            <div class="flex-shrink-0 text-right mt-6">
+                 <button type="button" id="close-participants-modal-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Close</button>
             </div>
         </div>
     </div>
@@ -265,8 +277,9 @@
             const questStatusInput = document.getElementById('quest-status');
             const questStartTimeInput = document.getElementById('quest-start-time');
             const questEndTimeInput = document.getElementById('quest-end-time');
-            const questBackgroundInput = document.getElementById('quest-background'); // [NEW]
-            const currentBackgroundSpan = document.getElementById('current-background'); // [NEW]
+            const questBackgroundInput = document.getElementById('quest-background');
+            const currentBackgroundSpan = document.getElementById('current-background');
+            const questMaxParticipantsInput = document.getElementById('quest-max-participants'); // [NEW]
             
             // Questions Modal Elements
             const questionsModal = document.getElementById('questions-modal');
@@ -280,7 +293,15 @@
             const questionOptionsInput = document.getElementById('question-options');
             const questionCorrectAnswerInput = document.getElementById('question-correct-answer');
             const optionsContainer = document.getElementById('options-container');
+
+            // [NEW] Participants Modal Elements
+            const participantsModal = document.getElementById('participants-modal');
+            const participantsModalTitle = document.getElementById('participants-modal-title');
+            const participantsList = document.getElementById('participants-list');
+            const closeParticipantsModalBtn = document.getElementById('close-participants-modal-btn');
+
             let currentEditingQuestId = null;
+            let currentManagingQuestId = null; // [NEW]
             let allQuests = [];
 
             async function fetchQuests() {
@@ -312,16 +333,22 @@
                         default: statusColor = 'bg-gray-100 text-gray-800';
                     }
                     
+                    // [UPDATED] Participant count display
+                    const participantsText = quest.max_participants 
+                        ? `${quest.participants_count} / ${quest.max_participants}` 
+                        : `${quest.participants_count} / ∞`;
+
                     const row = `
                         <tr data-id="${quest.id}">
                             <td class="py-3 px-4 border-b border-gray-200"><span class="font-medium">${quest.title}</span></td>
                             <td class="py-3 px-4 border-b border-gray-200">${quest.reward}</td>
-                            <td class="py-3 px-4 border-b border-gray-200 text-center">${quest.participants_count}</td>
+                            <td class="py-3 px-4 border-b border-gray-200 text-center font-mono">${participantsText}</td>
                             <td class="py-3 px-4 border-b border-gray-200"><span class="px-2 py-1 font-semibold leading-tight text-sm rounded-full ${statusColor}">${quest.status}</span></td>
                             <td class="py-3 px-4 border-b border-gray-200">
-                                <div class="flex items-center space-x-2">
+                                <div class="flex items-center justify-center space-x-2">
                                     <button class="edit-btn text-gray-500 hover:text-blue-600 p-1 rounded-full focus:outline-none" title="Edit Quest"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg></button>
                                     <button class="questions-btn text-gray-500 hover:text-indigo-600 p-1 rounded-full focus:outline-none" title="Manage Questions"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"> <path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.546-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /> </svg></button>
+                                    <button class="participants-btn text-gray-500 hover:text-green-600 p-1 rounded-full focus:outline-none" title="Manage Participants"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg></button>
                                     <button class="delete-btn text-gray-500 hover:text-red-600 p-1 rounded-full focus:outline-none" title="Delete Quest"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" /></svg></button>
                                 </div>
                             </td>
@@ -343,6 +370,7 @@
                     questStatusInput.value = quest.status || 'Available';
                     questStartTimeInput.value = quest.start_time ? new Date(quest.start_time).toISOString().slice(0, 16) : '';
                     questEndTimeInput.value = quest.end_time ? new Date(quest.end_time).toISOString().slice(0, 16) : '';
+                    questMaxParticipantsInput.value = quest.max_participants || ''; // [NEW]
                     if (quest.quiz_background_url) {
                         currentBackgroundSpan.textContent = `Current: ${quest.quiz_background_url.split('/').pop()}`;
                     }
@@ -360,7 +388,6 @@
             addQuestBtn.addEventListener('click', () => openQuestModal());
             cancelBtn.addEventListener('click', closeQuestModal);
 
-            // [UPDATED] Form submission to handle file upload
             questForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const id = questIdInput.value;
@@ -372,6 +399,7 @@
                 formData.append('status', questStatusInput.value);
                 formData.append('start_time', questStartTimeInput.value || null);
                 formData.append('end_time', questEndTimeInput.value || null);
+                formData.append('max_participants', questMaxParticipantsInput.value); // [NEW]
 
                 if (questBackgroundInput.files.length > 0) {
                     formData.append('questBackground', questBackgroundInput.files[0]);
@@ -381,8 +409,6 @@
                 const method = id ? 'PUT' : 'POST';
 
                 try {
-                    // Note: When using FormData with fetch, you DO NOT set the Content-Type header manually.
-                    // The browser does it automatically with the correct boundary.
                     const response = await fetch(url, {
                         method: method,
                         body: formData 
@@ -419,6 +445,8 @@
                     }
                 } else if (e.target.closest('.questions-btn')) {
                     openQuestionsModal(questId);
+                } else if (e.target.closest('.participants-btn')) { // [NEW]
+                    openParticipantsModal(questId);
                 }
             });
 
@@ -438,7 +466,92 @@
                 questionsModal.classList.remove('flex');
                 currentEditingQuestId = null;
             }
+            
+            // ... (rest of questions modal logic remains the same) ...
+            
+            // --- [NEW] Participants Modal Logic ---
+            async function openParticipantsModal(questId) {
+                currentManagingQuestId = questId;
+                const quest = allQuests.find(q => q.id === questId);
+                participantsModalTitle.textContent = `Participants for "${quest.title}"`;
+                participantsList.innerHTML = '<p>Loading...</p>';
+                participantsModal.classList.add('flex');
+                
+                try {
+                    const response = await fetch(`/api/admin/quests/${questId}/participants`);
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Failed to fetch participants');
+                    renderParticipants(data.participants);
+                } catch (error) {
+                    console.error('Error fetching participants:', error);
+                    participantsList.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+                }
+            }
 
+            function renderParticipants(participants) {
+                participantsList.innerHTML = '';
+                if (participants.length === 0) {
+                    participantsList.innerHTML = '<p class="text-center text-gray-500">No one has completed this quest yet.</p>';
+                    return;
+                }
+                participants.forEach(p => {
+                    const participantEl = document.createElement('div');
+                    participantEl.className = 'bg-gray-100 p-3 rounded-lg flex justify-between items-center';
+                    participantEl.innerHTML = `
+                        <div>
+                            <p class="font-semibold">${p.full_name} (@${p.username})</p>
+                            <p class="text-sm text-gray-600">Completed on: ${new Date(p.completed_at).toLocaleString()}</p>
+                        </div>
+                        <button class="remove-participant-btn bg-red-100 text-red-700 hover:bg-red-200 text-xs font-bold py-1 px-3 rounded-full" data-user-id="${p.id}">
+                            Remove
+                        </button>
+                    `;
+                    participantsList.appendChild(participantEl);
+                });
+            }
+
+            participantsList.addEventListener('click', async (e) => {
+                if (e.target.matches('.remove-participant-btn')) {
+                    const userId = e.target.dataset.userId;
+                    const questId = currentManagingQuestId;
+
+                    const reason = prompt('Please provide a reason for removing this user. This will be sent to them in a notification.');
+
+                    if (reason && reason.trim() !== '') {
+                        if (confirm('Are you sure you want to remove this user? This will deduct their reward and cannot be undone.')) {
+                            try {
+                                const response = await fetch('/api/admin/quests/participants/remove', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ userId, questId, reason })
+                                });
+                                const result = await response.json();
+                                if (!response.ok) throw new Error(result.error || 'Failed to remove user');
+                                
+                                alert('User removed successfully.');
+                                openParticipantsModal(questId); // Refresh the participant list
+                                fetchQuests(); // Refresh the main quests table
+                            } catch (error) {
+                                console.error('Error removing participant:', error);
+                                alert(error.message);
+                            }
+                        }
+                    } else if (reason !== null) { // Check if user clicked Cancel
+                        alert('A reason is required to remove a user.');
+                    }
+                }
+            });
+
+
+            function closeParticipantsModal() {
+                participantsModal.classList.remove('flex');
+                currentManagingQuestId = null;
+            }
+
+            closeParticipantsModalBtn.addEventListener('click', closeParticipantsModal);
+
+
+            // --- (Existing Questions Modal Logic - Unchanged) ---
             async function renderQuestionsForModal(questId) {
                 questionsList.innerHTML = '<p>Loading questions...</p>';
                 try {
@@ -548,6 +661,8 @@
             });
 
             closeQuestionsModalBtn.addEventListener('click', closeQuestionsModal);
+            // --- (End of Unchanged Questions Logic) ---
+
 
             if (searchInput) {
                 searchInput.addEventListener('input', (e) => {
