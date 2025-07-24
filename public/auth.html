@@ -17,8 +17,7 @@
 
     <style>
         :root {
-            /* FIX: Changed theme from purple to blue */
-            --primary-glow: #2563eb; /* blue-600 */
+            --primary-glow: #8b00ff;
             --secondary-glow: #00f0ff;
             --accent-glow: #39ff14;
             --dark-bg: #0a0a15;
@@ -78,7 +77,7 @@
         .cursor-outline {
             width: 40px;
             height: 40px;
-            background-color: rgba(37, 99, 235, 0.2); /* blue-600 with alpha */
+            background-color: rgba(139, 0, 255, 0.2);
             z-index: 10000;
         }
 
@@ -133,10 +132,10 @@
         
         /* Dark Mode Styles */
         .dark .bg-white { background-color: var(--mid-bg) !important; }
-        .dark .bg-gray-50 { background-color: var(--mid-bg) !important; } 
+        .dark .bg-gray-50 { background-color: var(--dark-bg) !important; }
         .dark .text-gray-900 { color: #f0f2f5 !important; }
         .dark .text-gray-800 { color: #e2e8f0 !important; }
-        .dark .text-gray-700 { color: #cbd5e0 !important; }
+        .dark .text-gray-700 { color: #a0aec0 !important; }
         .dark .text-gray-600 { color: #cbd5e0 !important; }
         .dark .text-gray-500 { color: #a0aec0 !important; }
         .dark .text-gray-400 { color: #718096 !important; }
@@ -145,8 +144,6 @@
         .dark input, .dark select, .dark textarea { background-color: var(--light-bg); border-color: #4a5568; color: white; }
         .dark input::placeholder { color: #718096; }
         .dark .benefit-item { background: rgba(255, 255, 255, 0.05); }
-        .dark .social-btn { border-color: #4a5568 !important; color: #cbd5e0 !important; }
-        .dark .social-btn:hover { background-color: var(--light-bg) !important; }
     </style>
 </head>
 <body class="text-gray-800">
@@ -162,20 +159,20 @@
     <div class="min-h-screen flex items-center justify-center p-4">
         <div class="w-full max-w-6xl mx-auto grid lg:grid-cols-2 bg-white shadow-lg rounded-2xl overflow-hidden">
             
-            <div class="hero-section relative hidden lg:flex flex-col justify-center p-12 bg-gray-50">
+            <div class="hero-section relative hidden lg:flex flex-col justify-center p-12 bg-gray-50 text-gray-900">
                 <div class="relative z-10">
-                    <div class="flex items-center text-3xl font-bold font-montserrat mb-2 text-blue-600 dark:text-blue-300">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600 dark:text-white mr-3"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                    <div class="flex items-center text-3xl font-bold font-montserrat mb-2">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-600 dark:text-white mr-3"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
                          RewardRush
                     </div>
-                    <h1 class="text-5xl font-bold font-montserrat leading-tight text-gray-900">Join the Rush.</h1>
-                    <h2 class="text-4xl font-bold font-montserrat text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-400 leading-tight mb-8">Unlock Your Crypto Potential.</h2>
+                    <h1 class="text-5xl font-bold font-montserrat leading-tight">Join the Rush.</h1>
+                    <h2 class="text-4xl font-bold font-montserrat text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-cyan-400 leading-tight mb-8">Unlock Your Crypto Potential.</h2>
                     
                     <div id="benefits-carousel" class="relative h-32">
                         </div>
 
                     <div class="mt-12 text-center">
-                        <a href="#" class="text-sm text-gray-500 hover:text-blue-600 dark:hover:text-cyan-400 transition-colors">
+                        <a href="#" class="text-sm text-gray-500 hover:text-purple-600 dark:hover:text-cyan-400 transition-colors">
                             Are you a Project or an Expert? <span class="font-semibold underline">Partner with us</span>
                         </a>
                     </div>
@@ -185,9 +182,9 @@
             <div class="form-section p-8 md:p-12">
                 <div class="max-w-md mx-auto">
                     <div class="lg:hidden text-center mb-6">
-                        <div class="flex items-center justify-center text-2xl font-bold font-montserrat">
-                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-600 dark:text-blue-400 mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
-                             <span class="text-blue-600 dark:text-blue-300">RewardRush</span>
+                        <div class="flex items-center justify-center text-2xl font-bold font-montserrat text-gray-900 dark:text-white">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-purple-600 dark:text-purple-400 mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                             <span>RewardRush</span>
                         </div>
                     </div>
 
@@ -195,7 +192,7 @@
                         <input type="checkbox" id="form-toggle" class="hidden form-toggle-input">
                         <div class="form-toggle-slider"></div>
                         <button id="login-toggle-btn" class="form-toggle-btn w-1/2 text-center z-10 py-2 rounded-full font-semibold text-white transition-colors">Log In</button>
-                        <button id="signup-toggle-btn" class="form-toggle-btn w-1/2 text-center z-10 py-2 rounded-full font-semibold text-gray-700 transition-colors">Sign Up</button>
+                        <button id="signup-toggle-btn" class="form-toggle-btn w-1/2 text-center z-10 py-2 rounded-full font-semibold text-gray-500 transition-colors">Sign Up</button>
                     </div>
 
                     <h2 id="form-title" class="text-3xl font-bold text-gray-900 mb-2 text-center font-montserrat">Welcome Back</h2>
@@ -206,38 +203,38 @@
                             <label for="fullName" class="sr-only">Full Name</label>
                             <div class="relative">
                                 <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                <input type="text" id="fullName" name="fullName" placeholder="Full Name" class="w-full bg-transparent py-3 pl-12 pr-4 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                <input type="text" id="fullName" name="fullName" placeholder="Full Name" class="w-full bg-transparent py-3 pl-12 pr-4 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none">
                             </div>
                         </div>
                         <div class="form-group-container active">
                             <label for="username" class="sr-only">Username</label>
                             <div class="relative">
                                 <i class="fas fa-at absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                <input type="text" id="username" name="username" placeholder="Username" class="w-full bg-transparent py-3 pl-12 pr-4 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                                <input type="text" id="username" name="username" placeholder="Username" class="w-full bg-transparent py-3 pl-12 pr-4 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none" required>
                             </div>
                         </div>
                         <div id="email-container" class="form-group-container">
                             <label for="email" class="sr-only">Email</label>
                             <div class="relative">
                                 <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                <input type="email" id="email" name="email" placeholder="Email Address" class="w-full bg-transparent py-3 pl-12 pr-4 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                <input type="email" id="email" name="email" placeholder="Email Address" class="w-full bg-transparent py-3 pl-12 pr-4 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none">
                             </div>
                         </div>
                         <div class="form-group-container active">
                             <label for="password" class="sr-only">Password</label>
                             <div class="relative">
                                 <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                                <input type="password" id="password" name="password" placeholder="Password" class="w-full bg-transparent py-3 pl-12 pr-12 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
-                                <button type="button" id="password-toggle" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 dark:hover:text-cyan-400">
+                                <input type="password" id="password" name="password" placeholder="Password" class="w-full bg-transparent py-3 pl-12 pr-12 text-gray-900 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none" required>
+                                <button type="button" id="password-toggle" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-500 dark:hover:text-cyan-400">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
                         </div>
                         <div class="text-right -mt-2">
-                            <a href="#" id="forgot-password-link" class="text-sm text-gray-500 hover:text-blue-600 dark:hover:text-cyan-400 transition-colors">Forgot Password?</a>
+                            <a href="#" id="forgot-password-link" class="text-sm text-gray-500 hover:text-purple-600 dark:hover:text-cyan-400 transition-colors">Forgot Password?</a>
                         </div>
                         <p id="form-error" class="text-red-500 text-sm text-center hidden"></p>
-                        <button type="submit" id="submit-btn" class="w-full text-white font-bold py-3 rounded-lg flex items-center justify-center bg-blue-600 hover:bg-blue-700 transition-transform hover:scale-105">
+                        <button type="submit" id="submit-btn" class="w-full text-white font-bold py-3 rounded-lg flex items-center justify-center bg-purple-600 hover:bg-purple-700 transition-transform hover:scale-105">
                             <span id="submit-btn-text">Log In</span>
                             <i id="submit-spinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
                         </button>
@@ -249,11 +246,11 @@
                         <div class="flex-grow border-t border-gray-300"></div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <button class="social-btn text-gray-700 w-full font-semibold py-3 rounded-lg flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50">
+                        <button class="social-btn text-gray-700 w-full font-semibold py-3 rounded-lg flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                             <img src="https://www.google.com/favicon.ico" alt="Google Logo" class="w-5 h-5">
                             <span>Google</span>
                         </button>
-                        <button class="social-btn text-gray-700 w-full font-semibold py-3 rounded-lg flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50">
+                        <button class="social-btn text-gray-700 w-full font-semibold py-3 rounded-lg flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
                             <i class="fab fa-twitter text-blue-400 text-xl"></i>
                             <span>Twitter</span>
                         </button>
@@ -322,7 +319,7 @@
                 for (let i = 0; i < particleCount * 3; i++) posArray[i] = (Math.random() - 0.5) * (Math.random() * 2000);
                 particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
                 
-                const material = new THREE.PointsMaterial({ size: 1.5, color: 0x2563eb, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending });
+                const material = new THREE.PointsMaterial({ size: 1.5, color: 0x8b00ff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending });
                 particles = new THREE.Points(particlesGeometry, material);
                 scene.add(particles);
 
@@ -401,7 +398,7 @@
                 const benefit = benefits[index];
                 const benefitHTML = `
                     <div class="benefit-item absolute inset-0 flex items-center gap-4 p-4 rounded-xl animate-fade-in">
-                        <i class="fas ${benefit.icon} text-3xl text-blue-500 dark:text-blue-400"></i>
+                        <i class="fas ${benefit.icon} text-3xl text-purple-500 dark:text-purple-400"></i>
                         <p class="text-gray-600">${benefit.text}</p>
                     </div>
                 `;
@@ -429,18 +426,16 @@
             const formError = document.getElementById('form-error');
             let isSignUp = false;
             
+            // [FIXED] Variable to hold the referral code from the URL
             let referralCode = null;
 
             function setFormState(signUp) {
                 isSignUp = signUp;
                 formToggle.checked = isSignUp;
                 
-                const inactiveTextColor = 'text-gray-700';
-                const activeTextColor = 'text-white';
-                
                 if (isSignUp) {
-                    loginBtn.classList.replace(activeTextColor, inactiveTextColor);
-                    signupBtn.classList.replace(inactiveTextColor, activeTextColor);
+                    loginBtn.classList.replace('text-white', 'text-gray-500');
+                    signupBtn.classList.replace('text-gray-500', 'text-white');
                     formTitle.textContent = 'Create an Account';
                     formSubtitle.textContent = 'Join to start earning rewards.';
                     fullNameContainer.classList.add('active');
@@ -448,8 +443,8 @@
                     submitBtnText.textContent = 'Create Account';
                     forgotPasswordLink.style.display = 'none';
                 } else {
-                    loginBtn.classList.replace(inactiveTextColor, activeTextColor);
-                    signupBtn.classList.replace(activeTextColor, inactiveTextColor);
+                    loginBtn.classList.replace('text-gray-500', 'text-white');
+                    signupBtn.classList.replace('text-white', 'text-gray-500');
                     formTitle.textContent = 'Welcome Back';
                     formSubtitle.textContent = 'Log in to continue your journey.';
                     fullNameContainer.classList.remove('active');
@@ -459,6 +454,7 @@
                 }
             }
             
+            // [FIXED] Function to get referral code and questId from URL
             function getUrlParams() {
                 const urlParams = new URLSearchParams(window.location.search);
                 return {
@@ -497,30 +493,38 @@
 
                 const endpoint = isSignUp ? '/signup' : '/login';
                 
-                const urlParams = getUrlParams();
+                const urlParams = getUrlParams(); // Get all params
+                // Include referralCode in the signup payload if it exists
                 const body = isSignUp 
                     ? { fullName, username, email, password, referralCode: urlParams.referralCode } 
                     : { username, password };
 
                 try {
-                    // This is a mock API call. Replace with your actual backend endpoint.
-                    console.log(`Submitting to ${endpoint}`, body);
-                    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
-                    
-                    // Mock response
-                    const response = { ok: true }; 
-                    // const response = { ok: false, json: () => ({ error: "Invalid credentials." }) };
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+
+                    const data = await response.json();
 
                     if (response.ok) {
-                        let redirectUrl = './groweasy.html'; // Replace with your actual success page
+                        // On successful login/signup, redirect to groweasy.html
+                        // and pass along any referralCode and questId
+                        let redirectUrl = './groweasy.html';
                         const params = new URLSearchParams();
-                        if (urlParams.referralCode) params.append('referralCode', urlParams.referralCode);
-                        if (urlParams.questId) params.append('questId', urlParams.questId);
-                        if (params.toString()) redirectUrl += `?${params.toString()}`;
-                        // FIX: Removed alert and enabled redirect
+                        if (urlParams.referralCode) {
+                            params.append('referralCode', urlParams.referralCode);
+                        }
+                        if (urlParams.questId) {
+                            params.append('questId', urlParams.questId);
+                        }
+                        if (params.toString()) {
+                            redirectUrl += `?${params.toString()}`;
+                        }
                         window.location.href = redirectUrl;
                     } else {
-                        const data = await response.json();
+                        // Display error message from the server
                         formError.textContent = data.error || 'An unexpected error occurred.';
                         formError.classList.remove('hidden');
                     }
@@ -529,6 +533,7 @@
                     formError.textContent = 'Could not connect to the server. Please try again later.';
                     formError.classList.remove('hidden');
                 } finally {
+                    // Re-enable the button and hide spinner
                     submitBtnText.style.display = 'inline-block';
                     spinner.classList.add('hidden');
                     submitBtn.disabled = false;
@@ -539,13 +544,16 @@
             initTheme();
             setFormState(false); // Initial state is login
             
+            // Get URL parameters on page load
             const initialUrlParams = getUrlParams();
-            referralCode = initialUrlParams.referralCode;
+            referralCode = initialUrlParams.referralCode; // Store referralCode if present
 
             if (referralCode) {
                 console.log('Referral code found:', referralCode);
+                // Automatically switch to the sign-up form
                 setFormState(true);
             }
+
 
             const styleSheet = document.createElement("style");
             styleSheet.type = "text/css";
@@ -561,4 +569,3 @@
     </script>
 </body>
 </html>
-
