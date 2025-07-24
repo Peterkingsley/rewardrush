@@ -1135,28 +1135,47 @@
                     this.renderChallenge();
                 },
 
-                async submitQuiz() {
-                    this.nextChallenge();
-                    if (this.currentChallengeIndex < this.currentQuiz.questions.length) {
-                        return; 
-                    }
-                    
-                    try {
-                        const result = await ApiService.submitQuiz(this.currentQuiz.id, this.userAnswers);
-                        this.closeModal(this.elements.quizModal);
+async submitQuiz() {
+    // Manually collect the final answer without advancing the challenge index.
+    const challenge = this.currentQuiz.questions[this.currentChallengeIndex];
+    let response;
 
-                        if (result.success) {
-                            const quest = this.quests.find(q => q.id === this.currentQuiz.id);
-                            this.user.completedQuestsWithReferral[quest.id] = result.referralLink;
-                            this.showQuestCompletion(quest, result.referralLink);
-                            this.init(); 
-                        } else {
-                            this.showNotification(result.message || 'Quest failed. Please try again later.', 'error');
-                        }
-                    } catch (error) {
-                        console.error("Error submitting quiz:", error);
-                    }
-                },
+    switch (challenge.challenge_type) {
+        case 'multiple-choice':
+            response = this.userAnswers[challenge.challenge_order];
+            if (response === undefined) {
+                this.showNotification('Please select an answer.', 'error');
+                return;
+            }
+            break;
+        case 'open-ended':
+            const textArea = document.getElementById(`challenge-response-${challenge.challenge_order}`);
+            response = textArea.value.trim();
+            if (!response) {
+                this.showNotification('Please enter an answer.', 'error');
+                return;
+            }
+            this.userAnswers[challenge.challenge_order] = response;
+            break;
+    }
+
+    // Now, proceed with the submission logic directly.
+    try {
+        const result = await ApiService.submitQuiz(this.currentQuiz.id, this.userAnswers);
+        this.closeModal(this.elements.quizModal);
+
+        if (result.success) {
+            const quest = this.quests.find(q => q.id === this.currentQuiz.id);
+            this.user.completedQuestsWithReferral[quest.id] = result.referralLink;
+            this.showQuestCompletion(quest, result.referralLink);
+            this.init(); 
+        } else {
+            this.showNotification(result.message || 'Quest failed. Please try again later.', 'error');
+        }
+    } catch (error) {
+        console.error("Error submitting quiz:", error);
+    }
+},
 
                 showQuestCompletion(quest, referralLink) {
                     this.elements.completionTitle.textContent = `Quest Complete: ${quest.title}`;
