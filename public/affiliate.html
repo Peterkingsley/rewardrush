@@ -369,10 +369,10 @@
                         }
                         this.state.username = sessionData.userId;
 
-                        const [profileData, jobsData, notificationsData] = await Promise.all([
+                        const [profileData, jobsData] = await Promise.all([
                             ApiService.getProfile(this.state.username),
                             ApiService.getJobs(),
-                            ApiService.getNotifications(),
+                            // ApiService.getNotifications(), // Removed
                         ]);
 
                         this.state.totalEarnings = profileData.stats.totalEarnings || 0;
@@ -383,7 +383,7 @@
                         this.state.allJobs = jobsData.jobs || [];
                         this.state.activeJobs = this.state.allJobs.filter(j => j.status);
                         this.state.transactions = profileData.transactions || [];
-                        this.state.notifications = notificationsData || [];
+                        // this.state.notifications = notificationsData || [];
 
                         this.updateAll();
 
@@ -395,7 +395,7 @@
                 updateAll() {
                     this.renderDashboard();
                     this.renderJobs();
-                    this.renderNotifications();
+                    // this.renderNotifications();
                     const currentTab = this.elements.activeTab.classList.contains('active') ? 'active' : 'history';
                     this.renderMyJobs(currentTab);
                 },
@@ -558,33 +558,6 @@
                             historyFooter.appendChild(seeMoreBtn);
                         }
                     }
-                },
-
-                renderNotifications() {
-                    const { notificationList, notificationDot } = this.elements;
-                    notificationList.innerHTML = '';
-                    const unreadCount = this.state.notifications.filter(n => !n.is_read).length;
-
-                    if (unreadCount > 0) {
-                        notificationDot.classList.remove('hidden');
-                    } else {
-                        notificationDot.classList.add('hidden');
-                    }
-
-                    if (this.state.notifications.length === 0) {
-                        notificationList.innerHTML = `<p class="text-sm text-gray-500 p-4 text-center">No new notifications.</p>`;
-                        return;
-                    }
-
-                    this.state.notifications.forEach(notification => {
-                        const item = document.createElement('a');
-                        item.href = '#';
-                        item.dataset.id = notification.id;
-                        item.dataset.read = notification.is_read;
-                        item.className = `block p-4 text-sm text-gray-700 hover:bg-gray-100 ${!notification.is_read ? 'font-bold' : ''}`;
-                        item.innerHTML = `<p class="truncate">${notification.message}</p><p class="text-xs text-gray-400 mt-1">${new Date(notification.created_at).toLocaleString()}</p>`;
-                        notificationList.appendChild(item);
-                    });
                 },
 
                 renderJobProgress(job) {
@@ -817,7 +790,7 @@
                 },
 
                 bindEvents() {
-                    const { searchInput, categoryFilterEl, sortFilter, jobListingsContainer, acceptBtn, activeTab, historyTab, historyActionBtn, closeModalBtn, sidebarToggleBtn, inviteBtn, closeInviteModalBtn, copyReferralLinkBtn, historyFooter, notificationBell, notificationDropdown, notificationList } = this.elements;
+                    const { searchInput, categoryFilterEl, sortFilter, jobListingsContainer, acceptBtn, activeTab, historyTab, historyActionBtn, closeModalBtn, sidebarToggleBtn, inviteBtn, closeInviteModalBtn, copyReferralLinkBtn, historyFooter } = this.elements;
                     
                     [searchInput, categoryFilterEl, sortFilter].forEach(el => {
                         el.addEventListener('input', () => {
@@ -883,28 +856,6 @@
                         if (e.target.id === 'see-more-history-btn') {
                             this.state.historyItemsToShow += 4;
                             this.renderMyJobs('history');
-                        }
-                    });
-
-                    // Notification events
-                    notificationBell.addEventListener('click', () => {
-                        notificationDropdown.classList.toggle('hidden');
-                    });
-
-                    notificationList.addEventListener('click', async (e) => {
-                        e.preventDefault();
-                        const notificationItem = e.target.closest('a');
-                        if (notificationItem && notificationItem.dataset.read === 'false') {
-                            const id = notificationItem.dataset.id;
-                            await ApiService.markNotificationAsRead(id);
-                            this.state.notifications = await ApiService.getNotifications();
-                            this.renderNotifications();
-                        }
-                    });
-
-                    document.addEventListener('click', (e) => {
-                        if (!notificationBell.contains(e.target) && !notificationDropdown.contains(e.target)) {
-                            notificationDropdown.classList.add('hidden');
                         }
                     });
                 }
