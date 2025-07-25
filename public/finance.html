@@ -137,7 +137,8 @@
                                     <tr>
                                         <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Request Date</th>
                                         <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Username</th>
-                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Amount</th>
+                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Amount Requested</th>
+                                        <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Amount to Send (after 10% fee)</th>
                                         <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Chain</th>
                                         <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Wallet Address</th>
                                         <th class="text-left py-3 px-4 uppercase font-semibold text-sm text-gray-600">Actions</th>
@@ -251,15 +252,19 @@
             function renderWithdrawals(withdrawals) {
                 withdrawalTableBody.innerHTML = '';
                  if (!withdrawals || withdrawals.length === 0) {
-                    withdrawalTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4">No pending withdrawals.</td></tr>`;
+                    withdrawalTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4">No pending withdrawals.</td></tr>`;
                     return;
                 }
                 withdrawals.forEach(withdrawal => {
+                    const requestedAmount = parseFloat(withdrawal.amount);
+                    const amountToSend = requestedAmount * 0.90; // Calculate 90% of the amount
+
                     const row = `
-                        <tr data-id="${withdrawal.id}">
+                        <tr data-id="${withdrawal.id}" data-amount-to-send="${amountToSend.toFixed(2)}" data-requested-amount="${requestedAmount.toFixed(2)}">
                             <td class="py-3 px-4 border-b border-gray-200">${new Date(withdrawal.created_at).toLocaleDateString()}</td>
                             <td class="py-3 px-4 border-b border-gray-200">${withdrawal.username}</td>
-                            <td class="py-3 px-4 border-b border-gray-200">$${parseFloat(withdrawal.amount).toFixed(2)}</td>
+                            <td class="py-3 px-4 border-b border-gray-200">$${requestedAmount.toFixed(2)}</td>
+                            <td class="py-3 px-4 border-b border-gray-200 font-bold text-green-600">$${amountToSend.toFixed(2)}</td>
                             <td class="py-3 px-4 border-b border-gray-200 font-mono text-sm">${withdrawal.chain}</td>
                             <td class="py-3 px-4 border-b border-gray-200 font-mono text-xs">${withdrawal.wallet_address}</td>
                             <td class="py-3 px-4 border-b border-gray-200">
@@ -279,9 +284,12 @@
                 if (!row) return;
                 
                 const withdrawalId = row.dataset.id;
+                const amountToSend = row.dataset.amountToSend;
+                const requestedAmount = row.dataset.requestedAmount;
+                const username = row.cells[1].innerText;
 
                 if (e.target.matches('.approve-btn')) {
-                    const transactionHash = prompt(`Please enter the transaction hash for this withdrawal of $${row.cells[2].innerText.slice(1)} for user ${row.cells[1].innerText}:`);
+                    const transactionHash = prompt(`Please enter the transaction hash for this withdrawal.\n\nUser: ${username}\nAmount to Send: $${amountToSend} (Requested: $${requestedAmount})`);
                     if (transactionHash) {
                         try {
                             await Api.approveWithdrawal(withdrawalId, transactionHash);
@@ -292,7 +300,7 @@
                         alert('Transaction hash is required to approve.');
                     }
                 } else if (e.target.matches('.reject-btn')) {
-                     if (confirm(`Reject this withdrawal of $${row.cells[2].innerText.slice(1)} for user ${row.cells[1].innerText}? The funds will be returned to the user's balance.`)) {
+                     if (confirm(`Reject this withdrawal of $${requestedAmount} for user ${username}? The funds will be returned to the user's balance.`)) {
                         try {
                             await Api.rejectWithdrawal(withdrawalId);
                             alert('Withdrawal rejected and funds returned to user.');
@@ -332,7 +340,7 @@
 
                 } catch (error) {
                     transactionTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-red-500">Failed to load transaction data.</td></tr>`;
-                    withdrawalTableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-red-500">Failed to load withdrawal data.</td></tr>`;
+                    withdrawalTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-red-500">Failed to load withdrawal data.</td></tr>`;
                 }
             }
 
