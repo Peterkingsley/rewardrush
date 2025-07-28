@@ -388,19 +388,12 @@
                             `;
                             break;
                         case 'reward_pending':
-                            statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-100">Reward Pending</span>`;
-                            actionForm = `
-                                 <form class="mt-4 space-y-3" data-request-id="${req.id}">
-                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700">Approve Amount ($)</label>
-                                        <input type="number" name="editedAmount" value="${parseFloat(req.current_claim_amount || 0).toFixed(2)}" step="0.01" class="w-full p-2 border rounded-lg mt-1" required>
-                                     </div>
-                                    <button type="button" class="approve-reward-btn bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg whitespace-nowrap">Approve & Pay</button>
-                                </form>
-                            `;
-                            break;
                         case 'pending_review':
-                            statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-600 bg-purple-100">Pending Review</span>`;
+                            if(req.status === 'reward_pending'){
+                                statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-100">Reward Pending</span>`;
+                            } else {
+                                statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-600 bg-purple-100">Pending Review</span>`;
+                            }
                             actionForm = `
                                 <form class="mt-4 space-y-3" data-request-id="${req.id}">
                                     <div>
