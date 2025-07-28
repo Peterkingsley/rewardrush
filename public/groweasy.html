@@ -380,7 +380,6 @@
              <h2 class="text-xl font-bold mb-4">Request Withdrawal</h2>
              <p class="mb-2 text-sm text-gray-600">Your current balance is <span id="withdraw-balance" class="font-bold text-gray-800">$0.00</span>.</p>
              
-             <!-- Fee Message -->
              <div class="p-3 mb-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 rounded-r-lg">
                  <p class="text-sm font-bold">Please Note:</p>
                  <p class="text-sm">A standard fee of <strong>10%</strong> will be deducted from all withdrawals for processing and platform maintenance.</p>
@@ -392,7 +391,6 @@
                     <input type="number" id="withdraw-amount" placeholder="0.00" class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                 </div>
                 
-                <!-- Amount to Receive -->
                 <div>
                     <label for="receive-amount" class="block text-sm font-medium text-gray-700">You will receive</label>
                     <div class="mt-1 w-full p-3 border border-gray-200 bg-gray-100 rounded-lg">
@@ -444,6 +442,38 @@
         </div>
     </div>
     
+    <!-- NEW: Quest Details Modal (for completed quests) -->
+    <div id="quest-details-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div class="modal-content-wrapper bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 text-center transform transition-transform scale-95">
+             <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-trophy text-purple-500 text-3xl"></i>
+             </div>
+             <h2 id="details-quest-title" class="text-2xl font-bold mb-2">Quest Details</h2>
+             <p class="text-gray-500 mb-4">Here are the details of your completed quest.</p>
+             
+             <div class="text-left bg-gray-50 p-4 rounded-lg space-y-3 mb-6">
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Earnings</p>
+                    <p id="details-quest-earning" class="font-bold text-green-600 text-lg">$0.00</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Completion Date</p>
+                    <p id="details-quest-date" class="font-semibold text-gray-700">January 1, 2024</p>
+                </div>
+             </div>
+
+             <p class="text-sm text-gray-500 mb-2">Share your referral link to earn more!</p>
+             <div class="flex items-center mb-6">
+                <input type="text" id="details-referral-link" value="" readonly class="w-full p-2 border border-gray-300 rounded-l-lg bg-gray-50 text-sm">
+                <button id="details-copy-link-btn" class="bg-purple-600 text-white p-2 rounded-r-lg hover:bg-purple-700">
+                    <i class="fas fa-copy"></i>
+                </button>
+             </div>
+             
+             <button id="close-details-modal-btn" class="w-full bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-lg hover:bg-gray-300">Close</button>
+        </div>
+    </div>
+
     <div id="referral-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
         <div class="modal-content-wrapper bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 transform transition-transform scale-95">
             <h2 class="text-xl font-bold mb-4">My Referrals</h2>
@@ -631,6 +661,14 @@
                     closeReferralModalBtn: document.getElementById('close-referral-modal-btn'),
                     platformReferralLinkInput: document.getElementById('platform-referral-link'),
                     copyPlatformLinkBtn: document.getElementById('copy-platform-link-btn'),
+                    // Elements for the new details modal
+                    questDetailsModal: document.getElementById('quest-details-modal'),
+                    detailsQuestTitle: document.getElementById('details-quest-title'),
+                    detailsQuestEarning: document.getElementById('details-quest-earning'),
+                    detailsQuestDate: document.getElementById('details-quest-date'),
+                    detailsReferralLink: document.getElementById('details-referral-link'),
+                    detailsCopyLinkBtn: document.getElementById('details-copy-link-btn'),
+                    closeDetailsModalBtn: document.getElementById('close-details-modal-btn'),
                 },
                 
                 // --- METHODS ---
@@ -664,11 +702,17 @@
                                 .map(tx => tx.desc.replace('Completed: ', ''))
                         );
 
-                        for (const quest of questsData.quests) {
-                            if (completedQuestTitles.has(quest.title)) {
-                                const referralLinkData = await ApiService.generateReferralLink(quest.id);
-                                this.user.completedQuestsWithReferral[quest.id] = referralLinkData.referralLink;
-                            }
+                        // Create an array of promises for generating referral links
+                        const referralLinkPromises = questsData.quests
+                            .filter(quest => completedQuestTitles.has(quest.title))
+                            .map(quest => ApiService.generateReferralLink(quest.id).then(data => ({ questId: quest.id, link: data.referralLink })));
+
+                        // Await all promises to resolve
+                        const referralLinksResults = await Promise.all(referralLinkPromises);
+
+                        // Populate the referral links object
+                        for (const result of referralLinksResults) {
+                            this.user.completedQuestsWithReferral[result.questId] = result.link;
                         }
 
                         this.quests = questsData.quests.map(quest => ({
@@ -801,7 +845,7 @@
                             return parseReward(b.reward) - parseReward(a.reward);
                         }
                         if (sortOrder === 'low-to-high') {
-                            return parseReward(a.reward) - parseReward(a.reward);
+                            return parseReward(a.reward) - parseReward(b.reward);
                         }
                         
                         return 0;
@@ -907,6 +951,7 @@
                     const card = document.createElement('div');
                     card.className = 'quest-card relative border border-gray-200 rounded-xl flex flex-col justify-between transition-shadow hover:shadow-lg overflow-hidden';
                     card.dataset.questId = quest.id;
+                    card.dataset.status = quest.status;
 
                     const hasBanner = quest.card_banner_url;
 
@@ -928,11 +973,12 @@
                     contentWrapper.className = 'quest-card-content flex flex-col justify-between h-full';
                     if(hasBanner) contentWrapper.classList.add('p-4');
 
-
                     const isCompleted = quest.status === 'completed';
+                    if (isCompleted) {
+                        card.classList.add('cursor-pointer');
+                    }
                     const isFull = quest.max_participants !== null && (quest.participants_count || 0) >= quest.max_participants;
                     
-                    const referralLink = this.user.completedQuestsWithReferral[quest.id];
                     const userReferralCount = quest.userReferralCount;
 
                     let statusBadge;
@@ -944,31 +990,14 @@
                          statusBadge = `<span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">Available</span>`;
                     }
 
-                    // UPDATED: Logic to fix "undefined participants"
                     let participantsInfo = '';
                     const participantsTextColor = hasBanner ? 'text-gray-300' : 'text-gray-500';
-                    const currentParticipants = quest.participants_count || 0; // Default to 0 if undefined
+                    const currentParticipants = quest.participants_count || 0;
 
                     if (quest.max_participants) {
                         participantsInfo = `<p class="text-xs ${participantsTextColor} mt-1">${currentParticipants} / ${quest.max_participants} Filled</p>`;
                     } else {
                         participantsInfo = `<p class="text-xs ${participantsTextColor} mt-1">${currentParticipants} Participants</p>`;
-                    }
-
-
-                    let referralLinkHtml = '';
-                    if (isCompleted && referralLink) {
-                        referralLinkHtml = `
-                            <div class="mt-3 pt-3 border-t ${hasBanner ? 'border-white/20' : 'border-gray-200'}">
-                                <p class="text-xs font-medium ${hasBanner ? 'text-gray-200' : 'text-gray-600'} mb-1">Your Referral Link:</p>
-                                <div class="flex items-center">
-                                    <input type="text" value="${referralLink}" readonly class="w-full p-2 border ${hasBanner ? 'border-white/30 bg-black/20 text-white' : 'border-gray-300 bg-gray-100'} rounded-l-lg text-xs truncate">
-                                    <button class="copy-quest-referral-link-btn bg-purple-600 text-white p-2 rounded-r-lg hover:bg-purple-700" data-link="${referralLink}">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
                     }
 
                     let referralCountHtml = '';
@@ -982,7 +1011,7 @@
 
                     const buttonDisabled = isCompleted || isFull;
                     let buttonText = 'Start Quest';
-                    if (isCompleted) buttonText = 'Completed';
+                    if (isCompleted) buttonText = 'View Details';
                     if (isFull) buttonText = 'Quest Full';
 
                     const descriptionColor = hasBanner ? 'text-gray-200' : 'text-gray-600';
@@ -1006,7 +1035,6 @@
                                 ${buttonText}
                             </button>
                         </div>
-                        ${referralLinkHtml}
                         ${referralCountHtml}
                     `;
                     contentWrapper.innerHTML = cardContent;
@@ -1150,53 +1178,87 @@
                     this.renderChallenge();
                 },
 
-async submitQuiz() {
-    // Manually collect the final answer without advancing the challenge index.
-    const challenge = this.currentQuiz.questions[this.currentChallengeIndex];
-    let response;
+                async submitQuiz() {
+                    const challenge = this.currentQuiz.questions[this.currentChallengeIndex];
+                    let response;
 
-    switch (challenge.challenge_type) {
-        case 'multiple-choice':
-            response = this.userAnswers[challenge.challenge_order];
-            if (response === undefined) {
-                this.showNotification('Please select an answer.', 'error');
-                return;
-            }
-            break;
-        case 'open-ended':
-            const textArea = document.getElementById(`challenge-response-${challenge.challenge_order}`);
-            response = textArea.value.trim();
-            if (!response) {
-                this.showNotification('Please enter an answer.', 'error');
-                return;
-            }
-            this.userAnswers[challenge.challenge_order] = response;
-            break;
-    }
+                    switch (challenge.challenge_type) {
+                        case 'multiple-choice':
+                            response = this.userAnswers[challenge.challenge_order];
+                            if (response === undefined) {
+                                this.showNotification('Please select an answer.', 'error');
+                                return;
+                            }
+                            break;
+                        case 'open-ended':
+                            const textArea = document.getElementById(`challenge-response-${challenge.challenge_order}`);
+                            response = textArea.value.trim();
+                            if (!response) {
+                                this.showNotification('Please enter an answer.', 'error');
+                                return;
+                            }
+                            this.userAnswers[challenge.challenge_order] = response;
+                            break;
+                    }
 
-    // Now, proceed with the submission logic directly.
-    try {
-        const result = await ApiService.submitQuiz(this.currentQuiz.id, this.userAnswers);
-        this.closeModal(this.elements.quizModal);
+                    try {
+                        const result = await ApiService.submitQuiz(this.currentQuiz.id, this.userAnswers);
+                        this.closeModal(this.elements.quizModal);
 
-        if (result.success) {
-            const quest = this.quests.find(q => q.id === this.currentQuiz.id);
-            this.user.completedQuestsWithReferral[quest.id] = result.referralLink;
-            this.showQuestCompletion(quest, result.referralLink);
-            this.init(); 
-        } else {
-            this.showNotification(result.message || 'Quest failed. Please try again later.', 'error');
-        }
-    } catch (error) {
-        console.error("Error submitting quiz:", error);
-    }
-},
+                        if (result.success) {
+                            const quest = this.quests.find(q => q.id === this.currentQuiz.id);
+                            this.user.completedQuestsWithReferral[quest.id] = result.referralLink;
+                            this.showQuestCompletion(quest, result.referralLink);
+                            this.init(); 
+                        } else {
+                            this.showNotification(result.message || 'Quest failed. Please try again later.', 'error');
+                        }
+                    } catch (error) {
+                        console.error("Error submitting quiz:", error);
+                    }
+                },
 
                 showQuestCompletion(quest, referralLink) {
                     this.elements.completionTitle.textContent = `Quest Complete: ${quest.title}`;
                     this.elements.completionReward.textContent = `You've earned ${quest.reward}!`;
                     this.elements.referralLinkInput.value = referralLink;
                     this.openModal(this.elements.questCompleteModal);
+                },
+
+                async showQuestDetails(questId) {
+                    const quest = this.quests.find(q => q.id === questId);
+                    if (!quest) {
+                        console.error('Quest details not found for ID:', questId);
+                        this.showNotification('Could not load quest details.', 'error');
+                        return;
+                    }
+
+                    // Find transaction to get completion date
+                    const transaction = this.user.transactions.find(tx => tx.desc === `Completed: ${quest.title}`);
+                    const completionDate = transaction ? transaction.date : 'Not available';
+
+                    // Get the referral link. It should be pre-fetched, but we can have a fallback.
+                    let referralLink = this.user.completedQuestsWithReferral[questId];
+                    if (!referralLink) {
+                        try {
+                            const linkData = await ApiService.generateReferralLink(questId);
+                            referralLink = linkData.referralLink;
+                            // Cache it for next time
+                            this.user.completedQuestsWithReferral[questId] = referralLink;
+                        } catch (error) {
+                            console.error('Failed to generate referral link on demand:', error);
+                            referralLink = 'Error generating link.';
+                        }
+                    }
+
+                    // Populate the modal
+                    this.elements.detailsQuestTitle.textContent = quest.title;
+                    this.elements.detailsQuestEarning.textContent = quest.reward || '$0.00';
+                    this.elements.detailsQuestDate.textContent = completionDate;
+                    this.elements.detailsReferralLink.value = referralLink;
+
+                    // Open the modal
+                    this.openModal(this.elements.questDetailsModal);
                 },
 
                 async showReferralModal() {
@@ -1344,22 +1406,19 @@ async submitQuiz() {
                         const startButton = e.target.closest('.start-quiz-btn:not([disabled])');
                         if (startButton) {
                             const card = startButton.closest('.quest-card');
-                            if (card) this.startQuiz(parseInt(card.dataset.questId, 10));
+                            if (card && card.dataset.status !== 'completed') {
+                                this.startQuiz(parseInt(card.dataset.questId, 10));
+                            }
                             return; 
                         }
-                        const detailsButton = e.target.closest('.details-btn');
-                        if (detailsButton) this.showNotification('Quest details page is a work in progress!', 'info');
 
-                        const copyQuestReferralBtn = e.target.closest('.copy-quest-referral-link-btn');
-                        if (copyQuestReferralBtn) {
-                            const linkToCopy = copyQuestReferralBtn.dataset.link;
-                            const tempInput = document.createElement('input');
-                            tempInput.value = linkToCopy;
-                            document.body.appendChild(tempInput);
-                            tempInput.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(tempInput);
-                            this.showNotification('Referral link copied!', 'success');
+                        const completedCard = e.target.closest('.quest-card[data-status="completed"]');
+                        if (completedCard) {
+                            if (e.target.closest('button, a, input')) {
+                                return;
+                            }
+                            this.showQuestDetails(parseInt(completedCard.dataset.questId, 10));
+                            return;
                         }
                     });
 
@@ -1395,7 +1454,6 @@ async submitQuiz() {
                         });
                     });
 
-                    // Add event listener for withdrawal amount input
                     document.getElementById('withdraw-amount').addEventListener('input', (e) => {
                         const amount = parseFloat(e.target.value) || 0;
                         const fee = 0.10; // 10%
@@ -1422,7 +1480,7 @@ async submitQuiz() {
                             this.closeModal(this.elements.withdrawModal);
                             amountInput.value = '';
                             addressInput.value = '';
-                            document.getElementById('receive-amount').textContent = '$0.00'; // Reset receive amount
+                            document.getElementById('receive-amount').textContent = '$0.00';
                             this.init();
                         } catch (error) {
                             console.error("Withdrawal failed:", error);
@@ -1444,6 +1502,17 @@ async submitQuiz() {
                         this.elements.platformReferralLinkInput.select();
                         document.execCommand('copy');
                         this.showNotification('Platform referral link copied!', 'success');
+                    });
+                    
+                    // Event listeners for the new details modal
+                    this.elements.closeDetailsModalBtn.addEventListener('click', () => this.closeModal(this.elements.questDetailsModal));
+                    this.elements.questDetailsModal.addEventListener('click', (e) => {
+                        if (e.target === this.elements.questDetailsModal) this.closeModal(this.elements.questDetailsModal);
+                    });
+                    this.elements.detailsCopyLinkBtn.addEventListener('click', () => {
+                        this.elements.detailsReferralLink.select();
+                        document.execCommand('copy');
+                        this.showNotification('Referral link copied!', 'success');
                     });
                 }
             };
