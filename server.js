@@ -2060,7 +2060,7 @@ app.post('/api/admin/job-requests/:requestId/review', requireAdmin, async (req, 
         await client.query('BEGIN');
 
         const jobRequestResult = await client.query(
-            "SELECT * FROM user_jobs WHERE id = $1 AND status = 'pending_review' FOR UPDATE", 
+            "SELECT * FROM user_jobs WHERE id = $1 AND (status = 'pending_review' OR status = 'reward_pending') FOR UPDATE", 
             [requestId]
         );
         if (jobRequestResult.rows.length === 0) {
