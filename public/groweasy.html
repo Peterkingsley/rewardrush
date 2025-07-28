@@ -698,8 +698,8 @@
 
                         const completedQuestTitles = new Set(
                             this.user.transactions
-                                .filter(tx => tx.desc?.startsWith('Completed: '))
-                                .map(tx => tx.desc.replace('Completed: ', ''))
+                                .filter(tx => tx.desc?.startsWith('Quest: '))
+                                .map(tx => tx.desc.replace('Quest: ', ''))
                         );
 
                         // Create an array of promises for generating referral links
@@ -877,7 +877,7 @@
                     const activeTab = this.state.activeHistoryTab;
 
                     if (activeTab === 'quests') {
-                        transactionsToDisplay = this.user.transactions.filter(tx => tx.desc.startsWith('Completed:'));
+                        transactionsToDisplay = this.user.transactions.filter(tx => tx.desc.startsWith('Quest:'));
                     } else if (activeTab === 'withdrawals') {
                         transactionsToDisplay = this.user.transactions.filter(tx => tx.desc === 'Withdrawal');
                     }
@@ -1234,7 +1234,7 @@
                     }
 
                     // Find transaction to get completion date
-                    const transaction = this.user.transactions.find(tx => tx.desc === `Completed: ${quest.title}`);
+                    const transaction = this.user.transactions.find(tx => tx.desc === `Quest: ${quest.title}`);
                     const completionDate = transaction ? transaction.date : 'Not available';
 
                     // Get the referral link. It should be pre-fetched, but we can have a fallback.
