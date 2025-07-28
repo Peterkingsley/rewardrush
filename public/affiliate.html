@@ -503,17 +503,32 @@
                         list.className = 'space-y-4';
                         jobsToRender.forEach(job => {
                             const item = document.createElement('div');
-                            item.className = 'p-4 border border-gray-200 rounded-lg flex justify-between items-center';
+                            item.className = 'p-4 border border-gray-200 rounded-lg flex justify-between items-start';
                             
                             let statusPill = '';
+                            let rejectionInfo = '';
                             switch(job.status) {
                                 case 'pending_links': statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-yellow-600 bg-yellow-100">Pending Links</span>`; break;
                                 case 'active': statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-blue-600 bg-blue-100">In Progress</span>`; break;
                                 case 'pending_review': statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-600 bg-purple-100">Pending Review</span>`; break;
                                 case 'reward_pending': statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-100">Reward Pending</span>`; break;
-                                case 'rejected': statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-red-600 bg-red-100">Rejected</span>`; break;
+                                case 'rejected': 
+                                    statusPill = `<span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-red-600 bg-red-100">Rejected</span>`; 
+                                    if (job.rejectionReason) {
+                                        rejectionInfo = `<p class="text-xs text-red-500 mt-1 italic">Reason: ${job.rejectionReason}</p>`;
+                                    }
+                                    break;
                             }
-                            item.innerHTML = `<div><p class="font-bold text-gray-800">${job.title}</p><p class="text-sm text-gray-500">Reward: <span class="font-semibold text-green-600">$${job.payment}</span></p></div><div>${statusPill}</div>`;
+                            item.innerHTML = `
+                                <div class="flex-grow pr-4">
+                                    <p class="font-bold text-gray-800">${job.title}</p>
+                                    <p class="text-sm text-gray-500">Reward: <span class="font-semibold text-green-600">$${job.payment}</span></p>
+                                    ${rejectionInfo}
+                                </div>
+                                <div class="flex-shrink-0 text-right">
+                                    ${statusPill}
+                                </div>
+                            `;
                             list.appendChild(item);
                         });
                         myJobsContent.appendChild(list);

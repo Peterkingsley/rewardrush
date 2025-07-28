@@ -555,23 +555,14 @@
                  }
             });
 
-            // --- CORRECTED EVENT LISTENER ---
             jobRequestsList.addEventListener('click', async (e) => {
-                const button = e.target.closest('button'); // Target buttons more specifically
-                if (!button) return; // If the click wasn't on a button, do nothing
+                const button = e.target.closest('button');
+                if (!button || button.type === 'submit') return;
+                e.preventDefault(); 
 
                 const form = button.closest('form');
                 if (!form) return;
-
                 const requestId = form.dataset.requestId;
-
-                // Only prevent default for the buttons we are handling here,
-                // not for the 'submit' button which has its own listener.
-                if (button.type === 'button') {
-                    e.preventDefault(); 
-                } else {
-                    return; // Let the 'submit' event listener handle the rest.
-                }
 
                 try {
                     if (button.classList.contains('approve-reward-btn')) {
@@ -584,14 +575,14 @@
                         alert('Submission approved!');
                     } else if (button.classList.contains('decline-submission-btn')) {
                         form.querySelector('.decline-section').classList.toggle('hidden');
-                        return; // Don't reload yet
+                        return; 
                     } else if (button.classList.contains('submit-decline-btn')) {
                         const reason = form.elements.rejectionReason.value;
                         if (!reason.trim()) { alert('A reason is required to decline.'); return; }
                         await Api.reviewSubmission(requestId, { approved: false, rejectionReason: reason });
                         alert('Submission rejected.');
                     }
-                     // Only reload if a final action was taken
+                    
                     if (!button.classList.contains('decline-submission-btn')) {
                         loadJobRequests();
                     }
