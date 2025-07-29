@@ -451,7 +451,7 @@
              <h2 id="details-quest-title" class="text-2xl font-bold mb-2">Quest Details</h2>
              <p class="text-gray-500 mb-4">Here are the details of your completed quest.</p>
              
-             <div class="text-left bg-gray-50 p-4 rounded-lg space-y-3 mb-6">
+             <div id="details-content" class="text-left bg-gray-50 p-4 rounded-lg space-y-3 mb-6">
                 <div>
                     <p class="text-sm text-gray-500 font-medium">Earnings</p>
                     <p id="details-quest-earning" class="font-bold text-green-600 text-lg">$0.00</p>
@@ -664,6 +664,7 @@
                     // Elements for the new details modal
                     questDetailsModal: document.getElementById('quest-details-modal'),
                     detailsQuestTitle: document.getElementById('details-quest-title'),
+                    detailsContent: document.getElementById('details-content'),
                     detailsQuestEarning: document.getElementById('details-quest-earning'),
                     detailsQuestDate: document.getElementById('details-quest-date'),
                     detailsReferralLink: document.getElementById('details-referral-link'),
@@ -1240,17 +1241,14 @@
                         return;
                     }
 
-                    // Find transaction to get completion date
                     const transaction = this.user.transactions.find(tx => tx.desc === `Quest: ${quest.title}`);
                     const completionDate = transaction ? transaction.date : 'Not available';
 
-                    // Get the referral link. It should be pre-fetched, but we can have a fallback.
                     let referralLink = this.user.completedQuestsWithReferral[questId];
                     if (!referralLink) {
                         try {
                             const linkData = await ApiService.generateReferralLink(questId);
                             referralLink = linkData.referralLink;
-                            // Cache it for next time
                             this.user.completedQuestsWithReferral[questId] = referralLink;
                         } catch (error) {
                             console.error('Failed to generate referral link on demand:', error);
@@ -1258,15 +1256,38 @@
                         }
                     }
 
-                    // Populate the modal
                     this.elements.detailsQuestTitle.textContent = quest.title;
                     this.elements.detailsQuestEarning.textContent = quest.reward || '$0.00';
                     this.elements.detailsQuestDate.textContent = completionDate;
                     this.elements.detailsReferralLink.value = referralLink;
 
-                    // Open the modal
+                    const detailsContent = this.elements.detailsContent;
+                    let referralInfoEl = detailsContent.querySelector('.referral-info');
+                    if (!referralInfoEl) {
+                        referralInfoEl = document.createElement('div');
+                        referralInfoEl.className = 'referral-info';
+                        detailsContent.appendChild(referralInfoEl);
+                    }
+
+                    if (quest.userReferralCount > 0) {
+                        const referralEarnings = quest.userReferralCount * 2.00;
+                        referralInfoEl.innerHTML = `
+                            <div>
+                                <p class="text-sm text-gray-500 font-medium">Referred Users</p>
+                                <p class="font-semibold text-gray-700">${quest.userReferralCount}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500 font-medium">Referral Earnings</p>
+                                <p class="font-bold text-green-600 text-lg">+$${referralEarnings.toFixed(2)}</p>
+                            </div>
+                        `;
+                    } else {
+                        referralInfoEl.innerHTML = '';
+                    }
+
                     this.openModal(this.elements.questDetailsModal);
                 },
+
 
                 async showReferralModal() {
                     try {
