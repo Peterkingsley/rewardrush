@@ -1002,10 +1002,17 @@
 
                     let referralCountHtml = '';
                     if (isCompleted && userReferralCount > 0) {
+                        const referralEarnings = userReferralCount * 2.00;
                         referralCountHtml = `
-                            <p class="text-xs ${participantsTextColor} mt-2">
-                                <i class="fas fa-users mr-1 text-purple-400"></i>Referred: ${userReferralCount} user(s)
-                            </p>
+                            <div class="mt-2 text-xs ${participantsTextColor} flex justify-between items-center">
+                                <span class="flex items-center">
+                                    <i class="fas fa-users mr-1.5 text-purple-400"></i>
+                                    Referred: ${userReferralCount} user(s)
+                                </span>
+                                <span class="font-bold text-green-400">
+                                    +$${referralEarnings.toFixed(2)}
+                                </span>
+                            </div>
                         `;
                     }
 
@@ -1034,8 +1041,8 @@
                             <button class="start-quiz-btn w-full py-2 px-4 rounded-lg text-sm font-semibold transition ${buttonDisabled ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}" ${buttonDisabled ? 'disabled' : ''}>
                                 ${buttonText}
                             </button>
+                            ${referralCountHtml}
                         </div>
-                        ${referralCountHtml}
                     `;
                     contentWrapper.innerHTML = cardContent;
                     card.appendChild(contentWrapper);
