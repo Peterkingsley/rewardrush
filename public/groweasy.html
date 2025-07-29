@@ -1266,17 +1266,18 @@
                     if (!referralInfoEl) {
                         referralInfoEl = document.createElement('div');
                         referralInfoEl.className = 'referral-info';
+                        referralInfoEl.classList.add('space-y-3', 'mt-3', 'pt-3', 'border-t', 'border-gray-200');
                         detailsContent.appendChild(referralInfoEl);
                     }
 
                     if (quest.userReferralCount > 0) {
                         const referralEarnings = quest.userReferralCount * 2.00;
                         referralInfoEl.innerHTML = `
-                            <div>
+                            <div class="flex justify-between items-center">
                                 <p class="text-sm text-gray-500 font-medium">Referred Users</p>
                                 <p class="font-semibold text-gray-700">${quest.userReferralCount}</p>
                             </div>
-                            <div>
+                            <div class="flex justify-between items-center">
                                 <p class="text-sm text-gray-500 font-medium">Referral Earnings</p>
                                 <p class="font-bold text-green-600 text-lg">+$${referralEarnings.toFixed(2)}</p>
                             </div>

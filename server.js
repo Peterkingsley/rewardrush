@@ -1392,6 +1392,7 @@ app.get('/withdrawal-history', requireLogin, async (req, res) => {
 app.get('/quests', requireLogin, async (req, res) => {
     try {
         const userId = req.user.id;
+        console.log(`[QUERIES] Fetching quests for user ID: ${userId}`);
 
         const questsResult = await pool.query(`
             SELECT 
@@ -1413,10 +1414,12 @@ app.get('/quests', requireLogin, async (req, res) => {
             ORDER BY 
                 q.id ASC;
         `, [userId]);
+        
+        console.log(`[QUERIES] Found ${questsResult.rows.length} quests. Sample referral count:`, questsResult.rows.length > 0 ? questsResult.rows[0].user_referral_count : 'N/A');
 
         res.json({ quests: questsResult.rows });
     } catch (err) {
-        console.error('Error reading quests:', err);
+        console.error('[QUERIES] Error reading quests:', err);
         res.json({ quests: [] });
     }
 });
