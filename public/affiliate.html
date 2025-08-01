@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jobs - RewardRush</title>
+    <title>Jobs - OpenGigs</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
@@ -97,7 +97,7 @@
             <div class="flex items-center justify-between p-4 border-b border-gray-200">
                 <div class="flex items-center text-2xl font-semibold text-gray-800">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-purple-600"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
-                    <span class="sidebar-text ml-2 font-montserrat">RewardRush</span>
+                    <span class="sidebar-text ml-2 font-montserrat">OpenGigs</span>
                 </div>
                 <button id="sidebar-toggle" class="p-2 rounded-md hover:bg-gray-100">
                     <i class="fas fa-chevron-left transition-transform duration-300"></i>
@@ -139,7 +139,7 @@
                     <div class="text-xl font-semibold flex items-center">
                         <a href="/" class="gradient-text flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
-                            RewardRush
+                            OpenGigs
                         </a>
                     </div>
                 </header>
@@ -244,7 +244,7 @@
                 <h2 class="text-2xl font-bold text-gray-900 font-montserrat">Share Your Referral Link</h2>
                 <button id="close-invite-modal-btn" class="text-gray-500 hover:text-gray-800"><i class="fas fa-times text-2xl"></i></button>
             </div>
-            <p class="text-gray-600 mb-4">Invite new users to RewardRush and earn rewards when they sign up and complete tasks!</p>
+            <p class="text-gray-600 mb-4">Invite new users to OpenGigs and earn rewards when they sign up and complete tasks!</p>
             <div class="flex items-center mb-4">
                 <input type="text" id="referral-link-input" readonly class="w-full p-2 border border-gray-300 rounded-l-lg bg-gray-100 text-sm">
                 <button id="copy-referral-link-btn" class="bg-purple-600 text-white p-2.5 rounded-r-lg hover:bg-purple-700"><i class="fas fa-copy"></i></button>
@@ -729,7 +729,7 @@
                     setTimeout(() => this.elements.inviteModal.querySelector('.modal-content').classList.remove('scale-95'), 10);
 
                     const encodedLink = encodeURIComponent(link);
-                    const text = encodeURIComponent("Join me on RewardRush and earn rewards!");
+                    const text = encodeURIComponent("Join me on OpenGigs and earn rewards!");
                     document.getElementById('share-twitter').href = `https://twitter.com/intent/tweet?text=${text}&url=${encodedLink}`;
                     document.getElementById('share-whatsapp').href = `https://api.whatsapp.com/send?text=${text} ${encodedLink}`;
                     document.getElementById('share-telegram').href = `https://t.me/share/url?url=${encodedLink}&text=${text}`;
