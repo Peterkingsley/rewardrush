@@ -3,449 +3,337 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RewardRush - Beyond the Grind</title>
+    <title>OpenGigs - A Framework for Professional Engagement and Enterprise Growth</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
-    <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --primary-glow: #39ff14;
-            --secondary-glow: #00b7ff;
-            --dark-bg: #0a0a15;
-            --mid-bg: #1a1a2e;
-        }
-
-        /* Use Orbitron for headings and Roboto for paragraph text */
         body {
-            background-color: var(--dark-bg);
-            color: #e0e0e0;
-            font-family: 'Roboto', sans-serif;
-            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Dark background */
+            color: #e6edf3;
         }
-        
-        h1, h2, h3, h4, .font-orbitron {
-            font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase;
+        .hero-bg {
+            background-color: #0d1117;
+            background-image: url('https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=2020&auto=format&fit=crop'); 
+            background-size: cover;
+            background-position: center;
         }
-
-        /* Particle background canvas */
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-
-        /* Gradient text with neon glow */
         .gradient-text {
-            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+            background: linear-gradient(to right, #c850c0, #4158d0); /* Purple/Blue Gradient */
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 15px rgba(57, 255, 20, 0.3), 0 0 25px rgba(0, 183, 255, 0.2);
         }
-        
-        /* Glassmorphism effect for the navbar */
-        .glass-nav {
-            background: rgba(10, 10, 21, 0.7);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(57, 255, 20, 0.3);
-        }
-        
-        /* Neon glow button */
-        .neon-button {
-            background: linear-gradient(45deg, #8b00ff, var(--secondary-glow));
-            box-shadow: 0 0 15px rgba(139, 0, 255, 0.4), 0 0 25px rgba(0, 183, 255, 0.3);
+        .cta-button {
             transition: all 0.3s ease;
         }
-        .neon-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 0 25px rgba(139, 0, 255, 0.7), 0 0 40px rgba(0, 183, 255, 0.5);
+        .cta-button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
         }
-
-        .secondary-button {
-             background: transparent;
-             border: 2px solid var(--primary-glow);
-             color: var(--primary-glow);
-             transition: all 0.3s ease;
-             box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
+        .dark-card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            transition: all 0.3s ease;
         }
-        .secondary-button:hover {
-            background-color: rgba(57, 255, 20, 0.1);
-            box-shadow: 0 0 20px rgba(57, 255, 20, 0.6);
-            transform: translateY(-3px);
-        }
-
-        /* Feature card styling */
-        .feature-card {
-            background: rgba(26, 26, 46, 0.6);
-            border: 1px solid rgba(57, 255, 20, 0.2);
-            backdrop-filter: blur(8px);
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-10px);
-            border-color: var(--primary-glow);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(57, 255, 20, 0.4);
-        }
-
-        /* Scroll-based animations */
-        .reveal {
-            opacity: 0;
-            transform: translateY(50px);
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-        }
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
+        .dark-card:hover {
+            border-color: #8b5cf6; /* Purple border on hover */
         }
     </style>
 </head>
-<body class="bg-dark-bg text-gray-200 antialiased">
+<body class="text-gray-300">
 
-    <canvas id="bg-canvas"></canvas>
+    <header class="bg-[#161b22]/80 backdrop-blur-lg fixed top-0 left-0 right-0 z-50 border-b border-[#30363d]">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center text-2xl font-semibold">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                <a href="#" class="text-2xl font-bold text-white ml-2">Open<span class="text-purple-400">Gigs</span></a>
+            </div>
+            
+            <div class="hidden md:flex items-center">
+                <nav class="flex items-center space-x-8">
+                    <a href="#quest" class="text-gray-300 hover:text-purple-400 transition">Quest</a>
+                    <a href="#job" class="text-gray-300 hover:text-purple-400 transition">Job</a>
+                    <a href="#learn" class="text-gray-300 hover:text-purple-400 transition">Learn</a>
+                    <a href="#build" class="text-gray-300 hover:text-purple-400 transition">Build</a>
+                </nav>
+                <div class="flex items-center space-x-4 ml-8">
+                    <a href="#" class="text-gray-300 hover:text-purple-400 font-medium">Log In</a>
+                    <a href="#" class="bg-purple-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-purple-700 cta-button">Sign Up</a>
+                </div>
+            </div>
 
-    <header class="glass-nav sticky top-0 z-50">
-        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
-            <div class="text-2xl md:text-3xl font-bold font-orbitron">
-                <a href="#" class="gradient-text">RewardRush</a>
+            <div class="md:hidden">
+                <button id="menu-btn" type="button" class="text-gray-300 hover:text-purple-400 focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
             </div>
-            <div class="hidden lg:flex items-center space-x-8 font-orbitron text-sm">
-                <a href="#quests" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300">Quests</a>
-                <a href="#gigs" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300">Gigs</a>
-                <a href="#learn" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300">Learn</a>
-                <a href="#build" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300">Build</a>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden">
+            <nav class="px-2 pt-2 pb-4 space-y-1 sm:px-3">
+                <a href="#quest" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Quest</a>
+                <a href="#job" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Job</a>
+                <a href="#learn" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Learn</a>
+                <a href="#build" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Build</a>
+            </nav>
+            <div class="px-5 py-4 border-t border-gray-700 space-y-3">
+                <a href="#" class="block w-full text-center bg-purple-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-purple-700 cta-button">Sign Up</a>
+                <a href="#" class="block w-full text-center text-gray-300 hover:text-purple-400 font-medium">Log In</a>
             </div>
-            <div class="hidden sm:flex items-center space-x-4">
-                <a href="#" class="font-orbitron text-sm text-gray-300 hover:text-secondary-glow transition-colors duration-300 hidden sm:block">Log In</a>
-                <a href="#" class="neon-button text-white font-orbitron text-sm font-bold px-6 py-2.5 rounded-md">
-                    Get Started
-                </a>
-            </div>
-            <button id="mobile-menu-button" class="lg:hidden text-gray-300 focus:outline-none">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-            </button>
-        </nav>
-        <div id="mobile-menu" class="hidden lg:hidden px-6 pb-4 font-orbitron text-sm">
-             <a href="#quests" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow transition-colors">Quests</a>
-             <a href="#gigs" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow transition-colors">Gigs</a>
-             <a href="#learn" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow transition-colors">Learn</a>
-             <a href="#build" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow transition-colors">Build</a>
-             <a href="#" class="block py-2 tracking-wider text-gray-300">Log In</a>
-             <a href="#" class="block mt-2 neon-button text-white font-orbitron text-sm text-center font-bold px-6 py-2.5 rounded-md">
-                    Get Started
-             </a>
         </div>
     </header>
 
-    <main class="relative z-10">
-        <section class="relative min-h-screen flex items-center justify-center text-center overflow-hidden py-16 px-4">
-            <div class="container mx-auto">
-                <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-100 leading-tight font-orbitron reveal">
-                    Stop Chasing Tasks. Start <span class="gradient-text">Living Your Results.</span>
-                </h1>
-                <p class="mt-6 text-base sm:text-lg md:text-xl text-gray-400 max-w-3xl mx-auto font-roboto reveal" style="transition-delay: 200ms;">
-                    RewardRush is where your passion meets purpose. Earn, learn, build, and connect on a platform that values your results, not your resume.
+    <main>
+        <section class="relative h-screen flex items-center justify-center text-white hero-bg">
+            <div class="absolute inset-0 bg-black/70"></div>
+            <div class="relative z-10 text-center px-6">
+                <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-4">A Framework for Professional Engagement <br class="hidden md:block"> and <span class="gradient-text">Enterprise Growth</span></h1>
+                <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+                    OpenGigs is a dynamic ecosystem connecting corporate entities with a global network of qualified specialists, built on transparency and performance.
                 </p>
-                <div class="mt-10 flex justify-center items-center flex-col sm:flex-row gap-6 reveal" style="transition-delay: 400ms;">
-                    <a href="#" class="w-full sm:w-auto neon-button text-white font-bold text-base sm:text-lg px-8 py-4 rounded-lg shadow-lg transition-all">
-                        Unlock Your Potential
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                    <button class="w-full sm:w-auto bg-purple-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-purple-700 cta-button">Find Talent</button>
+                    <button class="w-full sm:w-auto bg-gray-700/50 backdrop-blur-sm text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-600/50 cta-button">Find Work</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-20 bg-[#0d1117]">
+            <div class="container mx-auto px-6">
+                <div class="mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white">Explore millions of pros</h2>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                    <a href="#" class="dark-card p-6 rounded-2xl flex flex-col items-start justify-between group">
+                        <div class="text-purple-400 mb-4"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg></div>
+                        <h3 class="font-semibold text-lg text-white">Development & IT</h3>
                     </a>
-                    <a href="#features" class="w-full sm:w-auto secondary-button font-bold text-base sm:text-lg px-8 py-4 rounded-lg shadow-lg transition-all">
-                        See How It Works
+                     <a href="#" class="dark-card p-6 rounded-2xl flex flex-col items-start justify-between group">
+                        <div class="text-purple-400 mb-4"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg></div>
+                        <h3 class="font-semibold text-lg text-white">Design & Creative</h3>
+                    </a>
+                    <a href="#" class="dark-card p-6 rounded-2xl flex flex-col items-start justify-between group">
+                        <div class="text-purple-400 mb-4"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg></div>
+                        <h3 class="font-semibold text-lg text-white">AI Services</h3>
+                    </a>
+                    <a href="#" class="dark-card p-6 rounded-2xl flex flex-col items-start justify-between group">
+                        <div class="text-purple-400 mb-4"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-2.236 9.168-5.514C18.355 1.82 18.668 1 19.388 1s1.033.82 1.033 1.486c0 .734-.21 1.45-1.033 1.45-.823 0-1.033-.716-1.033-1.45z" /></svg></div>
+                        <h3 class="font-semibold text-lg text-white">Sales & Marketing</h3>
+                    </a>
+                    <a href="#" class="dark-card p-6 rounded-2xl flex flex-col items-start justify-between group">
+                        <div class="text-purple-400 mb-4"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></div>
+                        <h3 class="font-semibold text-lg text-white">Writing & Translation</h3>
                     </a>
                 </div>
             </div>
         </section>
 
-        <section id="features" class="py-16 md:py-20">
+        <section class="py-20 bg-[#161b22]">
             <div class="container mx-auto px-6">
-                <div class="text-center mb-10 md:mb-12 reveal">
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-100">One Platform, Endless Paths to Success</h2>
-                    <p class="mt-4 text-base md:text-lg text-gray-400 max-w-2xl mx-auto font-roboto">Whether you're here to play, work, learn, or build, your journey starts now.</p>
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white">The OpenGigs Ecosystem</h2>
+                    <p class="text-gray-400 mt-2 max-w-2xl mx-auto">Explore our core components designed for synergistic collaboration and professional opportunity.</p>
                 </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-                    <div id="quests" class="feature-card p-6 rounded-2xl reveal">
-                        <div class="mb-4">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/><path d="M12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div id="quest" class="dark-card p-8 rounded-2xl text-center">
+                        <div class="bg-purple-900/50 text-purple-400 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
                         </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-3">Engage & Earn</h3>
-                        <p class="text-sm md:text-base text-gray-400 font-roboto">Connect with the brands you love through fun quests. Share your voice, influence their future, and get rewarded for your passion.</p>
+                        <h3 class="text-xl font-bold text-white mb-2">Quest Section</h3>
+                        <p class="text-gray-400">Gamified pedagogy and user engagement through interactive, inquiry-based challenges.</p>
                     </div>
-
-                    <div id="gigs" class="feature-card p-6 rounded-2xl reveal" style="transition-delay: 200ms;">
-                         <div class="mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    <div id="job" class="dark-card p-8 rounded-2xl text-center">
+                        <div class="bg-purple-900/50 text-purple-400 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
                         </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-3">Deliver & Dominate</h3>
-                        <p class="text-sm md:text-base text-gray-400 font-roboto">Forget interviews. Find flexible gigs where your skill is the only thing that matters. Deliver results, build your portfolio, and get paid.</p>
+                        <h3 class="text-xl font-bold text-white mb-2">Job Section</h3>
+                        <p class="text-gray-400">A novel paradigm for contractual employment, where engagement is determined by results.</p>
                     </div>
-                    
-                    <div id="learn" class="feature-card p-6 rounded-2xl reveal" style="transition-delay: 400ms;">
-                        <div class="mb-4">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><circle cx="12" cy="12" r="3"/><path d="M12 12h.01"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m4.93 19.07 1.41-1.41"/><path d="m17.66 6.34 1.41-1.41"/></svg>
+                    <div id="learn" class="dark-card p-8 rounded-2xl text-center">
+                        <div class="bg-purple-900/50 text-purple-400 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
                         </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-3">Learn from Legends</h3>
-                        <p class="text-sm md:text-base text-gray-400 font-roboto">Go from novice to pro with courses taught by industry experts. Gain real-world skills you can apply immediately. Monetize your own expertise.</p>
+                        <h3 class="text-xl font-bold text-white mb-2">Learn Section</h3>
+                        <p class="text-gray-400">A curated repository of educational resources and video tutorials to facilitate mastery of skills.</p>
                     </div>
-                    
-                    <div id="build" class="feature-card p-6 rounded-2xl reveal" style="transition-delay: 600ms;">
-                        <div class="mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-glow"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    <div id="build" class="dark-card p-8 rounded-2xl text-center">
+                        <div class="bg-purple-900/50 text-purple-400 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V8a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h8z"></path><path d="M22 12V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v8c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2z"></path></svg>
                         </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-3">Build Your Vision</h3>
-                        <p class="text-sm md:text-base text-gray-400 font-roboto">Your startup journey, simplified. Access everything you need—from partners to playbooks—to launch, manage, and scale your brand.</p>
+                        <h3 class="text-xl font-bold text-white mb-2">Build Section</h3>
+                        <p class="text-gray-400">A strategic resource nexus for entrepreneurs and developers in the web3 domain.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="py-20 bg-[#0d1117]">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white">How It Works</h2>
+                    <p class="text-gray-400 mt-2">A simple, performance-driven process.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    <div class="p-6">
+                        <div class="text-purple-400 text-5xl font-bold mb-4">1</div>
+                        <h3 class="text-xl font-bold text-white mb-2">Post a Job or Quest</h3>
+                        <p class="text-gray-400">Define your needs with clear KPIs. Listing quests is free, and job payments are contingent on results.</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-purple-400 text-5xl font-bold mb-4">2</div>
+                        <h3 class="text-xl font-bold text-white mb-2">Connect with Experts</h3>
+                        <p class="text-gray-400">Our platform identifies specialists based on their demonstrated skill and ability to deliver.</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-purple-400 text-5xl font-bold mb-4">3</div>
+                        <h3 class="text-xl font-bold text-white mb-2">Achieve & Pay for Results</h3>
+                        <p class="text-gray-400">Remuneration is based on the satisfactory completion of specified tasks. No success, no fee.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="py-16 md:py-20">
-            <div class="container mx-auto px-6">
-                <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-16 reveal">
-                    <div class="lg:w-1/2 w-full">
-                        <div class="bg-mid-bg p-2 rounded-2xl shadow-2xl border border-primary-glow/20">
-                            <div class="aspect-w-16 aspect-h-9 bg-dark-bg rounded-lg flex items-center justify-center min-h-[200px] sm:min-h-[300px]">
-                               <p class="text-primary-glow font-orbitron text-center text-sm sm:text-base">AI TALENT CORE [VISUALIZATION]</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="lg:w-1/2 w-full">
-                         <span class="font-orbitron text-primary-glow font-semibold tracking-widest">POWERING GROWTH</span>
-                        <h2 class="text-3xl md:text-4xl font-bold text-gray-100 mt-2">Tap into a World of Talent</h2>
-                        <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">Stop spending on recruitment cycles that don't deliver. With RewardRush, you only pay for delivered results. Post tasks, find skilled professionals, and get work done efficiently. It's the future of agile workforce management.</p>
-                        <ul class="mt-6 space-y-4 font-roboto">
+        <section class="py-20 bg-[#161b22]">
+            <div class="container mx-auto px-6 space-y-16">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <span class="text-purple-400 font-semibold">FOR BUSINESS</span>
+                        <h2 class="text-3xl font-bold my-3 text-white">Access a World of Talent</h2>
+                        <p class="text-gray-400 mb-6">Empower your organization with our specialized services designed for growth and engagement.</p>
+                        <ul class="space-y-4">
                             <li class="flex items-start">
-                                <svg class="w-6 h-6 text-primary-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <span><strong class="text-gray-100">Pay for Performance:</strong> Eliminate risk and ensure you get the quality you need.</span>
+                                <svg class="w-6 h-6 text-purple-400 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>
+                                    <h4 class="font-semibold text-white">Performance-Contingent Procurement</h4>
+                                    <p class="text-gray-400">Only pay for verified results that meet your KPIs.</p>
+                                </div>
                             </li>
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-primary-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <span><strong class="text-gray-100">Engage Authentically:</strong> Use Quests to build genuine connections and gather priceless feedback from your community.</span>
+                             <li class="flex items-start">
+                                <svg class="w-6 h-6 text-purple-400 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>
+                                    <h4 class="font-semibold text-white">Scalable Education</h4>
+                                    <p class="text-gray-400">Utilize Quests to instruct users on product utilization, announce feature enhancements, and communicate your corporate narrative.</p>
+                                </div>
+                            </li>
+                             <li class="flex items-start">
+                                <svg class="w-6 h-6 text-purple-400 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>
+                                    <h4 class="font-semibold text-white">Specialized Expertise Acquisition</h4>
+                                    <p class="text-gray-400">Identify and engage experts for a range of objectives, from securing strategic partnerships to achieving specific marketing benchmarks.</p>
+                                </div>
                             </li>
                         </ul>
-                         <a href="#" class="inline-block mt-8 neon-button text-white font-semibold px-8 py-3 rounded-md">
-                            Post a Gig
-                        </a>
+                    </div>
+                    <div class="hidden md:block">
+                        <img src="https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=1974&auto=format&fit=crop" alt="Business collaboration" class="rounded-2xl shadow-xl border-2 border-[#30363d]">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mt-16">
+                     <div class="hidden md:block order-last md:order-first">
+                        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop" alt="Professional working" class="rounded-2xl shadow-xl border-2 border-[#30363d]">
+                    </div>
+                    <div>
+                        <span class="text-green-400 font-semibold">FOR PROFESSIONALS</span>
+                        <h2 class="text-3xl font-bold my-3 text-white">Unlock Your Potential</h2>
+                        <p class="text-gray-400 mb-6">Find opportunities that value your skills and reward your performance.</p>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-green-400 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>
+                                    <h4 class="font-semibold text-white">Meritocratic Opportunity</h4>
+                                    <p class="text-gray-400">Engagements are based on your ability to deliver results, not cover letters.</p>
+                                </div>
+                            </li>
+                             <li class="flex items-start">
+                                <svg class="w-6 h-6 text-green-400 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>
+                                    <h4 class="font-semibold text-white">Compensated Learning</h4>
+                                    <p class="text-gray-400">Participate in quests to acquire knowledge about new products and services and earn rewards.</p>
+                                </div>
+                            </li>
+                             <li class="flex items-start">
+                                <svg class="w-6 h-6 text-green-400 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>
+                                    <h4 class="font-semibold text-white">Flexible Engagement Protocols</h4>
+                                    <p class="text-gray-400">Accept assignments that are commensurate with your areas of expertise and professional interests.</p>
+                                </div>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="py-16 md:py-20">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-10 md:mb-12 reveal">
-                    <h2 class="text-3xl md:text-5xl font-bold text-gray-100">From the Community</h2>
-                    <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">See what our users are achieving.</p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="feature-card p-6 rounded-2xl reveal">
-                        <div class="absolute top-4 right-4 bg-primary-glow/10 text-primary-glow text-xs font-bold px-3 py-1 rounded-full border border-primary-glow/30">Result-Verified</div>
-                        <p class="text-gray-300 text-base italic font-roboto">"RewardRush completely changed how I approach side hustles. I'm using skills I love and getting paid for my actual work, not for how well I write a cover letter. It’s liberating."</p>
-                        <div class="flex items-center mt-6">
-                            <img src="https://placehold.co/48x48/1a1a2e/39ff14?text=A" alt="User" class="w-12 h-12 rounded-full mr-4 border-2 border-primary-glow/50">
-                            <div>
-                                <p class="font-bold text-gray-100 font-orbitron text-sm">Aisha Bello</p>
-                                <p class="text-gray-400 font-roboto text-xs">Graphic Designer</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="feature-card p-6 rounded-2xl reveal" style="transition-delay: 200ms;">
-                        <div class="absolute top-4 right-4 bg-primary-glow/10 text-primary-glow text-xs font-bold px-3 py-1 rounded-full border border-primary-glow/30">Result-Verified</div>
-                        <p class="text-gray-300 text-base italic font-roboto">"The education section is a goldmine. I learned more about product management in a 3-week course here than in a year of reading blogs. The expert was legit, and the content was pure value."</p>
-                        <div class="flex items-center mt-6">
-                            <img src="https://placehold.co/48x48/1a1a2e/39ff14?text=C" alt="User" class="w-12 h-12 rounded-full mr-4 border-2 border-primary-glow/50">
-                            <div>
-                                <p class="font-bold text-gray-100 font-orbitron text-sm">Chike Okafor</p>
-                                <p class="text-gray-400 font-roboto text-xs">Aspiring PM</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="feature-card p-6 rounded-2xl reveal" style="transition-delay: 400ms;">
-                        <div class="absolute top-4 right-4 bg-primary-glow/10 text-primary-glow text-xs font-bold px-3 py-1 rounded-full border border-primary-glow/30">Result-Verified</div>
-                        <p class="text-gray-300 text-base italic font-roboto">"As a founder, the 'Build' section was my launchpad. Finding a co-founder with complementary skills felt impossible before RewardRush. We connected here and are now scaling our vision."</p>
-                        <div class="flex items-center mt-6">
-                            <img src="https://placehold.co/48x48/1a1a2e/39ff14?text=F" alt="User" class="w-12 h-12 rounded-full mr-4 border-2 border-primary-glow/50">
-                            <div>
-                                <p class="font-bold text-gray-100 font-orbitron text-sm">Fatima Diallo</p>
-                                <p class="text-gray-400 font-roboto text-xs">Startup Founder</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
 
-        <section class="py-16 md:py-20">
-            <div class="container mx-auto px-6 text-center reveal">
-                 <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-100">Your Future is a <span class="gradient-text">Result</span>, Not a Plan</h2>
-                 <p class="mt-4 text-base md:text-lg text-gray-400 max-w-2xl mx-auto font-roboto">Join a community that celebrates action and rewards achievement. Your next big step is just a click away.</p>
-                 <a href="#" class="mt-8 inline-block neon-button text-white font-bold text-lg md:text-xl px-8 sm:px-10 py-4 sm:py-5 rounded-lg shadow-lg transition-all">
-                    Sign Up Free
-                </a>
+        <section class="bg-purple-700 text-white">
+            <div class="container mx-auto px-6 py-20 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Find your next hire for a short task or long-term growth.</h2>
+                <p class="text-purple-200 max-w-2xl mx-auto mb-8">Join OpenGigs today and experience a new era of professional collaboration.</p>
+                <a href="#" class="bg-white text-purple-700 px-8 py-4 rounded-full font-bold text-lg hover:bg-purple-100 cta-button">Get Started for Free</a>
             </div>
         </section>
     </main>
 
-    <footer class="bg-dark-bg border-t border-primary-glow/20 mt-16">
-        <div class="container mx-auto px-6 py-10">
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
-                <div class="col-span-full md:col-span-1 mb-6 md:mb-0">
-                    <h3 class="text-2xl font-bold font-orbitron gradient-text">RewardRush</h3>
-                    <p class="mt-2 text-gray-500 font-roboto text-sm">Redefining work, learning, and growth.</p>
+    <footer class="bg-[#0d1117] text-white border-t border-[#30363d]">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Open<span class="text-purple-400">Gigs</span></h3>
+                    <p class="text-gray-400">Forging connections between corporate entities and a global network of qualified specialists.</p>
                 </div>
-                <div class="col-span-1">
-                    <h4 class="font-semibold font-orbitron text-gray-200">Platform</h4>
-                    <ul class="mt-4 space-y-2 font-roboto text-sm">
-                        <li><a href="#quests" class="text-gray-400 hover:text-primary-glow">Quests</a></li>
-                        <li><a href="#gigs" class="text-gray-400 hover:text-primary-glow">Gigs</a></li>
-                        <li><a href="#learn" class="text-gray-400 hover:text-primary-glow">Learn</a></li>
-                        <li><a href="#build" class="text-gray-400 hover:text-primary-glow">Build</a></li>
+                <div>
+                    <h4 class="font-semibold text-gray-200 mb-4">Platform</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#quest" class="text-gray-400 hover:text-white">Quest</a></li>
+                        <li><a href="#job" class="text-gray-400 hover:text-white">Job</a></li>
+                        <li><a href="#learn" class="text-gray-400 hover:text-white">Learn</a></li>
+                        <li><a href="#build" class="text-gray-400 hover:text-white">Build</a></li>
                     </ul>
                 </div>
-                <div class="col-span-1">
-                    <h4 class="font-semibold font-orbitron text-gray-200">Company</h4>
-                    <ul class="mt-4 space-y-2 font-roboto text-sm">
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow">About Us</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow">Careers</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow">For Brands</a></li>
+                <div>
+                    <h4 class="font-semibold text-gray-200 mb-4">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Help & Support</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Success Stories</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li>
                     </ul>
                 </div>
-                <div class="col-span-1">
-                    <h4 class="font-semibold font-orbitron text-gray-200">Support</h4>
-                    <ul class="mt-4 space-y-2 font-roboto text-sm">
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow">Help Center</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow">Contact Us</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow">Terms</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow">Privacy</a></li>
-                    </ul>
-                </div>
-                 <div class="col-span-2 sm:col-span-1">
-                    <h4 class="font-semibold font-orbitron text-gray-200">Connect</h4>
-                    <ul class="mt-4 space-y-2 font-roboto text-sm">
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow">Twitter</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow">LinkedIn</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow">Blog</a></li>
+                 <div>
+                    <h4 class="font-semibold text-gray-200 mb-4">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact Us</a></li>
                     </ul>
                 </div>
             </div>
-            <div class="mt-10 border-t border-primary-glow/20 pt-6 text-center text-gray-500 font-roboto text-sm">
-                &copy; 2024 RewardRush. All rights reserved.
+            <div class="mt-12 border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm">&copy; 2025 OpenGigs Inc. All rights reserved.</p>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" /></svg></a>
+                    <a href="#" class="text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.71v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" /></svg></a>
+                    <a href="#" class="text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12.011c0 4.434 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.338 4.695-4.566 4.942.359.308.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12.011C22 6.477 17.523 2 12 2z" clip-rule="evenodd" /></svg></a>
+                </div>
             </div>
         </div>
     </footer>
 
     <script>
-        // Mobile menu toggle
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const menuBtn = document.getElementById('menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
-        
-        mobileMenuButton.addEventListener('click', () => {
+
+        menuBtn.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
-
-        // Scroll reveal animation
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, {
-            threshold: 0.1
-        });
-
-        document.querySelectorAll('.reveal').forEach(el => {
-            observer.observe(el);
-        });
-
-        // Three.js Particle Background
-        let scene, camera, renderer, particles, mouseX = 0, mouseY = 0;
-        let windowHalfX = window.innerWidth / 2;
-        let windowHalfY = window.innerHeight / 2;
-
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-            camera.position.z = 1000;
-
-            const particleCount = 5000;
-            const particlesGeometry = new THREE.BufferGeometry();
-            const posArray = new Float32Array(particleCount * 3);
-            
-            for (let i = 0; i < particleCount * 3; i++) {
-                posArray[i] = (Math.random() - 0.5) * (Math.random() * 2000);
-            }
-            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            
-            const material = new THREE.PointsMaterial({
-                size: 1.5,
-                color: 0x39ff14,
-                transparent: true,
-                opacity: 0.7,
-                blending: THREE.AdditiveBlending
-            });
-
-            particles = new THREE.Points(particlesGeometry, material);
-            scene.add(particles);
-
-            renderer = new THREE.WebGLRenderer({
-                canvas: document.getElementById('bg-canvas'),
-                alpha: true
-            });
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setClearColor(0x000000, 0);
-
-            document.body.addEventListener('pointermove', onDocumentMouseMove, false);
-            window.addEventListener('resize', onWindowResize, false);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            render();
-        }
-
-        function render() {
-            const time = Date.now() * 0.00005;
-            camera.position.x += (mouseX - camera.position.x) * 0.05;
-            camera.position.y += (-mouseY - camera.position.y) * 0.05;
-            camera.lookAt(scene.position);
-            
-            particles.rotation.x = time * 0.1;
-            particles.rotation.y = time * 0.2;
-
-            renderer.render(scene, camera);
-        }
-
-        function onDocumentMouseMove(event) {
-            mouseX = event.clientX - windowHalfX;
-            mouseY = event.clientY - windowHalfY;
-        }
-
-        function onWindowResize() {
-            windowHalfX = window.innerWidth / 2;
-            windowHalfY = window.innerHeight / 2;
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        init();
-        animate();
     </script>
+
 </body>
 </html>
