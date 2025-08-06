@@ -3,911 +3,337 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenGigs - Complete Quests, Earn Crypto Rewards</title>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T43CPCK2WV"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-T43CPCK2WV');
-</script>
+    <title>OpenGigs - A Framework for Professional Engagement and Enterprise Growth</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --primary-glow: #8b00ff;
-            --secondary-glow: #00f0ff;
-            --accent-glow: #39ff14;
-            --dark-bg: #0a0a15;
-            --mid-bg: #1a1a2e;
-            --light-bg: #2a2a3e;
-        }
-
         body {
-            background-color: var(--dark-bg);
-            color: #e0e0e0;
-            font-family: 'Roboto', sans-serif;
-            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Dark background */
+            color: #e6edf3;
         }
-        
-        h1, h2, h3, h4, .font-orbitron {
-            font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+        .hero-bg {
+            background-color: #0d1117;
+            background-image: url('https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=2020&auto=format&fit=crop'); 
+            background-size: cover;
+            background-position: center;
         }
-
-        /* Particle background canvas */
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-        }
-
-        /* Gradient text with neon glow */
         .gradient-text {
-            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
+            background: linear-gradient(to right, #c850c0, #4158d0); /* Purple/Blue Gradient */
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 15px rgba(139, 0, 255, 0.3), 0 0 25px rgba(0, 240, 255, 0.2);
         }
-        
-        /* Glassmorphism effect */
-        .glass-card {
-            background: rgba(26, 26, 46, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(139, 0, 255, 0.2);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        }
-        
-        /* Neon glow button */
-        .neon-button {
-            background: linear-gradient(45deg, var(--primary-glow), var(--secondary-glow));
-            box-shadow: 0 0 15px rgba(139, 0, 255, 0.4), 0 0 25px rgba(0, 240, 255, 0.3);
+        .cta-button {
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
-        .neon-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 0 25px rgba(139, 0, 255, 0.7), 0 0 40px rgba(0, 240, 255, 0.5);
+        .cta-button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
         }
-        .neon-button::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -60%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                to right,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.1) 50%,
-                rgba(255, 255, 255, 0) 100%
-            );
-            transform: rotate(30deg);
-            transition: all 0.3s;
+        .dark-card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            transition: all 0.3s ease;
         }
-        .neon-button:hover::after {
-            left: 100%;
-        }
-
-        .secondary-button {
-             background: transparent;
-             border: 2px solid var(--accent-glow);
-             color: var(--accent-glow);
-             transition: all 0.3s ease;
-             box-shadow: 0 0 10px rgba(57, 255, 20, 0.3);
-        }
-        .secondary-button:hover {
-            background-color: rgba(57, 255, 20, 0.1);
-            box-shadow: 0 0 20px rgba(57, 255, 20, 0.6);
-            transform: translateY(-3px);
-        }
-
-        /* Feature card styling */
-        .feature-card {
-            background: rgba(26, 26, 46, 0.6);
-            border: 1px solid rgba(139, 0, 255, 0.2);
-            backdrop-filter: blur(8px);
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-10px);
-            border-color: var(--primary-glow);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(139, 0, 255, 0.4);
-        }
-        
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                transparent,
-                rgba(139, 0, 255, 0.1),
-                transparent
-            );
-            transition: 0.5s;
-        }
-        
-        .feature-card:hover::before {
-            left: 100%;
-        }
-
-        /* Stats counter */
-        .counter {
-            font-family: 'Orbitron', sans-serif;
-            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Scroll-based animations */
-        .reveal {
-            opacity: 0;
-            transform: translateY(50px);
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-        }
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        /* Custom cursor */
-        .cursor-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--accent-glow);
-            border-radius: 50%;
-            position: fixed;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 9999;
-            mix-blend-mode: exclusion;
-        }
-        
-        .cursor-outline {
-            width: 40px;
-            height: 40px;
-            border: 2px solid var(--secondary-glow);
-            border-radius: 50%;
-            position: fixed;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 9998;
-            transition: all 0.1s ease-out;
-            mix-blend-mode: exclusion;
-        }
-        
-        /* Animated underline */
-        .underline-animation {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .underline-animation::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 2px;
-            bottom: -4px;
-            left: 0;
-            background: linear-gradient(90deg, var(--primary-glow), var(--secondary-glow));
-            transform: scaleX(0);
-            transform-origin: bottom right;
-            transition: transform 0.3s ease-out;
-        }
-        
-        .underline-animation:hover::after {
-            transform: scaleX(1);
-            transform-origin: bottom left;
-        }
-        
-        /* Confetti effect */
-        .confetti {
-            position: fixed;
-            width: 10px;
-            height: 10px;
-            background-color: var(--accent-glow);
-            opacity: 0;
-            z-index: 9999;
-            animation: confetti-fall 3s ease-in-out forwards;
-        }
-        
-        @keyframes confetti-fall {
-            0% {
-                transform: translateY(-100vh) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(100vh) rotate(720deg);
-                opacity: 0;
-            }
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            #bg-canvas {
-                opacity: 0.5;
-            }
-            .feature-card:hover {
-                transform: none;
-            }
+        .dark-card:hover {
+            border-color: #8b5cf6; /* Purple border on hover */
         }
     </style>
 </head>
-<body class="bg-dark-bg text-gray-200 antialiased">
+<body class="text-gray-300">
 
-    <canvas id="bg-canvas"></canvas>
-    
-    <!-- Custom cursor elements -->
-    <div class="cursor-dot"></div>
-    <div class="cursor-outline"></div>
+    <header class="bg-[#161b22]/80 backdrop-blur-lg fixed top-0 left-0 right-0 z-50 border-b border-[#30363d]">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center text-2xl font-semibold">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                <a href="#" class="text-2xl font-bold text-white ml-2">Open<span class="text-purple-400">Gigs</span></a>
+            </div>
+            
+            <div class="hidden md:flex items-center">
+                <nav class="flex items-center space-x-8">
+                    <a href="#quest" class="text-gray-300 hover:text-purple-400 transition">Quest</a>
+                    <a href="#job" class="text-gray-300 hover:text-purple-400 transition">Job</a>
+                    <a href="#learn" class="text-gray-300 hover:text-purple-400 transition">Learn</a>
+                    <a href="#build" class="text-gray-300 hover:text-purple-400 transition">Build</a>
+                </nav>
+                <div class="flex items-center space-x-4 ml-8">
+                    <a href="#" class="text-gray-300 hover:text-purple-400 font-medium">Log In</a>
+                    <a href="#" class="bg-purple-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-purple-700 cta-button">Sign Up</a>
+                </div>
+            </div>
 
-    <header class="sticky top-0 z-50 bg-dark-bg/80 backdrop-blur-md border-b border-primary-glow/20">
-        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
-            <div class="text-2xl md:text-3xl font-bold font-orbitron flex items-center">
-                <a href="/" class="gradient-text flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
-                    OpenGigs
-                </a>
+            <div class="md:hidden">
+                <button id="menu-btn" type="button" class="text-gray-300 hover:text-purple-400 focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
             </div>
-            <div class="hidden lg:flex items-center space-x-8 font-orbitron text-sm">
-                <a href="./quest/" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Quests</a>
-                <a href="./jobs/" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Jobs</a>
-                <a href="./learn/" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Learn</a>
-                <a href="./build/" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Build</a>
-                <!-- <a href="#testimonials" class="tracking-wider text-gray-300 hover:text-primary-glow transition-colors duration-300 underline-animation">Success Stories</a> -->
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden">
+            <nav class="px-2 pt-2 pb-4 space-y-1 sm:px-3">
+                <a href="#quest" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Quest</a>
+                <a href="#job" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Job</a>
+                <a href="#learn" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Learn</a>
+                <a href="#build" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Build</a>
+            </nav>
+            <div class="px-5 py-4 border-t border-gray-700 space-y-3">
+                <a href="#" class="block w-full text-center bg-purple-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-purple-700 cta-button">Sign Up</a>
+                <a href="#" class="block w-full text-center text-gray-300 hover:text-purple-400 font-medium">Log In</a>
             </div>
-            <div class="hidden sm:flex items-center space-x-4">
-                <!-- <a href="#" class="font-orbitron text-sm text-gray-300 hover:text-secondary-glow transition-colors duration-300 hidden sm:block underline-animation">Log In</a> -->
-                <a href="./waitlist/" class="neon-button text-white font-orbitron text-sm font-bold px-6 py-2.5 rounded-md">
-                    Start Earning
-                </a>
-            </div>
-            <button id="mobile-menu-button" class="lg:hidden text-gray-300 focus:outline-none">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-            </button>
-        </nav>
-        <div id="mobile-menu" class="hidden lg:hidden px-6 pb-4 font-orbitron text-sm">
-             <a href="./quest/" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow transition-colors underline-animation">Quests</a>
-             <a href="./jobs/" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow transition-colors underline-animation">Jobs</a>
-             <a href="./learn/" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow transition-colors underline-animation">Learn</a>
-             <a href="./build/" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow transition-colors underline-animation">Build</a>
-             <a href="#" class="block py-2 tracking-wider text-gray-300 hover:text-primary-glow transition-colors underline-animation">Log In</a>
-             <a href="./waitlist/" class="block mt-2 neon-button text-white font-orbitron text-sm text-center font-bold px-6 py-2.5 rounded-md">
-                    Start Earning
-             </a>
         </div>
     </header>
 
-    <main class="relative z-10">
-        <!-- Hero Section -->
-        <section class="relative min-h-screen flex items-center justify-center text-center overflow-hidden py-16 px-4">
-            <div class="container mx-auto px-4">
-                <div class="flex flex-col items-center justify-center">
-                    <div class="inline-flex items-center bg-primary-glow/10 text-primary-glow font-orbitron text-xs sm:text-sm px-4 py-2 rounded-full mb-6 border border-primary-glow/30 reveal">
-                        <span class="relative flex h-2 w-2 mr-2">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-glow opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-primary-glow"></span>
-                        </span>
-                        <span>JOIN 5,000+ USERS EARNING CRYPTO</span>
-                    </div>
-                    
-                    <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-100 leading-tight font-orbitron reveal">
-                        Complete Fun Tasks.<br> 
-                        <span class="gradient-text">Earn Real Crypto Rewards.</span>
-                    </h1>
-                    
-                    <p class="mt-6 text-lg sm:text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto font-roboto reveal" style="transition-delay: 200ms;">
-                        OpenGigs is where your passion meets purpose. Earn, learn, build, and connect on a platform that values your results, not your resume.
-                    </p>
-                    
-                    <div class="mt-10 flex justify-center items-center flex-col sm:flex-row gap-6 reveal" style="transition-delay: 400ms;">
-                        <a href="./waitlist/" class="w-full sm:w-auto neon-button text-white font-bold text-base sm:text-lg px-8 py-4 rounded-lg shadow-lg transition-all flex items-center">
-                            <span>Start Earning Now</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
-                        </a>
-                        <a href="./waitlist/" class="w-full sm:w-auto neon-button font-bold text-base sm:text-lg px-8 py-4 rounded-lg shadow-lg transition-all flex items-center">
-                            <span>See How It Works</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4l3 3"></path></svg>
-                        </a>
-                    </div>
-                    
-                    <div class="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto reveal" style="transition-delay: 600ms;">
-                        <div class="glass-card p-4 rounded-xl flex flex-col items-center">
-                            <div class="text-2xl font-bold font-orbitron counter" data-target="5000">0</div>
-                            <div class="text-xs text-gray-400 mt-1 font-roboto">ACTIVE USERS</div>
-                        </div>
-                        <div class="glass-card p-4 rounded-xl flex flex-col items-center">
-                            <div class="text-2xl font-bold font-orbitron counter" data-target="1200">0</div>
-                            <div class="text-xs text-gray-400 mt-1 font-roboto">QUESTS COMPLETED</div>
-                        </div>
-                        <div class="glass-card p-4 rounded-xl flex flex-col items-center">
-                            <div class="text-2xl font-bold font-orbitron counter" data-target="750">0</div>
-                            <div class="text-xs text-gray-400 mt-1 font-roboto">JOBS DELIVERED</div>
-                        </div>
-                        <div class="glass-card p-4 rounded-xl flex flex-col items-center">
-                            <div class="text-2xl font-bold font-orbitron counter" data-target="250">0</div>
-                            <div class="text-xs text-gray-400 mt-1 font-roboto">PROJECTS LAUNCHED</div>
-                        </div>
-                    </div>
+    <main>
+        <section class="relative h-screen flex items-center justify-center text-white hero-bg">
+            <div class="absolute inset-0 bg-black/70"></div>
+            <div class="relative z-10 text-center px-6">
+                <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-4">A Framework for Professional Engagement <br class="hidden md:block"> and <span class="gradient-text">Enterprise Growth</span></h1>
+                <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+                    OpenGigs is a dynamic ecosystem connecting corporate entities with a global network of qualified specialists, built on transparency and performance.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                    <button class="w-full sm:w-auto bg-purple-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-purple-700 cta-button">Find Talent</button>
+                    <button class="w-full sm:w-auto bg-gray-700/50 backdrop-blur-sm text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-600/50 cta-button">Find Work</button>
                 </div>
-            </div>
-            
-            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce reveal" style="transition-delay: 800ms;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--secondary-glow)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
             </div>
         </section>
 
-        <!-- How It Works Section -->
-        <section id="how-it-works" class="py-16 md:py-24 bg-gradient-to-b from-dark-bg to-mid-bg/50">
+        <section class="py-20 bg-[#0d1117]">
             <div class="container mx-auto px-6">
-                <div class="text-center mb-16 reveal">
-                    <span class="font-orbitron text-primary-glow font-semibold tracking-widest text-sm">YOUR JOURNEY STARTS HERE</span>
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-100 mt-2">How <span class="gradient-text">OpenGigs</span> Works</h2>
-                    <p class="mt-4 text-base md:text-lg text-gray-400 max-w-2xl mx-auto font-roboto">Three simple steps to make your first million and building your future.</p>
+                <div class="mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white">Explore millions of pros</h2>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-                    <div class="feature-card p-8 rounded-2xl reveal">
-                        <div class="flex items-center justify-center w-16 h-16 bg-primary-glow/10 rounded-full mb-6 mx-auto border border-primary-glow/30">
-                            <span class="text-primary-glow font-orbitron text-xl font-bold">1</span>
-                        </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-4 text-center">Sign Up & Explore</h3>
-                        <p class="text-sm md:text-base text-gray-400 font-roboto text-center">Create your free account and browse our marketplace of quests, gigs, and learning opportunities tailored to your skills.</p>
-                    </div>
-                    
-                    <div class="feature-card p-8 rounded-2xl reveal" style="transition-delay: 200ms;">
-                        <div class="flex items-center justify-center w-16 h-16 bg-primary-glow/10 rounded-full mb-6 mx-auto border border-primary-glow/30">
-                            <span class="text-primary-glow font-orbitron text-xl font-bold">2</span>
-                        </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-4 text-center">Finish Tasks</h3>
-                        <p class="text-sm md:text-base text-gray-400 font-roboto text-center">Select tasks that match your interests. Learn new skills, complete gigs, or participate in community quests.</p>
-                    </div>
-                    
-                    <div class="feature-card p-8 rounded-2xl reveal" style="transition-delay: 400ms;">
-                        <div class="flex items-center justify-center w-16 h-16 bg-primary-glow/10 rounded-full mb-6 mx-auto border border-primary-glow/30">
-                            <span class="text-primary-glow font-orbitron text-xl font-bold">3</span>
-                        </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-4 text-center">Earn & Grow</h3>
-                        <p class="text-sm md:text-base text-gray-400 font-roboto text-center">Get paid in crypto, build your reputation, and unlock higher-value opportunities as you progress.</p>
-                    </div>
-                </div>
-                
-                <div class="mt-16 text-center reveal">
-                    <a href="./waitlist/" class="inline-block neon-button text-white font-semibold px-8 py-3 rounded-md">
-                        Start Your Journey
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                    <a href="#" class="dark-card p-6 rounded-2xl flex flex-col items-start justify-between group">
+                        <div class="text-purple-400 mb-4"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg></div>
+                        <h3 class="font-semibold text-lg text-white">Development & IT</h3>
+                    </a>
+                     <a href="#" class="dark-card p-6 rounded-2xl flex flex-col items-start justify-between group">
+                        <div class="text-purple-400 mb-4"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg></div>
+                        <h3 class="font-semibold text-lg text-white">Design & Creative</h3>
+                    </a>
+                    <a href="#" class="dark-card p-6 rounded-2xl flex flex-col items-start justify-between group">
+                        <div class="text-purple-400 mb-4"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg></div>
+                        <h3 class="font-semibold text-lg text-white">AI Services</h3>
+                    </a>
+                    <a href="#" class="dark-card p-6 rounded-2xl flex flex-col items-start justify-between group">
+                        <div class="text-purple-400 mb-4"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-2.236 9.168-5.514C18.355 1.82 18.668 1 19.388 1s1.033.82 1.033 1.486c0 .734-.21 1.45-1.033 1.45-.823 0-1.033-.716-1.033-1.45z" /></svg></div>
+                        <h3 class="font-semibold text-lg text-white">Sales & Marketing</h3>
+                    </a>
+                    <a href="#" class="dark-card p-6 rounded-2xl flex flex-col items-start justify-between group">
+                        <div class="text-purple-400 mb-4"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg></div>
+                        <h3 class="font-semibold text-lg text-white">Writing & Translation</h3>
                     </a>
                 </div>
             </div>
         </section>
 
-        <!-- Platform Features -->
-        <section id="features" class="py-16 md:py-24">
+        <section class="py-20 bg-[#161b22]">
             <div class="container mx-auto px-6">
-                <div class="text-center mb-16 reveal">
-                    <span class="font-orbitron text-secondary-glow font-semibold tracking-widest text-sm">YOUR PATH TO SUCCESS</span>
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-100 mt-2">One Platform, <span class="gradient-text">Endless Opportunities</span></h2>
-                    <p class="mt-4 text-base md:text-lg text-gray-400 max-w-2xl mx-auto font-roboto">Whether you're here to play, work, learn, or build, your journey starts now.</p>
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white">The OpenGigs Ecosystem</h2>
+                    <p class="text-gray-400 mt-2 max-w-2xl mx-auto">Explore our core components designed for synergistic collaboration and professional opportunity.</p>
                 </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-                    <div id="quests" class="feature-card p-6 rounded-2xl reveal">
-                        <div class="mb-4 flex items-center justify-center w-16 h-16 bg-primary-glow/10 rounded-full mx-auto border border-primary-glow/30">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary-glow)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/><path d="M12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div id="quest" class="dark-card p-8 rounded-2xl text-center">
+                        <div class="bg-purple-900/50 text-purple-400 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
                         </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-3 text-center">Engage & Earn</h3>
-                        <p class="text-sm md:text-base text-gray-400 font-roboto text-center">Connect with brands through fun quests. Share your voice, influence their future, and get rewarded for your passion.</p>
-                        <div class="mt-6 text-center">
-                            <a href="./quests/" class="text-sm font-orbitron text-primary-glow hover:text-secondary-glow transition-colors flex items-center justify-center">
-                                Explore Quests
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
-                            </a>
-                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Quest Section</h3>
+                        <p class="text-gray-400">Gamified pedagogy and user engagement through interactive, inquiry-based challenges.</p>
                     </div>
-
-                    <div id="gigs" class="feature-card p-6 rounded-2xl reveal" style="transition-delay: 200ms;">
-                         <div class="mb-4 flex items-center justify-center w-16 h-16 bg-primary-glow/10 rounded-full mx-auto border border-primary-glow/30">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary-glow)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    <div id="job" class="dark-card p-8 rounded-2xl text-center">
+                        <div class="bg-purple-900/50 text-purple-400 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
                         </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-3 text-center">Deliver & Dominate</h3>
-                        <p class="text-sm md:text-base text-gray-400 font-roboto text-center">Find flexible gigs where your skill is the only thing that matters. Deliver results, build your portfolio, and get paid.</p>
-                        <div class="mt-6 text-center">
-                            <a href="./jobs/" class="text-sm font-orbitron text-primary-glow hover:text-secondary-glow transition-colors flex items-center justify-center">
-                                Browse Jobs
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
-                            </a>
-                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Job Section</h3>
+                        <p class="text-gray-400">A novel paradigm for contractual employment, where engagement is determined by results.</p>
                     </div>
-                    
-                    <div id="learn" class="feature-card p-6 rounded-2xl reveal" style="transition-delay: 400ms;">
-                        <div class="mb-4 flex items-center justify-center w-16 h-16 bg-primary-glow/10 rounded-full mx-auto border border-primary-glow/30">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary-glow)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><circle cx="12" cy="12" r="3"/><path d="M12 12h.01"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m4.93 19.07 1.41-1.41"/><path d="m17.66 6.34 1.41-1.41"/></svg>
+                    <div id="learn" class="dark-card p-8 rounded-2xl text-center">
+                        <div class="bg-purple-900/50 text-purple-400 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
                         </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-3 text-center">Learn from Legends</h3>
-                        <p class="text-sm md:text-base text-gray-400 font-roboto text-center">Go from novice to pro with courses taught by industry experts. Gain real-world skills you can apply immediately.</p>
-                        <div class="mt-6 text-center">
-                            <a href="./learn/" class="text-sm font-orbitron text-primary-glow hover:text-secondary-glow transition-colors flex items-center justify-center">
-                                View Courses
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
-                            </a>
-                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Learn Section</h3>
+                        <p class="text-gray-400">A curated repository of educational resources and video tutorials to facilitate mastery of skills.</p>
                     </div>
-                    
-                    <div id="build" class="feature-card p-6 rounded-2xl reveal" style="transition-delay: 600ms;">
-                        <div class="mb-4 flex items-center justify-center w-16 h-16 bg-primary-glow/10 rounded-full mx-auto border border-primary-glow/30">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary-glow)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    <div id="build" class="dark-card p-8 rounded-2xl text-center">
+                        <div class="bg-purple-900/50 text-purple-400 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V8a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h8z"></path><path d="M22 12V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v8c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2z"></path></svg>
                         </div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-100 mb-3 text-center">Build Your Vision</h3>
-                        <p class="text-sm md:text-base text-gray-400 font-roboto text-center">Your startup journey, simplified. Access everything you need from partners to playbooks to launch and scale.</p>
-                        <div class="mt-6 text-center">
-                            <a href="./build/" class="text-sm font-orbitron text-primary-glow hover:text-secondary-glow transition-colors flex items-center justify-center">
-                                Start Building
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><path d="M5 12h14M12 5l7 7-7 7"></path></svg>
-                            </a>
-                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Build Section</h3>
+                        <p class="text-gray-400">A strategic resource nexus for entrepreneurs and developers in the web3 domain.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="py-20 bg-[#0d1117]">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-white">How It Works</h2>
+                    <p class="text-gray-400 mt-2">A simple, performance-driven process.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    <div class="p-6">
+                        <div class="text-purple-400 text-5xl font-bold mb-4">1</div>
+                        <h3 class="text-xl font-bold text-white mb-2">Post a Job or Quest</h3>
+                        <p class="text-gray-400">Define your needs with clear KPIs. Listing quests is free, and job payments are contingent on results.</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-purple-400 text-5xl font-bold mb-4">2</div>
+                        <h3 class="text-xl font-bold text-white mb-2">Connect with Experts</h3>
+                        <p class="text-gray-400">Our platform identifies specialists based on their demonstrated skill and ability to deliver.</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-purple-400 text-5xl font-bold mb-4">3</div>
+                        <h3 class="text-xl font-bold text-white mb-2">Achieve & Pay for Results</h3>
+                        <p class="text-gray-400">Remuneration is based on the satisfactory completion of specified tasks. No success, no fee.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Talent Network Section -->
-        <section class="py-16 md:py-24 bg-gradient-to-b from-mid-bg/50 to-dark-bg">
-            <div class="container mx-auto px-6">
-                <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-16 reveal">
-                    <div class="lg:w-1/2 w-full">
-                        <div class="glass-card p-2 rounded-2xl shadow-2xl">
-                            <div class="aspect-w-16 aspect-h-9 bg-dark-bg rounded-lg flex items-center justify-center min-h-[300px] sm:min-h-[400px] relative overflow-hidden">
-                                <div class="absolute inset-0 flex items-center justify-center">
-                                    <div class="relative w-full h-full">
-                                        <!-- Animated network visualization -->
-                                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full border-2 border-primary-glow/30 animate-pulse"></div>
-                                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full border-2 border-secondary-glow/30 animate-pulse" style="animation-delay: 0.5s;"></div>
-                                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full border-2 border-accent-glow/30 animate-pulse" style="animation-delay: 1s;"></div>
-                                        
-                                        <!-- Nodes -->
-                                        <div class="absolute top-1/4 left-1/4 w-6 h-6 rounded-full bg-primary-glow/80 animate-bounce" style="animation-delay: 0.2s;"></div>
-                                        <div class="absolute top-1/3 right-1/4 w-6 h-6 rounded-full bg-secondary-glow/80 animate-bounce" style="animation-delay: 0.4s;"></div>
-                                        <div class="absolute bottom-1/4 left-1/3 w-6 h-6 rounded-full bg-accent-glow/80 animate-bounce" style="animation-delay: 0.6s;"></div>
-                                        <div class="absolute bottom-1/3 right-1/3 w-6 h-6 rounded-full bg-primary-glow/80 animate-bounce" style="animation-delay: 0.8s;"></div>
-                                        <div class="absolute top-2/3 left-2/5 w-6 h-6 rounded-full bg-secondary-glow/80 animate-bounce" style="animation-delay: 1s;"></div>
-                                    </div>
+        <section class="py-20 bg-[#161b22]">
+            <div class="container mx-auto px-6 space-y-16">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <span class="text-purple-400 font-semibold">FOR BUSINESS</span>
+                        <h2 class="text-3xl font-bold my-3 text-white">Access a World of Talent</h2>
+                        <p class="text-gray-400 mb-6">Empower your organization with our specialized services designed for growth and engagement.</p>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-purple-400 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>
+                                    <h4 class="font-semibold text-white">Performance-Contingent Procurement</h4>
+                                    <p class="text-gray-400">Only pay for verified results that meet your KPIs.</p>
                                 </div>
-                                <p class="relative z-10 text-primary-glow font-orbitron text-center text-lg">TALENT NETWORK</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="lg:w-1/2 w-full">
-                         <span class="font-orbitron text-secondary-glow font-semibold tracking-widest text-sm">POWERING GROWTH</span>
-                        <h2 class="text-3xl md:text-4xl font-bold text-gray-100 mt-2">Tap into a World of <span class="gradient-text">Skilled Talent</span></h2>
-                        <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">Stop spending on recruitment cycles that don't deliver. With OpenGigs, you only pay for delivered results. Post tasks, find skilled professionals, and get work done efficiently.</p>
-                        <ul class="mt-6 space-y-4 font-roboto">
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-primary-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <span><strong class="text-gray-100">Pay for Performance:</strong> Eliminate risk and ensure you get the quality you need.</span>
                             </li>
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-primary-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <span><strong class="text-gray-100">Engage Authentically:</strong> Build genuine connections and gather priceless feedback from your community.</span>
+                             <li class="flex items-start">
+                                <svg class="w-6 h-6 text-purple-400 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>
+                                    <h4 class="font-semibold text-white">Scalable Education</h4>
+                                    <p class="text-gray-400">Utilize Quests to instruct users on product utilization, announce feature enhancements, and communicate your corporate narrative.</p>
+                                </div>
                             </li>
-                            <li class="flex items-start">
-                                <svg class="w-6 h-6 text-primary-glow mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                <span><strong class="text-gray-100">Global Talent Pool:</strong> Access skilled professionals from around the world, available 24/7.</span>
+                             <li class="flex items-start">
+                                <svg class="w-6 h-6 text-purple-400 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>
+                                    <h4 class="font-semibold text-white">Specialized Expertise Acquisition</h4>
+                                    <p class="text-gray-400">Identify and engage experts for a range of objectives, from securing strategic partnerships to achieving specific marketing benchmarks.</p>
+                                </div>
                             </li>
                         </ul>
-                         <div class="mt-8 flex flex-col sm:flex-row gap-4">
-                            <a href="#" class="neon-button text-white font-semibold px-6 py-3 rounded-md text-center">
-                                Post a Jobs
-                            </a>
-                            <a href="#" class="neon-button font-semibold px-6 py-3 rounded-md text-center">
-                                Learn More
-                            </a>
-                        </div>
+                    </div>
+                    <div class="hidden md:block">
+                        <img src="https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=1974&auto=format&fit=crop" alt="Business collaboration" class="rounded-2xl shadow-xl border-2 border-[#30363d]">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mt-16">
+                     <div class="hidden md:block order-last md:order-first">
+                        <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop" alt="Professional working" class="rounded-2xl shadow-xl border-2 border-[#30363d]">
+                    </div>
+                    <div>
+                        <span class="text-green-400 font-semibold">FOR PROFESSIONALS</span>
+                        <h2 class="text-3xl font-bold my-3 text-white">Unlock Your Potential</h2>
+                        <p class="text-gray-400 mb-6">Find opportunities that value your skills and reward your performance.</p>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <svg class="w-6 h-6 text-green-400 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>
+                                    <h4 class="font-semibold text-white">Meritocratic Opportunity</h4>
+                                    <p class="text-gray-400">Engagements are based on your ability to deliver results, not cover letters.</p>
+                                </div>
+                            </li>
+                             <li class="flex items-start">
+                                <svg class="w-6 h-6 text-green-400 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>
+                                    <h4 class="font-semibold text-white">Compensated Learning</h4>
+                                    <p class="text-gray-400">Participate in quests to acquire knowledge about new products and services and earn rewards.</p>
+                                </div>
+                            </li>
+                             <li class="flex items-start">
+                                <svg class="w-6 h-6 text-green-400 mr-3 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>
+                                    <h4 class="font-semibold text-white">Flexible Engagement Protocols</h4>
+                                    <p class="text-gray-400">Accept assignments that are commensurate with your areas of expertise and professional interests.</p>
+                                </div>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Testimonials Section -->
-        <section id="testimonials" class="py-16 md:py-24">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-16 reveal">
-                    <span class="font-orbitron text-accent-glow font-semibold tracking-widest text-sm">REAL VISION</span>
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-100 mt-2">From Our <span class="gradient-text">Team</span></h2>
-                    <p class="mt-4 text-base md:text-lg text-gray-400 max-w-2xl mx-auto font-roboto">See what our team is envisioning to achieve with OpenGigs.</p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="feature-card p-8 rounded-2xl reveal">
-                        <div class="absolute top-4 right-4 bg-primary-glow/10 text-primary-glow text-xs font-bold px-3 py-1 rounded-full border border-primary-glow/30"></div>
-                        <div class="flex items-center mb-6">
-                            <div class="flex-shrink-0">
-                                <img src="https://scontent.fabb1-1.fna.fbcdn.net/v/t39.30808-6/492039580_122194603502113031_6780245674785707006_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeENKBRyTC0dT8tfmY1GkLFXmqB45A0lOJqaoHjkDSU4mpdJP3jjv-GyWjRXFyFs0bvin5kmuWXSrB3b9AM8JzVi&_nc_ohc=7ewKjPoyMSkQ7kNvwH1qzkE&_nc_oc=AdmaM-of9HLcLAsZ3E2h4Yo9kvs_vXsHC3upPsk93dvsODk6_sHBJk-atw9seqgObmE&_nc_zt=23&_nc_ht=scontent.fabb1-1.fna&_nc_gid=e9QSCx8x_iTmPxNQ1Dd1QA&oh=00_AfMRg5qpP_y6K5NjXGPFx9HCfcuSznf6uy1Ioc4cC8chwA&oe=686B7BA1" alt="User" class="w-12 h-12 rounded-full border-2 border-primary-glow/50">
-                            </div>
-                            <div class="ml-4">
-                                <p class="font-bold text-gray-100 font-orbitron">Kingsley Peter</p>
-                                <p class="text-gray-400 font-roboto text-sm">Founder</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-300 text-base italic font-roboto relative pl-6 before:content-['"'] before:absolute before:left-0 before:text-4xl before:text-primary-glow/30 before:top-0 before:font-serif">The resume is obsolete. My goal is to build a world where your value is defined by your achievements, not your credentials. At OpenGigs, your portfolio of proven results is your new resume, liberating you to get paid for the skills you love.</p>
-                        <div class="mt-6 flex items-center">
-                            <span class="ml-3 text-xs text-gray-400 font-roboto">Our Goal: 1 Million Verified Results Delivered</span>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-card p-8 rounded-2xl reveal" style="transition-delay: 200ms;">
-                        <div class="absolute top-4 right-4 bg-primary-glow/10 text-primary-glow text-xs font-bold px-3 py-1 rounded-full border border-primary-glow/30"></div>
-                        <div class="flex items-center mb-6">
-                            <div class="flex-shrink-0">
-                                <img src="https://img.freepik.com/premium-photo/counselor-digital-avatar-generative-ai_934475-9272.jpg" alt="User" class="w-12 h-12 rounded-full border-2 border-primary-glow/50">
-                            </div>
-                            <div class="ml-4">
-                                <p class="font-bold text-gray-100 font-orbitron">Noble Agu</p>
-                                <p class="text-gray-400 font-roboto text-sm">Co-founder</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-300 text-base italic font-roboto relative pl-6 before:content-['"'] before:absolute before:left-0 before:text-4xl before:text-primary-glow/30 before:top-0 before:font-serif">Traditional education often leaves you with theory, not a career. My focus is on creating the most direct path from learning to earning, with expert-led courses that deliver pure, applicable value. We're not just teaching; we're building careers.</p>
-                        <div class="mt-6">
-                            <div class="flex items-center">
-                                <span class="ml-2 text-xs text-gray-400 font-roboto">Our Goal: 10,000 Professionals Upskilled into New Careers</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="feature-card p-8 rounded-2xl reveal" style="transition-delay: 400ms;">
-                        <div class="absolute top-4 right-4 bg-primary-glow/10 text-primary-glow text-xs font-bold px-3 py-1 rounded-full border border-primary-glow/30"></div>
-                        <div class="flex items-center mb-6">
-                            <div class="flex-shrink-0">
-                                <img src="https://scontent.fabb1-1.fna.fbcdn.net/v/t39.30808-6/480807987_122185483340113031_1491929088990663070_n.jpg?stp=c77.0.1073.1073a_dst-jpg_s206x206_tt6&_nc_cat=108&ccb=1-7&_nc_sid=50ad20&_nc_eui2=AeFzSV43p1QSxhjI-ZzX5bOJcNzil-51QbNw3OKX7nVBsxwkz_p1skVDTt2gzjOTeKpCNygITOqYR2I74u8EU5ka&_nc_ohc=-kaJidZqT1EQ7kNvwFIGktW&_nc_oc=AdmfCrwI_n1G4UkAgtWidHvp5LE5rMw8DHnwSbHZHwnBYKTQLVfmfiFski3LE-nQx9E&_nc_zt=23&_nc_ht=scontent.fabb1-1.fna&_nc_gid=Mx0QTL5HuT8UKNZdEOjEow&oh=00_AfOb4KgWnxNNSvbPJsPCvSqq9USECX10fs4bNTxtGAddVQ&oe=686B8A3E" alt="User" class="w-12 h-12 rounded-full border-2 border-primary-glow/50">
-                            </div>
-                            <div class="ml-4">
-                                <p class="font-bold text-gray-100 font-orbitron">Nsongurua Eshiet</p>
-                                <p class="text-gray-400 font-roboto text-sm">Growth Lead</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-300 text-base italic font-roboto relative pl-6 before:content-['"'] before:absolute before:left-0 before:text-4xl before:text-primary-glow/30 before:top-0 before:font-serif">Every great company starts with an idea. My mission is to give those ideas a launchpad. Through our 'Build' section, we provide the blueprints, the talent, and the community to connect founders and scale their vision from a dream into a funded reality.</p>
-                        <div class="mt-6">
-                            <div class="flex items-center">
-                                <span class="ml-2 text-xs text-gray-400 font-roboto">Our Goal: Launching 1,000 Ventures Funded with $100M+</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
 
-        <!-- Signup CTA Section -->
-        <section id="signup" class="py-16 md:py-24 bg-gradient-to-b from-dark-bg to-mid-bg/50">
-            <div class="container mx-auto px-6 text-center reveal">
-                <div class="max-w-3xl mx-auto">
-                    <span class="font-orbitron text-primary-glow font-semibold tracking-widest text-sm">READY TO BEGIN?</span>
-                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-100 mt-2">Your Future is a <span class="gradient-text">Result</span>, Not a Plan</h2>
-                    <p class="mt-4 text-base md:text-lg text-gray-400 font-roboto">Join a community that celebrates action and rewards achievement. Your next big step is just a click away.</p>
-            
-                    <div class="mt-16 text-center reveal">
-                    <a href="./waitlist/" class="inline-block neon-button text-white font-semibold px-8 py-3 rounded-md">
-                        Start Your Journey
-                    </a>
-                </div>
-                </div>
+        <section class="bg-purple-700 text-white">
+            <div class="container mx-auto px-6 py-20 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Find your next hire for a short task or long-term growth.</h2>
+                <p class="text-purple-200 max-w-2xl mx-auto mb-8">Join OpenGigs today and experience a new era of professional collaboration.</p>
+                <a href="#" class="bg-white text-purple-700 px-8 py-4 rounded-full font-bold text-lg hover:bg-purple-100 cta-button">Get Started for Free</a>
             </div>
         </section>
     </main>
 
-    <footer class="bg-dark-bg border-t border-primary-glow/20">
+    <footer class="bg-[#0d1117] text-white border-t border-[#30363d]">
         <div class="container mx-auto px-6 py-12">
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
-                <div class="col-span-full md:col-span-1 mb-6 md:mb-0">
-                    <h3 class="text-2xl font-bold font-orbitron gradient-text flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
-                        OpenGigs
-                    </h3>
-                    <p class="mt-2 text-gray-500 font-roboto text-sm">Redefining work, learning, and growth through blockchain technology.</p>
-                    
-                    <div class="mt-4 flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-primary-glow transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-primary-glow transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-primary-glow transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-primary-glow transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12.41V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-8.41"></path><path d="M18 12.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"></path><path d="M15 7h3a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-3"></path></svg>
-                        </a>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Open<span class="text-purple-400">Gigs</span></h3>
+                    <p class="text-gray-400">Forging connections between corporate entities and a global network of qualified specialists.</p>
                 </div>
-                
-                <div class="col-span-1">
-                    <h4 class="font-semibold font-orbitron text-gray-200">Platform</h4>
-                    <ul class="mt-4 space-y-2 font-roboto text-sm">
-                        <li><a href="./quest/" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Quests</a></li>
-                        <li><a href="./jobs/" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Gigs</a></li>
-                        <li><a href="./learn/" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Learn</a></li>
-                        <li><a href="./build/" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Build</a></li>
+                <div>
+                    <h4 class="font-semibold text-gray-200 mb-4">Platform</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#quest" class="text-gray-400 hover:text-white">Quest</a></li>
+                        <li><a href="#job" class="text-gray-400 hover:text-white">Job</a></li>
+                        <li><a href="#learn" class="text-gray-400 hover:text-white">Learn</a></li>
+                        <li><a href="#build" class="text-gray-400 hover:text-white">Build</a></li>
                     </ul>
                 </div>
-                
-                <div class="col-span-1">
-                    <h4 class="font-semibold font-orbitron text-gray-200">Company</h4>
-                    <ul class="mt-4 space-y-2 font-roboto text-sm">
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">About Us</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Careers</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">For Brands</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Press</a></li>
+                <div>
+                    <h4 class="font-semibold text-gray-200 mb-4">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">Help & Support</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Success Stories</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Blog</a></li>
                     </ul>
                 </div>
-                
-                <div class="col-span-1">
-                    <h4 class="font-semibold font-orbitron text-gray-200">Support</h4>
-                    <ul class="mt-4 space-y-2 font-roboto text-sm">
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Help Center</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Contact Us</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Community</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Status</a></li>
-                    </ul>
-                </div>
-                
-                <div class="col-span-1">
-                    <h4 class="font-semibold font-orbitron text-gray-200">Legal</h4>
-                    <ul class="mt-4 space-y-2 font-roboto text-sm">
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Terms</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Privacy</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Cookies</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary-glow transition-colors underline-animation">Licenses</a></li>
+                 <div>
+                    <h4 class="font-semibold text-gray-200 mb-4">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact Us</a></li>
                     </ul>
                 </div>
             </div>
-            
-            <div class="mt-12 border-t border-primary-glow/20 pt-6 text-center text-gray-500 font-roboto text-sm">
-                &copy; 2025 OpenGigs. All rights reserved.
+            <div class="mt-12 border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm">&copy; 2025 OpenGigs Inc. All rights reserved.</p>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clip-rule="evenodd" /></svg></a>
+                    <a href="#" class="text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.71v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" /></svg></a>
+                    <a href="#" class="text-gray-500 hover:text-white"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12.011c0 4.434 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.338 4.695-4.566 4.942.359.308.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12.011C22 6.477 17.523 2 12 2z" clip-rule="evenodd" /></svg></a>
+                </div>
             </div>
         </div>
     </footer>
 
     <script>
-        // Mobile menu toggle
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const menuBtn = document.getElementById('menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
-        
-        mobileMenuButton.addEventListener('click', () => {
+
+        menuBtn.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
-
-        // Scroll reveal animation
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, {
-            threshold: 0.1
-        });
-
-        document.querySelectorAll('.reveal').forEach(el => {
-            observer.observe(el);
-        });
-
-        // Three.js Particle Background
-        let scene, camera, renderer, particles, mouseX = 0, mouseY = 0;
-        let windowHalfX = window.innerWidth / 2;
-        let windowHalfY = window.innerHeight / 2;
-
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 10000);
-            camera.position.z = 1000;
-
-            const particleCount = 5000;
-            const particlesGeometry = new THREE.BufferGeometry();
-            const posArray = new Float32Array(particleCount * 3);
-            
-            for (let i = 0; i < particleCount * 3; i++) {
-                posArray[i] = (Math.random() - 0.5) * (Math.random() * 2000);
-            }
-            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            
-            const material = new THREE.PointsMaterial({
-                size: 1.5,
-                color: 0x4D8B00FF,
-                transparent: true,
-                opacity: 0.7,
-                blending: THREE.AdditiveBlending
-            });
-
-            particles = new THREE.Points(particlesGeometry, material);
-            scene.add(particles);
-
-            renderer = new THREE.WebGLRenderer({
-                canvas: document.getElementById('bg-canvas'),
-                alpha: true
-            });
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setClearColor(0x000000, 0);
-
-            document.body.addEventListener('pointermove', onDocumentMouseMove, false);
-            window.addEventListener('resize', onWindowResize, false);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            render();
-        }
-
-        function render() {
-            const time = Date.now() * 0.00005;
-            camera.position.x += (mouseX - camera.position.x) * 0.05;
-            camera.position.y += (-mouseY - camera.position.y) * 0.05;
-            camera.lookAt(scene.position);
-            
-            particles.rotation.x = time * 0.1;
-            particles.rotation.y = time * 0.2;
-
-            renderer.render(scene, camera);
-        }
-
-        function onDocumentMouseMove(event) {
-            mouseX = event.clientX - windowHalfX;
-            mouseY = event.clientY - windowHalfY;
-        }
-
-        function onWindowResize() {
-            windowHalfX = window.innerWidth / 2;
-            windowHalfY = window.innerHeight / 2;
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        // Custom cursor
-        const cursorDot = document.querySelector('.cursor-dot');
-        const cursorOutline = document.querySelector('.cursor-outline');
-
-        window.addEventListener('mousemove', (e) => {
-            cursorDot.style.left = `${e.clientX}px`;
-            cursorDot.style.top = `${e.clientY}px`;
-            
-            cursorOutline.style.left = `${e.clientX}px`;
-            cursorOutline.style.top = `${e.clientY}px`;
-            
-            cursorOutline.animate({
-                left: `${e.clientX}px`,
-                top: `${e.clientY}px`
-            }, { duration: 500, fill: "forwards" });
-        });
-init();
-        animate();
-        // Make cursor interactive with clickable elements
-        document.querySelectorAll('a, button, input, .feature-card').forEach(el => {
-            el.addEventListener('mouseenter', () => {
-                cursorDot.style.transform = 'translate(-50%, -50%) scale(1.5)';
-                cursorDot.style.backgroundColor = 'var(--secondary-glow)';
-                cursorOutline.style.transform = 'translate(-50%, -50%) scale(1.2)';
-            });
-            
-            el.addEventListener('mouseleave', () => {
-                cursorDot.style.transform = 'translate(-50%, -50%) scale(1)';
-                cursorDot.style.backgroundColor = 'var(--accent-glow)';
-                cursorOutline.style.transform = 'translate(-50%, -50%) scale(1)';
-            });
-        });
-
-        // Counter animation
-        const counters = document.querySelectorAll('.counter');
-        const speed = 200;
-
-        counters.forEach(counter => {
-            const target = +counter.getAttribute('data-target');
-            const count = +counter.innerText;
-            const increment = target / speed;
-            
-            if (count < target) {
-                counter.innerText = Math.ceil(count + increment);
-                setTimeout(updateCounter, 1);
-            } else {
-                counter.innerText = target;
-            }
-            
-            function updateCounter() {
-                const count = +counter.innerText;
-                const increment = target / speed;
-                
-                if (count < target) {
-                    counter.innerText = Math.ceil(count + increment);
-                    setTimeout(updateCounter, 1);
-                } else {
-                    counter.innerText = target;
-                }
-            }
-        });
-
-        // Trigger counter animation when scrolled to
-        const counterObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const target = +entry.target.getAttribute('data-target');
-                    const count = +entry.target.innerText;
-                    const increment = target / speed;
-                    
-                    if (count < target) {
-                        entry.target.innerText = Math.ceil(count + increment);
-                        setTimeout(updateCounter, 1);
-                    } else {
-                        entry.target.innerText = target;
-                    }
-                    
-                    function updateCounter() {
-                        const count = +entry.target.innerText;
-                        const increment = target / speed;
-                        
-                        if (count < target) {
-                            entry.target.innerText = Math.ceil(count + increment);
-                            setTimeout(updateCounter, 1);
-                        } else {
-                            entry.target.innerText = target;
-                        }
-                    }
-                }
-            });
-        }, { threshold: 0.5 });
-
-        document.querySelectorAll('.counter').forEach(el => {
-            counterObserver.observe(el);
-        });
-
-        // Confetti effect on signup
-        const signupButton = document.getElementById('signup-button');
-        
-        signupButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            // Create confetti elements
-            for (let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.width = Math.random() * 10 + 5 + 'px';
-                confetti.style.height = Math.random() * 10 + 5 + 'px';
-                confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
-                confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
-                document.body.appendChild(confetti);
-                
-                // Remove confetti after animation
-                setTimeout(() => {
-                    confetti.remove();
-                }, 5000);
-            }
-            
-            // Show success message
-            setTimeout(() => {
-                alert('Account created successfully! Welcome to OpenGigs!');
-            }, 1000);
-        });
-
-        // Initialize Three.js
-        init();
-        animate();
     </script>
+
 </body>
 </html>
