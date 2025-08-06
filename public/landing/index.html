@@ -19,7 +19,6 @@
         }
         .hero-bg {
             background-color: #0d1117;
-            /* NEW BACKGROUND IMAGE  */
             background-image: url('https://images.unsplash.com/photo-1531297484001-80022131f5a1?q=80&w=2020&auto=format&fit=crop'); 
             background-size: cover;
             background-position: center;
@@ -50,20 +49,43 @@
 
     <header class="bg-[#161b22]/80 backdrop-blur-lg fixed top-0 left-0 right-0 z-50 border-b border-[#30363d]">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center text-2xl font-semibold text-gray-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
-                    <a href="#" class="text-2xl font-bold text-white"> Open<span class="text-purple-400">Gigs</span></a>
-                </div>
+            <div class="flex items-center text-2xl font-semibold">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+                <a href="#" class="text-2xl font-bold text-white ml-2">Open<span class="text-purple-400">Gigs</span></a>
+            </div>
             
-            <nav class="hidden md:flex items-center space-x-8">
-                <a href="#quest" class="text-gray-300 hover:text-purple-400 transition">Quest</a>
-                <a href="#job" class="text-gray-300 hover:text-purple-400 transition">Job</a>
-                <a href="#learn" class="text-gray-300 hover:text-purple-400 transition">Learn</a>
-                <a href="#build" class="text-gray-300 hover:text-purple-400 transition">Build</a>
+            <div class="hidden md:flex items-center">
+                <nav class="flex items-center space-x-8">
+                    <a href="#quest" class="text-gray-300 hover:text-purple-400 transition">Quest</a>
+                    <a href="#job" class="text-gray-300 hover:text-purple-400 transition">Job</a>
+                    <a href="#learn" class="text-gray-300 hover:text-purple-400 transition">Learn</a>
+                    <a href="#build" class="text-gray-300 hover:text-purple-400 transition">Build</a>
+                </nav>
+                <div class="flex items-center space-x-4 ml-8">
+                    <a href="#" class="text-gray-300 hover:text-purple-400 font-medium">Log In</a>
+                    <a href="#" class="bg-purple-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-purple-700 cta-button">Sign Up</a>
+                </div>
+            </div>
+
+            <div class="md:hidden">
+                <button id="menu-btn" type="button" class="text-gray-300 hover:text-purple-400 focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden">
+            <nav class="px-2 pt-2 pb-4 space-y-1 sm:px-3">
+                <a href="#quest" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Quest</a>
+                <a href="#job" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Job</a>
+                <a href="#learn" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Learn</a>
+                <a href="#build" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700">Build</a>
             </nav>
-            <div class="flex items-center space-x-4">
-                <a href="#" class="text-gray-300 hover:text-purple-400 font-medium hidden sm:block">Log In</a>
-                <a href="#" class="bg-purple-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-purple-700 cta-button">Sign Up</a>
+            <div class="px-5 py-4 border-t border-gray-700 space-y-3">
+                <a href="#" class="block w-full text-center bg-purple-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-purple-700 cta-button">Sign Up</a>
+                <a href="#" class="block w-full text-center text-gray-300 hover:text-purple-400 font-medium">Log In</a>
             </div>
         </div>
     </header>
@@ -303,6 +325,15 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    </script>
 
 </body>
 </html>
