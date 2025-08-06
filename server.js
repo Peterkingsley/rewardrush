@@ -870,32 +870,42 @@ app.post('/api/jobs/:jobId/claim', requireLogin, async (req, res) => {
     try {
         let result;
         if (submissionLink) {
+            // This branch handles claims that include a content link, using an UPSERT.
             result = await pool.query(
                 `INSERT INTO user_jobs (user_id, program_id, status, submission_link, current_claim_amount, is_final_claim, updated_at) 
                  VALUES ($1, $2, 'pending_review', $3, $4, $5, NOW())
                  ON CONFLICT (user_id, program_id) 
                  DO UPDATE SET 
                      status = 'pending_review', 
-                     submission_link = $3, 
+                     submission_link = EXCLUDED.submission_link, 
                      rejection_reason = NULL, 
-                     current_claim_amount = $4,
-                     is_final_claim = $5,
+                     current_claim_amount = EXCLUDED.current_claim_amount,
+                     is_final_claim = EXCLUDED.is_final_claim,
                      updated_at = NOW()
+                 WHERE user_jobs.status IN ('active', 'rejected', 'pending_submission')
                  RETURNING *`,
                 [userId, jobId, submissionLink, parsedAmount, is_final_claim]
             );
         } else {
+            // --- FIXED: This branch now uses a robust UPSERT for all other claims ---
             result = await pool.query(
-                `UPDATE user_jobs 
-                 SET status = 'reward_pending', current_claim_amount = $1, is_final_claim = $2, updated_at = NOW() 
-                 WHERE user_id = $3 AND program_id = $4 AND status = 'active' 
+                `INSERT INTO user_jobs (user_id, program_id, status, current_claim_amount, is_final_claim, updated_at) 
+                 VALUES ($1, $2, 'reward_pending', $3, $4, NOW())
+                 ON CONFLICT (user_id, program_id) 
+                 DO UPDATE SET 
+                     status = 'reward_pending', 
+                     current_claim_amount = EXCLUDED.current_claim_amount,
+                     is_final_claim = EXCLUDED.is_final_claim,
+                     updated_at = NOW()
+                 WHERE user_jobs.status IN ('active', 'rejected')
                  RETURNING *`,
-                [parsedAmount, is_final_claim, userId, jobId]
+                [userId, jobId, parsedAmount, is_final_claim]
             );
         }
 
         if (result.rowCount === 0) {
-            return res.status(404).json({ error: 'Active job not found for this user or already has a pending claim.' });
+            // This error is now less likely but kept as a safeguard for cases where a claim is already pending.
+            return res.status(404).json({ error: 'Job not found for this user, or it already has a pending claim that is awaiting review.' });
         }
 
         res.json({ success: true, message: 'Reward claim submitted for admin approval.' });
