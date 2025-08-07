@@ -1804,7 +1804,7 @@ app.get('/generate-referral-link', requireLogin, async (req, res) => {
             user.referral_code = newReferralCode;
         }
 
-        const baseUrl = process.env.BASE_URL || `https://rewardrushapp.onrender.com`;
+        const baseUrl = process.env.BASE_URL || `https://www.opengigs.pro`;
         // UPDATED: Use the clean URL /auth
         let referralLink = `${baseUrl}/auth?referralCode=${user.referral_code}`;
         if (questId) {
