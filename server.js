@@ -52,7 +52,10 @@ const pool = new Pool({
 })();
 
 app.use(cors());
-app.use(express.static(path.join(__dirname, 'public')));
+// *** MODIFIED LINE ***
+// This now tells Express to automatically look for .html files when a path is requested.
+// For example, a request to /groweasy will now serve /groweasy.html from the public folder.
+app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -2353,12 +2356,8 @@ app.get('/products', async (req, res) => {
     }
 });
 
-app.get('/groweasy.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'groweasy.html')));
-app.get('/affiliate.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'affiliate.html')));
-app.get('/education.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'education.html')));
-app.get('/founder.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'founder.html')));
-app.get('/post-a-job.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'post-a-job.html')));
-app.get('/admin-experts.html', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-experts.html'))); 
+// --- REMOVED REDUNDANT .html ROUTES ---
+// The express.static middleware with the 'extensions' option now handles these automatically.
 
 app.post('/block-user', requireAdmin, async (req, res) => {
     const { username } = req.body;
