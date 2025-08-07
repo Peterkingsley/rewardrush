@@ -1724,7 +1724,7 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
 
             await client.query('COMMIT');
 
-            const referralLink = `${process.env.BASE_URL || `http://www.opengigs.pro:${PORT}`}/referral?questId=${questId}&referrerId=${encodeURIComponent(req.user.username)}`;
+            const referralLink = `${process.env.BASE_URL || `http://www.opengigs.pro`}/referral?questId=${questId}&referrerId=${encodeURIComponent(req.user.username)}`;
             
             res.json({
                 success: true,
