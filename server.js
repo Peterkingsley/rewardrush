@@ -99,7 +99,8 @@ const questUpload = upload.fields([
 const requireLogin = async (req, res, next) => {
     if (!req.session.userId) {
         if (req.headers.accept && req.headers.accept.includes('text/html')) {
-            return res.redirect('/auth.html');
+            // UPDATED: Redirect to the clean URL /auth instead of /auth.html
+            return res.redirect('/auth');
         }
         return res.status(401).json({ error: 'Unauthorized, please log in' });
     }
@@ -1085,7 +1086,8 @@ app.post('/forgot-password', async (req, res) => {
             const token = crypto.randomBytes(20).toString('hex');
             const expires = new Date(Date.now() + 3600000); // 1 hour
             await pool.query('UPDATE users SET reset_password_token = $1, reset_password_expires = $2 WHERE id = $3', [token, expires, user.id]);
-            const resetLink = `${process.env.BASE_URL}/reset-password.html?token=${token}`;
+            // UPDATED: Use the clean URL /reset-password
+            const resetLink = `${process.env.BASE_URL}/reset-password?token=${token}`;
             console.log(`Password reset link for ${user.username} (${email}): ${resetLink}`);
         }
     } catch (err) {
@@ -1803,7 +1805,8 @@ app.get('/generate-referral-link', requireLogin, async (req, res) => {
         }
 
         const baseUrl = process.env.BASE_URL || `https://rewardrushapp.onrender.com`;
-        let referralLink = `${baseUrl}/auth.html?referralCode=${user.referral_code}`;
+        // UPDATED: Use the clean URL /auth
+        let referralLink = `${baseUrl}/auth?referralCode=${user.referral_code}`;
         if (questId) {
             referralLink += `&questId=${questId}`;
         }
@@ -2342,12 +2345,21 @@ app.get('/products', async (req, res) => {
     }
 });
 
-app.get('/groweasy.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'groweasy.html')));
-app.get('/affiliate.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'affiliate.html')));
-app.get('/education.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'education.html')));
-app.get('/founder.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'founder.html')));
-app.get('/post-a-job.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'post-a-job.html')));
-app.get('/admin-experts.html', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-experts.html'))); 
+// --- UPDATED ROUTES FOR CLEAN URLS (NO .html) ---
+
+// Serve the HTML file when the user navigates to the clean URL
+app.get('/groweasy', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'groweasy.html')));
+app.get('/affiliate', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'affiliate.html')));
+app.get('/education', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'education.html')));
+app.get('/founder', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'founder.html')));
+app.get('/post-a-job', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'post-a-job.html')));
+app.get('/admin-experts', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-experts.html'))); 
+app.get('/auth', (req, res) => res.sendFile(path.join(__dirname, 'public', 'auth.html')));
+app.get('/profile', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'profile.html')));
+app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'reset-password.html')));
+
+// --- END UPDATED ROUTES ---
+
 
 app.post('/block-user', requireAdmin, async (req, res) => {
     const { username } = req.body;
