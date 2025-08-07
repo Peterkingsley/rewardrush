@@ -14,7 +14,7 @@ const multer = require('multer');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Tell Express to trust the proxy that Render uses. This is important for secure cookies.
+// Tell Express to trust the proxy that Render uses
 app.set('trust proxy', 1);
 
 // --- Hardcoded Admin Credentials for testing ---
@@ -56,16 +56,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- SESSION MIDDLEWARE UPDATED FOR IFRAME/WIDGET SUPPORT ---
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: { 
         maxAge: 20 * 60 * 1000,
-        secure: true,      // Essential for sameSite: 'none'. Cookie will only be sent over HTTPS.
+        secure: true, 
         httpOnly: true, 
-        sameSite: 'none'   // *** THIS IS THE FIX *** Allows the cookie to be sent in a cross-site context (i.e., inside an iframe).
+        sameSite: 'lax'
     }
 }));
 
