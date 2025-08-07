@@ -52,9 +52,7 @@ const pool = new Pool({
 })();
 
 app.use(cors());
-// This now tells Express to automatically look for .html files when a path is requested.
-// For example, a request to /groweasy will now serve /groweasy.html from the public folder.
-app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -100,10 +98,10 @@ const questUpload = upload.fields([
 
 // Middleware functions (requireLogin, requireAdmin, etc.)
 const requireLogin = async (req, res, next) => {
-    // *** MODIFIED LOGIC ***
-    // If there is no session, always send a JSON 401 error for API-style routes.
-    // The frontend will be responsible for catching this and redirecting to the login page.
     if (!req.session.userId) {
+        if (req.headers.accept && req.headers.accept.includes('text/html')) {
+            return res.redirect('/auth.html');
+        }
         return res.status(401).json({ error: 'Unauthorized, please log in' });
     }
     if (req.session.isAdmin) {
@@ -2355,8 +2353,12 @@ app.get('/products', async (req, res) => {
     }
 });
 
-// --- REMOVED REDUNDANT .html ROUTES ---
-// The express.static middleware with the 'extensions' option now handles these automatically.
+app.get('/groweasy.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'groweasy.html')));
+app.get('/affiliate.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'affiliate.html')));
+app.get('/education.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'education.html')));
+app.get('/founder.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'founder.html')));
+app.get('/post-a-job.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'post-a-job.html')));
+app.get('/admin-experts.html', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-experts.html'))); 
 
 app.post('/block-user', requireAdmin, async (req, res) => {
     const { username } = req.body;
