@@ -69,7 +69,7 @@
                 const data = await response.json();
 
                 if (response.ok && data.isAdmin) {
-                    window.location.href = '/dashboard.html';
+                    window.location.href = '/dashboard';
                 } else {
                     let error = data.error || 'Invalid credentials or not an admin.';
                     errorMessage.textContent = error;

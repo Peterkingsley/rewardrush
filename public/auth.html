@@ -509,9 +509,9 @@
                     const data = await response.json();
 
                     if (response.ok) {
-                        // On successful login/signup, redirect to groweasy.html
+                        // On successful login/signup, redirect to groweasy
                         // and pass along any referralCode and questId
-                        let redirectUrl = './groweasy.html';
+                        let redirectUrl = './groweasy';
                         const params = new URLSearchParams();
                         if (urlParams.referralCode) {
                             params.append('referralCode', urlParams.referralCode);
