@@ -1724,7 +1724,7 @@ app.post('/submit-quiz/:questId', requireLogin, async (req, res) => {
 
             await client.query('COMMIT');
 
-            const referralLink = `${process.env.BASE_URL || `http://localhost:${PORT}`}/referral?questId=${questId}&referrerId=${encodeURIComponent(req.user.username)}`;
+            const referralLink = `${process.env.BASE_URL || `http://www.opengigs.pro:${PORT}`}/referral?questId=${questId}&referrerId=${encodeURIComponent(req.user.username)}`;
             
             res.json({
                 success: true,
@@ -1816,7 +1816,6 @@ app.get('/generate-referral-link', requireLogin, async (req, res) => {
         res.status(500).json({ error: 'Could not generate referral link' });
     }
 });
-
 
 app.get('/referral', async (req, res) => {
     const { questId, referralCode } = req.query;
