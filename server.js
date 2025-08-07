@@ -99,7 +99,7 @@ const questUpload = upload.fields([
 const requireLogin = async (req, res, next) => {
     if (!req.session.userId) {
         if (req.headers.accept && req.headers.accept.includes('text/html')) {
-            return res.redirect('/auth');
+            return res.redirect('/auth.html');
         }
         return res.status(401).json({ error: 'Unauthorized, please log in' });
     }
@@ -870,42 +870,32 @@ app.post('/api/jobs/:jobId/claim', requireLogin, async (req, res) => {
     try {
         let result;
         if (submissionLink) {
-            // This branch handles claims that include a content link, using an UPSERT.
             result = await pool.query(
                 `INSERT INTO user_jobs (user_id, program_id, status, submission_link, current_claim_amount, is_final_claim, updated_at) 
                  VALUES ($1, $2, 'pending_review', $3, $4, $5, NOW())
                  ON CONFLICT (user_id, program_id) 
                  DO UPDATE SET 
                      status = 'pending_review', 
-                     submission_link = EXCLUDED.submission_link, 
+                     submission_link = $3, 
                      rejection_reason = NULL, 
-                     current_claim_amount = EXCLUDED.current_claim_amount,
-                     is_final_claim = EXCLUDED.is_final_claim,
+                     current_claim_amount = $4,
+                     is_final_claim = $5,
                      updated_at = NOW()
-                 WHERE user_jobs.status IN ('active', 'rejected', 'pending_submission')
                  RETURNING *`,
                 [userId, jobId, submissionLink, parsedAmount, is_final_claim]
             );
         } else {
-            // --- FIXED: This branch now uses a robust UPSERT for all other claims ---
             result = await pool.query(
-                `INSERT INTO user_jobs (user_id, program_id, status, current_claim_amount, is_final_claim, updated_at) 
-                 VALUES ($1, $2, 'reward_pending', $3, $4, NOW())
-                 ON CONFLICT (user_id, program_id) 
-                 DO UPDATE SET 
-                     status = 'reward_pending', 
-                     current_claim_amount = EXCLUDED.current_claim_amount,
-                     is_final_claim = EXCLUDED.is_final_claim,
-                     updated_at = NOW()
-                 WHERE user_jobs.status IN ('active', 'rejected')
+                `UPDATE user_jobs 
+                 SET status = 'reward_pending', current_claim_amount = $1, is_final_claim = $2, updated_at = NOW() 
+                 WHERE user_id = $3 AND program_id = $4 AND status = 'active' 
                  RETURNING *`,
-                [userId, jobId, parsedAmount, is_final_claim]
+                [parsedAmount, is_final_claim, userId, jobId]
             );
         }
 
         if (result.rowCount === 0) {
-            // This error is now less likely but kept as a safeguard for cases where a claim is already pending.
-            return res.status(404).json({ error: 'Job not found for this user, or it already has a pending claim that is awaiting review.' });
+            return res.status(404).json({ error: 'Active job not found for this user or already has a pending claim.' });
         }
 
         res.json({ success: true, message: 'Reward claim submitted for admin approval.' });
@@ -1312,7 +1302,25 @@ app.post('/api/user/upload-picture', requireLogin, upload.single('profilePicture
     try {
         await pool.query('UPDATE users SET avatar = $1 WHERE id = $2', [filePath, req.user.id]);
         res.json({ message: 'Profile picture updated successfully.', filePath });
-    } catch (err).json({
+    } catch (err) {
+        console.error('Error uploading profile picture:', err);
+        await fs.unlink(path.join(__dirname, 'public', filePath)).catch(e => console.error("Failed to cleanup file", e));
+        res.status(500).json({ error: 'Failed to update profile picture' });
+    }
+});
+
+app.get('/quest-overview', requireLogin, async (req, res) => {
+    const userId = req.query.userId;
+    if (!userId || userId !== req.session.userId) {
+        return res.status(400).json({ error: 'Invalid user ID' });
+    }
+    try {
+        const userResult = await pool.query('SELECT * FROM users WHERE username = $1', [userId]);
+        const user = userResult.rows[0];
+        const completedQuestsResult = await pool.query('SELECT * FROM user_quests WHERE user_id = $1', [user.id]);
+        const pendingWithdrawalsResult = await pool.query("SELECT COUNT(*) FROM withdrawals WHERE user_id = $1 AND status = 'pending'", [user.id]);
+
+        res.json({
             totalEarnings: user.points || 0,
             questsCompleted: completedQuestsResult.rows,
             pendingWithdrawals: parseInt(pendingWithdrawalsResult.rows[0].count, 10)
@@ -1795,7 +1803,7 @@ app.get('/generate-referral-link', requireLogin, async (req, res) => {
         }
 
         const baseUrl = process.env.BASE_URL || `https://rewardrushapp.onrender.com`;
-        let referralLink = `${baseUrl}/auth?referralCode=${user.referral_code}`;
+        let referralLink = `${baseUrl}/auth.html?referralCode=${user.referral_code}`;
         if (questId) {
             referralLink += `&questId=${questId}`;
         }
@@ -2334,14 +2342,12 @@ app.get('/products', async (req, res) => {
     }
 });
 
-app.get('/groweasy', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'groweasy.html')));
-app.get('/auth', (req, res) => res.sendFile(path.join(__dirname, 'public', 'auth.html')));
-app.get('/affiliate', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'affiliate.html')));
-app.get('/education', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'education.html')));
-app.get('/founder', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'founder.html')));
-app.get('/profile', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'profile.html')));
-app.get('/post-a-job', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'post-a-job.html')));
-app.get('/admin-experts', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-experts.html'))); 
+app.get('/groweasy.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'groweasy.html')));
+app.get('/affiliate.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'affiliate.html')));
+app.get('/education.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'education.html')));
+app.get('/founder.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'founder.html')));
+app.get('/post-a-job.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'post-a-job.html')));
+app.get('/admin-experts.html', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-experts.html'))); 
 
 app.post('/block-user', requireAdmin, async (req, res) => {
     const { username } = req.body;
