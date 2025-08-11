@@ -2347,7 +2347,7 @@ app.get('/products', async (req, res) => {
 // --- UPDATED ROUTES FOR CLEAN URLS (NO .html) ---
 
 // Serve the HTML file when the user navigates to the clean URL
-app.get('/groweasy', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'groweasy.html')));
+app.get('/quest', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'quest.html')));
 app.get('/affiliate', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'affiliate.html')));
 app.get('/education', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'education.html')));
 app.get('/founder', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'founder.html')));
