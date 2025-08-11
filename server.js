@@ -100,7 +100,7 @@ const requireLogin = async (req, res, next) => {
     if (!req.session.userId) {
         if (req.headers.accept && req.headers.accept.includes('text/html')) {
             // UPDATED: Redirect to the clean URL /auth instead of /auth.html
-            return res.redirect('/auth');
+            return res.redirect('/login');
         }
         return res.status(401).json({ error: 'Unauthorized, please log in' });
     }
@@ -1806,7 +1806,7 @@ app.get('/generate-referral-link', requireLogin, async (req, res) => {
 
         const baseUrl = process.env.BASE_URL || `https://www.opengigs.pro`;
         // UPDATED: Use the clean URL /auth
-        let referralLink = `${baseUrl}/auth?referralCode=${user.referral_code}`;
+        let referralLink = `${baseUrl}/login?referralCode=${user.referral_code}`;
         if (questId) {
             referralLink += `&questId=${questId}`;
         }
@@ -2353,7 +2353,7 @@ app.get('/education', requireLogin, (req, res) => res.sendFile(path.join(__dirna
 app.get('/founder', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'founder.html')));
 app.get('/post-a-job', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'post-a-job.html')));
 app.get('/admin-experts', requireAdmin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin-experts.html'))); 
-app.get('/auth', (req, res) => res.sendFile(path.join(__dirname, 'public', 'auth.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/profile', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'profile.html')));
 app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'reset-password.html')));
 

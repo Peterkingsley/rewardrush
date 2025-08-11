@@ -376,7 +376,7 @@
                         headers: { 'Content-Type': 'application/json', ...options.headers },
                     });
                     if (!response.ok) {
-                        if (response.status === 401) window.location.href = '/auth';
+                        if (response.status === 401) window.location.href = '/login';
                         const errorData = await response.json().catch(() => ({ message: `HTTP Error: ${response.status}` }));
                         throw new Error(errorData.message);
                     }
@@ -427,7 +427,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             const session = await ApiService.checkSession();
             if (!session.loggedIn) {
-                window.location.href = '/auth';
+                window.location.href = '/login';
                 return;
             }
             

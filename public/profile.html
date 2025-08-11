@@ -337,7 +337,7 @@
                     try {
                         const response = await fetch(endpoint, options);
                         if (!response.ok) {
-                            if (response.status === 401) window.location.href = '/auth';
+                            if (response.status === 401) window.location.href = '/login';
                             // Try to parse error, but fallback if it's not JSON
                             let errorData;
                             try {
@@ -610,7 +610,7 @@
                         const data = await ApiService.getProfileData(sessionData.userId);
                         renderContent(data);
                     } else {
-                        window.location.href = '/auth';
+                        window.location.href = '/login';
                     }
                 } catch (error) {
                     console.error("Failed to initialize profile page:", error);

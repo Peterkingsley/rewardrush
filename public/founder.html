@@ -236,7 +236,7 @@
                         const response = await fetch('/api/build-data');
                         if (!response.ok) {
                             if (response.status === 401) {
-                                window.location.href = '/auth';
+                                window.location.href = '/login';
                             }
                             throw new Error(`HTTP error! status: ${response.status}`);
                         }
@@ -380,7 +380,7 @@
                     
                     const session = await ApiService.checkSession();
                     if (!session.loggedIn) {
-                        window.location.href = '/auth';
+                        window.location.href = '/login';
                         return; 
                     }
                     

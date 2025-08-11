@@ -573,7 +573,7 @@
                         console.error(`API Error on ${endpoint}:`, error);
                         App.showNotification(error.message, 'error');
                         if (error.message.toLowerCase().includes('unauthorized')) {
-                            window.location.href = '/auth';
+                            window.location.href = '/login';
                         }
                         throw error;
                     }
@@ -683,7 +683,7 @@
                     try {
                         const sessionData = await ApiService.checkSession();
                         if (!sessionData.loggedIn) {
-                            window.location.href = '/auth';
+                            window.location.href = '/login';
                             return;
                         }
                         this.state.userId = sessionData.userId;

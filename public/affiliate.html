@@ -364,7 +364,7 @@
                         const sessionData = await ApiService.checkSession();
                         if (!sessionData.loggedIn) {
                             this.showNotification('Please log in to view jobs.', 'error');
-                            document.body.innerHTML = `<div class="flex h-screen items-center justify-center bg-gray-100"><div class="text-center p-8 bg-white rounded-lg shadow-md"><h1 class="text-2xl font-bold mb-4">Access Denied</h1><p>Please <a href="/auth" class="text-purple-600 hover:underline">log in</a> to continue.</p></div></div>`;
+                            document.body.innerHTML = `<div class="flex h-screen items-center justify-center bg-gray-100"><div class="text-center p-8 bg-white rounded-lg shadow-md"><h1 class="text-2xl font-bold mb-4">Access Denied</h1><p>Please <a href="/login" class="text-purple-600 hover:underline">log in</a> to continue.</p></div></div>`;
                             return;
                         }
                         this.state.username = sessionData.userId;
